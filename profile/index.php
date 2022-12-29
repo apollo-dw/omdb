@@ -2,7 +2,7 @@
 	$profileId = $_GET['id'] ?? -1;
     $PageTitle = "Profile";
 	
-	if($profileid == -1){
+	if($profileId == -1){
 		header("Location: https://omdb.nyahh.net/");
 	}
 
