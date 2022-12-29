@@ -57,7 +57,7 @@
 			<?php echo $row["Score"]; ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]} [${beatmap["DifficultyName"]}]");?></a>
 		</div>
 		<div class="flex-child" style="width:100%;">
-			<?php echo time_elapsed_string($row["date"]); ?>
+			<?php echo GetHumanTime($row["date"]); ?>
 		</div>
 	</div>
 <?php

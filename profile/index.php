@@ -56,7 +56,7 @@
 		// Close the prepared statement
 		$stmt->close();
 		
-		$correlation = pearson_correlation($userScores, $profileScores);
+		$correlation = CalculatePearsonCorrelation($userScores, $profileScores);
 	} 
 ?>
 

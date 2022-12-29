@@ -90,7 +90,7 @@
 					<?php echo $row["Score"]; ?> on <a href="/mapset/<?php echo $beatmap[0]; ?>"><?php echo htmlspecialchars("${beatmap[1]} - ${beatmap[2]} [${beatmap[3]}]");?></a>
 				</div>
 				<div class="flex-child" style="width:100%;text-align:right;">
-					<?php echo time_elapsed_string($row["date"]); ?>
+					<?php echo GetHumanTime($row["date"]); ?>
 				</div>
 			</div>
 			<?php

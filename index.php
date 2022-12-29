@@ -37,7 +37,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 				?>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo time_elapsed_string($row["date"]); ?>
+				<?php echo GetHumanTime($row["date"]); ?>
 			  </div>
 			</div>
 		  <?php
@@ -70,7 +70,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 				?></a>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo time_elapsed_string($row["date"]); ?>
+				<?php echo GetHumanTime($row["date"]); ?>
 			  </div>
 			</div>
 		  <?php
@@ -96,7 +96,7 @@ Latest mapsets:<br>
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
 		<span class="subtext">
 			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}"; ?></a><br> by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo $artist; ?></a> <br>
-			<?php echo time_elapsed_string($row["Timestamp"]); ?>
+			<?php echo GetHumanTime($row["Timestamp"]); ?>
 		</span>
 	</div>
 	<?php

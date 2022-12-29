@@ -135,7 +135,7 @@
       ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
-      <?php echo time_elapsed_string($row["date"]); ?>
+      <?php echo GetHumanTime($row["date"]); ?>
     </div>
   </div>
   <?php
@@ -174,11 +174,11 @@
 								<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
 							</div>
 							<div class="flex-child" style="margin-left:auto;">
-								<?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo time_elapsed_string($row["date"]); ?>
+								<?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
 							</div>
 						</div>
 						<div class="flex-child comment" style="min-width:0;overflow: hidden;">
-							<p><?php echo parseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
+							<p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
 						</div>
 						<?php
 					}

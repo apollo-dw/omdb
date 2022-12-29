@@ -99,7 +99,7 @@
 		return json_decode($response, true)[0];
 	}
 	
-	function time_elapsed_string($datetime, $full = false) {
+	function GetHumanTime($datetime, $full = false) {
 		$now = new DateTime;
 		$ago = new DateTime($datetime);
 		$diff = $now->diff($ago);
@@ -145,14 +145,14 @@
 		return $username;
 	}
 	
-	function parseOsuLinks($string) {
+	function ParseOsuLinks($string) {
 	  $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
 	  $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
 	  return preg_replace($pattern, $replacement, $string);
 	}
 	
 	
-	function pearson_correlation($x, $y) {
+	function CalculatePearsonCorrelation($x, $y) {
 		$n = count($x);
 		$sum_x = array_sum($x);
 		$sum_y = array_sum($y);

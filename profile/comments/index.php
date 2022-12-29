@@ -81,14 +81,14 @@
 						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo "${beatmap["Artist"]} - ${beatmap["Title"]}"; ?></a>
 					</div>
 					<div class="flex-child" style="margin-left:auto;">
-						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo time_elapsed_string($row["date"]); ?>
+						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
 					</div>
 				</div>
 				<div class="flex-child comment" style="min-width:0;overflow: hidden;">
 					<div>
 						<a href="../../mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';" style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
 					</div>
-					<p><?php echo parseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
+					<p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
 				</div>
 				<?php
 			}
