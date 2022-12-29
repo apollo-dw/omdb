@@ -173,7 +173,7 @@
 				border:1px solid FireBrick;
 				border-radius:16px;
 				width:27.5%;
-				height:3.5em;
+				min-height:3.5em;
 				text-align: center;
 				margin-left: auto;
 				margin-right: auto;
@@ -372,13 +372,10 @@
 				?>
 			</span>
 		</div>
-		
-		
-		<!--
+
 		<div class="warningBar">
-			<i class="icon-warning-sign" style="color:FireBrick;"></i><br>i added a little latest beatmaps component at the bottom of the front page bros
+			<i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
 		</div>
-		-->
 		
 		
-		<div class="content" style="margin-top:6em;">
+		<div class="content">

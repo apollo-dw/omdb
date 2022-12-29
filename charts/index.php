@@ -105,7 +105,8 @@
 		<span>Info</span>
 		<hr>
 		Chart is based on an implementation of the Bayesian average method.<br><br>
-		The chart updates once every <b>ten minutes.</b>
+		The chart updates once every <b>hour.</b><br><br>
+        Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
 
 </div>
