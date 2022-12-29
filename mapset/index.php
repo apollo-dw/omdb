@@ -81,7 +81,7 @@
 	<div class="flex-child diffBox">
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
-		Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></span> votes</span><br>
+		Rating: <b><?php echo number_format($conn->query("SELECT WeightedAvg FROM beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $conn->query("SELECT RatingCount FROM `beatmaps` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></span> votes</span><br>
 		Ranking: <b>#<?php echo $conn->query("SELECT ChartYearRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> for <?php echo date("Y", strtotime($row['DateRanked']));?>, <b>#<?php echo $conn->query("SELECT ChartRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> <a href="/charts/">overall</a>
 	</div>
 	<div class="flex-child diffBox" style="padding:auto;width:30%;">
