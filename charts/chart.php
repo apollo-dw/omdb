@@ -75,7 +75,6 @@
 				$stmt2->execute();
 				$userRatingResult = $stmt2->get_result();
 				$userRating = $userRatingResult->fetch_row()[0] ?? "";
-				$info = $conn->query("SELECT Count(*), ROUND(AVG(Score), 2) FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}';")->fetch_row();
 				$stmt2->close();
 				
 				$counter += 1;
@@ -94,7 +93,7 @@
 					<a href="/profile/<?php echo $row['CreatorID']; ?>"><?php echo GetUserNameFromId($row['CreatorID'], $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $row['CreatorID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br>
 				</div>
 				<div class="diffBox">
-					<b><?php echo $info[1]; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $info[0]; ?></span> votes</span><br>
+					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>
 				<div class="diffBox">
 					<b style="font-weight:900;"><?php echo $userRating; ?></b>
