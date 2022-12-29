@@ -2,34 +2,29 @@
 	$profileId = $_GET['id'] ?? -1;
     $PageTitle = "Profile";
 	
-	if($profileId == -1){
+	if($profileId == -1 || !is_numeric($profileId))
 		header("Location: https://omdb.nyahh.net/");
-	}
 
     require '../header.php';
 	
 	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_row()[0];
 	$isUser = true;
 	
-	if ($profile == NULL){
+	if ($profile == NULL)
 		$isUser = false;
-	}
 	
-	$ratingCounts = array(
-					10 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='5.0';")->fetch_row()[0],
-					9 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='4.5';")->fetch_row()[0],
-					8 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='4.0';")->fetch_row()[0],
-					7 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='3.5';")->fetch_row()[0],
-					6 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='3.0';")->fetch_row()[0],
-					5 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='2.5';")->fetch_row()[0],
-					4 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='2.0';")->fetch_row()[0],
-					3 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='1.5';")->fetch_row()[0],
-					2 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='1.0';")->fetch_row()[0],
-					1 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='0.5';")->fetch_row()[0],
-					0 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='0.0';")->fetch_row()[0],
-	);	
-	
-	$maxRating = max($ratingCounts);
+	$ratingCounts = array();
+
+    if ($isUser) {
+        $query = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID`='{$profileId}' GROUP BY `Score`";
+        $result = $conn->query($query);
+
+        while ($row = $result->fetch_assoc()) {
+            $ratingCounts[$row['Score']] = $row['count'];
+        }
+
+        $maxRating = max($ratingCounts);
+    }
 	
  	if ($loggedIn && $profileId != $userId){
 		$userScores = array();
@@ -163,17 +158,17 @@
 			if ($isUser){
 		?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[10]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[9]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[8]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.0&p=1">4.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[7]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[6]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.0&p=1">3.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[5]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[4]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.0&p=1">2.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[3]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[2]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.0&p=1">1.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[1]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts[0]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1">0.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.0&p=1">4.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.0&p=1">3.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.0&p=1">2.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.0&p=1">1.0</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5</a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1">0.0</a></div>
 			</div>
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
