@@ -44,10 +44,10 @@
 	}
 	
 	$counter = 0;
-	$result = $conn->query("SELECT * FROM `ratings` WHERE `UserID`='${profileId}' ${starString} ORDER BY `date` DESC LIMIT 50;");
+	$result = $conn->query("SELECT * FROM `ratings` WHERE `UserID`='{$profileId}' {$starString} ORDER BY `date` DESC LIMIT 50;");
 	while($row = $result->fetch_assoc()){
 		$counter += 1;			
-		$beatmap = $conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_assoc();
+		$beatmap = $conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$row["BeatmapID"]}';")->fetch_assoc();
 ?>
 	<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 		<div class="flex-child">

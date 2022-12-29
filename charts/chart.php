@@ -49,14 +49,14 @@
 			$yearString = "ORDER BY ChartRank";
 			
 			if ($year != -1){
-				$yearString = "AND YEAR(b.DateRanked) = '${year}' ORDER BY ChartYearRank";
+				$yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY ChartYearRank";
 			}
 			
-			$pageString = "LIMIT ${lim}";
+			$pageString = "LIMIT {$lim}";
 			
 			if ($page > 1){
 				$lower = ($page - 1) * $lim;
-				$pageString = "LIMIT ${lower}, ${lim}";
+				$pageString = "LIMIT {$lower}, {$lim}";
 			}
 			
 			$orderString = "ASC";
@@ -65,7 +65,7 @@
 				$orderString = "DESC";
 			}
 			
-			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL ${yearString} ${orderString}, BeatmapID ${pageString};");
+			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$yearString} {$orderString}, BeatmapID {$pageString};");
 			$stmt->execute();
 			$result = $stmt->get_result();
 
@@ -75,7 +75,7 @@
 				$stmt2->execute();
 				$userRatingResult = $stmt2->get_result();
 				$userRating = $userRatingResult->fetch_row()[0] ?? "";
-				$info = $conn->query("SELECT Count(*), ROUND(AVG(Score), 2) FROM `ratings` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row();
+				$info = $conn->query("SELECT Count(*), ROUND(AVG(Score), 2) FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}';")->fetch_row();
 				$stmt2->close();
 				
 				$counter += 1;

@@ -140,7 +140,7 @@
 		}
 		
 		$username = GetUserDataOsuApi($id)["username"];
-		$conn->query("INSERT INTO `mappernames` VALUES ('{$id}', '${username}');");
+		$conn->query("INSERT INTO `mappernames` VALUES ('{$id}', '{$username}');");
 		
 		return $username;
 	}

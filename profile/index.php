@@ -16,17 +16,17 @@
 	}
 	
 	$ratingCounts = array(
-					10 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='5.0';")->fetch_row()[0],
-					9 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='4.5';")->fetch_row()[0],
-					8 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='4.0';")->fetch_row()[0],
-					7 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='3.5';")->fetch_row()[0],
-					6 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='3.0';")->fetch_row()[0],
-					5 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='2.5';")->fetch_row()[0],
-					4 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='2.0';")->fetch_row()[0],
-					3 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='1.5';")->fetch_row()[0],
-					2 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='1.0';")->fetch_row()[0],
-					1 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='0.5';")->fetch_row()[0],
-					0 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='0.0';")->fetch_row()[0],
+					10 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='5.0';")->fetch_row()[0],
+					9 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='4.5';")->fetch_row()[0],
+					8 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='4.0';")->fetch_row()[0],
+					7 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='3.5';")->fetch_row()[0],
+					6 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='3.0';")->fetch_row()[0],
+					5 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='2.5';")->fetch_row()[0],
+					4 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='2.0';")->fetch_row()[0],
+					3 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='1.5';")->fetch_row()[0],
+					2 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='1.0';")->fetch_row()[0],
+					1 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='0.5';")->fetch_row()[0],
+					0 => $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}' AND `Score`='0.0';")->fetch_row()[0],
 	);	
 	
 	$maxRating = max($ratingCounts);
@@ -155,9 +155,9 @@
 			<img src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
 		</div>
 		<div class="profileStats">
-			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}';")->fetch_row()[0]; ?><br>
-			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='${profileId}';")->fetch_row()[0]; ?></a><br>
-			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `CreatorID`='${profileId}';")->fetch_row()[0]; ?><br>
+			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
+			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
+			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `CreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
 		</div>
 		<?php
 			if ($isUser){
@@ -231,12 +231,12 @@
 <hr style="margin-bottom:2rem;">
 <div style="text-align:center;" >
 	<?php
-		$result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `CreatorID`='${profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
+		$result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `CreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
 		while($row = $result->fetch_assoc()){		
 	?>
 		<a href="/mapset/<?php echo $row['SetID']; ?>"  target='_blank' rel='noopener noreferrer'>
 			<div class="beatmapCard" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://assets.ppy.sh/beatmaps/<?php echo $row['SetID']; ?>/covers/cover.jpg');">
-				<?php echo "${row['Artist']} - ${row['Title']}"; ?>
+				<?php echo "{$row['Artist']} - {$row['Title']}"; ?>
 			</div>
 		</a>
 	<?php
