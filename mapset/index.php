@@ -190,13 +190,8 @@
 </div>
 
 <script>
-    $('#commentForm').keydown(function (event) {
-        if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey){
-            submitComment();
-        }
-    }
-
 	function submitComment(){
+		console.log("yeah");
 		var text = encodeURIComponent($('#commentForm').val());
 		console.log(text);
 		
@@ -214,7 +209,11 @@
 			xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + text);
 		}
 	}
-	
+
+    $('#commentForm').keydown(function (event) {
+        if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
+            submitComment();
+    });
 		
 	$(".removeComment").click(function(event){
 		var $this = $(this);
