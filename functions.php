@@ -79,6 +79,7 @@
 	}
 	
 	function GetUserDataOsuApi(int $id){
+        global $apiV1Key;
 		$curl = curl_init();
 	
 		curl_setopt_array($curl, array(
