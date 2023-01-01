@@ -373,9 +373,10 @@
 			</span>
 		</div>
 
+        <!--
 		<div class="warningBar">
 			<i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
 		</div>
+		-->
 		
-		
-		<div class="content">
+		<div class="content" style="margin-top:6em;">
