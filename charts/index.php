@@ -146,7 +146,7 @@
 		
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
-        var orderString = order === 2 ? 'Lowest Rated ' : 'Highest Rated ';
+        var orderString = order == 2 ? 'Lowest Rated ' : 'Highest Rated ';
 
         var yearString = year === -1 ? 'All Time' : year;
         $('#heading').html(orderString + 'Maps of ' + yearString);
