@@ -1,9 +1,12 @@
 <?php
     $PageTitle = "Charts";
     require '../header.php';
+
+    $year = $_GET["y"] ?? 2022;
+    $yearString = $year == -1 ? 'All Time' : $year;
 ?>
 
-<h1 id="heading">Top Rated Maps of All Time</h1>
+<h1 id="heading"><?php echo 'Highest Rated Maps of ' . $yearString; ?></h1>
 
 <style>
 	.flex-container{
@@ -83,24 +86,21 @@
 				<option value="2">Lowest Rated</option>
 			</select> maps of
 			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
-				<option value="-1" selected="selected">All Time</option>
-				<option value="2007">2007</option>
-				<option value="2008">2008</option>
-				<option value="2009">2009</option>
-				<option value="2010">2010</option>
-				<option value="2011">2011</option>
-				<option value="2012">2012</option>
-				<option value="2013">2013</option>
-				<option value="2014">2014</option>
-				<option value="2015">2015</option>
-				<option value="2016">2016</option>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2022">2022</option>
-                <option value="2023">2023</option>
+                <?php
+                    echo '<option value="-1"';
+                    if ($year == -1) {
+                        echo ' selected="selected"';
+                    }
+                    echo '>All Time</option>';
+
+                    for ($i = 2007; $i <= date('Y'); $i++) {
+                        echo '<option value="' . $i . '"';
+                        if ($year == $i) {
+                            echo ' selected="selected"';
+                        }
+                        echo '>' . $i . '</option>';
+                    }
+                ?>
 			</select>
 		</form>
 		<span>Info</span>
@@ -146,18 +146,10 @@
 		
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
-		
-		var orderString = "Top Rated ";
-		
-		if (order == 2){
-			orderString = "Lowest Rated ";
-		}
-		
-		if (year == -1){
-			document.getElementById("heading").innerHTML = orderString + "Maps of All Time";
-		} else {
-			document.getElementById("heading").innerHTML = orderString +  "Maps of " + year;
-		}
+        var orderString = order === 2 ? 'Lowest Rated ' : 'Highest Rated ';
+
+        var yearString = year === -1 ? 'All Time' : year;
+        $('#heading').html(orderString + 'Maps of ' + yearString);
 	}
 	 
 	function updateChart() {

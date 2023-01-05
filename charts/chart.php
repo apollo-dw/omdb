@@ -4,7 +4,7 @@
 	include_once '../userConnect.php';
 	
 	$page = $_GET['p'] ?? 1;
-	$year = $_GET['y'] ?? -1;
+	$year = $_GET['y'] ?? $year;
 	$order = $_GET['o'] ?? 1;
 	
 	if(!is_numeric($page) || !is_numeric($year)|| !is_numeric($order)){
