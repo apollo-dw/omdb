@@ -16,6 +16,8 @@
 	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
 	$sampleRow = $result->fetch_assoc();
 	mysqli_data_seek($result, 0);
+
+    $year = date("Y", strtotime($sampleRow['DateRanked']));
 ?>
 
 <style>
@@ -59,7 +61,6 @@
 	<div class="flex-child">
 		Ranked: <?php echo date("M jS, Y", strtotime($sampleRow['DateRanked'])); ?><br>
 		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='${mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='${mapset_id}');")->fetch_row()[0]; ?> votes</span><br>
-		Mapset Ranking: <b>#XX</b> for <?php echo date("Y", strtotime($sampleRow['DateRanked']));?>, <b>#XX</b> overall
 	</div>
 </div>
 <br>
@@ -82,7 +83,7 @@
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
 		Rating: <b><?php echo number_format($conn->query("SELECT WeightedAvg FROM beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $conn->query("SELECT RatingCount FROM `beatmaps` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></span> votes</span><br>
-		Ranking: <b>#<?php echo $conn->query("SELECT ChartYearRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> for <?php echo date("Y", strtotime($row['DateRanked']));?>, <b>#<?php echo $conn->query("SELECT ChartRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> <a href="/charts/">overall</a>
+		Ranking: <b>#<?php echo $conn->query("SELECT ChartYearRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $conn->query("SELECT ChartRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> <a href="/charts/">overall</a>
 	</div>
 	<div class="flex-child diffBox" style="padding:auto;width:30%;">
 		<?php
