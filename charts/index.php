@@ -102,6 +102,23 @@
                     }
                 ?>
 			</select>
+            <br><br>
+            <label>Genre:</label>
+            <select name="genre" id="genre" autocomplete="off" onchange="updateChart();">
+                <option value="0" selected="selected">Any</option>
+                <option value="2">Video Game</option>
+                <option value="3">Anime</option>
+                <option value="4">Rock</option>
+                <option value="5">Pop</option>
+                <option value="6">Other</option>
+                <option value="7">Novelty</option>
+                <option value="9">Hip Hop</option>
+                <option value="10">Electronic</option>
+                <option value="11">Metal</option>
+                <option value="12">Classical</option>
+                <option value="13">Folk</option>
+                <option value="14">Jazz</option>
+            </select>
 		</form>
 		<span>Info</span>
 		<hr>
@@ -131,6 +148,22 @@
 <script>
 	const numOfPages = <?php echo floor($conn->query("SELECT Count(*) FROM `beatmaps` WHERE `Rating` IS NOT NULL;")->fetch_row()[0] / 50) + 1; ?>;
 	var page = 1;
+
+    var genres = {
+        0 : "",
+        2 : "Video Game",
+        3 : "Anime",
+        4 : "Rock",
+        5 : "Pop",
+        6 : "Other Genre",
+        7 : "Novelty",
+        9 : "Hip Hop",
+        10 : "Electronic",
+        11 : "Metal",
+        12 : "Classical",
+        13 : "Folk",
+        14 : "Jazz",
+    }
 	 
 	function changePage(newPage) {
 		page = Math.min(Math.max(newPage, 1), 9);
@@ -146,23 +179,27 @@
 		
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
-        var orderString = order == 2 ? 'Lowest Rated ' : 'Highest Rated ';
+        var genre = document.getElementById("genre").value;
 
+        var orderString = order == 2 ? 'Lowest Rated ' : 'Highest Rated ';
+        var genreString = " " + genres[genre] + " ";
         var yearString = year == -1 ? 'All Time' : year;
-        $('#heading').html(orderString + 'Maps of ' + yearString);
+
+        $('#heading').html(orderString + genreString + 'Maps of ' + yearString);
 	}
 	 
 	function updateChart() {
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
-		var xmlhttp=new XMLHttpRequest();
+        var genre = document.getElementById("genre").value;
+		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
 			if (this.readyState==4 && this.status==200) {
 				document.getElementById("chartContainer").innerHTML=this.responseText;
 				resetPaginationDisplay();
 			}
 		}
-		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order,true);
+		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre, true);
 		xmlhttp.send();
 	}
 </script>
