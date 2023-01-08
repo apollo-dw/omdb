@@ -1,6 +1,7 @@
 <?php
 	$mapset_id = $_GET['mapset_id'] ?? -1;
     $PageTitle = "Mapset";
+	require '../base.php';
     require '../header.php';
 	
 	if($mapset_id == -1){

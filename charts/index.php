@@ -1,5 +1,6 @@
 <?php
     $PageTitle = "Charts";
+	require "../base.php";
     require '../header.php';
 
     $year = $_GET["y"] ?? 2022;

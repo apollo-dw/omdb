@@ -1,5 +1,6 @@
 <?php
     $PageTitle = "Users";
+	require "../base.php";
     require '../header.php';
 ?>
 

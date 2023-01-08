@@ -5,6 +5,7 @@
 	if($profileId == -1 || !is_numeric($profileId))
 		header("Location: https://omdb.nyahh.net/");
 
+	require "../base.php";
     require '../header.php';
 	
 	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_row()[0];

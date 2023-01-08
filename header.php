@@ -1,13 +1,3 @@
-<?php
-    include_once 'connection.php';
-    include_once 'functions.php';
-    include_once 'userConnect.php';
-
-    if ($loggedIn && $user["banned"]) {
-        die(".");
-    }
-?>
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -338,9 +328,9 @@
     </head>
     <body>
         <div class="topBar">
-            <a href="https://omdb.nyahh.net/" style="margin-right: 8px;">OMDB - osu! map database</a>
+            <a href="/" style="margin-right: 8px;">OMDB - osu! map database</a>
             
-            <a href="https://omdb.nyahh.net/"><div class="topBarLink">home</div></a>
+            <a href="/"><div class="topBarLink">home</div></a>
             <a href="/charts/"><div class="topBarLink">charts</div></a>
             <div class="topBarDropDown">
                 <div class="topBarLink topBarDropDownButton">maps</div>
@@ -357,8 +347,9 @@
             
             <?php
                 function FetchOsuOauthLink($oauthClientID, $serverProtocol) {
+                    // the creation of the local function scope in php was a disaster for humanity -t
                     $oauthFields = array(
-                        "client_id" => $oauthClientID, // i hate local function scope -t
+                        "client_id" => $oauthClientID,
                         "redirect_uri" => $serverProtocol . $_SERVER['SERVER_NAME'] . '/callback.php',
                         "response_type" => "code",
                         "scope" => "identify public",
