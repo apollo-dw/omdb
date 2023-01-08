@@ -1,6 +1,5 @@
 <?php
 	$mapset_id = $_GET['mapset_id'] ?? -1;
-    $PageTitle = "Mapset";
     require '../header.php';
 	
 	if($mapset_id == -1){
@@ -15,8 +14,10 @@
 	$foundSet = false;
 	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
 	$sampleRow = $result->fetch_assoc();
+
 	mysqli_data_seek($result, 0);
 
+	$PageTitle = htmlspecialchars($sampleRow['Title']) . "mapped by" . GetUserNameFromId($sampleRow['CreatorID'], $conn);
     $year = date("Y", strtotime($sampleRow['DateRanked']));
 ?>
 
