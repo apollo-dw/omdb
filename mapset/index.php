@@ -1,8 +1,15 @@
 <?php
 	$mapset_id = $_GET['mapset_id'] ?? -1;
-    $PageTitle = "Mapset";
 	require '../base.php';
-    require '../header.php';
+
+	$foundSet = false;
+	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
+	$sampleRow = $result->fetch_assoc();
+	mysqli_data_seek($result, 0);
+
+	$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
+	$year = date("Y", strtotime($sampleRow['DateRanked']));
+	require '../header.php';
 	
 	if($mapset_id == -1){
 		header("Location: https://omdb.nyahh.net/");
@@ -12,13 +19,6 @@
 	if($mapset_id == "1063080"){
 		die("mapper blacklisted this set from OMDB :(");
 	}
-	
-	$foundSet = false;
-	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
-	$sampleRow = $result->fetch_assoc();
-	mysqli_data_seek($result, 0);
-
-    $year = date("Y", strtotime($sampleRow['DateRanked']));
 ?>
 
 <style>
