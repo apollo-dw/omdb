@@ -118,11 +118,6 @@
 				border-radius:6px;
 			}
 			
-			.topBarSearchBar{
-				border-radius:8px;
-				font-family: MS UI Gothic;
-			}
-			
 			#topBarSearchResults a {
 				float: none;
 				text-decoration: none;
@@ -357,13 +352,13 @@
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
 				<div id="topBarSearchResults"></div>
 			</form>
-			
+
 			<span style="float:right;">
 				<?php
 					if($loggedIn){
 				?>
-					<a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
-				<?php	
+                    <b><i class="icon-cogs" style="margin-right:0.5em;"></i></b> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
+				<?php
 					}else{
 				?>
 					<b><a href="https://osu.ppy.sh/oauth/authorize?client_id=19417&redirect_uri=https://omdb.nyahh.net/callback.php&response_type=code&scope=identify&scope=public&state=z" style="color:white;">log in</a></b>
