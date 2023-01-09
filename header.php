@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>OMDB - <?php echo $PageTitle; ?></title>
+		<title><?php echo $PageTitle; ?> | OMDB</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
