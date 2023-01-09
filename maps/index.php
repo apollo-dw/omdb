@@ -1,5 +1,6 @@
 <?php
 	$PageTitle = "Maps";
+	require "../base.php";
 	require '../header.php';
 	
 	$month = $_GET['m'] ?? date("m");
