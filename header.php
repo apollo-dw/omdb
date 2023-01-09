@@ -110,17 +110,6 @@
 				z-index: 2;
 			}
 
-			#topBarSearchResults{
-				display:none;
-				position:absolute;
-				z-index:1;
-				line-height:1.5em;
-				overflow-y:auto;
-				height:19em;
-				width:25em;
-				border-radius:6px;
-			}
-
 			#topBarSearchResults a {
 				float: none;
 				text-decoration: none;
