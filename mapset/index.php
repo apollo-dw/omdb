@@ -78,13 +78,17 @@
 
 <div class="flex-container diffContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 	<div class="flex-child diffBox" style="text-align:center;width:70%;">
-		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?></b></a> <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
+		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 500){ echo "class='bolded'"; }?>>
+            <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
+        </a>
+        <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
+        <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
 	</div>
 	<div class="flex-child diffBox">
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
-		Rating: <b><?php echo number_format($conn->query("SELECT WeightedAvg FROM beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $conn->query("SELECT RatingCount FROM `beatmaps` WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></span> votes</span><br>
-		Ranking: <b>#<?php echo $conn->query("SELECT ChartYearRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $conn->query("SELECT ChartRank from beatmaps WHERE `BeatmapID`='${row["BeatmapID"]}';")->fetch_row()[0]; ?></b> <a href="/charts/">overall</a>
+		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+		Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/">overall</a>
 	</div>
 	<div class="flex-child diffBox" style="padding:auto;width:30%;">
 		<?php

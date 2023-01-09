@@ -302,6 +302,10 @@
 				border-radius: 2px;
 				padding: 0.05em;
 			}
+
+            .bolded{
+                font-weight: bold;
+            }
 		</style>
 		<script>
 			function showResult(str) {
