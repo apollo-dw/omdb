@@ -1,6 +1,7 @@
 <?php
 	$mapset_id = $_GET['mapset_id'] ?? -1;
-    require '../header.php';
+	require '../base.php';
+	require '../header.php';
 	
 	if($mapset_id == -1){
 		header("Location: https://omdb.nyahh.net/");
