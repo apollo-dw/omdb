@@ -3,7 +3,8 @@
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? -1;
     $PageTitle = "Profile";
-	
+
+    require "../../base.php";
     require '../../header.php';
 	
 	if($profileid == -1 || $rating == -1){
