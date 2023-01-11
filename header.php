@@ -350,11 +350,11 @@
 			</form>
 			
 			<?php
-				function FetchOsuOauthLink($oauthClientID, $serverProtocol) {
+				function FetchOsuOauthLink($oauthClientID) {
 					// the creation of the local function scope in php was a disaster for humanity -t
 					$oauthFields = array(
 						"client_id" => $oauthClientID,
-						"redirect_uri" => $serverProtocol . $_SERVER['SERVER_NAME'] . '/callback.php',
+						"redirect_uri" => 'https://' . $_SERVER['SERVER_NAME'] . '/callback.php',
 						"response_type" => "code",
 						"scope" => "identify public",
 						"state" => "z"
@@ -371,9 +371,8 @@
 				<?php
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
-						$oauthProtocol = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
 				?>
-					<b><a href=<?php echo FetchOsuOauthLink($clientID, $oauthProtocol); ?> style="color:white;">log in</a></b>
+					<b><a href=<?php echo FetchOsuOauthLink($clientID); ?> style="color:white;">log in</a></b>
 				<?php
 					}
 				?>
