@@ -51,6 +51,28 @@
 		margin:0;
 		padding:0;
 	}
+
+    .mapsetRankingDistribution{
+        width:100%;
+        height:1.5rem;
+        margin:0px;
+        color:rgba(125, 125, 125, 0.33);
+        display: flex;
+        transform: rotate(180deg);
+    }
+
+    .mapsetRankingDistributionBar{
+        float:bottom;
+        width: calc(100% / 11);
+        min-height: 0px;
+        margin: 0px;
+        padding: 0px;
+        text-align: left;
+        display:inline;
+        vertical-align: bottom;
+        background-color: rgba(125, 125, 125, 0.33);
+        border-bottom: 1px solid rgba(125, 125, 125, 0.33);
+    }
 </style>
 
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
@@ -74,17 +96,55 @@
 		$userHasRatedThis = $ratedQueryResult->num_rows == 1 ? true : false;
 		$userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 		$counter += 1;
+
+        $ratingCounts = array();
+
+        $ratingQuery = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' GROUP BY `Score`";
+        $ratingResult = $conn->query($ratingQuery);
+
+        // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
+        $ratingCounts['0.0'] = 0;
+        $ratingCounts['0.5'] = 0;
+        $ratingCounts['1.0'] = 0;
+        $ratingCounts['1.5'] = 0;
+        $ratingCounts['2.0'] = 0;
+        $ratingCounts['2.5'] = 0;
+        $ratingCounts['3.0'] = 0;
+        $ratingCounts['3.5'] = 0;
+        $ratingCounts['4.0'] = 0;
+        $ratingCounts['4.5'] = 0;
+        $ratingCounts['5.0'] = 0;
+
+        while ($ratingRow = $ratingResult->fetch_assoc()) {
+            $ratingCounts[$ratingRow['Score']] = $ratingRow['count'];
+        }
+
+        $maxRating = max($ratingCounts);
 ?>
 
 <div class="flex-container diffContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
-	<div class="flex-child diffBox" style="text-align:center;width:70%;">
+	<div class="flex-child diffBox" style="text-align:center;width:60%;">
 		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
             <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
         </a>
         <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
         <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
 	</div>
-	<div class="flex-child diffBox">
+	<div class="flex-child diffBox" style="width:20%;text-align:center;">
+            <div class="mapsetRankingDistribution">
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
+                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
+            </div>
+        <span class="subtext" style="width:100%;">Rating Distribution</span>
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
 		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
