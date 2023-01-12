@@ -78,7 +78,7 @@
 
 <div class="flex-container diffContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 	<div class="flex-child diffBox" style="text-align:center;width:70%;">
-		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 500 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
+		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
             <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
         </a>
         <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
