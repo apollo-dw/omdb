@@ -120,7 +120,7 @@
                 <option value="13">Folk</option>
                 <option value="14">Jazz</option>
             </select>
-		</form>
+		</form><br>
 		<span>Info</span>
 		<hr>
 		Chart is based on an implementation of the Bayesian average method.<br><br>
