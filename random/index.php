@@ -3,7 +3,7 @@
 	require '../userConnect.php';
 	require '../functions.php';
 	
-	if ($loggedIn){
+	if ($loggedIn && $user["DoTrueRandom"] == 0){
 	$isSupporter = GetOwnUserData($token)["is_supporter"];
 	
 		if ($isSupporter == 1){
