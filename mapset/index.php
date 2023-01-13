@@ -3,7 +3,7 @@
 	require '../base.php';
 
 	$foundSet = false;
-	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
+	$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='{$mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
 	$sampleRow = $result->fetch_assoc();
 	mysqli_data_seek($result, 0);
 
@@ -19,6 +19,7 @@
 	if($mapset_id == "1063080"){
 		die("mapper blacklisted this set from OMDB :(");
 	}
+
 ?>
 
 <style>
@@ -83,7 +84,7 @@
 	</div>
 	<div class="flex-child">
 		Ranked: <?php echo date("M jS, Y", strtotime($sampleRow['DateRanked'])); ?><br>
-		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='${mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='${mapset_id}');")->fetch_row()[0]; ?> votes</span><br>
+		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?> votes</span><br>
 	</div>
 </div>
 <br>
@@ -92,7 +93,7 @@
 <?php
 	$counter = 0;
 	while($row = $result->fetch_assoc()) {
-		$ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='${row["BeatmapID"]}' AND `UserID`='${userId}';");
+		$ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID`='{$userId}';");
 		$userHasRatedThis = $ratedQueryResult->num_rows == 1 ? true : false;
 		$userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 		$counter += 1;
@@ -101,6 +102,11 @@
 
         $ratingQuery = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' GROUP BY `Score`";
         $ratingResult = $conn->query($ratingQuery);
+
+        $hasRatings = true;
+        if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null){
+            $hasRatings = false;
+        }
 
         // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
         $ratingCounts['0.0'] = 0;
@@ -131,6 +137,9 @@
         <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
 	</div>
 	<div class="flex-child diffBox" style="width:20%;text-align:center;">
+        <?php
+        if($hasRatings){
+        ?>
             <div class="mapsetRankingDistribution">
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
@@ -145,11 +154,20 @@
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
             </div>
         <span class="subText" style="width:100%;">Rating Distribution</span>
+        <?php
+        }
+        ?>
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
+        <?php
+        if($hasRatings){
+        ?>
 		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 		Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/">overall</a>
-	</div>
+        <?php
+        }
+        ?>
+    </div>
 	<div class="flex-child diffBox" style="padding:auto;width:30%;">
 		<?php
 			if($loggedIn){
