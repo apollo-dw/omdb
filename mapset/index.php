@@ -144,7 +144,7 @@
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
             </div>
-        <span class="subtext" style="width:100%;">Rating Distribution</span>
+        <span class="subText" style="width:100%;">Rating Distribution</span>
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
 		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
