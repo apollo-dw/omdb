@@ -109,7 +109,7 @@
 				font-family: MS UI Gothic, Verdana, sans-serif;
 				z-index: 2;
 			}
-			
+
 			#topBarSearchResults a {
 				float: none;
 				text-decoration: none;
@@ -348,7 +348,7 @@
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
 				<div id="topBarSearchResults"></div>
 			</form>
-			
+
 			<?php
 				function FetchOsuOauthLink($oauthClientID) {
 					// the creation of the local function scope in php was a disaster for humanity -t
@@ -367,7 +367,7 @@
 				<?php
 					if ($loggedIn) {
 				?>
-					<a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
+                    <b><i class="icon-cogs" style="margin-right:0.5em;"></i></b> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
 				<?php
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
