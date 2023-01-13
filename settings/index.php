@@ -53,6 +53,7 @@
                 <label>Custom rating names:</label>
             </td>
             <td>
+                <b>The functionality for this setting is not currently implemented!</b> (it will be at some point soon)<br>
                 <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo $user["Custom50Rating"]; ?>"/> 5.0<br>
                 <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo $user["Custom45Rating"]; ?>"/> 4.5<br>
                 <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo $user["Custom40Rating"]; ?>"/> 4.0<br>
@@ -70,7 +71,7 @@
             <td>
             </td>
             <td>
-                <button type='button' onclick="saveChanges()">Save changes</button>
+                <button type='button' onclick="saveChanges()">Save changes</button> <span id="statusText"></span>
             </td>
         </tr>
     </table>
@@ -101,7 +102,9 @@ coming soon
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange=function() {
             if (this.readyState==4 && this.status==200) {
-                console.log(this.responseText);
+                document.getElementById("statusText").textContent = "Saved!";
+                document.getElementById("statusText").style = "display:inline;"
+                $("#statusText").fadeOut( 3000, "linear", function() {});
             }
         }
         xmlhttp.open("GET","save.php?random=" + randomBehaviour + "&ratings=" + ratingNames.toString(), true);
