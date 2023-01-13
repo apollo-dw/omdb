@@ -6,7 +6,7 @@
 	if (isset($_COOKIE["AccessToken"])) {
 		$token = $_COOKIE["AccessToken"];
 		
-		$stmt = $conn->prepare("SELECT UserID, Username, banned FROM `users` WHERE `AccessToken` = ?");
+		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `AccessToken` = ?");
 		$stmt->bind_param("s", $token);
 		$stmt->execute();
 		$result = $stmt->get_result();
