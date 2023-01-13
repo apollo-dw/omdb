@@ -3,7 +3,7 @@
 	require "../base.php";
     require '../header.php';
 
-    $year = $_GET["y"] ?? 2022;
+    $year = $_GET["y"] ?? 2023;
     $yearString = $year == -1 ? 'All Time' : $year;
 ?>
 
@@ -120,7 +120,7 @@
                 <option value="13">Folk</option>
                 <option value="14">Jazz</option>
             </select>
-		</form>
+		</form><br>
 		<span>Info</span>
 		<hr>
 		Chart is based on an implementation of the Bayesian average method.<br><br>

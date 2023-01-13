@@ -2,7 +2,8 @@
 	$profileId = $_GET['id'] ?? -1;
 	$page = $_GET['p'] ?? 1;
     $PageTitle = "Comments";
-	
+
+    require "../../base.php";
     require '../../header.php';
 	
 	if($profileid == -1 || $rating == -1){
