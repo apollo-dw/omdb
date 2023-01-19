@@ -6,9 +6,15 @@
 
     $response = array();
 
+    if (sizeof($args) == 0)
+        die(json_encode(array("error" => "Invalid request")));
+
     if ($args[0] == "set") {
         $setID = $args[1];
-        $result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='{$setID}' AND `mode`='0' ORDER BY `SR` DESC;");
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? AND mode = '0' ORDER BY SR DESC;");
+        $stmt->bind_param("i", $setID);
+        $stmt->execute();
+        $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
             $response[] = array(
                 "BeatmapID" => $row["BeatmapID"],
@@ -26,9 +32,13 @@
             $response = array("error" => "Mapset not found");
     } elseif ($args[0] == "beatmap") {
         $beatmapID = $args[1];
-        $result = $conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$beatmapID}' AND `mode`='0' ORDER BY `SR` DESC;")->fetch_assoc();
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? AND mode = '0' ORDER BY SR DESC;");
+        $stmt->bind_param("i", $beatmapID);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();;
         if ($result != null) {
             $response = array(
+                "SetID" => $result["SetID"],
                 "Artist" => $result["Artist"],
                 "Title" => $result["Title"],
                 "Difficulty" => $result["DifficultyName"],
