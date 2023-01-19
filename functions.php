@@ -176,19 +176,35 @@
         if (!in_array($score, $validRatings))
             return false;
 
-        if ($conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$beatmapID}';")->num_rows != 1)
-            return false;
+        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
+        $stmt->bind_param("i", $beatmapID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
 
-        if ($conn->query("SELECT * FROM `users` WHERE `UserID`='{$userID}';")->num_rows != 1)
-            return false;
+        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
+        $stmt->bind_param("i", $userID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
 
         if($score == -2){
-            $conn->query("DELETE FROM `ratings` WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';");
+            $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
         } else {
-            if($conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';")->num_rows == 1){
-                $conn->query("UPDATE `ratings` SET `Score`='{$score}' WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';");
+            $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result->num_rows == 1){
+                $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
+                $stmt->bind_param("iii", $score, $beatmapID, $userID);
+                $stmt->execute();
             }else{
-                $conn->query("INSERT INTO `ratings` (BeatmapID, UserID, Score, date) VALUES ('{$beatmapID}', '{$userID}', '{$score}', CURRENT_TIMESTAMP);");
+                $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
+                $stmt->bind_param("iii", $beatmapID, $userID, $score);
+                $stmt->execute();
             }
         }
 
