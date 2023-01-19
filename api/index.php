@@ -1,13 +1,26 @@
 <?php
     require '../base.php';
-
-    $args = array_keys($_GET);
     header('Content-Type: application/json; charset=utf-8');
 
     $response = array();
+    $args = array_keys($_GET);
+    $apiKey = $_GET["key"] ?? "-1";
 
     if (sizeof($args) == 0)
         die(json_encode(array("error" => "Invalid request")));
+    if ($apiKey == -1)
+        die(json_encode(array("error" => "Invalid request - missing api key")));
+
+    $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE ApiKey = ?;");
+    $stmt->bind_param("s", $apiKey);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if($result == null)
+        die(json_encode(array("error" => "Invalid api key")));
+
+    $row = $result->fetch_assoc();
+    $userID = $row["UserID"];
 
     if ($args[0] == "set") {
         $setID = $args[1];
@@ -98,6 +111,17 @@
 
         if (sizeof($response) == 0)
             $response = array("error" => "Invalid request");
+    } elseif ($args[0] == "rate"){
+        $beatmapID = $args[1];
+        if (isset($_GET["score"])){
+            $score = $_GET["score"];
+            $result = SubmitRating($conn, $beatmapID, $userID, $score);
+
+            if ($result)
+                $response = array("success" => "rating submitted");
+            else
+                $response = array("error" => "rating not submitted");
+        }
     } else {
         $response = array("error" => "Invalid request");
     }
