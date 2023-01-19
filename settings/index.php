@@ -93,7 +93,7 @@
     $result = $stmt->get_result();
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
-            echo "<details><summary>{$row["Name"]}</summary><span class='subText'>{$row["ApiKey"]}</span></details>";
+            echo "<details><summary>{$row["Name"]} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
         }
     }
 ?>
