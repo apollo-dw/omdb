@@ -151,8 +151,7 @@
 	  $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
 	  return preg_replace($pattern, $replacement, $string);
 	}
-	
-	
+
 	function CalculatePearsonCorrelation($x, $y) {
 		$n = count($x);
 		$sum_x = array_sum($x);
@@ -169,5 +168,30 @@
 			return -1;
 		}
 		return $numerator / $denominator;
-	}	
+	}
+
+    function SubmitRating($conn, $beatmapID, $userID, $score): bool
+    {
+        $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
+        if (!in_array($score, $validRatings))
+            return false;
+
+        if ($conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$beatmapID}';")->num_rows != 1)
+            return false;
+
+        if ($conn->query("SELECT * FROM `users` WHERE `UserID`='{$userID}';")->num_rows != 1)
+            return false;
+
+        if($score == -2){
+            $conn->query("DELETE FROM `ratings` WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';");
+        } else {
+            if($conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';")->num_rows == 1){
+                $conn->query("UPDATE `ratings` SET `Score`='{$score}' WHERE `BeatmapID`='{$beatmapID}' AND `UserID`='{$userID}';");
+            }else{
+                $conn->query("INSERT INTO `ratings` (BeatmapID, UserID, Score, date) VALUES ('{$beatmapID}', '{$userID}', '{$score}', CURRENT_TIMESTAMP);");
+            }
+        }
+
+        return true;
+    }
 ?>
