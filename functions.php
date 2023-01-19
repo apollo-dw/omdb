@@ -199,11 +199,11 @@
             $result = $stmt->get_result();
             if($result->num_rows == 1){
                 $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
-                $stmt->bind_param("iii", $score, $beatmapID, $userID);
+                $stmt->bind_param("dii", $score, $beatmapID, $userID);
                 $stmt->execute();
             }else{
                 $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
-                $stmt->bind_param("iii", $beatmapID, $userID, $score);
+                $stmt->bind_param("iid", $beatmapID, $userID, $score);
                 $stmt->execute();
             }
         }
