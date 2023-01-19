@@ -14,6 +14,8 @@
     }
     $apiKey = hash('sha256', $userId . $randomString . "omdb!");
 
-    $conn->query("INSERT INTO `apikeys` (`Name`, `ApiKey`, `UserID`) VALUES ('{$name}', '{$apiKey}', '{$userId}');");
+    $stmt = $conn->prepare("INSERT INTO `apikeys` (`Name`, `ApiKey`, `UserID`) VALUES (?, ?, ?);");
+    $stmt->bind_param("ssi", $name, $apiKey, $userId);
+    $stmt->execute();
 
     header("Location: index.php?success");
