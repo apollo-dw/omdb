@@ -151,8 +151,7 @@
 	  $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
 	  return preg_replace($pattern, $replacement, $string);
 	}
-	
-	
+
 	function CalculatePearsonCorrelation($x, $y) {
 		$n = count($x);
 		$sum_x = array_sum($x);
@@ -169,5 +168,46 @@
 			return -1;
 		}
 		return $numerator / $denominator;
-	}	
+	}
+
+    function SubmitRating($conn, $beatmapID, $userID, $score): bool
+    {
+        $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
+        if (!in_array($score, $validRatings))
+            return false;
+
+        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
+        $stmt->bind_param("i", $beatmapID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
+
+        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
+        $stmt->bind_param("i", $userID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
+
+        if($score == -2){
+            $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result->num_rows == 1){
+                $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
+                $stmt->bind_param("iii", $score, $beatmapID, $userID);
+                $stmt->execute();
+            }else{
+                $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
+                $stmt->bind_param("iii", $beatmapID, $userID, $score);
+                $stmt->execute();
+            }
+        }
+
+        return true;
+    }
 ?>

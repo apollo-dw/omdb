@@ -23,18 +23,24 @@
     td input{
         margin: 0.25rem;
     }
+    input{
+        margin:0px;
+    }
+    summary{
+        cursor:pointer;
+    }
 </style>
 <h1>Settings</h1>
 <hr>
 <form>
     <table>
-        <tr>
+        <tr><!--
             <td>
             </td>
             <td>
                 Update username button here.<Br>
                 <span class="subtext">Useful if you've had a namechange.</span>
-            </td>
+            </td>-->
         </tr>
         <tr>
             <td>
@@ -45,7 +51,7 @@
                     <option value="0">Prioritise Played</option>
                     <option value="1" <?php if ($user["DoTrueRandom"]==1) { echo 'selected="selected"'; }?>>True Random</option>
                 </select><br>
-                <span class="subtext">"Prioritise Played" only works if you have osu! supporter.</span>
+                <span class="subText">"Prioritise Played" only works if you have osu! supporter.</span>
             </td>
         </tr>
         <tr>
@@ -77,9 +83,40 @@
     </table>
 </form>
 <hr>
-<h2>Api Stutff</h2>
+<h2>API</h2>
+    <span class="subText">Please keep your API key secure - if it leaks then it's as bad as having your PASSWORD leaked.<br> Click your application name to REVEAL your API key.</span><br><br>
 
-coming soon
+<?php
+    $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE UserID=?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows != 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "<details><summary>{$row["Name"]} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
+        }
+    }
+?>
+
+<form action="CreateNewApiApp.php" method="get">
+    <table>
+        <tr>
+            <td>
+                <label>New Application Name:</label><br>
+            </td>
+            <td>
+                <input type="text" autocomplete="off" name="apiname" id="apiname" placeholder="omdb application" maxlength="255" minlength="1" value="" required><br>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+                <button>Create new application</button>
+            </td>
+        </tr>
+    </table>
+</form>
 
 <script>
     function saveChanges(){
