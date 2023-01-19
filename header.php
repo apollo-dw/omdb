@@ -367,7 +367,7 @@
 				<?php
 					if ($loggedIn) {
 				?>
-                        <a href="/settings/">b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
+                        <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
 				<?php
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
