@@ -4,7 +4,10 @@
 
     $response = array();
     $args = array_keys($_GET);
-    $apiKey = $_GET["key"] ?? "-1";
+    $apiKey = $_GET["?key"] ?? "-1";
+
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $uri = explode( '/', $uri );
 
     if (sizeof($args) == 0)
         die(json_encode(array("error" => "Invalid request")));
@@ -22,8 +25,8 @@
     $row = $result->fetch_assoc();
     $userID = $row["UserID"];
 
-    if ($args[0] == "set") {
-        $setID = $args[1];
+    if ($uri[2] == "set") {
+        $setID = $uri[3];
         $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? AND mode = '0' ORDER BY SR DESC;");
         $stmt->bind_param("i", $setID);
         $stmt->execute();
@@ -43,8 +46,8 @@
 
         if (sizeof($response) == 0)
             $response = array("error" => "Mapset not found");
-    } elseif ($args[0] == "beatmap") {
-        $beatmapID = $args[1];
+    } elseif ($uri[2] == "beatmap") {
+        $beatmapID = $uri[3];
         $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? AND mode = '0' ORDER BY SR DESC;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
@@ -64,9 +67,9 @@
 
         if (sizeof($response) == 0)
             $response = array("error" => "Difficulty not found");
-    } elseif ($args[0] == "user") {
-        $userID = $args[1];
-        if ($args[2] == "ratings") {
+    } elseif ($uri[2] == "user") {
+        $userID = $uri[3];
+        if ($uri[4] == "ratings") {
             // monkas
             $base_query = "SELECT r.* FROM ratings r";
             $join_query = "INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID";
@@ -111,8 +114,8 @@
 
         if (sizeof($response) == 0)
             $response = array("error" => "Invalid request");
-    } elseif ($args[0] == "rate"){
-        $beatmapID = $args[1];
+    } elseif ($uri[2] == "rate"){
+        $beatmapID = $uri[3];
         if (isset($_GET["score"])){
             $score = $_GET["score"];
             $result = SubmitRating($conn, $beatmapID, $userID, $score);
