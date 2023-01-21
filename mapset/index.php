@@ -35,10 +35,6 @@
 		height:100%;
 	}
 	
-	.diffBox a{
-		color: white;
-	}
-	
 	.unrated{
 		color: grey;
 	}

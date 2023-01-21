@@ -53,7 +53,7 @@
 			}
 			
 			a {
-				color: white;
+				color: #6a96e3;
 				text-decoration: none;
 			}
 			
@@ -245,7 +245,7 @@
 				background-color: DarkSlateGrey;
 				padding: 0px;
 				align-items: center;
-				align-content: center; /* new */
+				align-content: center;
 				flex-wrap: wrap;
 			}
 			
@@ -299,6 +299,8 @@
 			
 			.osuTimestamp {
 				background-color: #203838;
+                font-weight:bold;
+                color:white;
 				border-radius: 2px;
 				padding: 0.05em;
 			}
@@ -332,7 +334,7 @@
 	</head>
 	<body>
 		<div class="topBar">
-			<a href="/" style="margin-right: 8px;">OMDB - osu! map database</a>
+			<a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map database</a>
 			
 			<a href="/"><div class="topBarLink">home</div></a>
 			<a href="/charts/"><div class="topBarLink">charts</div></a>
