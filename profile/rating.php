@@ -21,10 +21,6 @@
 		vertical-align: middle;
 	}
 	
-	.flex-child a{
-		color: white;
-	}
-	
 	.profileRatingCard{
 		background-color: DarkSlateGrey;
 		width:100%;
