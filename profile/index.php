@@ -59,7 +59,7 @@
 <style>
 	.profileContainer{
 		display: flex;
-		height:42em;
+		height:44em;
 	}
 	
 	.profileCard{
@@ -140,6 +140,16 @@
 		background-color:#282828;
 		padding-left:0.25em;
 	}
+
+    .verticalLine{
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.25);
+        position: relative;
+        bottom: 100%;
+        display: inline-block;
+    }
 </style>
 
 <div class="profileContainer">
@@ -179,9 +189,10 @@
 			?>
 				<div class="profileRankingDistribution" style="margin-bottom:0.5em;height:1.5em;">
 					<div class="profileRankingDistributionBar" style="width: <?php echo (($correlation + 1)/2) * 100;?>%;height:1.5em;position:relative;margin:0px;padding:0px;box-sizing: border-box;"></div>
-					<span style="position:relative;width:auto;bottom:1.4em;color:rgba(125, 125, 125, 0.66);"><?php echo round(($correlation + 1)/2, 3); ?></span>
-				</div>
+				    <span class="verticalLine"></span>
+                </div>
 				<div style="margin-bottom:1em;">
+                    <div style="margin-bottom:0.5em;"><span class="subText"><?php echo round($correlation, 3); ?></span></div>
 					Rating Similarity To You<br>
 				</div>
 			<?php
