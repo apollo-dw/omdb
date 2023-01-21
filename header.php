@@ -53,7 +53,7 @@
 			}
 			
 			a {
-				color: #6a96e3;
+				color: #a4eaff;
 				text-decoration: none;
 			}
 			
