@@ -182,10 +182,20 @@
 				box-sizing: border-box;
 			}
 			
-			@media only screen and (max-width: 900px) {
+			@media only screen and (max-width: 1050px) {
 				.starRemoveButton {
 					opacity: 1;
 				}
+
+                .content{
+                    padding-left:10%;
+                    padding-right:10%;
+                }
+
+                .topBar{
+                    padding-left:10%;
+                    padding-right:10%;
+                }
 			}
 			
 			.identifier:hover ~ .starRemoveButton:not(.disabled), .starRemoveButton:hover:not(.disabled) {
