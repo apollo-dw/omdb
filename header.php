@@ -53,7 +53,7 @@
 			}
 			
 			a {
-				color: #a4eaff;
+				color: #6fffea;
 				text-decoration: none;
 			}
 			
@@ -384,7 +384,7 @@
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
 				?>
-					<b><a href=<?php echo FetchOsuOauthLink($clientID); ?> style="color:white;">log in</a></b>
+					<b><a href=<?php echo FetchOsuOauthLink($clientID); ?>>log in</a></b>
 				<?php
 					}
 				?>
