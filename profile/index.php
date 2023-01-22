@@ -186,9 +186,16 @@
 			</div>
 			<?php
 				if ($loggedIn && $profileId != $userId){
+                    $widthPercentage = abs(($correlation / 2) * 100);
+                    $leftMargin = 0;
+
+                    if($correlation < 0)
+                        $leftMargin = 50 - $widthPercentage;
+                    if($correlation > 0)
+                        $leftMargin = 50;
 			?>
 				<div class="profileRankingDistribution" style="margin-bottom:0.5em;height:1.5em;">
-					<div class="profileRankingDistributionBar" style="width: <?php echo (($correlation + 1)/2) * 100;?>%;height:1.5em;position:relative;margin:0px;padding:0px;box-sizing: border-box;"></div>
+					<div class="profileRankingDistributionBar" style="width: <?php echo $widthPercentage;?>%;height:1.5em;position:relative;margin-left:<?php echo $leftMargin;?>%;padding:0px;box-sizing: border-box;"></div>
 				    <span class="verticalLine"></span>
                 </div>
 				<div style="margin-bottom:1em;">
