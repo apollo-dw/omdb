@@ -195,7 +195,7 @@
         if ($hint == "" || !isset($hint))
             return $score;
 
-        $hint = htmlspecialchars($hint);
+        $hint = htmlspecialchars($hint, ENT_COMPAT);
 
         echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$score}</span>";
     }
