@@ -34,7 +34,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			  </div>
 			  <div class="flex-child" style="flex:0 0 50%;">
 				<?php
-				  echo $row["Score"] . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
+				  echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
 				?>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">

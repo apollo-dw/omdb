@@ -59,7 +59,6 @@
                 <label>Custom rating names:</label>
             </td>
             <td>
-                <b>The functionality for this setting is not currently implemented!</b> (it will be at some point soon)<br>
                 <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo $user["Custom50Rating"]; ?>"/> 5.0<br>
                 <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo $user["Custom45Rating"]; ?>"/> 4.5<br>
                 <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo $user["Custom40Rating"]; ?>"/> 4.0<br>

@@ -88,7 +88,7 @@
 					<a href="/mapset/<?php echo $setID; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap[0]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo $row["Score"]; ?> on <a href="/mapset/<?php echo $beatmap[0]; ?>"><?php echo htmlspecialchars("${beatmap[1]} - ${beatmap[2]} [${beatmap[3]}]");?></a>
+					<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $beatmap[0]; ?>"><?php echo htmlspecialchars("${beatmap[1]} - ${beatmap[2]} [${beatmap[3]}]");?></a>
 				</div>
 				<div class="flex-child" style="width:100%;text-align:right;">
 					<?php echo GetHumanTime($row["date"]); ?>

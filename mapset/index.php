@@ -211,7 +211,7 @@
         $stmt2->execute();
         $result2 = $stmt2->get_result();
         $row2 = $result2->fetch_row();
-        echo $row["Score"] . " on " . htmlspecialchars($row2[0]);
+        echo renderRating($conn, $row) . " on " . htmlspecialchars($row2[0]);
       ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">

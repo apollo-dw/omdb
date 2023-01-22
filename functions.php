@@ -152,6 +152,52 @@
 	  return preg_replace($pattern, $replacement, $string);
 	}
 
+    function RenderRating($conn, $ratingRow) {
+        $score = $ratingRow["Score"];
+        $user = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$ratingRow["UserID"]}';")->fetch_assoc();
+
+        switch($score){
+            case 0:
+                $hint = $user["Custom00Rating"];
+                break;
+            case 0.5:
+                $hint = $user["Custom05Rating"];
+                break;
+            case 1:
+                $hint = $user["Custom10Rating"];
+                break;
+            case 1.5:
+                $hint = $user["Custom15Rating"];
+                break;
+            case 2.0:
+                $hint = $user["Custom20Rating"];
+                break;
+            case 2.5:
+                $hint = $user["Custom25Rating"];
+                break;
+            case 3.0:
+                $hint = $user["Custom30Rating"];
+                break;
+            case 3.5:
+                $hint = $user["Custom35Rating"];
+                break;
+            case 4.0:
+                $hint = $user["Custom40Rating"];
+                break;
+            case 4.5:
+                $hint = $user["Custom45Rating"];
+                break;
+            case 5.0:
+                $hint = $user["Custom50Rating"];
+                break;
+        }
+
+        if ($hint == "" || !isset($hint))
+            return $score;
+
+        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$score}</span>";
+    }
+
 	function CalculatePearsonCorrelation($x, $y) {
 		$n = count($x);
 		$sum_x = array_sum($x);
