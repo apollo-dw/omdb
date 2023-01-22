@@ -18,7 +18,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		<?php
 		  $counter = 0;
 
-		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID ORDER BY r.date DESC LIMIT 50;");
+		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID ORDER BY r.date DESC LIMIT 40;");
 		  $stmt->execute();
 		  $result = $stmt->get_result();
 
@@ -51,7 +51,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		<?php
 		  $counter = 0;
 
-		  $stmt = $conn->prepare("SELECT * FROM `comments` ORDER BY date DESC LIMIT 30;");
+		  $stmt = $conn->prepare("SELECT * FROM `comments` ORDER BY date DESC LIMIT 20;");
 		  $stmt->execute();
 		  $result = $stmt->get_result();
 
