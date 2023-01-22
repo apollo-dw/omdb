@@ -59,17 +59,17 @@
                 <label>Custom rating names:</label>
             </td>
             <td>
-                <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo $user["Custom50Rating"]; ?>"/> 5.0<br>
-                <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo $user["Custom45Rating"]; ?>"/> 4.5<br>
-                <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo $user["Custom40Rating"]; ?>"/> 4.0<br>
-                <input autocomplete="off" id="35Name" placeholder="3.5" maxlength="40" value="<?php echo $user["Custom35Rating"]; ?>"/> 3.5<br>
-                <input autocomplete="off" id="30Name" placeholder="3.0" maxlength="40" value="<?php echo $user["Custom30Rating"]; ?>"/> 3.0<br>
-                <input autocomplete="off" id="25Name" placeholder="2.5" maxlength="40" value="<?php echo $user["Custom25Rating"]; ?>"/> 2.5<br>
-                <input autocomplete="off" id="20Name" placeholder="2.0" maxlength="40" value="<?php echo $user["Custom20Rating"]; ?>"/> 2.0<br>
-                <input autocomplete="off" id="15Name" placeholder="1.5" maxlength="40" value="<?php echo $user["Custom15Rating"]; ?>"/> 1.5<br>
-                <input autocomplete="off" id="10Name" placeholder="1.0" maxlength="40" value="<?php echo $user["Custom10Rating"]; ?>"/> 1.0<br>
-                <input autocomplete="off" id="05Name" placeholder="0.5" maxlength="40" value="<?php echo $user["Custom05Rating"]; ?>"/> 0.5<br>
-                <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo $user["Custom00Rating"]; ?>"/> 0.0<br>
+                <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom50Rating"]); ?>"/> 5.0<br>
+                <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom45Rating"]); ?>"/> 4.5<br>
+                <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom40Rating"]); ?>"/> 4.0<br>
+                <input autocomplete="off" id="35Name" placeholder="3.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom35Rating"]); ?>"/> 3.5<br>
+                <input autocomplete="off" id="30Name" placeholder="3.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom30Rating"]); ?>"/> 3.0<br>
+                <input autocomplete="off" id="25Name" placeholder="2.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom25Rating"]); ?>"/> 2.5<br>
+                <input autocomplete="off" id="20Name" placeholder="2.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom20Rating"]); ?>"/> 2.0<br>
+                <input autocomplete="off" id="15Name" placeholder="1.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom15Rating"]); ?>"/> 1.5<br>
+                <input autocomplete="off" id="10Name" placeholder="1.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom10Rating"]); ?>"/> 1.0<br>
+                <input autocomplete="off" id="05Name" placeholder="0.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom05Rating"]); ?>"/> 0.5<br>
+                <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom00Rating"]); ?>"/> 0.0<br>
             </td>
         </tr>
         <tr>
