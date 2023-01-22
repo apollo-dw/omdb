@@ -8,7 +8,7 @@
 	require "../base.php";
     require '../header.php';
 	
-	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_row()[0];
+	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_assoc();
 	$isUser = true;
 	
 	if ($profile == NULL)
@@ -125,6 +125,7 @@
 		height:14em;
 		padding:0px;
 		color:rgba(125, 125, 125, 0.66);
+        overflow: clip;
 	}
 	
 	.profileRankingDistribution a{
@@ -139,6 +140,8 @@
 		text-align:left;
 		background-color:#282828;
 		padding-left:0.25em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
 	}
 
     .verticalLine{
@@ -169,17 +172,17 @@
 			if ($isUser){
 		?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.0&p=1">4.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.0&p=1">3.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.0&p=1">2.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.0&p=1">1.0</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5</a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1">0.0</a></div>
+                <div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . $profile["Custom50Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . $profile["Custom45Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.0&p=1">4.0 <?php if ($profile["Custom40Rating"] != "") { echo " - " . $profile["Custom40Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5 <?php if ($profile["Custom35Rating"] != "") { echo " - " . $profile["Custom35Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.0&p=1">3.0 <?php if ($profile["Custom30Rating"] != "") { echo " - " . $profile["Custom30Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5 <?php if ($profile["Custom25Rating"] != "") { echo " - " . $profile["Custom25Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.0&p=1">2.0 <?php if ($profile["Custom20Rating"] != "") { echo " - " . $profile["Custom20Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5 <?php if ($profile["Custom15Rating"] != "") { echo " - " . $profile["Custom15Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.0&p=1">1.0 <?php if ($profile["Custom10Rating"] != "") { echo " - " . $profile["Custom10Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5 <?php if ($profile["Custom05Rating"] != "") { echo " - " . $profile["Custom05Rating"]; } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1">0.0 <?php if ($profile["Custom00Rating"] != "") { echo " - " . $profile["Custom00Rating"]; } ?></a></div>
 			</div>
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
