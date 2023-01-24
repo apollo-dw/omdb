@@ -83,6 +83,7 @@
 </form>
 <hr>
 <h2>API</h2>
+    <a href="https://github.com/apollo-dw/omdb/wiki/API" target="_blank" rel="noopener noreferrer">Click to view the (bare bones) documentations.</a><br>
     <span class="subText">Please keep your API key secure - if it leaks then it's as bad as having your PASSWORD leaked.<br> Click your application name to REVEAL your API key.</span><br><br>
 
 <?php
