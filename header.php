@@ -2,7 +2,12 @@
 <html lang="en">
 	<head>
 		<title><?php echo $PageTitle; ?> | OMDB</title>
-		<meta charset="utf-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="description" content="osu! map database is a platform that allows for the rating of osu! beatmaps."/>
+        <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
+        <meta property="og:site_name" content="omdb">
+        <meta name="theme-color" content="#2F4F4F">
 		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
