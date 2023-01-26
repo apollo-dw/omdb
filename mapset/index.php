@@ -7,7 +7,7 @@
 	$sampleRow = $result->fetch_assoc();
 	mysqli_data_seek($result, 0);
 
-	$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
+	$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
 	$year = date("Y", strtotime($sampleRow['DateRanked']));
 	require '../header.php';
 	
@@ -72,7 +72,7 @@
     }
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
 
 <div class="flex-container" style="justify-content: center;">
 	<div class="flex-child">
@@ -131,6 +131,7 @@
         </a>
         <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
         <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
+        <?php if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } ?>
 	</div>
 	<div class="flex-child diffBox" style="width:20%;text-align:center;">
         <?php
