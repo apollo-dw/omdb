@@ -8,7 +8,7 @@
     }
 
     // Should be database'd instead
-    $maintenance = true;
+    $maintenance = false;
     if ($maintenance && $userName != "Apo11o"){
         require("maintenance.php");
         die("");
