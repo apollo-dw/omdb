@@ -70,6 +70,10 @@
         background-color: rgba(125, 125, 125, 0.33);
         border-bottom: 1px solid rgba(125, 125, 125, 0.33);
     }
+
+    .faded {
+        opacity: 0.5;
+    }
 </style>
 
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
@@ -99,6 +103,8 @@
         $ratingQuery = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' GROUP BY `Score`";
         $ratingResult = $conn->query($ratingQuery);
 
+        $blackListed = $row["Blacklisted"] == 1;
+
         $hasRatings = true;
         if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null){
             $hasRatings = false;
@@ -124,7 +130,7 @@
         $maxRating = max($ratingCounts);
 ?>
 
-<div class="flex-container diffContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+<div class="flex-container diffContainer <?php if($blackListed){ echo "faded"; }?>" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 	<div class="flex-child diffBox" style="text-align:center;width:60%;">
 		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
             <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
@@ -133,6 +139,7 @@
         <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
         <?php if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } ?>
 	</div>
+    <?php if (!$blackListed) { ?>
 	<div class="flex-child diffBox" style="width:20%;text-align:center;">
         <?php
         if($hasRatings){
@@ -179,6 +186,12 @@
 			}
 		?>
 	</div>
+    <?php } else { ?>
+    <div class="flex-child diffBox" style="padding:auto;width:91%;">
+        <b>This mapset has been blacklisted from OMDB.</b><br>
+        Reason: <?php echo $row["BlacklistReason"]; ?>
+    </div>
+    <?php } ?>
 </div>
 
 <?php

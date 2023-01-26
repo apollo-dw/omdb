@@ -238,7 +238,7 @@
         if (!in_array($score, $validRatings))
             return false;
 
-        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
+        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ? AND `Blacklisted`='0';");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
         $result = $stmt->get_result();
