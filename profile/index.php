@@ -166,7 +166,7 @@
 		<div class="profileStats">
 			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
 			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
-			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `CreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
+			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
 		</div>
 		<?php
 			if ($isUser){
@@ -248,7 +248,7 @@
 <hr style="margin-bottom:2rem;">
 <div style="text-align:center;" >
 	<?php
-		$result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `CreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
+		$result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
 		while($row = $result->fetch_assoc()){		
 	?>
 		<a href="/mapset/<?php echo $row['SetID']; ?>"  target='_blank' rel='noopener noreferrer'>
