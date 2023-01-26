@@ -86,17 +86,17 @@ Latest mapsets:<br>
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
 	<br>
 	<?php
-		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, CreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`='0' ORDER BY `DateRanked` DESC, `Timestamp` DESC LIMIT 8;");
+		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`='0' ORDER BY `DateRanked` DESC, `Timestamp` DESC LIMIT 8;");
 		$stmt->execute();
 		$result = $stmt->get_result();
 		
 		while($row = $result->fetch_assoc()) {
-			$artist = GetUserNameFromId($row["CreatorID"], $conn);
+			$artist = GetUserNameFromId($row["SetCreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
 		<span class="subtext">
-			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}"; ?></a><br> by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo $artist; ?></a> <br>
+			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}"; ?></a><br> by <a href="/profile/<?php echo $row["SetCreatorID"]; ?>"><?php echo $artist; ?></a> <br>
 			<?php echo GetHumanTime($row["Timestamp"]); ?>
 		</span>
 	</div>

@@ -10,7 +10,7 @@
 	$limit = 20;
 	$prevPage = $page - 1;
 	$nextPage = $page + 1;
-	$amntOfPages = floor($conn->query("SELECT Count(DISTINCT SetID, Artist, Title, CreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked)='${month}' AND YEAR(DateRanked)='${year}' AND `Mode`='0';")->fetch_row()[0] / $limit) + 1;
+	$amntOfPages = floor($conn->query("SELECT Count(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked)='${month}' AND YEAR(DateRanked)='${year}' AND `Mode`='0';")->fetch_row()[0] / $limit) + 1;
 ?>
 <h1>Map List - <?php echo "${month}/${year}"; ?></h1>
 <div style="text-align:center;">
@@ -48,17 +48,17 @@
 	}
 	
 	$counter = 0;
-	$result = $conn->query("SELECT DISTINCT SetID, Artist, Title, CreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked)='${month}' AND YEAR(DateRanked)='${year}' AND `Mode`='0' ORDER BY `DateRanked` DESC ${pageString};");
+	$result = $conn->query("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked)='${month}' AND YEAR(DateRanked)='${year}' AND `Mode`='0' ORDER BY `DateRanked` DESC ${pageString};");
 		while($row = $result->fetch_assoc()) {
 			$counter += 1;
-			$mapperName = GetUserNameFromId($row["CreatorID"], $conn);
+			$mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
 ?>
 <div class="flex-container ratingContainer mapList" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 	<div class="flex-child" style="flex: 0 0 8%;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 	</div>
 	<div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "${row["Artist"]} - ${row["Title"]}</a> by <a href='/profile/${row["CreatorID"]}'>${mapperName}</a>"; ?> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "${row["Artist"]} - ${row["Title"]}</a> by <a href='/profile/${row["SetCreatorID"]}'>${mapperName}</a>"; ?> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
 	</div>
 	<div class="flex-child" style="flex: 0 0 3%;min-width: 0;">
 		<?php echo $row["DateRanked"]; ?>
