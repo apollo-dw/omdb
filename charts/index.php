@@ -85,6 +85,7 @@
 			<select name="order" id="order" autocomplete="off" onchange="updateChart();">
 				<option value="1" selected="selected">Highest Rated</option>
 				<option value="2">Lowest Rated</option>
+                <option value="3">Most Rated</option>
 			</select> maps of
 			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
                 <?php
@@ -182,7 +183,11 @@
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
 
-        var orderString = order == 2 ? 'Lowest Rated ' : 'Highest Rated ';
+        var orderString = 'Highest Rated ';
+        if (order == 2)
+            orderString = 'Lowest Rated ';
+        else if (order == 3)
+            orderString = 'Most Rated ';
         var genreString = " " + genres[genre] + " ";
         var yearString = year == -1 ? 'All Time' : year;
 

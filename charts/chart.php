@@ -47,12 +47,6 @@
 			$lim = 50;
 			$counter = ($page - 1) * $lim;
 			
-			$yearString = "ORDER BY ChartRank";
-			
-			if ($year != -1){
-				$yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY ChartYearRank";
-			}
-			
 			$pageString = "LIMIT {$lim}";
 			
 			if ($page > 1){
@@ -62,9 +56,22 @@
 			
 			$orderString = "ASC";
 			
-			if ($order == 2){
+			if ($order == 2 || $order == 3){
 				$orderString = "DESC";
 			}
+
+            $columnString = "ChartRank";
+
+            if ($order == 3)
+                $columnString = "RatingCount";
+
+            $yearString = "ORDER BY {$columnString}";
+
+            if ($year != -1){
+                if ($order != 3)
+                    $columnString = "ChartYearRank";
+                $yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY {$columnString}";
+            }
 
             $genreString = "";
 
