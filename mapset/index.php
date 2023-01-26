@@ -15,11 +15,6 @@
 		header("Location: https://omdb.nyahh.net/");
 	}
 
-    // this needs to be databased instead .
-	if($mapset_id == "1063080"){
-		die("mapper blacklisted this set from OMDB :(");
-	}
-
 ?>
 
 <style>
