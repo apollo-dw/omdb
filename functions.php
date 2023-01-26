@@ -159,7 +159,7 @@
         for ($i = 0; $i < 5; $i++) {
             if ($i < $score) {
                 if ($score - 0.5 == $i) {
-                    $starString .= "<i class='star icon-star-empty'></i>";
+                    $starString .= "<i class='star icon-star-half-empty'></i>";
                 } else {
                     $starString .= "<i class='star icon-star'></i>";
                 }
