@@ -154,6 +154,20 @@
 
     function RenderRating($conn, $ratingRow) {
         $score = $ratingRow["Score"];
+        $starString = "";
+
+        for ($i = 0; $i < 5; $i++) {
+            if ($i < $score) {
+                if ($score - 0.5 == $i) {
+                    $starString .= "<i class='star icon-star-empty'></i>";
+                } else {
+                    $starString .= "<i class='star icon-star'></i>";
+                }
+            } else {
+                $starString .= "<i class='star icon-star-empty'></i>";
+            }
+        }
+
         $user = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$ratingRow["UserID"]}';")->fetch_assoc();
 
         switch($score){
@@ -193,11 +207,11 @@
         }
 
         if ($hint == "" || !isset($hint))
-            return $score;
+            return $starString;
 
         $hint = htmlspecialchars($hint, ENT_COMPAT);
 
-        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$score}</span>";
+        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
     }
 
 	function CalculatePearsonCorrelation($x, $y) {
