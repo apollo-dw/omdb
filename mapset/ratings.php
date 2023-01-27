@@ -25,6 +25,18 @@
         $lower = ($page - 1) * $lim;
         $pageString = "LIMIT {$lower}, {$lim}";
     }
+?>
+
+<div style="text-align:center;">
+    <div class="pagination">
+        <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
+        <span id="page"><?php echo $page; ?></span>
+        <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
+        <span class="subText">Page</span>
+    </div>
+</div>
+
+<?php
 
     $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC {$pageString};");
     $stmt->bind_param("s", $mapset_id);
@@ -52,18 +64,10 @@
         <?php echo GetHumanTime($row["date"]); ?>
     </div>
 </div>
-
     <?php
         }
     ?>
-<div style="text-align:center;">
-    <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
-        <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
-        <span class="subText">Page</span>
-    </div>
-</div>
+
 <script>
     var ratingPage = 1;
 
