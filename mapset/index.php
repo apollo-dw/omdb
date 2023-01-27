@@ -9,6 +9,7 @@
 
 	$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
 	$year = date("Y", strtotime($sampleRow['DateRanked']));
+    $isLoved = $sampleRow["Status"] == 4;
 	require '../header.php';
 	
 	if($mapset_id == -1){
@@ -82,9 +83,20 @@
 		<img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="height:6rem;width:21.6rem;border-radius:16px;" onerror="this.onerror=null; this.src='INF.png';" />
 	</div>
 	<div class="flex-child">
-		Ranked: <?php echo date("M jS, Y", strtotime($sampleRow['DateRanked'])); ?><br>
+        <?php
+            if ($isLoved)
+                echo "Submitted: ";
+            else
+                echo "Ranked: ";
+            echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
+        ?>
+        <br>
 		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
-	</div>
+        <?php
+            if ($isLoved)
+                echo "Loved Mapset";
+        ?>
+    </div>
 </div>
 <br>
 <hr style="margin-bottom:1em;">
