@@ -56,6 +56,7 @@
     <?php
         }
     ?>
+<br>
 <div style="text-align:center;">
     <div class="pagination">
         <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
