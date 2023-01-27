@@ -15,6 +15,10 @@
 		header("Location: https://omdb.nyahh.net/");
 	}
 
+    $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
+    $stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+    $numberOfSetRatings = $stmt->get_result()->fetch_row()[0];
 ?>
 
 <style>
@@ -79,7 +83,7 @@
 	</div>
 	<div class="flex-child">
 		Ranked: <?php echo date("M jS, Y", strtotime($sampleRow['DateRanked'])); ?><br>
-		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?> votes</span><br>
+		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
 	</div>
 </div>
 <br>
@@ -183,7 +187,7 @@
 	</div>
     <?php } else { ?>
     <div class="flex-child diffBox" style="padding:auto;width:91%;">
-        <b>This mapset has been blacklisted from OMDB.</b><br>
+        <b>This difficulty has been blacklisted from OMDB.</b><br>
         Reason: <?php echo $row["BlacklistReason"]; ?>
     </div>
     <?php } ?>
@@ -198,38 +202,11 @@
 <div class="flex-container">
 	<div class="flex-child" style="width:40%;">
 		Latest Ratings<br><br>
-			<?php
-  $counter = 0;
-
-  $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC LIMIT 18;");
-  $stmt->bind_param("s", $mapset_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-
-  while($row = $result->fetch_assoc()) {
-    $counter += 1;
-?>
-  <div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
-    <div class="flex-child">
-      <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
-    </div>
-    <div class="flex-child" style="flex:0 0 70%;">
-      <?php
-        $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
-        $stmt2->bind_param("s", $row["BeatmapID"]);
-        $stmt2->execute();
-        $result2 = $stmt2->get_result();
-        $row2 = $result2->fetch_row();
-        echo renderRating($conn, $row) . " on " . htmlspecialchars($row2[0]);
-      ?>
-    </div>
-    <div class="flex-child" style="width:100%;text-align:right;">
-      <?php echo GetHumanTime($row["date"]); ?>
-    </div>
-  </div>
-  <?php
-    }
-  ?>
+        <div id="setRatingsDisplay">
+            <?php
+            require 'ratings.php';
+            ?>
+        </div>
 	</div>
 	<div class="flex-child" style="width:60%;">
 		Comments<br><br>
