@@ -83,7 +83,7 @@
 					$beatmap = $setIDResult->fetch_row();
 					$stmt2->close();
 			?>
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
 				<div class="flex-child">
 					<a href="/mapset/<?php echo $setID; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap[0]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
