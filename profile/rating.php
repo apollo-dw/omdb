@@ -36,7 +36,7 @@
 <?php
 	$starString = "";
 	if ($choice != -1){
-		$starString = "AND `Score`='${choice}'";
+		$starString = "AND `Score`='{$choice}'";
 	}
 	
 	$counter = 0;
@@ -50,7 +50,7 @@
 			<a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
 		</div>
 		<div class="flex-child" style="flex:0 0 70%;">
-			<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]} [${beatmap["DifficultyName"]}]");?></a>
+			<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} [{$beatmap["DifficultyName"]}]");?></a>
 		</div>
 		<div class="flex-child" style="width:100%;">
 			<?php echo GetHumanTime($row["date"]); ?>
