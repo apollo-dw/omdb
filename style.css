@@ -25,6 +25,7 @@ body {
     line-height: 3rem;
     padding-left: 20%;
     padding-right: 20%;
+    z-index:999;
 }
 
 .footerBar {
