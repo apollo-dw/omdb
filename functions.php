@@ -159,12 +159,10 @@
         for ($i = 0; $i < 5; $i++) {
             if ($i < $score) {
                 if ($score - 0.5 == $i) {
-                    $starString .= "<i class='star icon-star-half-empty'></i>";
+                    $starString .= "<i class='star icon-star-half'></i>";
                 } else {
                     $starString .= "<i class='star icon-star'></i>";
                 }
-            } else {
-                $starString .= "<i class='star icon-star-empty'></i>";
             }
         }
 
@@ -205,6 +203,10 @@
                 $hint = $user["Custom50Rating"];
                 break;
         }
+
+        $backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
+
+        $starString = "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
 
         if ($hint == "" || !isset($hint))
             return $starString;

@@ -45,7 +45,7 @@
 		$counter += 1;			
 		$beatmap = $conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$row["BeatmapID"]}';")->fetch_assoc();
 ?>
-	<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+	<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
 		<div class="flex-child">
 			<a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
 		</div>

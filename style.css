@@ -306,3 +306,32 @@ input#commentSubmit:hover {
 .bolded{
     font-weight: bold;
 }
+
+.starRatingDisplay {
+    display: inline-block;
+    white-space: nowrap;
+    width:5em;
+    padding-right:0.25em;
+}
+
+.starRatingDisplay .icon-star{
+    margin:0.05em;
+}
+
+.starBackground {
+    color: #203838;
+    z-index: 0;
+    display: inline-block;
+    position:absolute;
+}
+
+.ratingContainer[altcolour] .starBackground{
+    color: darkslategray;
+}
+
+.starForeground {
+    color: white;
+    z-index: 2;
+    display: inline-block;
+    position:relative;
+}

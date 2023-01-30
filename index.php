@@ -14,7 +14,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <p style="width:66%;">This website is still in development pretty much. Some things might be weird. Mobile will definitely work pretty bad rn so I recommend using ur computor for this. Search absolutely sucks, I know. but u can paste in a beatmap link in there for now. Also some maps are missing randomly so I need 2 fix that</p>
 
 <div class="flex-container">
-	<div class="flex-child" style="width:40%;height:40em;overflow-y:scroll;">
+	<div class="flex-child" style="width:40%;height:40em;overflow-y:scroll;position:relative;">
 		<?php
 		  $counter = 0;
 
@@ -25,7 +25,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  while($row = $result->fetch_assoc()) {
 			$counter += 1;
 		  ?>
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
 			  <div class="flex-child">
 				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 			  </div>
