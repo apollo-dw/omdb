@@ -71,7 +71,7 @@
         $userID = $uri[3];
         if ($uri[4] == "ratings") {
             // monkas
-            $base_query = "SELECT r.* FROM ratings r";
+            $base_query = "SELECT r.*, b.SetID FROM ratings r";
             $join_query = "INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID";
             $where_query = "WHERE r.UserID = ?";
 
@@ -81,7 +81,7 @@
                 $year_query = "AND YEAR(b.DateRanked) = ?";
                 $query = $base_query . " " . $join_query . " " . $where_query . " " . $year_query;
             } else {
-                $query = $base_query . " " . $where_query;
+                $query = $base_query . " " . $join_query . " " . $where_query;
             }
             if ($score != -1) {
                 $score_query = "AND `Score`=?";
