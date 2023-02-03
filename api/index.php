@@ -106,6 +106,7 @@
 
             while ($row = $result->fetch_assoc()) {
                 $response[] = array(
+                    "SetID" => $row["SetID"],
                     "BeatmapID" => $row["BeatmapID"],
                     "Score" => $row["Score"],
                 );
