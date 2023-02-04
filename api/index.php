@@ -97,7 +97,7 @@
                 $params[] = $year;
             }
             if ($score != -1) {
-                $types .= "i";
+                $types .= "d";
                 $params[] = $score;
             }
             $stmt->bind_param($types, ...$params);
