@@ -71,7 +71,7 @@
         $userID = $uri[3];
         if ($uri[4] == "ratings") {
             // monkas
-            $base_query = "SELECT r.*, b.SetID FROM ratings r";
+            $base_query = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName FROM ratings r";
             $join_query = "INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID";
             $where_query = "WHERE r.UserID = ?";
 
@@ -109,6 +109,9 @@
                     "SetID" => $row["SetID"],
                     "BeatmapID" => $row["BeatmapID"],
                     "Score" => $row["Score"],
+                    "Artist" => $row["Artist"],
+                    "Title" => $row["Title"],
+                    "Difficulty" => $row["DifficultyName"],
                 );
             }
         }
