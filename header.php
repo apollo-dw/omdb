@@ -47,7 +47,7 @@
 			<div class="topBarDropDown">
 				<div class="topBarLink topBarDropDownButton">maps</div>
 				<div class="dropdown-content">
-					<a href="/maps/?m=01&y=2023">latest</a>
+					<a href="/maps/?m=02&y=2023">latest</a>
 					<a href="/random/">random</a>
 				</div>
 			</div>
