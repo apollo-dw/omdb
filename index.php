@@ -102,11 +102,49 @@ Latest mapsets:<br>
 	</div>
 	<?php
 		}
-		
+
 		$stmt->close();
 	?>
 </div>
+<br>
+Most rated beatmaps in the last 7 days:<br>
+<div style="width:100%;height:40em;">
+    <?php
+    $counter = 0;
 
+    $stmt = $conn->prepare("SELECT beatmaps.BeatmapID, beatmaps.SetID, beatmaps.Title, beatmaps.Artist, beatmaps.DifficultyName, COUNT(ratings.BeatmapID) as num_ratings
+                                  FROM ratings
+                                  INNER JOIN beatmaps ON ratings.BeatmapID = beatmaps.BeatmapID
+                                  WHERE ratings.date >= now() - interval 1 week
+                                  GROUP BY beatmaps.BeatmapID
+                                  ORDER BY num_ratings DESC, beatmaps.BeatmapID DESC
+                                  LIMIT 10;");
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while($row = $result->fetch_assoc()) {
+        $counter += 1;
+        ?>
+        <div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+            <div class="flex-child" style="min-width:2em;">
+                #<?php echo $counter; ?>
+            </div>
+            <div class="flex-child">
+                <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            </div>
+            <div class="flex-child" style="flex:0 0 80%;">
+                <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]";?></a>
+            </div>
+            <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
+                <?php echo $row["num_ratings"];?> ratings
+            </div>
+        </div>
+        <?php
+    }
+
+    $stmt->close();
+    ?>
+</div>
 <?php
     require 'footer.php';
 ?>
