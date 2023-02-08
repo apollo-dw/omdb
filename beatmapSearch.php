@@ -28,11 +28,11 @@
 	
 	// This shit straight from chatgpt
 	// Prepare the statement
-	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE (DifficultyName LIKE ? OR Artist LIKE ? OR Title LIKE ?) AND Mode='0' ORDER BY CASE WHEN DifficultyName LIKE ? OR Artist LIKE ? OR Title LIKE ? THEN 1 ELSE 2 END LIMIT 25;");
+	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE MATCH (DifficultyName, Artist, Title) AGAINST(? IN NATURAL LANGUAGE MODE) AND Mode='0' LIMIT 25;");
 
 	// Bind the parameters
 	$like = "%$q%";
-	$stmt->bind_param("ssssss", $like, $like, $like, $q, $q, $q);
+	$stmt->bind_param("s", $like);
 
 	// Execute the statement
 	$stmt->execute();
@@ -49,3 +49,5 @@
 	<?php
 	}
 ?>
+
+
