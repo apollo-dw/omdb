@@ -112,14 +112,30 @@ Most rated beatmaps in the last 7 days:<br>
     <?php
     $counter = 0;
 
-    $stmt = $conn->prepare("SELECT beatmaps.BeatmapID, beatmaps.SetID, beatmaps.Title, beatmaps.Artist, beatmaps.DifficultyName, COUNT(ratings.BeatmapID) as num_ratings
-                                  FROM ratings
-                                  INNER JOIN beatmaps ON ratings.BeatmapID = beatmaps.BeatmapID
-                                  WHERE ratings.date >= now() - interval 1 week
-                                  GROUP BY beatmaps.BeatmapID
-                                  ORDER BY num_ratings DESC, beatmaps.BeatmapID DESC
-                                  LIMIT 10;");
+    $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.Artist, b.DifficultyName, num_ratings
+                                  FROM beatmaps b
+                                  INNER JOIN (
+                                        SELECT BeatmapID, COUNT(*) as num_ratings
+                                        FROM ratings
+                                        WHERE date >= now() - interval 1 week
+                                        GROUP BY BeatmapID
+                                  ) r ON b.BeatmapID = r.BeatmapID
+                                  INNER JOIN (
+                                        SELECT SetID, MAX(num_ratings) as max_ratings
+                                        FROM (
+                                            SELECT b.SetID, b.BeatmapID, COUNT(*) as num_ratings
+                                            FROM beatmaps b
+                                            INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
+                                            WHERE r.date >= now() - interval 1 week
+                                            GROUP BY b.SetID, b.BeatmapID
+                                        ) t
+                                        GROUP BY SetID
+                                  ) m ON b.SetID = m.SetID AND r.num_ratings = m.max_ratings
+                                  ORDER BY num_ratings DESC, b.BeatmapID DESC
+                                  LIMIT 10;
+                                  ");
     $stmt->execute();
+
     $result = $stmt->get_result();
 
     while($row = $result->fetch_assoc()) {
@@ -146,5 +162,5 @@ Most rated beatmaps in the last 7 days:<br>
     ?>
 </div>
 <?php
-    require 'footer.php';
+require 'footer.php';
 ?>
