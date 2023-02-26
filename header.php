@@ -36,26 +36,42 @@
 			function searchFocus() {
 				document.getElementById("topBarSearchResults").style.display="block";
 			}
+
+			function toggleMenu() {
+				let menuButton = document.getElementsByClassName("mobile-menu")[0];
+				let menuItems = document.getElementsByClassName("menu-items")[0];
+				let searchBar = document.getElementsByClassName("menu-items")[1];
+				let userSettings = document.getElementsByClassName("user-settings")[0];
+
+				menuButton.classList.toggle("mobile-menu-active");
+				menuItems.classList.toggle("menu-items-mobile-active");
+				searchBar.classList.toggle("menu-items-mobile-active");
+				userSettings.classList.toggle("menu-usersettings-mobile-active");
+			}
 		</script>
 	</head>
 	<body>
 		<div class="topBar">
-			<a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map database</a>
+			<a href="javascript:toggleMenu()" class="mobile-menu"><i class="icon-reorder"></i></a>
+			<a href="/" class="menu-branding">OMDB - osu! map database</a>
 			
-			<a href="/"><div class="topBarLink">home</div></a>
-			<a href="/charts/"><div class="topBarLink">charts</div></a>
-			<div class="topBarDropDown">
-				<div class="topBarLink topBarDropDownButton">maps</div>
-				<div class="dropdown-content">
-					<a href="/maps/?m=02&y=2023">latest</a>
-					<a href="/random/">random</a>
+			<span class="menu-items">
+				<a href="/"><div class="topBarLink">home</div></a>
+				<a href="/charts/"><div class="topBarLink">charts</div></a>
+				<div class="topBarDropDown">
+					<div class="topBarLink topBarDropDownButton">maps</div>
+					<div class="dropdown-content">
+						<a href="/maps/?m=02&y=2023">latest</a>
+						<a href="/random/">random</a>
+					</div>
 				</div>
-			</div>
-			
-			<form class="topBarSearch">
-				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
-				<div id="topBarSearchResults"></div>
-			</form>
+			</span>
+			<span class="menu-items">
+				<form class="topBarSearch">
+					<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
+					<div id="topBarSearchResults"></div>
+				</form>
+			</span>
 
 			<?php
 				function FetchOsuOauthLink($oauthClientID) {
@@ -71,7 +87,7 @@
 				}
 			?>
 
-			<span style="float:right;">
+			<span class="user-settings" style="float:right;">
 				<?php
 					if ($loggedIn) {
 				?>

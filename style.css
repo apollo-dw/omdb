@@ -13,6 +13,44 @@ body {
     width: 50%;
 }
 
+.menu-branding {
+    margin-right: 8px;
+    color: white;
+}
+
+.mobile-menu {
+    display: none;
+}
+
+@media only screen and (max-width: 768px) {
+    .mobile-menu {
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .mobile-menu-active {
+        color: white;
+    }
+
+    .menu-items {
+        display: none;
+    }
+
+    .menu-items-mobile-active, .topBarItem {
+        display: inline-block;
+    }
+
+    .menu-usersettings-mobile-active {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 730px) {
+    .topBarSearchBar {
+        margin-left: 0 !important;
+    }    
+}
+
 .topBar {
     position: fixed;
     left: 0px;
