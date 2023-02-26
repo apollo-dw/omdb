@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  omdb:
+    build: .
+    ports: [8080:80]
+    volumes:
+      - .:/var/www/html
+
+  db:
+    image: mariadb:11.0-rc
+    environment:
+      - MARIADB_ROOT_PASSWORD=example
+      - MARIADB_DATABASE=omdb
+    volumes:
+      - ./docker-data/mariadb:/var/lib/mysql
