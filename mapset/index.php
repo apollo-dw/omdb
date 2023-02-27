@@ -13,7 +13,7 @@
 	require '../header.php';
 	
 	if($mapset_id == -1){
-        siteRedirect();
+		siteRedirect();
 	}
 
     $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");

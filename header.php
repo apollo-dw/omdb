@@ -41,7 +41,6 @@
 	<body>
 		<div class="topBar">
 			<a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map database</a>
-			<a><?php echo getenv("PUBLIC_URL"); ?></a>
 			
 			<a href="/"><div class="topBarLink">home</div></a>
 			<a href="/charts/"><div class="topBarLink">charts</div></a>

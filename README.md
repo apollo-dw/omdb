@@ -17,7 +17,7 @@ about the Docker daemon.
 [docker compose]: https://docs.docker.com/compose
 
 **IMPORTANT.** Create a `.env` file, containing the environment variables you
-want. See `.env.example` for some example values.
+want. See `.env.sample` for some example values.
 
 Run `docker compose up -d`. Make sure you have the `-d`, or else killing your
 current terminal will kill the server. Now, visit port 8400 to view the app!
