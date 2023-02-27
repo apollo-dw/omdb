@@ -12,8 +12,7 @@
 			if (sizeof($object["beatmapsets"]) == 0){
 				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
 		
-				header("Location: https://omdb.nyahh.net/mapset/" . $result);
-				exit();
+				siteRedirect("/mapset" . $result);
 			}
 			
 			// lol
@@ -22,17 +21,19 @@
 			if ($setID == NULL){
 				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
 		
-				header("Location: https://omdb.nyahh.net/mapset/" . $result);
-				exit();
+				siteRedirect("/mapset" . $result);
 			}
 			
-			header("Location: https://omdb.nyahh.net/mapset/" . $setID);
-			exit();
+			siteRedirect("/mapset" . $setID);
 		}
 	
 	}
 	
-	$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
-	
-	header("Location: https://omdb.nyahh.net/mapset/" . $result);
-	exit();
+	$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row();
+
+	if (!$result || !count($result)) {
+		http_response_code(404);
+		echo "No beatmaps";
+	} else {
+		siteRedirect("/mapset" . $result);
+	}

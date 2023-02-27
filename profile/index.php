@@ -1,12 +1,13 @@
 <?php
 	$profileId = $_GET['id'] ?? -1;
     $PageTitle = "Profile";
-	
-	if($profileId == -1 || !is_numeric($profileId))
-		header("Location: https://omdb.nyahh.net/");
 
 	require "../base.php";
     require '../header.php';
+	
+	if ($profileId == -1 || !is_numeric($profileId)) {
+		siteRedirect();
+	}
 	
 	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_assoc();
 	$isUser = true;
