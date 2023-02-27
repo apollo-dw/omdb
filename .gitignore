@@ -39,3 +39,4 @@ favicon.ico
 site.webmanifest
 ChartUpdate.php
 /docker-data
+/.env

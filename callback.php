@@ -1,12 +1,19 @@
 <?php
     require 'connection.php';
+    require 'functions.php';
 
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);
 
 	$code = $_GET["code"];
-	$fields = json_encode(array("client_id"=>$clientID, "client_secret"=>$clientSecret, "code"=>$code, "grant_type"=>"authorization_code", "redirect_uri"=>"https://omdb.nyahh.net/callback.php"));
+	$fields = json_encode(array(
+		"client_id" => $clientID,
+		"client_secret" => $clientSecret,
+		"code" => $code,
+		"grant_type" => "authorization_code",
+		"redirect_uri" => relUrl("/callback.php"),
+	));
 
 	$curl = curl_init();
 	
@@ -59,5 +66,5 @@
 	}
 	
 	setcookie("AccessToken", $accessToken, time() + $expiresIn);
-	header("Location: https://omdb.nyahh.net/");
+	siteRedirect();
 ?>

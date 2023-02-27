@@ -1,5 +1,23 @@
 <?php
     include_once 'sensitiveStrings.php';
+
+	/**
+	 * Sends a redirect header pointed to the given relative location (using the
+	 * environment variable PUBLIC_URL to determine the host), and exits.
+	 */
+	function siteRedirect(string $path = "/") {
+		header("Location: " . relUrl($path));
+		exit();
+	}
+
+	/**
+	 * Returns the requested relative location (using the environment variable
+	 * PUBLIC_URL to determine the host) as a string.
+	 */
+	function relUrl(string $path = "/") {
+		return getenv("PUBLIC_URL") . $path;
+	}
+
 	function GetBeatmapDataOsuApi(string $token, int $id){
 		$curl = curl_init();
 	
