@@ -3,6 +3,8 @@
     include_once 'functions.php';
     include_once 'userConnect.php';
 
+    session_start();
+
     if ($loggedIn && $user["banned"]) {
         die(".");
     }

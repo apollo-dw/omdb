@@ -1,3 +1,5 @@
+<?php require_once 'base.php'; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -58,14 +60,26 @@
 			</form>
 
 			<?php
-				function FetchOsuOauthLink($oauthClientID) {
+				function FetchOsuOauthLink($oauthClientID, $redirect_url = "/") {
+					if (empty($_SESSION["LOGIN_CSRF_TOKEN"])) {
+						$csrf_token = bin2hex(random_bytes(24));
+						$_SESSION["LOGIN_CSRF_TOKEN"] = $csrf_token;
+					}
+					$csrf_token = $_SESSION["LOGIN_CSRF_TOKEN"];
+
+					$state = array(
+						"csrf_token" => $csrf_token,
+						"redirect_url" => $redirect_url,
+					);
+					$state_encoded = urlencode(json_encode($state));
+
 					// the creation of the local function scope in php was a disaster for humanity -t
 					$oauthFields = array(
 						"client_id" => $oauthClientID,
 						"redirect_uri" => relUrl("/callback.php"),
 						"response_type" => "code",
 						"scope" => "identify public",
-						"state" => "z"
+						"state" => $state_encoded,
 					);
 					return 'https://osu.ppy.sh/oauth/authorize?' . http_build_query($oauthFields);
 				}
@@ -80,7 +94,7 @@
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
 				?>
-					<b><a href=<?php echo FetchOsuOauthLink($clientID); ?>>log in</a></b>
+					<b><a href=<?php echo FetchOsuOauthLink($clientID, $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
 				<?php
 					}
 				?>
