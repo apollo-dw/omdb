@@ -12,7 +12,7 @@
 			if (sizeof($object["beatmapsets"]) == 0){
 				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
 		
-				siteRedirect("/mapset" . $result);
+				siteRedirect("/mapset/" . $result);
 			}
 			
 			// lol
@@ -21,10 +21,10 @@
 			if ($setID == NULL){
 				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
 		
-				siteRedirect("/mapset" . $result);
+				siteRedirect("/mapset/" . $result);
 			}
 			
-			siteRedirect("/mapset" . $setID);
+			siteRedirect("/mapset/" . $setID);
 		}
 	
 	}
@@ -35,5 +35,5 @@
 		http_response_code(404);
 		echo "No beatmaps";
 	} else {
-		siteRedirect("/mapset" . $result);
+		siteRedirect("/mapset/" . $result);
 	}
