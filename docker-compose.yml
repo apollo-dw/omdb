@@ -3,7 +3,7 @@ version: '3'
 services:
   omdb:
     build: .
-    ports: [8080:80]
+    ports: [8400:80]
     volumes:
       - .:/var/www/html
 
