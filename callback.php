@@ -11,7 +11,7 @@
 	$csrf_token = $state["csrf_token"];
 	$redirect_url = $state["redirect_url"];
 
-	if (!isset($_SESSION["LOGIN_CSRF_TOKEN"]) || hash_equals($csrf_token, $_SESSION["LOGIN_CSRF_TOKEN"])) {
+	if (!isset($_SESSION["LOGIN_CSRF_TOKEN"]) || !hash_equals($csrf_token, $_SESSION["LOGIN_CSRF_TOKEN"])) {
 		die("Forged request.");
 	}
 	unset($_SESSION["LOGIN_CSRF_TOKEN"]);
