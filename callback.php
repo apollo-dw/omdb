@@ -34,6 +34,7 @@
 	curl_close($curl);
 
 	$json = json_decode($response, true);
+
 	$accessToken = $json["access_token"];
 	$refreshToken = $json["refresh_token"];
 	$expiresIn = (int) $json["expires_in"];
@@ -59,10 +60,21 @@
 	$userId = $json["id"];
 	$username = $json["username"];
 
-	if($conn->query("SELECT * FROM `users` WHERE `UserID`='${userId}'")->num_rows == 0){
-		$conn->query("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES ('${userId}', '${username}', '${accessToken}', '${refreshToken}')");
-	}else{
-		$conn->query("UPDATE `users` SET `AccessToken`='${accessToken}', `RefreshToken`='${refreshToken}' WHERE `UserID`=${userId}");
+	$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+	$stmt->bind_param("s", $userId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+	if ($result && $result->num_rows == 0) {
+		$stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES (?, ?, ?, ?);");
+		$stmt->bind_param("ssss", $userId, $username, $accessToken, $refreshToken);
+		$stmt->execute();
+		$stmt->close();
+	} else {
+		$stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ? WHERE `UserID` = ?");
+		$stmt->bind_param("sss", $accessToken, $refreshToken, $userId);
+		$stmt->execute();
+		$stmt->close();
 	}
 	
 	setcookie("AccessToken", $accessToken, time() + $expiresIn);

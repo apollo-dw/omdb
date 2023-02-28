@@ -62,7 +62,7 @@
 					// the creation of the local function scope in php was a disaster for humanity -t
 					$oauthFields = array(
 						"client_id" => $oauthClientID,
-						"redirect_uri" => 'https://' . $_SERVER['SERVER_NAME'] . '/callback.php',
+						"redirect_uri" => relUrl("/callback.php"),
 						"response_type" => "code",
 						"scope" => "identify public",
 						"state" => "z"
