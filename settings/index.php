@@ -136,16 +136,17 @@
 
         const randomBehaviour = document.getElementById("RandomBehaviour").value;
 
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange=function() {
-            if (this.readyState==4 && this.status==200) {
+        fetch("save.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ randomBehaviour, ratingNames }),
+        }).then(response => {
+            if (response.status == 200) {
                 document.getElementById("statusText").textContent = "Saved!";
                 document.getElementById("statusText").style = "display:inline;"
                 $("#statusText").fadeOut( 3000, "linear", function() {});
             }
-        }
-        xmlhttp.open("GET","save.php?random=" + randomBehaviour + "&ratings=" + ratingNames.toString(), true);
-        xmlhttp.send();
+        });
     }
 </script>
 
