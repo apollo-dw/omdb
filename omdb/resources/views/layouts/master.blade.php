@@ -57,38 +57,12 @@
 				<div id="topBarSearchResults"></div>
 			</form>
 
-			<?php
-				function FetchOsuOauthLink($oauthClientID, $redirect_url = "/") {
-					if (empty($_SESSION["LOGIN_CSRF_TOKEN"])) {
-						$csrf_token = bin2hex(random_bytes(24));
-						$_SESSION["LOGIN_CSRF_TOKEN"] = $csrf_token;
-					}
-					$csrf_token = $_SESSION["LOGIN_CSRF_TOKEN"];
-
-					$state = array(
-						"csrf_token" => $csrf_token,
-						"redirect_url" => $redirect_url,
-					);
-					$state_encoded = urlencode(json_encode($state));
-
-					// the creation of the local function scope in php was a disaster for humanity -t
-					$oauthFields = array(
-						"client_id" => $oauthClientID,
-						"redirect_uri" => URL::to("/callback.php"),
-						"response_type" => "code",
-						"scope" => "identify public",
-						"state" => $state_encoded,
-					);
-					return 'https://osu.ppy.sh/oauth/authorize?' . http_build_query($oauthFields);
-				}
-			?>
-
 			<span style="float:right;">
 				@if (Auth::check())
                         <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
 				@else
 						include_once 'sensitiveStrings.php'; // needed for $clientID
-					<b><a href=<?php echo FetchOsuOauthLink('$clientID', $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
+					<b><a href="{{ URL::to("/auth/login") }}">log in</a></b>
 				@endif
 			</span>
 		</div>
@@ -100,9 +74,9 @@
 		-->
 
 		<div class="content" style="margin-top:6em;">
-
-
+			@yield('content')
 		</div>
+
 		<div class="footerBar">
 			omdb made by <a href="https://omdb.nyahh.net/profile/9558549">apollo</a> | icon made by <a href="https://omdb.nyahh.net/profile/7081160">olc</a> | <a href="https://github.com/apollo-dw/omdb">github</a> | <a href="https://discord.gg/NwcphppBMG">discord</a> | <a href="https://ko-fi.com/meowswares">donate</a>
 		</div>

@@ -2,6 +2,9 @@
 
 return [
 
+    'osu_client_id' => env('OSU_CLIENT_ID'),
+    'osu_client_secret' => env('OSU_CLIENT_SECRET'),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
