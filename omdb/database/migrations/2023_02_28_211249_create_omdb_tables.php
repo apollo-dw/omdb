@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('username');
 
             $table->string('access_token');
             $table->string('refresh_token');
-            $table->boolean('banned');
-            $table->boolean('do_true_random');
-            $table->json('custom_ratings');
+            $table->boolean('banned')->default(false);
+            $table->boolean('do_true_random')->default(false);
+            $table->json('custom_ratings')->default({});
 
             // Cached info
             $table->float('cached_weight', 6, 4)->nullable();

@@ -59,7 +59,14 @@
 
 			<span style="float:right;">
 				@if (Auth::check())
-                        <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
+					@php($user = Auth::user())
+
+					<a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a>
+					<a href="/profile/{{ $user->id }}" style="color:white;">
+						<img src="https://s.ppy.sh/a/{{ $user->id }}" style="height:2rem;vertical-align:middle;" />
+						&nbsp;
+						<b>{{ $user->username }}</b>
+					</a>
 				@else
 						include_once 'sensitiveStrings.php'; // needed for $clientID
 					<b><a href="{{ URL::to("/auth/login") }}">log in</a></b>
@@ -78,7 +85,11 @@
 		</div>
 
 		<div class="footerBar">
-			omdb made by <a href="https://omdb.nyahh.net/profile/9558549">apollo</a> | icon made by <a href="https://omdb.nyahh.net/profile/7081160">olc</a> | <a href="https://github.com/apollo-dw/omdb">github</a> | <a href="https://discord.gg/NwcphppBMG">discord</a> | <a href="https://ko-fi.com/meowswares">donate</a>
+			omdb made by <a href="https://omdb.nyahh.net/profile/9558549">apollo</a> |
+			icon made by <a href="https://omdb.nyahh.net/profile/7081160">olc</a> |
+			<a href="https://github.com/apollo-dw/omdb">github</a> |
+			<a href="https://discord.gg/NwcphppBMG">discord</a> |
+			<a href="https://ko-fi.com/meowswares">donate</a>
 		</div>
     </body>
 </html>
