@@ -1,10 +1,20 @@
 <?php
-    require 'connection.php';
-    require 'functions.php';
+	require_once 'base.php';
+    require_once 'connection.php';
+    require_once 'functions.php';
 
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);
+	
+	$state = json_decode(urldecode($_GET["state"]), true);
+	$csrf_token = $state["csrf_token"];
+	$redirect_url = $state["redirect_url"];
+
+	if (!isset($_SESSION["LOGIN_CSRF_TOKEN"]) || !hash_equals($csrf_token, $_SESSION["LOGIN_CSRF_TOKEN"])) {
+		die("Forged request.");
+	}
+	unset($_SESSION["LOGIN_CSRF_TOKEN"]);
 
 	$code = $_GET["code"];
 	$fields = json_encode(array(
@@ -38,7 +48,7 @@
 	$accessToken = $json["access_token"];
 	$refreshToken = $json["refresh_token"];
 	$expiresIn = (int) $json["expires_in"];
-	
+
 	$curl = curl_init();
 	
 	curl_setopt_array($curl, array(
@@ -78,5 +88,5 @@
 	}
 	
 	setcookie("AccessToken", $accessToken, time() + $expiresIn);
-	siteRedirect();
+	siteRedirect($redirect_url);
 ?>
