@@ -40,3 +40,6 @@ site.webmanifest
 ChartUpdate.php
 /docker-data
 /.env
+/.direnv
+
+/vendor/

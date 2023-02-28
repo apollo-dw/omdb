@@ -1,0 +1,9 @@
+{
+    "name": "apollo-dw/omdb",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "ApolloDw\\Omdb\\": "src/"
+        }
+    }
+}
