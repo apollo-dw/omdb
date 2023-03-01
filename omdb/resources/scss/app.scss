@@ -1,3 +1,5 @@
+// TODO: May need to scope some of the CSS classes on these sub-stylesheets,
+// since they are page-specific...
 @import "profile";
 @import "mapset";
 
@@ -28,7 +30,7 @@ body {
     line-height: 3rem;
     padding-left: 20%;
     padding-right: 20%;
-    z-index:999;
+    z-index: 999;
 }
 
 .footerBar {
@@ -53,38 +55,38 @@ a:hover {
     text-decoration: underline;
 }
 
-.topBarLink {
-    height:100%;
-    min-width:3rem;
+.topbarlink {
+    height: 100%;
+    min-width: 3rem;
     background-color: #182828;
-    display:inline-block;
-    text-align:center;
-    padding-left:0.25rem;
-    padding-right:0.25rem;
+    display: inline-block;
+    text-align: center;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
     margin: 0px;
 }
 
-a .topBarLink {
+a .topbarlink {
     color: white;
 }
 
-.topBarLink:hover {
-    background-color: #0C1515;
+.topbarlink:hover {
+    background-color: #0c1515;
 }
 
-.topBarDropDown {
+.topbardropdown {
     display: inline-block;
     margin: 0px;
     padding: 0px;
 }
 
-.topBarSearch {
+.topbarsearch {
     display: inline-block;
     margin: 0px;
     padding: 0px;
 }
 
-#topBarSearchResults {
+#topbarsearchresults {
     display: none;
     position: absolute;
     z-index: 1;
@@ -95,14 +97,14 @@ a .topBarLink {
     border-radius: 6px;
 }
 
-.topBarSearchBar {
+.topbarsearchbar {
     margin-left: 8px;
     border-radius: 8px;
-    font-family: MS UI Gothic, Verdana, sans-serif;
+    font-family: ms ui gothic, verdana, sans-serif;
     z-index: 2;
 }
 
-#topBarSearchResults a {
+#topbarsearchresults a {
     float: none;
     text-decoration: none;
     display: block;
@@ -110,7 +112,7 @@ a .topBarLink {
     color: white;
 }
 
-#topBarSearchResults a:hover {
+#topbarsearchresults a:hover {
     text-decoration: underline;
 }
 
@@ -132,10 +134,10 @@ a .topBarLink {
 }
 
 .dropdown-content a:hover {
-    background-color: DarkSlateGrey;
+    background-color: darkslategrey;
 }
 
-.topBarDropDown:hover .dropdown-content {
+.topbardropdown:hover .dropdown-content {
     display: block;
 }
 
@@ -146,10 +148,10 @@ a .topBarLink {
     min-height: 50%;
 }
 
-.warningBar {
+.warningbar {
     margin-top: 5rem;
     padding: 1rem;
-    border: 1px solid FireBrick;
+    border: 1px solid firebrick;
     border-radius: 16px;
     width: 27.5%;
     min-height: 3.5em;
@@ -167,7 +169,7 @@ a .topBarLink {
     box-sizing: border-box;
 }
 
-.starRemoveButton {
+.starremovebutton {
     opacity: 0;
     font-size: 16px;
     padding-left: 0.25em;
@@ -175,22 +177,23 @@ a .topBarLink {
 }
 
 @media only screen and (max-width: 1050px) {
-    .starRemoveButton {
+    .starremovebutton {
         opacity: 1;
     }
 
-    .content{
-        padding-left:10%;
-        padding-right:10%;
+    .content {
+        padding-left: 10%;
+        padding-right: 10%;
     }
 
-    .topBar{
-        padding-left:10%;
-        padding-right:10%;
+    .topbar {
+        padding-left: 10%;
+        padding-right: 10%;
     }
 }
 
-.identifier:hover ~ .starRemoveButton:not(.disabled), .starRemoveButton:hover:not(.disabled) {
+.identifier:hover ~ .starremovebutton:not(.disabled),
+.starremovebutton:hover:not(.disabled) {
     opacity: 0.5;
     cursor: pointer;
 }
@@ -207,13 +210,13 @@ a .topBarLink {
     white-space: nowrap;
 }
 
-span.subText{
+span.subtext {
     font-size: 11px;
     color: #a8a8a8;
 }
 
-.ratingContainer {
-    background-color: DarkSlateGrey;
+.ratingcontainer {
+    background-color: darkslategrey;
     align-items: center;
 }
 
@@ -227,7 +230,7 @@ span.subText{
     vertical-align: middle;
 }
 
-.diffThumb {
+.diffthumb {
     height: 32px;
     width: 32px;
     border: 1px solid #ddd;
@@ -239,19 +242,19 @@ select {
     padding: 0.2em;
     border: none;
     border-radius: 1px;
-    background-color: DarkSlateGrey;
+    background-color: darkslategrey;
     color: white;
 }
 
-.commentContainer {
-    background-color: DarkSlateGrey;
+.commentcontainer {
+    background-color: darkslategrey;
     padding: 0px;
     align-items: center;
     align-content: center;
     flex-wrap: wrap;
 }
 
-.commentHeader {
+.commentheader {
     align-items: center;
     width: 100%;
     background-color: #203838;
@@ -267,13 +270,13 @@ select {
     width: 100%;
 }
 
-.commentComposer {
+.commentcomposer {
     width: 100%;
     text-align: right;
     margin: 1em;
 }
 
-textarea#commentForm {
+textarea#commentform {
     width: 100%;
     text-align: left;
     resize: none;
@@ -283,7 +286,7 @@ textarea#commentForm {
     border: 1px solid white;
 }
 
-input#commentSubmit {
+input#commentsubmit {
     margin: 1em;
     width: 6em;
     border: 1px solid white;
@@ -291,7 +294,7 @@ input#commentSubmit {
     color: white;
 }
 
-input#commentSubmit:hover {
+input#commentsubmit:hover {
     background-color: #182828;
 }
 
@@ -299,37 +302,37 @@ input#commentSubmit:hover {
     cursor: pointer;
 }
 
-.osuTimestamp {
+.osutimestamp {
     background-color: #203838;
-    font-weight:bold;
-    color:white;
+    font-weight: bold;
+    color: white;
     border-radius: 2px;
     padding: 0.05em;
 }
 
-.bolded{
+.bolded {
     font-weight: bold;
 }
 
-.starRatingDisplay {
+.starratingdisplay {
     display: inline-block;
     white-space: nowrap;
-    width:5em;
-    padding-right:0.25em;
+    width: 5em;
+    padding-right: 0.25em;
 }
 
-.starRatingDisplay .icon-star{
-    margin:0.05em;
+.starratingdisplay .icon-star {
+    margin: 0.05em;
 }
 
-.starBackground {
+.starbackground {
     color: #203838;
     z-index: 0;
     display: inline-block;
-    position:absolute;
+    position: absolute;
 }
 
-.ratingContainer[altcolour] .starBackground{
+.ratingContainer[altcolour] .starBackground {
     color: darkslategray;
 }
 
@@ -337,5 +340,5 @@ input#commentSubmit:hover {
     color: white;
     z-index: 2;
     display: inline-block;
-    position:relative;
+    position: relative;
 }

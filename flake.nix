@@ -8,8 +8,13 @@
           ({ enabled, all }: enabled ++ (with all; [ ]));
       in rec {
         devShell = pkgs.mkShell {
-          packages =
-            (with pkgs; [ php php.packages.composer sqlite gitAndTools.gh ]);
+          packages = (with pkgs; [
+            mdbook
+            php
+            php.packages.composer
+            sqlite
+            gitAndTools.gh
+          ]);
         };
       });
 }

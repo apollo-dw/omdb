@@ -7,10 +7,10 @@
 <center><h1>
     <a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/{{ $mapset->id }}">
         {{ $mapset->artist }} - {{ $mapset->title }}
-        by
-        <a href='/profile/{{ $mapset->creator_id }}'>
-            {{ $mapset->creator_name->username }}
-        </a>
+    </a>
+    by
+    <a href='/profile/{{ $mapset->creator_id }}'>
+        {{ $mapset->creator_name->username }}
     </a>
 </h1></center>
 

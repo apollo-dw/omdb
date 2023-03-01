@@ -1,9 +1,9 @@
-version: '3'
+version: "3.7"
 
 services:
   omdb:
     build: .
-    ports: [8400:80]
+    # ports: [8400:80]
     env_file: .env
     volumes:
       - .:/var/www/html
@@ -19,3 +19,13 @@ services:
     volumes:
       - ./docker-data/mysql:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dev:
+    build:
+      context: ./.
+      dockerfile: ./docker/dev.Dockerfile
+    ports: [8400:8000, 8173:8173]
+    env_file: ./omdb/.env
+    working_dir: /code/omdb
+    volumes:
+      - .:/code

@@ -1,97 +1,98 @@
-	.profileContainer{
-		display: flex;
-		height:44em;
-	}
+.profileContainer {
+    display: flex;
+    height: 44em;
+}
 
-	.profileCard{
-		display: inline-flex;
-		flex-direction: column;
-		border:1px solid DarkSlateGrey;
-		padding:1.5em;
-		text-align: center;
-		width: 16rem;
-		margin: 0.5rem;
-		align-items: center;
-	}
+.profileCard {
+    display: inline-flex;
+    flex-direction: column;
+    border: 1px solid DarkSlateGrey;
+    padding: 1.5em;
+    text-align: center;
+    width: 16rem;
+    margin: 0.5rem;
+    align-items: center;
+}
 
-	.ratingsCard{
-		background-color: DarkSlateGrey;
-		padding:1.5em;
-		margin: 0.5rem;
-		width:100%;
-		overflow-y: scroll;
-        position:relative;
-	}
+.ratingsCard {
+    background-color: DarkSlateGrey;
+    padding: 1.5em;
+    margin: 0.5rem;
+    width: 100%;
+    overflow-y: scroll;
+    position: relative;
+}
 
-	.profileStats{
-		text-align: left;
-		margin: 0.5em;
-	}
+.profileStats {
+    text-align: left;
+    margin: 0.5em;
+}
 
-	.beatmapCard{
-		margin:0.5rem;
-		display:inline-block;
-		background-size: cover;
-		width:50%;
-		padding: 2em;
-		text-align:center;
-		color:white;
-		font-size: 16px;
-		font-weight: 900;
-		text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-	}
+.beatmapCard {
+    margin: 0.5rem;
+    display: inline-block;
+    background-size: cover;
+    width: 50%;
+    padding: 2em;
+    text-align: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 900;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+        1px 1px 0 #000;
+}
 
-	.ratingChoices{
-		display: inline-block;
-		color: white;
-		margin-bottom:0.5rem;
-	}
+.ratingChoices {
+    display: inline-block;
+    color: white;
+    margin-bottom: 0.5rem;
+}
 
-	.ratingChoice{
-		border:1px solid white;
-		padding:0.1em 0.5em;
-		min-width:0.2em;
-		cursor:pointer;
-		font-size:10px;
-		color: white;
-	}
+.ratingChoice {
+    border: 1px solid white;
+    padding: 0.1em 0.5em;
+    min-width: 0.2em;
+    cursor: pointer;
+    font-size: 10px;
+    color: white;
+}
 
-	.active{
-		background-color: #203838;
-		font-weight: 900;
-	}
+.active {
+    background-color: #203838;
+    font-weight: 900;
+}
 
-	.profileRankingDistribution{
-		border:1px solid DarkSlateGrey;
-		width:14em;
-		height:14em;
-		padding:0px;
-		color:rgba(125, 125, 125, 0.66);
-        overflow: clip;
-	}
+.profileRankingDistribution {
+    border: 1px solid DarkSlateGrey;
+    width: 14em;
+    height: 14em;
+    padding: 0px;
+    color: rgba(125, 125, 125, 0.66);
+    overflow: clip;
+}
 
-	.profileRankingDistribution a{
-		color:rgba(125, 125, 125, 0.66);
-	}
+.profileRankingDistribution a {
+    color: rgba(125, 125, 125, 0.66);
+}
 
-	.profileRankingDistributionBar{
-		height: calc(100% / 11);
-		width:100%;
-		margin:0px;
-		padding:0px;
-		text-align:left;
-		background-color:#282828;
-		padding-left:0.25em;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-	}
+.profileRankingDistributionBar {
+    height: calc(100% / 11);
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    text-align: left;
+    background-color: #282828;
+    padding-left: 0.25em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 
-    .verticalLine{
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border-left: 1px solid rgba(255, 255, 255, 0.25);
-        position: relative;
-        bottom: 100%;
-        display: inline-block;
-    }
+.verticalLine {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    position: relative;
+    bottom: 100%;
+    display: inline-block;
+}

@@ -1,0 +1,80 @@
+# Developer Documentation
+
+## Architecture
+
+This application is a typical [Laravel] application. For any questions into
+particular API methods, consult Laravel documentation.
+
+[laravel]: https://laravel.com
+
+## Environment setup (Only needs to be done FIRST time)
+
+- Make sure you have [Docker] and [Docker compose] on your machine.
+
+  [docker]: https://docs.docker.com/get-docker
+  [docker compose]: https://docs.docker.com/compose
+
+  Make sure the Docker daemon is connected by typing `docker info`. It should
+  print some information about the Docker daemon. If it says something about not
+  being able to connect to the Docker daemon, you didn't set it up correctly.
+
+- Run this command:
+ 
+      docker compose build
+
+  This builds the dev docker image. (if you change the Dockerfile, run this
+  again!)
+
+- Copy `.env.sample` to `.env` and then modify some values to your liking.
+
+## Developing setup (Needs to be done EVERY time you start developing)
+
+- Start up the development Docker container by running:
+
+      docker compose up -d
+
+- Run a shell in the container:
+
+      docker compose exec dev bash
+
+- Once you're inside, cd to `/usr/src/app/omdb`.
+
+- Start up a [tmux] session by just running `tmux`. You'll
+    need this for running multiple things simultaneously.
+
+  [tmux]: https://github.com/tmux/tmux/wiki
+
+- Run `npm install` if you haven't already. This should only need to be done
+    once, each time you change node dependencies.
+
+- Run both of these in separate terminal windows. Leave them running for the
+    duration of your development session.
+
+  - `php artisan serve --host 0.0.0.0`: This starts the main PHP server.
+
+    You need the `--host` part since otherwise it's only available to view
+    within the Docker container.
+
+  - `npm run dev -- --host 0.0.0.0`: This starts the Vite server, which is
+    responsible for hot-reloading assets such as SCSS or JS when they are
+    edited.
+
+    As before, `--host` is needed.
+
+## Setting up Docker
+
+**IMPORTANT.** Create a `.env` file, containing the environment variables you
+want. See `.env.sample` for some example values.
+
+Run `docker compose up -d`. Make sure you have the `-d`, or else killing your
+current terminal will kill the server. Now, visit port 8400 to view the app!
+
+Other common Docker compose commands for convenience:
+
+- `docker compose down`: Nuke the entire setup
+- `docker compose ps`: See how the servers are doing
+- `docker compose logs`: See the logs
+  - `docker compose logs [container]`: See the logs for a specific container
+  - `docker compose logs -f`: Get live updates to the logs
+- `docker compose exec [container] bash`: Run a shell inside the container
+- `docker compose restart [container]`: Restart one or all containers
