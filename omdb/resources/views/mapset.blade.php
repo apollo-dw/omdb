@@ -4,27 +4,33 @@
 
 @section('content')
 
-<style>
-</style>
-
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
+<center><h1>
+    <a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/{{ $mapset->id }}">
+        {{ $mapset->artist }} - {{ $mapset->title }}
+        by
+        <a href='/profile/{{ $mapset->creator_id }}'>TODO: Username</a>
+    </a>
+</h1></center>
 
 <div class="flex-container" style="justify-content: center;">
 	<div class="flex-child">
-		<img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="height:6rem;width:21.6rem;border-radius:16px;" onerror="this.onerror=null; this.src='INF.png';" />
+        <img src="https://assets.ppy.sh/beatmaps/{{ $mapset->id }}/covers/cover.jpg" style="height:6rem;width:21.6rem;border-radius:16px;" onerror="this.onerror=null; this.src='INF.png';" />
 	</div>
 	<div class="flex-child">
         <?php
-            if ($isLoved)
+            if (true) // $isLoved)
                 echo "Submitted: ";
             else
                 echo "Ranked: ";
-            echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
+            // echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
         ?>
         <br>
-		Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
+
+		Average Rating:
+        <b>{{ $average_rating }}</b>
+        <span style="font-size:12px;color:grey;">/ 5.00 from <?php /* echo $numberOfSetRatings; */ ?> votes</span><br>
         <?php
-            if ($isLoved)
+            if (true) // $isLoved)
                 echo "Loved Mapset";
         ?>
     </div>
@@ -32,7 +38,7 @@
 <br>
 <hr style="margin-bottom:1em;">
 
-<?php
+<?php /*
 	$counter = 0;
 	while($row = $result->fetch_assoc()) {
 		$ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID`='{$userId}';");
@@ -198,6 +204,8 @@
 	</div>
 </div>
 
+*/ ?>
+
 <script>
 	function submitComment(){
 		console.log("yeah");
@@ -215,7 +223,7 @@
 			$('#commentSubmit').prop('disabled', true);
 			xhttp.open("POST", "SubmitComment.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + text);
+            xhttp.send("sID={{ $mapset->id }}&comment=" + text);
 		}
 	}
 
@@ -237,7 +245,7 @@
 
   		xhttp.open("POST", "RemoveComment.php", true);
   		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  		xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
+        xhttp.send("sID={{ $mapset->id }}&cID=" + $this.attr('value'));
 
 	});
 

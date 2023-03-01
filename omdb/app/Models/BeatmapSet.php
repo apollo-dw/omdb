@@ -5,19 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Beatmap extends Model
+class BeatmapSet extends Model
 {
     use HasFactory;
 
-    protected $table = 'beatmaps';
-
-    protected $attributes = [
-    ];
+    protected $table = 'beatmapsets';
 
     protected $fillable = [
         'id', 'beatmapset_id', 'creator_id',
-        'difficulty_name', 'artist', 'title',
-        'mode', 'status', 'genre', 'language',
-        'star_rating', 'date_ranked',
+    ];
+
+    protected $dateFormat = \DateTime::ISO8601;
+    protected $casts = [
+        'date_ranked' => 'datetime:c',
     ];
 }

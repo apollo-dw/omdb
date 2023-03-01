@@ -55,33 +55,34 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		@endforeach
 	</div>
 </div>
-<? /*
+
 <br>
 Latest mapsets:<br>
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
 	<br>
-	<?php
-		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`='0' ORDER BY `DateRanked` DESC, `Timestamp` DESC LIMIT 8;");
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		while($row = $result->fetch_assoc()) {
-			$artist = GetUserNameFromId($row["SetCreatorID"], $conn);
-	?>
-	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
-		<span class="subtext">
-			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}"; ?></a><br> by <a href="/profile/<?php echo $row["SetCreatorID"]; ?>"><?php echo $artist; ?></a> <br>
-			<?php echo GetHumanTime($row["Timestamp"]); ?>
-		</span>
-	</div>
-	<?php
-		}
-
-		$stmt->close();
-	?>
+	@foreach ($latest_mapsets as $mapset)
+		<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+			<a href="/mapset/{{ $mapset->id }}">
+				<img src="https://b.ppy.sh/thumb/{{ $mapset->id }}l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';">
+			</a>
+			<br />
+			<span class="subtext">
+				<a href="/mapset/{{ $mapset->id }}">
+					{{ $mapset->artist }} - {{ $mapset->title }}
+				</a>
+				<br />
+				by
+				<a href="/profile/{{ $mapset->creator_id }}">
+					{{ $mapset->creator_id }}
+				</a> <br>
+				{{ $mapset->date_ranked->diffForHumans() }}
+			</span>
+		</div>
+	@endforeach
 </div>
 <br>
+
+<? /*
 Most rated beatmaps in the last 7 days:<br>
 <div style="width:100%;height:40em;">
     <?php

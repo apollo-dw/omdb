@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Beatmap;
+use App\Models\BeatmapSet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Promise;
 
 class RetrieveBeatmaps extends Command
 {
@@ -41,10 +44,17 @@ class RetrieveBeatmaps extends Command
 
         $cursor = null;
 
+        $client = new GuzzleClient([
+            'base_uri' => 'https://osu.ppy.sh/api/v2',
+            'request.options' => [
+                'headers' => "Bearer {$access_token}",
+            ],
+        ]);
+
         while (true) {
             // Retrieve beatmaps
             $response = Http::withToken($access_token)->get('https://osu.ppy.sh/api/v2/beatmapsets/search', [
-                'query' => 'ranked>2023/02/01',
+                'query' => 'ranked>2023/02/20',
                 'sort' => 'ranked_asc',
                 'explicit_content' => 'show',
                 'cursor_string' => $cursor,
@@ -59,6 +69,14 @@ class RetrieveBeatmaps extends Command
             }
 
             $db_beatmapsets = array();
+            $db_beatmaps = array();
+
+            $requests = array();
+            foreach ($beatmapsets as $beatmapset) {
+                array_push($requests, $client->getAsync("/beatmapsets/{$beatmapset['id']}"));
+            }
+            $responses = Promise\Utils::unwrap($requests);
+            info('WTF ' . json_encode($responses));
 
             foreach ($beatmapsets as $beatmapset) {
                 // TODO: This is slow when running sequentially, need to
@@ -69,26 +87,31 @@ class RetrieveBeatmaps extends Command
 
                 $full_beatmapset = $response->json();
 
+                array_push($db_beatmapsets, [
+                    'id' => $beatmapset['id'],
+                    'creator_id' => $beatmapset['user_id'],
+                    'artist' => $beatmapset['artist'],
+                    'title' => $beatmapset['title'],
+                    'genre' => $full_beatmapset['genre']['id'],
+                    'language' => $full_beatmapset['language']['id'],
+                    'date_ranked' => $beatmapset['ranked_date'],
+                ]);
+
                 // TODO: Blacklisting
                 foreach ($beatmapset['beatmaps'] as $beatmap) {
-                    array_push($db_beatmapsets, [
-                        'beatmap_id' => $beatmap['id'],
+                    array_push($db_beatmaps, [
+                        'id' => $beatmap['id'],
                         'beatmapset_id' => $beatmapset['id'],
-                        'beatmapset_creator_id' => $beatmapset['user_id'],
                         'difficulty_name' => $beatmap['version'],
-                        'artist' => $beatmapset['artist'],
-                        'title' => $beatmapset['title'],
                         'mode' => $beatmap['mode_int'],
                         'status' => $beatmap['status'],
-                        'genre' => $full_beatmapset['genre']['id'],
-                        'language' => $full_beatmapset['language']['id'],
                         'star_rating' => $beatmap['difficulty_rating'],
-                        'date_ranked' => $beatmapset['ranked_date'],
                     ]);
                 }
             }
 
-            Beatmap::insert($db_beatmapsets);
+            BeatmapSet::insert($db_beatmapsets);
+            Beatmap::insert($db_beatmaps);
 
             $this->info('Found and inserted ' . count($beatmapsets) . ' sets.');
 
