@@ -69,6 +69,7 @@ class RetrieveBeatmaps extends Command
 
                 $full_beatmapset = $response->json();
 
+                // TODO: Blacklisting
                 foreach ($beatmapset['beatmaps'] as $beatmap) {
                     array_push($db_beatmapsets, [
                         'beatmap_id' => $beatmap['id'],

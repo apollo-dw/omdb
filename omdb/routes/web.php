@@ -14,15 +14,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', 'HomeController@show');
-Route::get('/settings', 'HomeController@show');
+Route::resource('/settings', 'SettingsController')->only(['index', 'store']);
 Route::get('/charts', 'HomeController@show');
 Route::get('/maps', 'HomeController@show');
 Route::get('/random', 'HomeController@show');
-Route::get('/mapset/{mapset_id}', 'HomeController@show');
+Route::get('/mapset/{mapset_id}', 'MapsetController@show');
 Route::get('/profile/{user_id}', 'ProfileController@show');
 Route::resource('/rating', 'RatingController');
 
 Route::group(['prefix' => 'auth'], function () {
-    Route::get('login', 'AuthController@login');
+    Route::get('login', 'AuthController@login')->name('login');
     Route::get('callback', 'AuthController@callback');
 });

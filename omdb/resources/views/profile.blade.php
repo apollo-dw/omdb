@@ -9,7 +9,7 @@
 		<div class="profileTitle">
 			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">
 				<?php /* echo GetUserNameFromId($profileId, $conn); */ ?>
-				{{ $username }}
+				{{ $user->username }}
 			</a>
 
 			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">

@@ -21,8 +21,6 @@ class ProfileController extends Controller
 
         // Only applicable to OMDB users
         if ($user !== null) {
-            $username = $user->username;
-
             // Check if the user requested is the logged in user ("you")
             if (Auth::check())
                 $is_you = Auth::user()->id == $user->id;
@@ -67,14 +65,14 @@ class ProfileController extends Controller
 
             $data = $response->json();
 
+            // Create a synthetic user so we can query just the data we need
             $user = new \stdClass;
             $user->id = $user_id;
-            $username = $data['username'];
+            $user->username = $data['username'];
         }
 
         return view('profile', [
             'user' => $user,
-            'username' => $username,
             'is_you' => $is_you,
             'rating_counts' => $rating_counts,
             'max_rating' => $max_rating,
