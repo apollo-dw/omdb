@@ -68,8 +68,7 @@
 						<b>{{ $user->username }}</b>
 					</a>
 				@else
-						include_once 'sensitiveStrings.php'; // needed for $clientID
-					<b><a href="{{ URL::to("/auth/login") }}">log in</a></b>
+					<b><a href="/auth/login">log in</a></b>
 				@endif
 			</span>
 		</div>
