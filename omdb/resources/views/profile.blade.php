@@ -9,7 +9,7 @@
 		<div class="profileTitle">
 			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">
 				<?php /* echo GetUserNameFromId($profileId, $conn); */ ?>
-				Username
+				{{ $username }}
 			</a>
 
 			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">
@@ -29,21 +29,23 @@
 
 		@if ($is_you)
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-				@for ($r = 0; $r <= 10; $r++)
-					@php
-						$rs = number_format((10 - $r) / 2, 1)
-					@endphp
+				@if ($rating_counts)
+					@for ($r = 0; $r <= 10; $r++)
+						@php
+							$rs = number_format((10 - $r) / 2, 1)
+						@endphp
 
-					<div class="profileRankingDistributionBar" style="width:
-						<?php echo ($rating_counts[$rs]/$max_rating)*90; ?>%;">
-						<a href="ratings/?id={{ $user->id }}&r=5.0&p=1">
-							{{ $rs }}
-							<?php /* if ($profile["Custom50Rating"] != "") {
-							echo " - " .
-						htmlspecialchars($profile["Custom50Rating"]); } */?>
-						</a>
-					</div>
-				@endfor
+						<div class="profileRankingDistributionBar" style="width:
+							<?php echo ($rating_counts[$rs]/$max_rating)*90; ?>%;">
+							<a href="ratings/?id={{ $user->id }}&r=5.0&p=1">
+								{{ $rs }}
+								<?php /* if ($profile["Custom50Rating"] != "") {
+								echo " - " .
+							htmlspecialchars($profile["Custom50Rating"]); } */?>
+							</a>
+						</div>
+					@endfor
+				@endif
 			</div>
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
