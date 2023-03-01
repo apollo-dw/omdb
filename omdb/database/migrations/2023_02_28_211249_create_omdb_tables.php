@@ -59,7 +59,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreignId('user_id');
-            $table->foreignId('set_id');
+            $table->foreignId('beatmapset_id');
 
             $table->text('comment');
 
@@ -69,6 +69,10 @@ return new class extends Migration
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+
+            $table->foreignId('beatmap_id');
+
+            $table->foreign('beatmap_id')->references('id')->on('users');
         });
     }
 

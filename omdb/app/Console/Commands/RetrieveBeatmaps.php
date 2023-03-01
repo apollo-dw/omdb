@@ -61,6 +61,8 @@ class RetrieveBeatmaps extends Command
             $db_beatmapsets = array();
 
             foreach ($beatmapsets as $beatmapset) {
+                // TODO: This is slow when running sequentially, need to
+                // refactor this to use Guzzle async requests.
                 $response = Http::withToken($access_token)
                     ->withUrlParameters(['id' => $beatmapset['id']])
                     ->get('https://osu.ppy.sh/api/v2/beatmapsets/{id}');
