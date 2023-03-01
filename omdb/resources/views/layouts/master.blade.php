@@ -15,6 +15,7 @@
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
 		@vite(['resources/scss/app.scss', 'resources/js/app.js'])
+
         <script>
 			function showResult(str) {
 			  if (str.length==0) {
@@ -65,7 +66,7 @@
 					<a href="/profile/{{ $user->id }}" style="color:white;">
 						<img src="https://s.ppy.sh/a/{{ $user->id }}" style="height:2rem;vertical-align:middle;" />
 						&nbsp;
-						<b>{{ $user->username }}</b>
+						<b>{{ $user->username->username }}</b>
 					</a>
 				@else
 					<b><a href="/auth/login">log in</a></b>

@@ -71,12 +71,12 @@ class RetrieveBeatmaps extends Command
             $db_beatmapsets = array();
             $db_beatmaps = array();
 
-            $requests = array();
+            /* $requests = array();
             foreach ($beatmapsets as $beatmapset) {
                 array_push($requests, $client->getAsync("/beatmapsets/{$beatmapset['id']}"));
             }
             $responses = Promise\Utils::unwrap($requests);
-            info('WTF ' . json_encode($responses));
+            info('WTF ' . json_encode($responses)); */
 
             foreach ($beatmapsets as $beatmapset) {
                 // TODO: This is slow when running sequentially, need to

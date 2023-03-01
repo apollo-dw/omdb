@@ -8,7 +8,9 @@
     <a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/{{ $mapset->id }}">
         {{ $mapset->artist }} - {{ $mapset->title }}
         by
-        <a href='/profile/{{ $mapset->creator_id }}'>TODO: Username</a>
+        <a href='/profile/{{ $mapset->creator_id }}'>
+            {{ $mapset->creator_name->username }}
+        </a>
     </a>
 </h1></center>
 
@@ -76,75 +78,82 @@
         }
 
         $maxRating = max($ratingCounts);
+        */
 ?>
 
-<div class="flex-container diffContainer <?php if($blackListed){ echo "faded"; }?>" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
-	<div class="flex-child diffBox" style="text-align:center;width:60%;">
-		<a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
-            <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
-        </a>
-        <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
-        <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
-        <?php if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } ?>
-	</div>
-    <?php if (!$blackListed) { ?>
-	<div class="flex-child diffBox" style="width:20%;text-align:center;">
-        <?php
-        if($hasRatings){
-        ?>
-            <div class="mapsetRankingDistribution">
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
-                <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
-            </div>
-        <span class="subText" style="width:100%;">Rating Distribution</span>
-        <?php
-        }
-        ?>
-	</div>
-	<div class="flex-child diffBox" style="text-align:right;width:40%;">
-        <?php
-        if($hasRatings){
-        ?>
-		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
-		Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/">overall</a>
-        <?php
-        }
-        ?>
-    </div>
-	<div class="flex-child diffBox" style="padding:auto;width:30%;">
-		<?php
-			if($loggedIn){
-		?>
-		<span class="identifier" style="display: inline-block;"><ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
-		<!-- The holy grail of PHP code. If I want to make this public on github i NEED to rewrite this-->
-		<i class="icon-remove" style="opacity:0;"></i><li class="star icon-star<?php if($userMapRating==0 || !$userHasRatedThis){ echo '-empty'; } else if($userMapRating==0.5){ echo '-half-empty'; } ?>" value="1" /><li class="star icon-star<?php if($userMapRating<=1){ echo '-empty'; } else if($userMapRating==1.5){ echo '-half-empty'; } ?>" value="2" /><li class="star icon-star<?php if($userMapRating<=2){ echo '-empty'; } else if($userMapRating==2.5){ echo '-half-empty'; } ?>" value="3" /><li class="star icon-star<?php if($userMapRating<=3){ echo '-empty'; } else if($userMapRating==3.5){ echo '-half-empty'; } ?>" value="4" /><li class="star icon-star<?php if($userMapRating<=4){ echo '-empty'; } else if($userMapRating==4.5){ echo '-half-empty'; } ?>" value="5" />
-		</ol></span><span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span><span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
-		<?php
-			} else {
-				echo 'Log in to rate maps!';
-			}
-		?>
-	</div>
-    <?php } else { ?>
-    <div class="flex-child diffBox" style="padding:auto;width:91%;">
-        <b>This difficulty has been blacklisted from OMDB.</b><br>
-        Reason: <?php echo $row["BlacklistReason"]; ?>
-    </div>
-    <?php } ?>
-</div>
+@foreach ($beatmaps as $beatmap)
 
-<?php
-	}
-?>
+    <div class="flex-container diffContainer <?php if(true || $blackListed){ echo "faded"; }?>">
+        <div class="flex-child diffBox" style="text-align:center;width:60%;">
+            <a href="https://osu.ppy.sh/b/{{ $beatmap->id }}" target="_blank" rel="noopener noreferrer"
+                <?php /* if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; } */?>>
+                {{ $beatmap->difficulty_name }}
+                <?php /* echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); */ ?>
+            </a>
+            <a href="osu://b/{{ $beatmap->id }}"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
+            <span class="subText"><?php echo number_format((float) $beatmap->star_rating, 2, '.', ''); ?>*</span>
+            <?php /* if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } */ ?>
+        </div>
+
+        <?php if (true || !$blackListed) { ?>
+        <div class="flex-child diffBox" style="width:20%;text-align:center;">
+            @if (count($beatmap->ratings) > 0)
+                <div class="mapsetRankingDistribution">
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
+                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
+                </div>
+                <span class="subText" style="width:100%;">Rating Distribution</span>
+            @endif
+        </div>
+
+        <div class="flex-child diffBox" style="text-align:right;width:40%;">
+            @if (count($beatmap->ratings) > 0)
+                Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+                Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/">overall</a>
+            @endif
+        </div>
+        <div class="flex-child diffBox" style="padding:auto;width:30%;">
+            @if (Auth::check())
+                @php
+                    // TODO: Finish
+                    $userHasRatedThis = false;
+                    $userMapRating = 0;
+                @endphp
+
+                <span class="identifier" style="display: inline-block;">
+                    <ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="{{ $beatmap->id }}" rating="<?php echo $userMapRating; ?>">
+                        <!-- The holy grail of PHP code. If I want to make this public on github i NEED to rewrite this-->
+                        <i class="icon-remove" style="opacity:0;"></i><li class="star icon-star<?php if($userMapRating==0 || !$userHasRatedThis){ echo '-empty'; } else if($userMapRating==0.5){ echo '-half-empty'; } ?>" value="1" /><li class="star icon-star<?php if($userMapRating<=1){ echo '-empty'; } else if($userMapRating==1.5){ echo '-half-empty'; } ?>" value="2" /><li class="star icon-star<?php if($userMapRating<=2){ echo '-empty'; } else if($userMapRating==2.5){ echo '-half-empty'; } ?>" value="3" /><li class="star icon-star<?php if($userMapRating<=3){ echo '-empty'; } else if($userMapRating==3.5){ echo '-half-empty'; } ?>" value="4" /><li class="star icon-star<?php if($userMapRating<=4){ echo '-empty'; } else if($userMapRating==4.5){ echo '-half-empty'; } ?>" value="5" />
+                    </ol>
+                </span>
+
+                <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="{{ $beatmap->id }}">
+                    <i class="icon-remove"></i>
+                </span>
+
+                <span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
+            @else
+                Log in to rate maps!
+            @endif
+        </div>
+        <?php } else { ?>
+        <div class="flex-child diffBox" style="padding:auto;width:91%;">
+            <b>This difficulty has been blacklisted from OMDB.</b><br>
+            Reason: <?php /* echo $row["BlacklistReason"]; */ ?>
+        </div>
+        <?php } ?>
+    </div>
+
+@endforeach
 
 <hr style="margin-bottom:1em;margin-top:1em;">
 
@@ -153,7 +162,7 @@
 		Latest Ratings<br><br>
         <div id="setRatingsDisplay">
             <?php
-            require 'ratings.php';
+            // require 'ratings.php';
             ?>
         </div>
 	</div>
@@ -161,50 +170,46 @@
 		Comments<br><br>
 		<div class="flex-container commentContainer" style="width:100%;">
 
-			<?php if($loggedIn) { ?>
+            @if (Auth::check())
 
-			<div class="flex-child commentComposer">
-				<form>
-					<textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
+                <div class="flex-child commentComposer">
+                    <form>
+                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
 
-					<input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
-				</form>
-			</div>
+                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
+                    </form>
+                </div>
 
-			<?php } ?>
+            @endif
 
 			<?php
-				$stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
+				/* $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
 				$stmt->bind_param("s", $sampleRow["SetID"]);
 				$stmt->execute();
 				$result = $stmt->get_result();
 				if ($result->num_rows != 0) {
-					while ($row = $result->fetch_assoc()) {
+					while ($row = $result->fetch_assoc()) { */
 						?>
-						<div class="flex-container flex-child commentHeader">
-							<div class="flex-child" style="height:24px;width:24px;">
-								<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
-							</div>
-							<div class="flex-child">
-								<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
-							</div>
-							<div class="flex-child" style="margin-left:auto;">
-								<?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
-							</div>
-						</div>
-						<div class="flex-child comment" style="min-width:0;overflow: hidden;">
-							<p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
-						</div>
-						<?php
-					}
-				}
-			?>
 
+            @foreach ($comments as $comment)
+                <div class="flex-container flex-child commentHeader">
+                    <div class="flex-child" style="height:24px;width:24px;">
+                        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                    </div>
+                    <div class="flex-child">
+                        <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                    </div>
+                    <div class="flex-child" style="margin-left:auto;">
+                        <?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
+                    </div>
+                </div>
+                <div class="flex-child comment" style="min-width:0;overflow: hidden;">
+                    <p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
+                </div>
+            @endforeach
 		</div>
 	</div>
 </div>
-
-*/ ?>
 
 <script>
 	function submitComment(){

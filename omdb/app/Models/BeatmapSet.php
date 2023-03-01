@@ -19,4 +19,9 @@ class BeatmapSet extends Model
     protected $casts = [
         'date_ranked' => 'datetime:c',
     ];
+
+    public function creator_name()
+    {
+        return $this->hasOne('App\\Models\\Username', 'user_id', 'creator_id');
+    }
 }

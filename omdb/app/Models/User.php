@@ -21,6 +21,12 @@ class User extends Authenticatable
     ];
 
     protected $fillable = [
-        'id', 'username', 'access_token', 'refresh_token'
+        'id', 'access_token', 'refresh_token'
     ];
+
+    public function username()
+    {
+        $username = $this->hasOne('App\\Models\\Username', 'user_id', 'id');
+        return $username;
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Username;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -99,10 +100,14 @@ class AuthController extends Controller
 		$user = User::updateOrCreate(
 			['id' => $user_id],
 			[
-				'username' => $username,
 				'access_token' => $access_token,
 				'refresh_token' => $refresh_token,
 			],
+		);
+
+		Username::updateOrCreate(
+			['user_id' => $user_id],
+			['username' => $username],
 		);
 
 		Auth::login($user);

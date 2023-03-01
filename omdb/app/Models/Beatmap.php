@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,4 +21,9 @@ class Beatmap extends Model
         'mode', 'status', 'genre', 'language',
         'star_rating', 'date_ranked',
     ];
+
+    public function ratings()
+    {
+        return $this->hasMany('App\\Models\\Rating', 'beatmap_id');
+    }
 }

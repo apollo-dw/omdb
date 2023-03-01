@@ -27,6 +27,8 @@ return new class extends Migration
 
         Schema::create('usernames', function (Blueprint $table) {
             $table->id('user_id');
+            $table->timestamps();
+
             $table->string('username');
         });
 
