@@ -10,5 +10,15 @@ class Beatmap extends Model
     use HasFactory;
 
     protected $primaryKey = 'beatmap_id';
-    public $incrementing = false;
+    protected $table = 'beatmaps';
+
+    protected $attributes = [
+    ];
+
+    protected $fillable = [
+        'id', 'beatmapset_id', 'creator_id',
+        'difficulty_name', 'artist', 'title',
+        'mode', 'status', 'genre', 'language',
+        'star_rating', 'date_ranked',
+    ];
 }

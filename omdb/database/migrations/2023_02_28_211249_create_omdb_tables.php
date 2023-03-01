@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('refresh_token');
             $table->boolean('banned')->default(false);
             $table->boolean('do_true_random')->default(false);
-            $table->json('custom_ratings')->default({});
+            $table->json('custom_ratings')->default('{}');
 
             // Cached info
             $table->float('cached_weight', 6, 4)->nullable();
@@ -31,9 +31,9 @@ return new class extends Migration
             $table->timestamps();
 
             // IDs
-            $table->integer('set_id');
-            $table->integer('creator_id');
-            $table->integer('set_creator_id');
+            $table->integer('beatmapset_id');
+            $table->integer('creator_id')->nullable();
+            $table->integer('beatmapset_creator_id');
 
             // Metadata
             $table->string('difficulty_name');
