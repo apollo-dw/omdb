@@ -52,7 +52,7 @@ return [
   "channels" => [
     "stack" => [
       "driver" => "stack",
-      "channels" => ["single"],
+      "channels" => ["stderr", "single"],
       "ignore_exceptions" => false,
     ],
 

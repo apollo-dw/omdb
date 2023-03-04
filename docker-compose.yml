@@ -2,11 +2,10 @@ version: "3.7"
 
 services:
   omdb:
-    build: .
-    # ports: [8400:80]
+    build:
+      context: ./omdb
+      dockerfile: ./Dockerfile
     env_file: .env
-    volumes:
-      - .:/var/www/html
 
   db:
     image: mysql:8

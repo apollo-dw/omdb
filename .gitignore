@@ -42,3 +42,4 @@ site.webmanifest
 /.direnv
 
 /vendor/
+node_modules
