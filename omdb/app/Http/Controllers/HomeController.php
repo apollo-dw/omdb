@@ -49,7 +49,7 @@ class HomeController extends Controller
       INNER JOIN (
             SELECT beatmap_id, COUNT(*) as num_ratings
             FROM ratings
-            WHERE created_at >= datetime('now', '-7 days')
+            WHERE created_at >= interval 1 week
             GROUP BY beatmap_id
       ) r ON b.id = r.beatmap_id
       INNER JOIN (
@@ -58,7 +58,7 @@ class HomeController extends Controller
                 SELECT b.beatmapset_id, b.id, COUNT(*) as num_ratings
                 FROM beatmaps b
                 INNER JOIN ratings r ON b.id = r.beatmap_id
-                WHERE r.created_at >= datetime('now', '-7 days')
+                WHERE r.created_at >= interval 1 week
                 GROUP BY b.beatmapset_id, b.id
             ) t
             GROUP BY beatmapset_id
