@@ -26,7 +26,7 @@ class MapsetController extends Controller
     }
 
     $beatmaps = Beatmap::where("beatmapset_id", $mapset_id)
-      ->with("ratings")
+      ->with('ratings')
       ->get();
 
     $average_rating = DB::select("
@@ -37,6 +37,7 @@ class MapsetController extends Controller
 
     $comments = Comment::where("beatmapset_id", $mapset_id)
       ->with("osu_user")
+      ->orderByDesc('created_at')
       ->get();
 
     return view("mapset", [
@@ -76,12 +77,16 @@ class MapsetController extends Controller
     // TODO: Make sure the beatmapset exists
     // TODO: Make sure the beatmap exists
 
-    Rating::create([
-      "user_id" => $omdb_user->user_id,
-      "beatmapset_id" => $mapset_id,
-      "beatmap_id" => $map_id,
-      "score" => $rating,
-    ]);
+    Rating::updateOrCreate(
+      [
+        "user_id" => $omdb_user->user_id,
+        "beatmapset_id" => $mapset_id,
+        "beatmap_id" => $map_id,
+      ],
+      [
+        "score" => $rating,
+      ]
+    );
 
     return response()->json(["success" => "success"], 200);
   }

@@ -27,6 +27,7 @@ class Latest extends Component
     $ratings = Rating::where("beatmapset_id", $this->beatmapset_id)
       ->with("beatmap")
       ->with("osu_user")
+      ->orderByDesc('created_at')
       ->get();
 
     return view("components.ratings.latest", [

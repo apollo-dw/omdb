@@ -29,4 +29,9 @@ class OmdbUser extends Authenticatable
     $osu_user = $this->hasOne("App\\Models\\OsuUser", "user_id", "user_id");
     return $osu_user;
   }
+
+  public function ratings()
+  {
+    return $this->hasMany("App\\Models\\Rating", "user_id", "user_id");
+  }
 }

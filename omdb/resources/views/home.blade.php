@@ -120,7 +120,7 @@ Most rated beatmaps in the last 7 days:<br>
     <?php
     $counter = 0;
 
-    $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.Artist, b.DifficultyName, num_ratings
+        $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.Artist, b.DifficultyName, num_ratings
                                   FROM beatmaps b
                                   INNER JOIN (
                                         SELECT BeatmapID, COUNT(*) as num_ratings
@@ -142,13 +142,13 @@ Most rated beatmaps in the last 7 days:<br>
                                   ORDER BY num_ratings DESC, b.BeatmapID DESC
                                   LIMIT 10;
                                   ");
-    $stmt->execute();
+        $stmt->execute();
 
-    $result = $stmt->get_result();
+        $result = $stmt->get_result();
 
-    while($row = $result->fetch_assoc()) {
-        $counter += 1;
-        ?>
+        while ($row = $result->fetch_assoc()) {
+            $counter += 1;
+            ?>
         <div class="flex-container ratingContainer" <?php if ($counter % 2 == 1) {
             echo "style='background-color:#203838;' altcolour";
         } ?>>
@@ -166,10 +166,10 @@ Most rated beatmaps in the last 7 days:<br>
             </div>
         </div>
         <?php
-    }
+        }
 
-    $stmt->close();
-?> */
+        $stmt->close();
+        ?> */
 --}}
   </div>
 

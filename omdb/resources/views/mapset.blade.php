@@ -121,22 +121,22 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-            
+
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-            
+
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-            
+
             $maxRating = max($ratingCounts);
           @endphp
 
           <div class="mapsetRankingDistribution">
-            @for ($r = 0.0; $r <= 5.0; $r += 0.5)
+            @for ($r = 5.0; $r >= 0.0; $r -= 0.5)
               @php
                 $rs = number_format($r, 1);
               @endphp
@@ -165,7 +165,10 @@
 
           <?php
           /*
-                                    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+                                                                  Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+          ?>
+          ?>
+          ?>
           ?>
           ?></b> for <a
             href="/charts/?y=<?php echo $year; ?>"><?php echo $year; ?></a>,
@@ -316,7 +319,7 @@
   <script>
     function submitComment() {
       // console.log("yeah");
-      var comment = encodeURIComponent($('#commentForm').val());
+      var comment = $('#commentForm').val();
       // console.log(comment);
 
       if (!(comment.length > 3 && comment.length < 8000)) {

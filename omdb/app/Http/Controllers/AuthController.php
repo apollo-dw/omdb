@@ -125,23 +125,23 @@ class AuthController extends Controller
     Auth::login($omdb_user);
 
     /*
-        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
-        $stmt->bind_param("s", $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
+            $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+            $stmt->bind_param("s", $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result && $result->num_rows == 0) {
-            $stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES (?, ?, ?, ?);");
-            $stmt->bind_param("ssss", $userId, $username, $accessToken, $refreshToken);
-            $stmt->execute();
-            $stmt->close();
-        } else {
-            $stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ? WHERE `UserID` = ?");
-            $stmt->bind_param("sss", $accessToken, $refreshToken, $userId);
-            $stmt->execute();
-            $stmt->close();
-        }
-         */
+            if ($result && $result->num_rows == 0) {
+                $stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES (?, ?, ?, ?);");
+                $stmt->bind_param("ssss", $userId, $username, $accessToken, $refreshToken);
+                $stmt->execute();
+                $stmt->close();
+            } else {
+                $stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ? WHERE `UserID` = ?");
+                $stmt->bind_param("sss", $accessToken, $refreshToken, $userId);
+                $stmt->execute();
+                $stmt->close();
+            }
+             */
 
     return redirect($redirect_url);
   }
