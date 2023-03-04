@@ -21,8 +21,8 @@ return new class extends Migration {
       $table->id("user_id");
       $table->timestamps();
 
-      $table->string("access_token");
-      $table->string("refresh_token");
+      $table->text("access_token");
+      $table->text("refresh_token");
       $table->boolean("banned")->default(false);
       $table->boolean("do_true_random")->default(false);
       $table->json("custom_ratings")->nullable();
