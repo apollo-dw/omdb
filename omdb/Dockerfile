@@ -3,6 +3,7 @@ FROM composer:latest AS composer
 FROM php:8.2-fpm
 
 ARG APP_KEY
+ARG APP_URL
 ARG DB_HOST
 ARG DB_USERNAME
 ARG DB_PASSWORD
@@ -12,6 +13,7 @@ ARG OSU_CLIENT_ID
 ARG OSU_CLIENT_SECRET
 
 ENV APP_KEY=${APP_KEY}
+ENV APP_URL=${APP_URL}
 ENV DB_HOST=${DB_HOST}
 ENV DB_USERNAME=${DB_USERNAME}
 ENV DB_PASSWORD=${DB_PASSWORD}
@@ -39,6 +41,8 @@ WORKDIR /code
 # COPY composer.json composer.lock /code
 COPY . /code
 RUN composer install --optimize-autoloader --no-dev
+RUN npm ci
+RUN npm run build
 
 EXPOSE 8000
 CMD ["bash", "-c", "php artisan config:cache; php artisan view:cache; php artisan serve --host 0.0.0.0"]

@@ -25,7 +25,7 @@ return new class extends Migration {
       $table->string("refresh_token");
       $table->boolean("banned")->default(false);
       $table->boolean("do_true_random")->default(false);
-      $table->json("custom_ratings")->default("{}");
+      $table->json("custom_ratings")->nullable();
 
       // Cached info
       $table->float("cached_weight", 6, 4)->nullable();
