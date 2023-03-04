@@ -31,12 +31,14 @@
                 onerror="this.onerror=null; this.src='/charts/INF.png';">
             </a>
           </div>
+
           <div class="flex-child" style="height:24px;width:24px;">
             <a href="/profile/{{ $rating->user_id }}"><img
                 src="https://s.ppy.sh/a/{{ $rating->user_id }}"
                 style="height:24px;width:24px;"
                 title="{{ $rating->osu_user->username }}" /></a>
           </div>
+
           <div class="flex-child" style="flex:0 0 50%;">
             {{--
 // echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
@@ -49,6 +51,7 @@
         </div>
       @endforeach
     </div>
+
     <div class="flex-child" style="width:60%;height:32em;overflow-y:scroll;">
       @foreach ($recent_comments as $comment)
         <div class="flex-container ratingContainer" <?php if ($loop->odd) {
@@ -62,18 +65,21 @@
                 onerror="this.onerror=null; this.src='/charts/INF.png';">
             </a>
           </div>
+
           <div class="flex-child" style="height:24px;width:24px;">
             <a href="/profile/{{ $comment->user_id }}"><img
                 src="https://s.ppy.sh/a/{{ $comment->user_id }}"
                 style="height:24px;width:24px;"
                 title="{{ $comment->osu_user->username }}" /></a>
           </div>
+
           <div class="flex-child"
             style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
             <a style="color:white;" href="/mapset/{{ $comment->beatmapset_id }}">
               {{ $comment->comment }}
             </a>
           </div>
+
           <div class="flex-child"
             style="width:100%;text-align:right;min-width:0%;">
             {{ $comment->created_at->diffForHumans() }}
@@ -113,64 +119,31 @@
   </div>
   <br>
 
-  {{--
-/*
-Most rated beatmaps in the last 7 days:<br>
-<div style="width:100%;height:40em;">
-    <?php
-    $counter = 0;
-
-        $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.Artist, b.DifficultyName, num_ratings
-                                  FROM beatmaps b
-                                  INNER JOIN (
-                                        SELECT BeatmapID, COUNT(*) as num_ratings
-                                        FROM ratings
-                                        WHERE date >= now() - interval 1 week
-                                        GROUP BY BeatmapID
-                                  ) r ON b.BeatmapID = r.BeatmapID
-                                  INNER JOIN (
-                                        SELECT SetID, MAX(num_ratings) as max_ratings
-                                        FROM (
-                                            SELECT b.SetID, b.BeatmapID, COUNT(*) as num_ratings
-                                            FROM beatmaps b
-                                            INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
-                                            WHERE r.date >= now() - interval 1 week
-                                            GROUP BY b.SetID, b.BeatmapID
-                                        ) t
-                                        GROUP BY SetID
-                                  ) m ON b.SetID = m.SetID AND r.num_ratings = m.max_ratings
-                                  ORDER BY num_ratings DESC, b.BeatmapID DESC
-                                  LIMIT 10;
-                                  ");
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-
-        while ($row = $result->fetch_assoc()) {
-            $counter += 1;
-            ?>
-        <div class="flex-container ratingContainer" <?php if ($counter % 2 == 1) {
-            echo "style='background-color:#203838;' altcolour";
-        } ?>>
-            <div class="flex-child" style="min-width:2em;">
-                #<?php echo $counter; ?>
-            </div>
-            <div class="flex-child">
-                <a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
-            </div>
-            <div class="flex-child" style="flex:0 0 80%;">
-                <a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo "{$row['Artist']} - {$row['Title']} [{$row['DifficultyName']}]"; ?></a>
-            </div>
-            <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-                <?php echo $row['num_ratings']; ?> ratings
-            </div>
+  Most rated beatmaps in the last 7 days:<br>
+  <div style="width:100%;height:40em;">
+    @foreach ($last_7_days_ratings as $row)
+      <div class="flex-container ratingContainer" <?php if ($loop->odd) {
+          echo "style='background-color:#203838;' altcolour";
+      } ?>>
+        <div class="flex-child" style="min-width:2em;">
+          #{{ $loop->index + 1 }}
         </div>
-        <?php
-        }
-
-        $stmt->close();
-        ?> */
---}}
+        <div class="flex-child">
+          <a href="/mapset/{{ $row->beatmapset_id }}"><img
+              src="https://b.ppy.sh/thumb/{{ $row->beatmapset_id }}l.jpg"
+              class="diffThumb"/
+              onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+        </div>
+        <div class="flex-child" style="flex:0 0 80%;">
+          <a href="/mapset/{{ $row->beatmapset_id }}">{{ $row->artist }} -
+            {{ $row->title }} [{{ $row->difficulty_name }}]
+          </a>
+        </div>
+        <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
+          {{ $row->num_ratings }} ratings
+        </div>
+      </div>
+    @endforeach
   </div>
 
-@stop
+@endsection

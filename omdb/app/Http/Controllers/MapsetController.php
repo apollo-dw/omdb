@@ -26,7 +26,7 @@ class MapsetController extends Controller
     }
 
     $beatmaps = Beatmap::where("beatmapset_id", $mapset_id)
-      ->with('ratings')
+      ->with("ratings")
       ->get();
 
     $average_rating = DB::select("
@@ -37,7 +37,7 @@ class MapsetController extends Controller
 
     $comments = Comment::where("beatmapset_id", $mapset_id)
       ->with("osu_user")
-      ->orderByDesc('created_at')
+      ->orderByDesc("created_at")
       ->get();
 
     return view("mapset", [

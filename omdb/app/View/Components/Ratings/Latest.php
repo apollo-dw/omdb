@@ -15,15 +15,14 @@ class Latest extends Component
   /**
    * Create a new component instance.
    */
-  public function __construct(
-    string $beatmapsetId = '',
-    string $userId = '',
-  )
+  public function __construct(string $beatmapsetId = "", string $userId = "")
   {
-    if ($beatmapsetId !== '')
+    if ($beatmapsetId !== "") {
       $this->beatmapset_id = intval($beatmapsetId);
-    if ($userId !== '')
+    }
+    if ($userId !== "") {
       $this->user_id = intval($userId);
+    }
   }
 
   /**
@@ -31,17 +30,16 @@ class Latest extends Component
    */
   public function render(): View|Closure|string
   {
-    $query = Rating::with("beatmap")
-      ->with("osu_user");
+    $query = Rating::with("beatmap")->with("osu_user");
 
-    if ($this->user_id !== null)
+    if ($this->user_id !== null) {
       $query = $query->where("user_id", $this->user_id);
-    if ($this->beatmapset_id !== null)
+    }
+    if ($this->beatmapset_id !== null) {
       $query = $query->where("beatmapset_id", $this->beatmapset_id);
+    }
 
-    $ratings = $query
-      ->orderByDesc('created_at')
-      ->get();
+    $ratings = $query->orderByDesc("updated_at")->get();
 
     return view("components.ratings.latest", [
       "beatmapset_id" => $this->beatmapset_id,

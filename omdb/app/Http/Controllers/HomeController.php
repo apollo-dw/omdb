@@ -42,11 +42,37 @@ class HomeController extends Controller
                 LIMIT 8
                 "); */
 
+    $last_7_days_ratings = DB::select("
+      SELECT b.id, b.beatmapset_id, s.title, s.artist, b.difficulty_name, num_ratings
+      FROM beatmaps b
+      INNER JOIN beatmapsets s ON b.beatmapset_id = s.id
+      INNER JOIN (
+            SELECT beatmap_id, COUNT(*) as num_ratings
+            FROM ratings
+            WHERE created_at >= datetime('now', '-7 days')
+            GROUP BY beatmap_id
+      ) r ON b.id = r.beatmap_id
+      INNER JOIN (
+            SELECT beatmapset_id, MAX(num_ratings) as max_ratings
+            FROM (
+                SELECT b.beatmapset_id, b.id, COUNT(*) as num_ratings
+                FROM beatmaps b
+                INNER JOIN ratings r ON b.id = r.beatmap_id
+                WHERE r.created_at >= datetime('now', '-7 days')
+                GROUP BY b.beatmapset_id, b.id
+            ) t
+            GROUP BY beatmapset_id
+      ) m ON b.beatmapset_id = m.beatmapset_id AND r.num_ratings = m.max_ratings
+      ORDER BY num_ratings DESC, b.id DESC
+      LIMIT 10;
+    ");
+
     return view("home", [
       "counts" => $counts,
       "recent_ratings" => $recent_ratings,
       "recent_comments" => $recent_comments,
       "latest_mapsets" => $latest_mapsets,
+      "last_7_days_ratings" => $last_7_days_ratings,
     ]);
   }
 }

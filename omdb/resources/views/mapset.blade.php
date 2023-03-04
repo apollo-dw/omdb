@@ -121,17 +121,17 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-
+            
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-
+            
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-
+            
             $maxRating = max($ratingCounts);
           @endphp
 
@@ -165,7 +165,12 @@
 
           <?php
           /*
-                                                                  Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+                                                                                                                    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+          ?>
+          ?>
+          ?>
+          ?>
+          ?>
           ?>
           ?>
           ?>
