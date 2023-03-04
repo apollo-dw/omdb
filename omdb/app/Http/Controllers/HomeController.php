@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BeatmapSet;
+use App\Models\Comment;
+use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -29,7 +31,15 @@ class HomeController extends Controller
             LIMIT 40
         ");
 
-        $recent_comments = DB::select("SELECT * FROM `comments` ORDER BY `updated_at` DESC LIMIT 20");
+        $recent_ratings = Rating::latest()
+            ->with('osu_user')
+            ->take(40)
+            ->get();
+
+        $recent_comments = Comment::latest()
+            ->with('osu_user')
+            ->take(20)
+            ->get();
 
         $latest_mapsets = BeatmapSet::latest('date_ranked')
             ->with('creator_user')

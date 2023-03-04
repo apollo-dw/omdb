@@ -16,40 +16,55 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container">
 	<div class="flex-child" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
 		@foreach ($recent_ratings as $rating)
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+			<div class="flex-container ratingContainer" <?php if($loop->odd){ echo "style='background-color:#203838;' altcolour"; } ?>>
 			  <div class="flex-child">
-				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+				  <a href="/mapset/{{ $rating->beatmapset_id }}">
+					  <img
+						  src="https://b.ppy.sh/thumb/{{ $rating->beatmapset_id }}l.jpg"
+						  class="diffThumb"
+						  onerror="this.onerror=null; this.src='/charts/INF.png';">
+				  </a>
 			  </div>
 			  <div class="flex-child" style="height:24px;width:24px;">
-				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+				  <a href="/profile/{{ $rating->user_id }}"><img
+					  src="https://s.ppy.sh/a/{{ $rating->user_id }}"
+					   style="height:24px;width:24px;" title="{{ $rating->osu_user->username }}"/></a>
 			  </div>
 			  <div class="flex-child" style="flex:0 0 50%;">
 				<?php
-				  echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
+				  // echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
 				?>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo GetHumanTime($row["date"]); ?>
+				  {{ $rating->created_at->diffForHumans() }}
 			  </div>
 			</div>
 		@endforeach
 	</div>
 	<div class="flex-child" style="width:60%;height:32em;overflow-y:scroll;">
 		@foreach ($recent_comments as $comment)
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+			<div class="flex-container ratingContainer" <?php if($loop->odd){ echo "style='background-color:#203838;'"; } ?>>
 			  <div class="flex-child">
-				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+				  <a href="/mapset/{{ $comment->beatmapset_id }}">
+					  <img
+						src="https://b.ppy.sh/thumb/{{ $comment->beatmapset_id }}l.jpg"
+						class="diffThumb"
+						onerror="this.onerror=null; this.src='/charts/INF.png';">
+				  </a>
 			  </div>
 			  <div class="flex-child" style="height:24px;width:24px;">
-				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+				  <a href="/profile/{{ $comment->user_id }}"><img
+					  src="https://s.ppy.sh/a/{{ $comment->user_id }}"
+					  style="height:24px;width:24px;" title="{{
+					  $comment->osu_user->username }}"/></a>
 			  </div>
 			  <div class="flex-child" style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
-                    <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>"><?php
-				  echo mb_strimwidth(htmlspecialchars($row["Comment"]), 0, 55, "...");
-				?></a>
+				  <a style="color:white;" href="/mapset/{{ $comment->beatmapset_id }}">
+					  {{ $comment->comment }}
+				</a>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo GetHumanTime($row["date"]); ?>
+				  {{ $comment->created_at->diffForHumans() }}
 			  </div>
 			</div>
 		@endforeach
