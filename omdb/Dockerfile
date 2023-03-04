@@ -41,4 +41,4 @@ RUN php artisan config:cache
 RUN php artisan view:cache
 
 EXPOSE 8000
-CMD ["bash", "-c", "php artisan migrate --force && php artisan serve --host 0.0.0.0"]
+CMD ["bash", "-c", "php artisan serve --host 0.0.0.0"]
