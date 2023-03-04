@@ -66,6 +66,19 @@
 
 <body>
   <div class="topBar">
+    @if (config('app.env') != 'production')
+      <div
+        style="background-color: darkOrange; color: black; width: 100%; padding:
+        15px 30px; line-height: 1;">
+        <b>NOTICE:</b> This is the <u>{{ config('app.env') }}</u> environment,
+        not live. Data saved here is not guaranteed to be permanent. If
+        something is wrong, please report it to the <a
+          href="https://discord.gg/NwcphppBMG">omdb
+          dev discord</a>. For the
+        production version, click <a href="https://omdb.nyahh.net">here</a>.
+      </div>
+    @endif
+
     <a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map
       database</a>
 

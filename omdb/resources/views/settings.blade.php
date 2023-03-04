@@ -40,12 +40,12 @@
   <form>
     <table>
       <tr><!--
-                                                  <td>
-                                                  </td>
-                                                  <td>
-                                                      Update username button here.<Br>
-                                                      <span class="subtext">Useful if you've had a namechange.</span>
-                                                  </td>-->
+                                                        <td>
+                                                        </td>
+                                                        <td>
+                                                            Update username button here.<Br>
+                                                            <span class="subtext">Useful if you've had a namechange.</span>
+                                                        </td>-->
       </tr>
       <tr>
         <td>
@@ -101,8 +101,7 @@
     bad as having your PASSWORD leaked.<br> Click your application name to REVEAL
     your API key.</span><br><br>
 
-  <?php
-  /*
+  {{--
     $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE UserID=?");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
@@ -112,7 +111,7 @@
             echo "<details><summary>{$row["Name"]} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
         }
     }
-*/
+--}}
   ?>
 
   <form action="CreateNewApiApp.php" method="get">
