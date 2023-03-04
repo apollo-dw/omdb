@@ -18,7 +18,7 @@ class ProfileController extends Controller
     $osu_user = OsuUser::where("user_id", $user_id)
       ->with("omdb_user")
       ->first();
-    $omdb_user = $osu_user->omdb_user;
+    $omdb_user = $osu_user?->omdb_user;
 
     $is_you = false;
     $rating_counts = null;
