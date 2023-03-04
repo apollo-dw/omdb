@@ -68,7 +68,7 @@
           @php
             $widthPercentage = abs(($correlation / 2) * 100);
             $leftMargin = 0;
-            
+
             if ($correlation < 0) {
                 $leftMargin = 50 - $widthPercentage;
             }
@@ -121,9 +121,7 @@
 
         <div id="ratingDisplay">
           <center>Latest 50 Ratings</center>
-          <?php
-          // include 'rating.php';
-          ?>
+          <x-ratings.latest :user-id="$osu_user->user_id" />
         </div>
       @else
         This person is not an OMDB user :(
