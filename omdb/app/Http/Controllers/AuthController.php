@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Username;
+use App\Models\OsuUser;
+use App\Models\OmdbUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,20 +97,22 @@ class AuthController extends Controller
 		$user_id = intval($json["id"]);
 		$username = $json["username"];
 
-		$user = User::updateOrCreate(
-			['id' => $user_id],
+		$osu_user = OsuUser::updateOrCreate(
+			['user_id' => $user_id],
+			['username' => $username],
+		);
+
+		$omdb_user = OmdbUser::updateOrCreate(
+			['user_id' => $osu_user->user_id],
 			[
 				'access_token' => $access_token,
 				'refresh_token' => $refresh_token,
 			],
 		);
 
-		Username::updateOrCreate(
-			['user_id' => $user_id],
-			['username' => $username],
-		);
+		info('WTF', ['osu_user' => $osu_user, 'omdb_user' => $omdb_user]);
 
-		Auth::login($user);
+		Auth::login($omdb_user);
 
 		/*
 		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");

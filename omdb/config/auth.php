@@ -65,7 +65,8 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\OmdbUser::class,
+            'table' => 'omdb_users',
         ],
 
         // 'users' => [

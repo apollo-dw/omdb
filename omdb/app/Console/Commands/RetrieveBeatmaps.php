@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Beatmap;
+use App\Models\OsuUser;
 use App\Models\BeatmapSet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -54,7 +55,7 @@ class RetrieveBeatmaps extends Command
         while (true) {
             // Retrieve beatmaps
             $response = Http::withToken($access_token)->get('https://osu.ppy.sh/api/v2/beatmapsets/search', [
-                'query' => 'ranked>2023/02/20',
+                'query' => 'ranked>2023/03/01',
                 'sort' => 'ranked_asc',
                 'explicit_content' => 'show',
                 'cursor_string' => $cursor,
@@ -68,9 +69,12 @@ class RetrieveBeatmaps extends Command
                 break;
             }
 
+            $osu_users = array();
             $db_beatmapsets = array();
             $db_beatmaps = array();
 
+            // TODO: Not doing ASYNC for now, as it seems to kick me from the
+            // osu API...
             /* $requests = array();
             foreach ($beatmapsets as $beatmapset) {
                 array_push($requests, $client->getAsync("/beatmapsets/{$beatmapset['id']}"));
@@ -87,8 +91,22 @@ class RetrieveBeatmaps extends Command
 
                 $full_beatmapset = $response->json();
 
+                $creator_id = $beatmapset['user_id'];
+                if (!array_key_exists($creator_id, $osu_users)) {
+                    $response = Http::withToken($access_token)
+                        ->withUrlParameters(['user_id' => $creator_id])
+                        ->get('https://osu.ppy.sh/api/v2/users/{user_id}');
+
+                    $mapper = $response->json();
+                    $osu_users[$creator_id] = [
+                        'user_id' => $creator_id,
+                        'username' => $mapper['username'],
+                    ];
+                }
+
                 array_push($db_beatmapsets, [
                     'id' => $beatmapset['id'],
+                    'creator' => $full_beatmapset['creator'],
                     'creator_id' => $beatmapset['user_id'],
                     'artist' => $beatmapset['artist'],
                     'title' => $beatmapset['title'],
@@ -110,6 +128,7 @@ class RetrieveBeatmaps extends Command
                 }
             }
 
+            OsuUser::insert(array_values($osu_users));
             BeatmapSet::insert($db_beatmapsets);
             Beatmap::insert($db_beatmaps);
 

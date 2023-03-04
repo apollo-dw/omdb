@@ -8,12 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class OmdbUser extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'users';
-    protected $primaryKey = 'id';
+    protected $table = 'omdb_users';
+    protected $primaryKey = 'user_id';
 
     protected $attributes = [
         'banned' => false,
@@ -21,12 +21,12 @@ class User extends Authenticatable
     ];
 
     protected $fillable = [
-        'id', 'access_token', 'refresh_token'
+        'user_id', 'access_token', 'refresh_token'
     ];
 
-    public function username()
+    public function osu_user()
     {
-        $username = $this->hasOne('App\\Models\\Username', 'user_id', 'id');
-        return $username;
+        $osu_user = $this->hasOne('App\\Models\\OsuUser', 'user_id', 'user_id');
+        return $osu_user;
     }
 }

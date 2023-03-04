@@ -63,10 +63,10 @@
 					@php($user = Auth::user())
 
 					<a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a>
-					<a href="/profile/{{ $user->id }}" style="color:white;">
-						<img src="https://s.ppy.sh/a/{{ $user->id }}" style="height:2rem;vertical-align:middle;" />
+					<a href="/profile/{{ $user->user_id }}" style="color:white;">
+						<img src="https://s.ppy.sh/a/{{ $user->user_id }}" style="height:2rem;vertical-align:middle;" />
 						&nbsp;
-						<b>{{ $user->username->username }}</b>
+						<b>{{ $user->osu_user->username }}</b>
 					</a>
 				@else
 					<b><a href="/auth/login">log in</a></b>

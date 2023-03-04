@@ -10,7 +10,7 @@
     </a>
     by
     <a href='/profile/{{ $mapset->creator_id }}'>
-        {{ $mapset->creator_name->username }}
+        {{ $mapset->creator_user->username }}
     </a>
 </h1></center>
 
@@ -194,17 +194,37 @@
             @foreach ($comments as $comment)
                 <div class="flex-container flex-child commentHeader">
                     <div class="flex-child" style="height:24px;width:24px;">
-                        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                        <a href="/profile/{{ $comment->user_id }}">
+                            <img
+                                src="https://s.ppy.sh/a/{{ $comment->user_id }}"
+                                style="height:24px;width:24px;"
+                                title="{{ $comment->osu_user->username }}"/>
+                        </a>
                     </div>
                     <div class="flex-child">
-                        <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                        <a href="/profile/{{ $comment->user_id }}">
+                            {{ $comment->osu_user->username }}
+                        </a>
                     </div>
                     <div class="flex-child" style="margin-left:auto;">
-                        <?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
+                        @php
+                            $auth_user = Auth::user();
+                        @endphp
+
+                        @if ($comment->user_id == $auth_user->user_id)
+                            <i
+                                class="icon-remove removeComment"
+                                style="color:#f94141;"
+                                value="{{ $comment->id }}"></i>
+                            {{ $comment->created_at->diffForHumans() }}
+                        @endif
                     </div>
                 </div>
                 <div class="flex-child comment" style="min-width:0;overflow: hidden;">
-                    <p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
+                    <p>
+                        <!-- TODO: ParseOsuLinks -->
+                        {{ nl2br($comment->comment) }}
+                    </p>
                 </div>
             @endforeach
 		</div>
@@ -214,22 +234,27 @@
 <script>
 	function submitComment(){
 		console.log("yeah");
-		var text = encodeURIComponent($('#commentForm').val());
-		console.log(text);
+		var comment = encodeURIComponent($('#commentForm').val());
+		console.log(comment);
 
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				location.reload();
-   			}
-  		};
+		if (!(comment.length > 3 && comment.length < 8000)) {
+            return;
+        }
 
-		if (text.length > 3 && text.length < 8000){
-			$('#commentSubmit').prop('disabled', true);
-			xhttp.open("POST", "SubmitComment.php", true);
-			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhttp.send("sID={{ $mapset->id }}&comment=" + text);
-		}
+        $('#commentSubmit').prop('disabled', true);
+        let payload = { comment };
+        fetch("/mapset/{{ $mapset->id }}/comment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            },
+            body: JSON.stringify(payload),
+        }).then(result => {
+            if (result.status == 200) {
+                location.reload();
+            }
+        });
 	}
 
     $('#commentForm').keydown(function (event) {

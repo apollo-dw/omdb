@@ -13,7 +13,7 @@ class HomeController extends Controller
     {
         $counts = DB::select("
             SELECT
-                (SELECT COUNT(*) FROM users) as user_count,
+                (SELECT COUNT(*) FROM omdb_users) as user_count,
                 (SELECT COUNT(*) FROM comments) as comment_count,
                 (SELECT COUNT(*) FROM ratings) as rating_count");
 
@@ -31,7 +31,10 @@ class HomeController extends Controller
 
         $recent_comments = DB::select("SELECT * FROM `comments` ORDER BY `updated_at` DESC LIMIT 20");
 
-        $latest_mapsets = BeatmapSet::latest()->take(8)->get();
+        $latest_mapsets = BeatmapSet::latest('date_ranked')
+            ->with('creator_user')
+            ->take(8)
+            ->get();
         /* $latest_mapsets = DB::select("
             SELECT DISTINCT
                 id, artist, title, creator_id, updated_at, date_ranked

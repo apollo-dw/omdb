@@ -55,7 +55,7 @@ a:hover {
     text-decoration: underline;
 }
 
-.topbarlink {
+.topBarLink {
     height: 100%;
     min-width: 3rem;
     background-color: #182828;
@@ -66,27 +66,27 @@ a:hover {
     margin: 0px;
 }
 
-a .topbarlink {
+a .topBarLink {
     color: white;
 }
 
-.topbarlink:hover {
+.topBarLink:hover {
     background-color: #0c1515;
 }
 
-.topbardropdown {
+.topBarDropDown {
     display: inline-block;
     margin: 0px;
     padding: 0px;
 }
 
-.topbarsearch {
+.topBarSearch {
     display: inline-block;
     margin: 0px;
     padding: 0px;
 }
 
-#topbarsearchresults {
+#topBarSearchResults {
     display: none;
     position: absolute;
     z-index: 1;
@@ -97,14 +97,14 @@ a .topbarlink {
     border-radius: 6px;
 }
 
-.topbarsearchbar {
+.topBarSearchBar {
     margin-left: 8px;
     border-radius: 8px;
-    font-family: ms ui gothic, verdana, sans-serif;
+    font-family: MS UI Gothic, Verdana, sans-serif;
     z-index: 2;
 }
 
-#topbarsearchresults a {
+#topBarSearchResults a {
     float: none;
     text-decoration: none;
     display: block;
@@ -112,7 +112,7 @@ a .topbarlink {
     color: white;
 }
 
-#topbarsearchresults a:hover {
+#topBarSearchResults a:hover {
     text-decoration: underline;
 }
 
@@ -134,10 +134,10 @@ a .topbarlink {
 }
 
 .dropdown-content a:hover {
-    background-color: darkslategrey;
+    background-color: DarkSlateGrey;
 }
 
-.topbardropdown:hover .dropdown-content {
+.topBarDropDown:hover .dropdown-content {
     display: block;
 }
 
@@ -148,10 +148,10 @@ a .topbarlink {
     min-height: 50%;
 }
 
-.warningbar {
+.warningBar {
     margin-top: 5rem;
     padding: 1rem;
-    border: 1px solid firebrick;
+    border: 1px solid FireBrick;
     border-radius: 16px;
     width: 27.5%;
     min-height: 3.5em;
@@ -169,7 +169,7 @@ a .topbarlink {
     box-sizing: border-box;
 }
 
-.starremovebutton {
+.starRemoveButton {
     opacity: 0;
     font-size: 16px;
     padding-left: 0.25em;
@@ -177,7 +177,7 @@ a .topbarlink {
 }
 
 @media only screen and (max-width: 1050px) {
-    .starremovebutton {
+    .starRemoveButton {
         opacity: 1;
     }
 
@@ -186,14 +186,14 @@ a .topbarlink {
         padding-right: 10%;
     }
 
-    .topbar {
+    .topBar {
         padding-left: 10%;
         padding-right: 10%;
     }
 }
 
-.identifier:hover ~ .starremovebutton:not(.disabled),
-.starremovebutton:hover:not(.disabled) {
+.identifier:hover ~ .starRemoveButton:not(.disabled),
+.starRemoveButton:hover:not(.disabled) {
     opacity: 0.5;
     cursor: pointer;
 }
@@ -210,13 +210,13 @@ a .topbarlink {
     white-space: nowrap;
 }
 
-span.subtext {
+span.subText {
     font-size: 11px;
     color: #a8a8a8;
 }
 
-.ratingcontainer {
-    background-color: darkslategrey;
+.ratingContainer {
+    background-color: DarkSlateGrey;
     align-items: center;
 }
 
@@ -230,7 +230,7 @@ span.subtext {
     vertical-align: middle;
 }
 
-.diffthumb {
+.diffThumb {
     height: 32px;
     width: 32px;
     border: 1px solid #ddd;
@@ -242,19 +242,19 @@ select {
     padding: 0.2em;
     border: none;
     border-radius: 1px;
-    background-color: darkslategrey;
+    background-color: DarkSlateGrey;
     color: white;
 }
 
-.commentcontainer {
-    background-color: darkslategrey;
+.commentContainer {
+    background-color: DarkSlateGrey;
     padding: 0px;
     align-items: center;
     align-content: center;
     flex-wrap: wrap;
 }
 
-.commentheader {
+.commentHeader {
     align-items: center;
     width: 100%;
     background-color: #203838;
@@ -270,13 +270,13 @@ select {
     width: 100%;
 }
 
-.commentcomposer {
+.commentComposer {
     width: 100%;
     text-align: right;
     margin: 1em;
 }
 
-textarea#commentform {
+textarea#commentForm {
     width: 100%;
     text-align: left;
     resize: none;
@@ -286,7 +286,7 @@ textarea#commentform {
     border: 1px solid white;
 }
 
-input#commentsubmit {
+input#commentSubmit {
     margin: 1em;
     width: 6em;
     border: 1px solid white;
@@ -294,7 +294,7 @@ input#commentsubmit {
     color: white;
 }
 
-input#commentsubmit:hover {
+input#commentSubmit:hover {
     background-color: #182828;
 }
 
@@ -302,7 +302,7 @@ input#commentsubmit:hover {
     cursor: pointer;
 }
 
-.osutimestamp {
+.osuTimestamp {
     background-color: #203838;
     font-weight: bold;
     color: white;
@@ -314,18 +314,18 @@ input#commentsubmit:hover {
     font-weight: bold;
 }
 
-.starratingdisplay {
+.starRatingDisplay {
     display: inline-block;
     white-space: nowrap;
     width: 5em;
     padding-right: 0.25em;
 }
 
-.starratingdisplay .icon-star {
+.starRatingDisplay .icon-star {
     margin: 0.05em;
 }
 
-.starbackground {
+.starBackground {
     color: #203838;
     z-index: 0;
     display: inline-block;

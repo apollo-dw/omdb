@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\OsuUser;
+use App\Models\OmdbUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -14,16 +15,20 @@ class ProfileController extends Controller
     {
         $user_id = $request->route('user_id');
 
-        $user = User::where('id', $user_id)->first();
+        $osu_user = OsuUser::where('user_id', $user_id)
+            ->with('omdb_user')
+            ->first();
+        $omdb_user = $osu_user->omdb_user;
+
         $is_you = false;
         $rating_counts = null;
         $max_rating = 1.0;
 
         // Only applicable to OMDB users
-        if ($user !== null) {
+        if ($osu_user !== null) {
             // Check if the user requested is the logged in user ("you")
             if (Auth::check())
-                $is_you = Auth::user()->id == $user->id;
+                $is_you = Auth::user()->user_id == $osu_user->user_id;
 
             // TODO: Actually fetch this
             $rating_counts = [
@@ -66,13 +71,13 @@ class ProfileController extends Controller
             $data = $response->json();
 
             // Create a synthetic user so we can query just the data we need
-            $user = new \stdClass;
-            $user->id = $user_id;
-            $user->username = $data['username'];
+            $osu_user = new \stdClass;
+            $osu_user->id = $user_id;
+            $osu_user->username = $data['username'];
         }
 
         return view('profile', [
-            'user' => $user,
+            'osu_user' => $osu_user,
             'is_you' => $is_you,
             'rating_counts' => $rating_counts,
             'max_rating' => $max_rating,

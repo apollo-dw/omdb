@@ -12,7 +12,7 @@ class BeatmapSet extends Model
     protected $table = 'beatmapsets';
 
     protected $fillable = [
-        'id', 'beatmapset_id', 'creator_id',
+        'id', 'beatmapset_id', 'creator', 'creator_id',
     ];
 
     protected $dateFormat = \DateTime::ISO8601;
@@ -20,8 +20,8 @@ class BeatmapSet extends Model
         'date_ranked' => 'datetime:c',
     ];
 
-    public function creator_name()
+    public function creator_user()
     {
-        return $this->hasOne('App\\Models\\Username', 'user_id', 'creator_id');
+        return $this->hasOne('App\\Models\\OsuUser', 'user_id', 'creator_id');
     }
 }

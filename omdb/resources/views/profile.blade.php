@@ -7,17 +7,16 @@
 <div class="profileContainer">
 	<div class="profileCard">
 		<div class="profileTitle">
-			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">
-				<?php /* echo GetUserNameFromId($profileId, $conn); */ ?>
-				{{ $user->username }}
+			<a href="https://osu.ppy.sh/u/{{ $osu_user->user_id }}" target="_blank" rel="noopener noreferrer">
+				{{ $osu_user->username }}
 			</a>
 
-			<a href="https://osu.ppy.sh/u/{{ $user->id }}" target="_blank" rel="noopener noreferrer">
+			<a href="https://osu.ppy.sh/u/{{ $osu_user->user_id }}" target="_blank" rel="noopener noreferrer">
 				<i class="icon-external-link" style="font-size:10px;"></i>
 			</a>
 		</div>
 		<div class="profileImage">
-			<img src="https://s.ppy.sh/a/{{ $user->id }}" style="width:146px;height:146px;"/>
+			<img src="https://s.ppy.sh/a/{{ $osu_user->user_id }}" style="width:146px;height:146px;"/>
 		</div>
 		<div class="profileStats">
 			<? /*
@@ -37,7 +36,7 @@
 
 						<div class="profileRankingDistributionBar" style="width:
 							<?php echo ($rating_counts[$rs]/$max_rating)*90; ?>%;">
-							<a href="ratings/?id={{ $user->id }}&r=5.0&p=1">
+							<a href="ratings/?id={{ $osu_user->user_id }}&r=5.0&p=1">
 								{{ $rs }}
 								<?php /* if ($profile["Custom50Rating"] != "") {
 								echo " - " .
@@ -82,7 +81,7 @@
 						$rs = number_format($r, 1)
 					@endphp
 
-					<a id="{{ $rs }}Rating" href="ratings/?id={{ $user->id }}&r={{ $rs }}&p=1" class="ratingChoice">
+					<a id="{{ $rs }}Rating" href="ratings/?id={{ $osu_user->user_id }}&r={{ $rs }}&p=1" class="ratingChoice">
 						@for ($j = 0; $j < 5; $j++)
 							@if ($r < $j)
 								<i class="icon-star-empty"></i>

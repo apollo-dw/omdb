@@ -63,7 +63,11 @@ Latest mapsets:<br>
 	@foreach ($latest_mapsets as $mapset)
 		<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 			<a href="/mapset/{{ $mapset->id }}">
-				<img src="https://b.ppy.sh/thumb/{{ $mapset->id }}l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';">
+				<img
+					src="https://b.ppy.sh/thumb/{{ $mapset->id }}l.jpg"
+					class="diffThumb"
+					style="aspect-ratio: 1 / 1;width:90%;height:auto;"
+					onerror="this.onerror=null; this.src='/charts/INF.png';">
 			</a>
 			<br />
 			<span class="subtext">
@@ -73,7 +77,7 @@ Latest mapsets:<br>
 				<br />
 				by
 				<a href="/profile/{{ $mapset->creator_id }}">
-					{{ $mapset->creator_id }}
+					{{ $mapset->creator_user->username }}
 				</a> <br>
 				{{ $mapset->date_ranked->diffForHumans() }}
 			</span>

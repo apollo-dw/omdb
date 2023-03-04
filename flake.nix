@@ -14,6 +14,7 @@
             php.packages.composer
             sqlite
             gitAndTools.gh
+            rlwrap
           ]);
         };
       });

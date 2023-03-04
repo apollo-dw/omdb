@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BeatmapSet;
 use App\Models\Beatmap;
+use App\Models\BeatmapSet;
 use App\Models\Comment;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MapsetController extends Controller
@@ -15,7 +17,9 @@ class MapsetController extends Controller
     {
         $mapset_id = $request->route('mapset_id');
 
-        $mapset = BeatmapSet::where('id', $mapset_id)->first();
+        $mapset = BeatmapSet::where('id', $mapset_id)
+            ->with('creator_user')
+            ->first();
         if ($mapset === null) return abort(404);
 
         $beatmaps = Beatmap::where('beatmapset_id', $mapset_id)
@@ -28,7 +32,9 @@ class MapsetController extends Controller
             WHERE id IN (SELECT id FROM beatmaps WHERE beatmapset_id={$mapset_id})
         ")[0]->average;
 
-        $comments = Comment::where('beatmapset_id', $mapset_id)->get();
+        $comments = Comment::where('beatmapset_id', $mapset_id)
+            ->with('osu_user')
+            ->get();
 
         return view('mapset', [
             'mapset' => $mapset,
@@ -36,5 +42,25 @@ class MapsetController extends Controller
             'average_rating' => $average_rating,
             'comments' => $comments,
         ]);
+    }
+
+    public function post_comment(Request $request)
+    {
+        $mapset_id = $request->route('mapset_id');
+        $comment_content = $request->input('comment');
+
+        $omdb_user = Auth::user();
+
+        // TODO: Make sure the beatmapset exists
+
+        Comment::create([
+            'user_id' => $omdb_user->user_id,
+            'beatmapset_id' => $mapset_id,
+            'comment' => $comment_content,
+        ]);
+
+        info('SAVED COMMENT');
+
+        return response()->json(['success' => 'success'], 200);
     }
 }

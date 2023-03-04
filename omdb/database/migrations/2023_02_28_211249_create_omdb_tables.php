@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
+        Schema::create('osu_users', function (Blueprint $table) {
+            $table->id('user_id');
+            $table->timestamps();
+
+            $table->string('username');
+        });
+
+        Schema::create('omdb_users', function (Blueprint $table) {
+            $table->id('user_id');
             $table->timestamps();
 
             $table->string('access_token');
@@ -23,19 +30,14 @@ return new class extends Migration
 
             // Cached info
             $table->float('cached_weight', 6, 4)->nullable();
-        });
-
-        Schema::create('usernames', function (Blueprint $table) {
-            $table->id('user_id');
-            $table->timestamps();
-
-            $table->string('username');
+            $table->foreign('user_id')->references('user_id')->on('osu_users');
         });
 
         Schema::create('beatmapsets', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
 
+            $table->string('creator');
             $table->integer('creator_id');
 
             // Metadata
@@ -80,7 +82,7 @@ return new class extends Migration
 
             $table->text('comment');
 
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('user_id')->on('omdb_users');
         });
 
         Schema::create('ratings', function (Blueprint $table) {
@@ -90,7 +92,7 @@ return new class extends Migration
             $table->foreignId('beatmap_id');
             $table->decimal('score');
 
-            $table->foreign('beatmap_id')->references('id')->on('users');
+            $table->foreign('beatmap_id')->references('user_id')->on('omdb_users');
         });
     }
 
