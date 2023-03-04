@@ -15,6 +15,11 @@ class Rating extends Model
         'user_id', 'beatmapset_id', 'beatmap_id', 'score',
     ];
 
+    public function beatmap()
+    {
+        return $this->hasOne('App\\Models\\Beatmap', 'id', 'beatmap_id');
+    }
+
     public function osu_user()
     {
         $osu_user = $this->hasOne('App\\Models\\OsuUser', 'user_id', 'user_id');

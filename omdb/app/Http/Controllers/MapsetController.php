@@ -37,16 +37,11 @@ class MapsetController extends Controller
             ->with('osu_user')
             ->get();
 
-        $ratings = Rating::where('beatmapset_id', $mapset_id)
-            ->with('osu_user')
-            ->get();
-
         return view('mapset', [
             'mapset' => $mapset,
             'beatmaps' => $beatmaps,
             'average_rating' => $average_rating,
             'comments' => $comments,
-            'ratings' => $ratings,
         ]);
     }
 
