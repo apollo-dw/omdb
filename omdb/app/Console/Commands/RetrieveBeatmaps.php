@@ -3,12 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Models\Beatmap;
-use App\Models\OsuUser;
 use App\Models\BeatmapSet;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
+use App\Models\OsuUser;
+use Carbon\Carbon;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Promise;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 
 class RetrieveBeatmaps extends Command
 {
@@ -115,7 +116,7 @@ class RetrieveBeatmaps extends Command
           "title" => $beatmapset["title"],
           "genre" => $full_beatmapset["genre"]["id"],
           "language" => $full_beatmapset["language"]["id"],
-          "date_ranked" => $beatmapset["ranked_date"],
+          "date_ranked" => Carbon::parse($beatmapset["ranked_date"]),
         ]);
 
         // TODO: Blacklisting
@@ -125,15 +126,20 @@ class RetrieveBeatmaps extends Command
             "beatmapset_id" => $beatmapset["id"],
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
-            "status" => $beatmap["status"],
+            "status" => $beatmap["ranked"],
             "star_rating" => $beatmap["difficulty_rating"],
           ]);
         }
       }
 
-      OsuUser::insert(array_values($osu_users));
-      BeatmapSet::insert($db_beatmapsets);
-      Beatmap::insert($db_beatmaps);
+      OsuUser::upsert(array_values($osu_users), ['user_id'], ['username']);
+      BeatmapSet::insert($db_beatmapsets, ['id'], [
+        'creator', 'creator_id', 'artist', 'title', 'genre', 'language',
+        'date_ranked',
+      ]);
+      Beatmap::insert($db_beatmaps, ['id'], [
+        'beatmapset_id', 'difficulty_name', 'mode', 'status', 'star_rating'
+      ]);
 
       $this->info("Found and inserted " . count($beatmapsets) . " sets.");
 
