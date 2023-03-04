@@ -40,8 +40,5 @@ WORKDIR /code
 COPY . /code
 RUN composer install --optimize-autoloader --no-dev
 
-RUN php artisan config:cache
-RUN php artisan view:cache
-
 EXPOSE 8000
-CMD ["bash", "-c", "php artisan serve --host 0.0.0.0"]
+CMD ["bash", "-c", "php artisan config:cache; php artisan view:cache; php artisan serve --host 0.0.0.0"]
