@@ -132,14 +132,25 @@ class RetrieveBeatmaps extends Command
         }
       }
 
-      OsuUser::upsert(array_values($osu_users), ['user_id'], ['username']);
-      BeatmapSet::insert($db_beatmapsets, ['id'], [
-        'creator', 'creator_id', 'artist', 'title', 'genre', 'language',
-        'date_ranked',
-      ]);
-      Beatmap::insert($db_beatmaps, ['id'], [
-        'beatmapset_id', 'difficulty_name', 'mode', 'status', 'star_rating'
-      ]);
+      OsuUser::upsert(array_values($osu_users), ["user_id"], ["username"]);
+      BeatmapSet::insert(
+        $db_beatmapsets,
+        ["id"],
+        [
+          "creator",
+          "creator_id",
+          "artist",
+          "title",
+          "genre",
+          "language",
+          "date_ranked",
+        ]
+      );
+      Beatmap::insert(
+        $db_beatmaps,
+        ["id"],
+        ["beatmapset_id", "difficulty_name", "mode", "status", "star_rating"]
+      );
 
       $this->info("Found and inserted " . count($beatmapsets) . " sets.");
 
