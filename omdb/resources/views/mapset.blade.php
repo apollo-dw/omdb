@@ -98,18 +98,32 @@
         <?php if (true || !$blackListed) { ?>
         <div class="flex-child diffBox" style="width:20%;text-align:center;">
             @if (count($beatmap->ratings) > 0)
+                @php
+                    $ratingCounts = array();
+
+                    for ($r = 0.0; $r <= 5.0; $r += 0.5) {
+                        $rs = number_format($r, 1);
+                        $ratingCounts[$rs] = 0;
+                    }
+
+                    foreach ($beatmap->ratings as $rating) {
+                        $rs = number_format($rating->score, 1);
+                        $ratingCounts[$rs] += 1;
+                    }
+
+                    $maxRating = max($ratingCounts);
+                @endphp
+
                 <div class="mapsetRankingDistribution">
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
-                    <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
+                    @for ($r = 0.0; $r <= 5.0; $r += 0.5)
+                        @php
+                            $rs = number_format($r, 1);
+                        @endphp
+
+                        <div
+                            class="mapsetRankingDistributionBar"
+                            style="height: {{ ($ratingCounts[$rs]/$maxRating)*90; }}%;"></div>
+                    @endfor
                 </div>
                 <span class="subText" style="width:100%;">Rating Distribution</span>
             @endif
@@ -117,8 +131,18 @@
 
         <div class="flex-child diffBox" style="text-align:right;width:40%;">
             @if (count($beatmap->ratings) > 0)
-                Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+                Rating:
+                    <b><?php /* echo number_format($row["WeightedAvg"], 2); */ ?></b>
+                    <span class="subText">
+                        / 5.00 from
+                        <span style="color:white">{{ count($beatmap->ratings) }}</span>
+                        votes
+                    </span>
+                <br>
+
+                <?php /*
                 Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/">overall</a>
+            */ ?>
             @endif
         </div>
         <div class="flex-child diffBox" style="padding:auto;width:30%;">
@@ -161,17 +185,15 @@
 	<div class="flex-child" style="width:40%;">
 		Latest Ratings<br><br>
         <div id="setRatingsDisplay">
-            <?php
-            // require 'ratings.php';
-            ?>
         </div>
 	</div>
+
 	<div class="flex-child" style="width:60%;">
-		Comments<br><br>
+		Comments
+        <br><br>
 		<div class="flex-container commentContainer" style="width:100%;">
-
+            {{-- Comment submission form. --}}
             @if (Auth::check())
-
                 <div class="flex-child commentComposer">
                     <form>
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -179,17 +201,7 @@
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                     </form>
                 </div>
-
             @endif
-
-			<?php
-				/* $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
-				$stmt->bind_param("s", $sampleRow["SetID"]);
-				$stmt->execute();
-				$result = $stmt->get_result();
-				if ($result->num_rows != 0) {
-					while ($row = $result->fetch_assoc()) { */
-						?>
 
             @foreach ($comments as $comment)
                 <div class="flex-container flex-child commentHeader">
@@ -220,6 +232,8 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Comment text itself --}}
                 <div class="flex-child comment" style="min-width:0;overflow: hidden;">
                     <p>
                         <!-- TODO: ParseOsuLinks -->
@@ -232,18 +246,39 @@
 </div>
 
 <script>
-	function submitComment(){
-		console.log("yeah");
+	function submitComment() {
+		// console.log("yeah");
 		var comment = encodeURIComponent($('#commentForm').val());
-		console.log(comment);
+		// console.log(comment);
 
 		if (!(comment.length > 3 && comment.length < 8000)) {
             return;
         }
 
         $('#commentSubmit').prop('disabled', true);
+
         let payload = { comment };
         fetch("/mapset/{{ $mapset->id }}/comment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            },
+            body: JSON.stringify(payload),
+        }).then(result => {
+            if (result.status == 200) {
+                location.reload();
+            }
+        });
+	}
+
+	function submitRating(beatmap_id, rating) {
+        if (!(rating >= 0 && rating <= 5)) {
+            return;
+        }
+
+        let payload = { beatmap_id, rating };
+        fetch("/mapset/{{ $mapset->id }}/rating", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -378,9 +413,12 @@
   		};
 
 		$this.attr("rating", rating.toFixed(1));
+        submitRating(bID, rating);
+        /*
   		xhttp.open("POST", "SubmitRating.php", true);
   		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   		xhttp.send("bID=" + bID + "&rating=" + rating);
+        */
 		$this.parent().parent().find('.star-value').html("rating...");
 
 	});

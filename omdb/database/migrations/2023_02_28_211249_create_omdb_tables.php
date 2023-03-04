@@ -82,6 +82,7 @@ return new class extends Migration
 
             $table->text('comment');
 
+            $table->foreign('beatmapset_id')->references('id')->on('beatmapsets');
             $table->foreign('user_id')->references('user_id')->on('omdb_users');
         });
 
@@ -89,10 +90,15 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
+            $table->foreignId('user_id');
             $table->foreignId('beatmap_id');
+            $table->foreignId('beatmapset_id');
+
             $table->decimal('score');
 
-            $table->foreign('beatmap_id')->references('user_id')->on('omdb_users');
+            $table->foreign('user_id')->references('user_id')->on('omdb_users');
+            $table->foreign('beatmap_id')->references('id')->on('beatmaps');
+            $table->foreign('beatmapset_id')->references('id')->on('beatmapsets');
         });
     }
 

@@ -19,9 +19,10 @@ Route::get('/charts', 'HomeController@show');
 Route::get('/maps', 'HomeController@show');
 Route::get('/random', 'HomeController@show');
 Route::get('/mapset/{mapset_id}', 'MapsetController@show');
-Route::post('/mapset/{mapset_id}/comment', 'MapsetController@post_comment')->middleware('auth');
 Route::get('/profile/{user_id}', 'ProfileController@show');
-Route::resource('/rating', 'RatingController');
+
+Route::post('/mapset/{mapset_id}/comment', 'MapsetController@post_comment')->middleware('auth');
+Route::post('/mapset/{mapset_id}/rating', 'MapsetController@post_rating')->middleware('auth');
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('login', 'AuthController@login')->name('login');

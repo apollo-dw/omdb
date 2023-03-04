@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Beatmap;
 use App\Models\BeatmapSet;
 use App\Models\Comment;
+use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -36,11 +37,16 @@ class MapsetController extends Controller
             ->with('osu_user')
             ->get();
 
+        $ratings = Rating::where('beatmapset_id', $mapset_id)
+            ->with('osu_user')
+            ->get();
+
         return view('mapset', [
             'mapset' => $mapset,
             'beatmaps' => $beatmaps,
             'average_rating' => $average_rating,
             'comments' => $comments,
+            'ratings' => $ratings,
         ]);
     }
 
@@ -59,7 +65,26 @@ class MapsetController extends Controller
             'comment' => $comment_content,
         ]);
 
-        info('SAVED COMMENT');
+        return response()->json(['success' => 'success'], 200);
+    }
+
+    public function post_rating(Request $request)
+    {
+        $mapset_id = $request->route('mapset_id');
+        $map_id = $request->input('beatmap_id');
+        $rating = $request->input('rating');
+
+        $omdb_user = Auth::user();
+
+        // TODO: Make sure the beatmapset exists
+        // TODO: Make sure the beatmap exists
+
+        Rating::create([
+            'user_id' => $omdb_user->user_id,
+            'beatmapset_id' => $mapset_id,
+            'beatmap_id' => $map_id,
+            'score' => $rating,
+        ]);
 
         return response()->json(['success' => 'success'], 200);
     }
