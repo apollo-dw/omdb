@@ -27,6 +27,22 @@ particular API methods, consult Laravel documentation.
 
 - Copy `.env.sample` to `.env` and then modify some values to your liking.
 
+## Setting up OAuth (Only needs to be done once)
+
+- Go to https://osu.ppy.sh/home/account/edit
+
+- Scroll down to the bottom, under the section OAuth > own clients
+
+- Click "New OAuth Application", and then fill out the details.
+  - For the redirect URL, you want to put `<YOUR_HOST>/auth/callback`, replacing
+      the YOUR_HOST part with wherever you open omdb for local development. For
+      example, if you use http://localhost:8000, when put
+      `http://localhost:8000/auth/callback` as the redirect URL.
+
+- Copy the client ID and client secret into your config in the respective
+    locations (probably `OSU_CLIENT_ID` and `OSU_CLIENT_SECRET` in the `.env`
+    file)
+
 ## Developing setup (Needs to be done EVERY time you start developing)
 
 - Start up the development Docker container by running:
