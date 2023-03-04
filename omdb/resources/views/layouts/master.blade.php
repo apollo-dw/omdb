@@ -29,7 +29,9 @@
         return;
       }
 
-      let payload = { query };
+      let payload = {
+        query
+      };
       fetch('/search', {
         method: 'POST',
         headers: {

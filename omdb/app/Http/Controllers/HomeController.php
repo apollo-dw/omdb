@@ -36,18 +36,23 @@ class HomeController extends Controller
       ->take(8)
       ->get();
 
-    $last_7_days_ratings = DB::table("ratings")
-      ->join("beatmaps", "ratings.beatmap_id", "=", "beatmaps.id")
-      ->join("beatmapsets", "ratings.beatmapset_id", "=", "beatmapsets.id")
+    $ratings_subquery = DB::table("ratings")
       ->whereDate("ratings.created_at", ">=", Carbon::now()->subWeek())
       ->groupBy("ratings.beatmap_id")
+      ->select("beatmap_id", DB::raw("count(*) as num_ratings"));
+
+    $last_7_days_ratings = DB::table("beatmaps")
+      ->joinSub($ratings_subquery, "ratings", function ($join) {
+        $join->on("ratings.beatmap_id", "=", "beatmaps.id");
+      })
+      ->join("beatmapsets", "beatmaps.beatmapset_id", "=", "beatmapsets.id")
       ->select(
-        "ratings.beatmap_id",
-        "ratings.beatmapset_id",
+        "beatmaps.id",
+        "beatmaps.beatmapset_id",
         "beatmapsets.artist",
         "beatmapsets.title",
         "beatmaps.difficulty_name",
-        DB::raw("count(*) as num_ratings")
+        "ratings.num_ratings"
       )
       ->orderByDesc("num_ratings")
       ->get();
