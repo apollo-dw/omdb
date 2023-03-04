@@ -47,7 +47,7 @@ return new class extends Migration {
       $table->string("title");
       $table->integer("genre");
       $table->integer("language");
-      $table->timestamp("date_ranked");
+      $table->dateTime("date_ranked");
     });
 
     Schema::create("beatmaps", function (Blueprint $table) {
