@@ -9,17 +9,17 @@ use Laravel\Sanctum\HasApiTokens;
 
 class OsuUser extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+  use HasApiTokens;
+  use HasFactory;
+  use Notifiable;
 
-    protected $table = 'osu_users';
-    protected $primaryKey = 'user_id';
+  protected $table = "osu_users";
+  protected $primaryKey = "user_id";
 
-    protected $fillable = [
-        'user_id', 'username'
-    ];
+  protected $fillable = ["user_id", "username"];
 
-    public function omdb_user()
-    {
-        return $this->hasOne('App\\Models\\OmdbUser', 'user_id', 'user_id');
-    }
+  public function omdb_user()
+  {
+    return $this->hasOne("App\\Models\\OmdbUser", "user_id", "user_id");
+  }
 }

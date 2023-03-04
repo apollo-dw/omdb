@@ -8,22 +8,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class Beatmap extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    protected $table = 'beatmaps';
+  protected $table = "beatmaps";
 
-    protected $attributes = [
-    ];
+  protected $attributes = [];
 
-    protected $fillable = [
-        'id', 'beatmapset_id', 'creator_id',
-        'difficulty_name', 'artist', 'title',
-        'mode', 'status', 'genre', 'language',
-        'star_rating', 'date_ranked',
-    ];
+  protected $fillable = [
+    "id",
+    "beatmapset_id",
+    "creator_id",
+    "difficulty_name",
+    "artist",
+    "title",
+    "mode",
+    "status",
+    "genre",
+    "language",
+    "star_rating",
+    "date_ranked",
+  ];
 
-    public function ratings()
-    {
-        return $this->hasMany('App\\Models\\Rating', 'beatmap_id');
-    }
+  public function ratings()
+  {
+    return $this->hasMany("App\\Models\\Rating", "beatmap_id");
+  }
 }

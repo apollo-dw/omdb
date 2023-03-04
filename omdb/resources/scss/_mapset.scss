@@ -1,51 +1,51 @@
 .diffContainer {
-    background-color: DarkSlateGrey;
-    justify-content: space-between;
-    align-items: center;
+  background-color: DarkSlateGrey;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .diffBox {
-    padding: 0.5em;
-    flex-grow: 1;
-    height: 100%;
+  padding: 0.5em;
+  flex-grow: 1;
+  height: 100%;
 }
 
 .unrated {
-    color: grey;
+  color: grey;
 }
 
 ol {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 li {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .mapsetRankingDistribution {
-    width: 100%;
-    height: 1.5rem;
-    margin: 0px;
-    color: rgba(125, 125, 125, 0.33);
-    display: flex;
-    transform: rotate(180deg);
+  width: 100%;
+  height: 1.5rem;
+  margin: 0px;
+  color: rgba(125, 125, 125, 0.33);
+  display: flex;
+  transform: rotate(180deg);
 }
 
 .mapsetRankingDistributionBar {
-    float: bottom;
-    width: calc(100% / 11);
-    min-height: 0px;
-    margin: 0px;
-    padding: 0px;
-    text-align: left;
-    display: inline;
-    vertical-align: bottom;
-    background-color: rgba(125, 125, 125, 0.33);
-    border-bottom: 1px solid rgba(125, 125, 125, 0.33);
+  float: bottom;
+  width: calc(100% / 11);
+  min-height: 0px;
+  margin: 0px;
+  padding: 0px;
+  text-align: left;
+  display: inline;
+  vertical-align: bottom;
+  background-color: rgba(125, 125, 125, 0.33);
+  border-bottom: 1px solid rgba(125, 125, 125, 0.33);
 }
 
 .faded {
-    opacity: 0.5;
+  opacity: 0.5;
 }

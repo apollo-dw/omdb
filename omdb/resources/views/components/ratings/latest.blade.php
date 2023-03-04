@@ -1,40 +1,43 @@
 @foreach ($ratings as $rating)
-
-    <div class="flex-container ratingContainer" <?php /* if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } */ ?>>
-        <div class="flex-child">
-            <a href="/profile/{{ $rating->user_id }}">
-                <img
-                    src="https://s.ppy.sh/a/{{ $rating->user_id }}"
-                    style="height:24px;width:24px;"
-                    title="{{ $rating->osu_user->username }}" />
-            </a>
-        </div>
-        <div class="flex-child" style="flex:0 0 70%;">
-            {{ $rating->beatmap->difficulty_name }}
-            <?php
-            /* $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
+  <div class="flex-container ratingContainer" <?php
+  /* if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } */
+  ?>>
+    <div class="flex-child">
+      <a href="/profile/{{ $rating->user_id }}">
+        <img src="https://s.ppy.sh/a/{{ $rating->user_id }}"
+          style="height:24px;width:24px;"
+          title="{{ $rating->osu_user->username }}" />
+      </a>
+    </div>
+    <div class="flex-child" style="flex:0 0 70%;">
+      {{ $rating->beatmap->difficulty_name }}
+      <?php
+      /* $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
             $stmt2->bind_param("s", $row["BeatmapID"]);
             $stmt2->execute();
             $result2 = $stmt2->get_result();
             $row2 = $result2->fetch_row();
             echo renderRating($conn, $row) . " on " .
                 htmlspecialchars($row2[0]); */
-            ?>
-        </div>
-        <div class="flex-child" style="width:100%;text-align:right;">
-            {{ $rating->created_at->diffForHumans() }}
-        </div>
+      ?>
     </div>
-
+    <div class="flex-child" style="width:100%;text-align:right;">
+      {{ $rating->created_at->diffForHumans() }}
+    </div>
+  </div>
 @endforeach
 
-<?php /*
+{{--
 <br>
 <div style="text-align:center;">
     <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
+        <b><span><?php if ($page > 1) {
+            echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>";
+        } ?></span></b>
         <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
+        <b><span><?php if ($page < $amountOfSetPages) {
+            echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>";
+        } ?></span></b><br>
         <span class="subText">Page</span>
     </div>
 </div>
@@ -67,4 +70,4 @@
 
 </script>
 
-    */ ?>
+    --}}

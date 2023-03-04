@@ -14,6 +14,7 @@
             mdbook
             php
             php.packages.composer
+            php.packages.php-cs-fixer
             sqlite
             gitAndTools.gh
             rlwrap

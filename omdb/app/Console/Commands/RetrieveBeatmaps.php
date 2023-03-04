@@ -12,131 +12,136 @@ use GuzzleHttp\Promise;
 
 class RetrieveBeatmaps extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'omdb:retrieve_beatmaps';
+  /**
+   * The name and signature of the console command.
+   *
+   * @var string
+   */
+  protected $signature = "omdb:retrieve_beatmaps";
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Update the list of beatmaps from OSU';
+  /**
+   * The console command description.
+   *
+   * @var string
+   */
+  protected $description = "Update the list of beatmaps from OSU";
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        // Get an API key
-        $response = Http::asForm()->post('https://osu.ppy.sh/oauth/token', [
-            'client_id' => config('auth.osu_client_id'),
-            'client_secret' => config('auth.osu_client_secret'),
-            'grant_type' => 'client_credentials',
-            'scope' => 'public',
-        ]);
-        $result = $response->json();
-        $access_token = $result["access_token"];
+  /**
+   * Execute the console command.
+   */
+  public function handle(): void
+  {
+    // Get an API key
+    $response = Http::asForm()->post("https://osu.ppy.sh/oauth/token", [
+      "client_id" => config("auth.osu_client_id"),
+      "client_secret" => config("auth.osu_client_secret"),
+      "grant_type" => "client_credentials",
+      "scope" => "public",
+    ]);
+    $result = $response->json();
+    $access_token = $result["access_token"];
 
-        info('Got access token.', ['access_token' => $access_token]);
+    info("Got access token.", ["access_token" => $access_token]);
 
-        $cursor = null;
+    $cursor = null;
 
-        $client = new GuzzleClient([
-            'base_uri' => 'https://osu.ppy.sh/api/v2',
-            'request.options' => [
-                'headers' => "Bearer {$access_token}",
-            ],
-        ]);
+    $client = new GuzzleClient([
+      "base_uri" => "https://osu.ppy.sh/api/v2",
+      "request.options" => [
+        "headers" => "Bearer {$access_token}",
+      ],
+    ]);
 
-        while (true) {
-            // Retrieve beatmaps
-            $response = Http::withToken($access_token)->get('https://osu.ppy.sh/api/v2/beatmapsets/search', [
-                'query' => 'ranked>2023/03/01',
-                'sort' => 'ranked_asc',
-                'explicit_content' => 'show',
-                'cursor_string' => $cursor,
-            ]);
+    while (true) {
+      // Retrieve beatmaps
+      $response = Http::withToken($access_token)->get(
+        "https://osu.ppy.sh/api/v2/beatmapsets/search",
+        [
+          "query" => "ranked>2023/03/01",
+          "sort" => "ranked_asc",
+          "explicit_content" => "show",
+          "cursor_string" => $cursor,
+        ]
+      );
 
-            $result = $response->json();
-            $beatmapsets = $result['beatmapsets'];
+      $result = $response->json();
+      $beatmapsets = $result["beatmapsets"];
 
-            if (count($beatmapsets) == 0) {
-                $this->info('Done.');
-                break;
-            }
+      if (count($beatmapsets) == 0) {
+        $this->info("Done.");
+        break;
+      }
 
-            $osu_users = array();
-            $db_beatmapsets = array();
-            $db_beatmaps = array();
+      $osu_users = [];
+      $db_beatmapsets = [];
+      $db_beatmaps = [];
 
-            // TODO: Not doing ASYNC for now, as it seems to kick me from the
-            // osu API...
-            /* $requests = array();
+      // TODO: Not doing ASYNC for now, as it seems to kick me from the
+      // osu API...
+      /* $requests = array();
             foreach ($beatmapsets as $beatmapset) {
                 array_push($requests, $client->getAsync("/beatmapsets/{$beatmapset['id']}"));
             }
             $responses = Promise\Utils::unwrap($requests);
             info('WTF ' . json_encode($responses)); */
 
-            foreach ($beatmapsets as $beatmapset) {
-                // TODO: This is slow when running sequentially, need to
-                // refactor this to use Guzzle async requests.
-                $response = Http::withToken($access_token)
-                    ->withUrlParameters(['id' => $beatmapset['id']])
-                    ->get('https://osu.ppy.sh/api/v2/beatmapsets/{id}');
+      foreach ($beatmapsets as $beatmapset) {
+        // TODO: This is slow when running sequentially, need to
+        // refactor this to use Guzzle async requests.
+        $response = Http::withToken($access_token)
+          ->withUrlParameters(["id" => $beatmapset["id"]])
+          ->get("https://osu.ppy.sh/api/v2/beatmapsets/{id}");
 
-                $full_beatmapset = $response->json();
+        $full_beatmapset = $response->json();
 
-                $creator_id = $beatmapset['user_id'];
-                if (!array_key_exists($creator_id, $osu_users)) {
-                    $response = Http::withToken($access_token)
-                        ->withUrlParameters(['user_id' => $creator_id])
-                        ->get('https://osu.ppy.sh/api/v2/users/{user_id}');
+        $creator_id = $beatmapset["user_id"];
+        if (!array_key_exists($creator_id, $osu_users)) {
+          $response = Http::withToken($access_token)
+            ->withUrlParameters(["user_id" => $creator_id])
+            ->get("https://osu.ppy.sh/api/v2/users/{user_id}");
 
-                    $mapper = $response->json();
-                    $osu_users[$creator_id] = [
-                        'user_id' => $creator_id,
-                        'username' => $mapper['username'],
-                    ];
-                }
-
-                array_push($db_beatmapsets, [
-                    'id' => $beatmapset['id'],
-                    'creator' => $full_beatmapset['creator'],
-                    'creator_id' => $beatmapset['user_id'],
-                    'artist' => $beatmapset['artist'],
-                    'title' => $beatmapset['title'],
-                    'genre' => $full_beatmapset['genre']['id'],
-                    'language' => $full_beatmapset['language']['id'],
-                    'date_ranked' => $beatmapset['ranked_date'],
-                ]);
-
-                // TODO: Blacklisting
-                foreach ($beatmapset['beatmaps'] as $beatmap) {
-                    array_push($db_beatmaps, [
-                        'id' => $beatmap['id'],
-                        'beatmapset_id' => $beatmapset['id'],
-                        'difficulty_name' => $beatmap['version'],
-                        'mode' => $beatmap['mode_int'],
-                        'status' => $beatmap['status'],
-                        'star_rating' => $beatmap['difficulty_rating'],
-                    ]);
-                }
-            }
-
-            OsuUser::insert(array_values($osu_users));
-            BeatmapSet::insert($db_beatmapsets);
-            Beatmap::insert($db_beatmaps);
-
-            $this->info('Found and inserted ' . count($beatmapsets) . ' sets.');
-
-            $cursor = $result['cursor_string'];
-            $this->info('Cursor: ' . json_encode($result['cursor']));
-            if ($cursor === null) break;
+          $mapper = $response->json();
+          $osu_users[$creator_id] = [
+            "user_id" => $creator_id,
+            "username" => $mapper["username"],
+          ];
         }
+
+        array_push($db_beatmapsets, [
+          "id" => $beatmapset["id"],
+          "creator" => $full_beatmapset["creator"],
+          "creator_id" => $beatmapset["user_id"],
+          "artist" => $beatmapset["artist"],
+          "title" => $beatmapset["title"],
+          "genre" => $full_beatmapset["genre"]["id"],
+          "language" => $full_beatmapset["language"]["id"],
+          "date_ranked" => $beatmapset["ranked_date"],
+        ]);
+
+        // TODO: Blacklisting
+        foreach ($beatmapset["beatmaps"] as $beatmap) {
+          array_push($db_beatmaps, [
+            "id" => $beatmap["id"],
+            "beatmapset_id" => $beatmapset["id"],
+            "difficulty_name" => $beatmap["version"],
+            "mode" => $beatmap["mode_int"],
+            "status" => $beatmap["status"],
+            "star_rating" => $beatmap["difficulty_rating"],
+          ]);
+        }
+      }
+
+      OsuUser::insert(array_values($osu_users));
+      BeatmapSet::insert($db_beatmapsets);
+      Beatmap::insert($db_beatmaps);
+
+      $this->info("Found and inserted " . count($beatmapsets) . " sets.");
+
+      $cursor = $result["cursor_string"];
+      $this->info("Cursor: " . json_encode($result["cursor"]));
+      if ($cursor === null) {
+        break;
+      }
     }
+  }
 }
