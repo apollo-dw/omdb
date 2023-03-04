@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\BeatmapSet;
+use App\Models\Beatmap;
 use App\Models\Comment;
 use App\Models\Rating;
 use Illuminate\Http\Request;
@@ -34,15 +36,36 @@ class HomeController extends Controller
       ->take(8)
       ->get();
 
-    /* $latest_mapsets = DB::select("
-                SELECT DISTINCT
-                    id, artist, title, creator_id, updated_at, date_ranked
-                FROM `beatmapsets`
-                ORDER BY `date_ranked` DESC, `updated_at` DESC
-                LIMIT 8
-                "); */
+    $last_7_days_ratings = DB::table("ratings")
+      ->join("beatmaps", "ratings.beatmap_id", "=", "beatmaps.id")
+      ->join("beatmapsets", "ratings.beatmapset_id", "=", "beatmapsets.id")
+      ->whereDate("ratings.created_at", ">=", Carbon::now()->subWeek())
+      ->groupBy("ratings.beatmap_id")
+      ->select(
+        "ratings.beatmap_id",
+        "ratings.beatmapset_id",
+        "beatmapsets.artist",
+        "beatmapsets.title",
+        "beatmaps.difficulty_name",
+        DB::raw("count(*) as num_ratings")
+      )
+      ->orderByDesc("num_ratings")
+      ->get();
 
-    $last_7_days_ratings = DB::select("
+    /*DB::table("beatmaps")
+      ->joinSub($ratings_subquery, "r", function ($join) {
+        $join->on("beatmaps.id", "=", "r.beatmap_id");
+      })
+      ->joinSub($max_ratings_subquery, "m", function ($join) {
+        $join->on("beatmaps.beatmapset_id", "=", "m.beatmapset_id");
+        $join->on("r.num_ratings", "=", "m.max_ratings");
+      })
+      ->orderByDesc("num_ratings")
+      ->orderByDesc("id")
+      ->take(10)
+      ->get();*/
+
+    /* $last_7_days_ratings = DB::select("
       SELECT b.id, b.beatmapset_id, s.title, s.artist, b.difficulty_name, num_ratings
       FROM beatmaps b
       INNER JOIN beatmapsets s ON b.beatmapset_id = s.id
@@ -65,7 +88,7 @@ class HomeController extends Controller
       ) m ON b.beatmapset_id = m.beatmapset_id AND r.num_ratings = m.max_ratings
       ORDER BY num_ratings DESC, b.id DESC
       LIMIT 10;
-    ");
+    "); */
 
     return view("home", [
       "counts" => $counts,

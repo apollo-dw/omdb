@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,11 @@ class Beatmap extends Model
     "star_rating",
     "date_ranked",
   ];
+
+  public function beatmapset()
+  {
+    return $this->hasOne("App\\Models\\BeatmapSet", "id", "beatmapset_id");
+  }
 
   public function ratings()
   {

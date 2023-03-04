@@ -22,23 +22,38 @@
   @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 
   <script>
-    function showResult(str) {
-      if (str.length == 0) {
+    function showResult(query) {
+      if (query.length == 0) {
         document.getElementById("topBarSearchResults").innerHTML = "";
         document.getElementById("topBarSearchResults").style.display = "none";
         return;
       }
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
+
+      let payload = { query };
+      fetch('/search', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": "{{ csrf_token() }}",
+        },
+        body: JSON.stringify(query),
+      }).then(result => {
+        if (result.status == 200) {
           document.getElementById("topBarSearchResults").innerHTML = this
             .responseText;
           document.getElementById("topBarSearchResults").style.display =
             "block";
         }
+      });
+      /*
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+        }
       }
-      xmlhttp.open("GET", "/beatmapSearch.php?q=" + str, true);
+      xmlhttp.open("POST", "/search?q=" + str, true);
       xmlhttp.send();
+      */
     }
 
     function searchFocus() {
