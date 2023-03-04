@@ -40,6 +40,10 @@
           </div>
 
           <div class="flex-child" style="flex:0 0 50%;">
+            <x-ratings.display :rating="$rating" />
+            on
+            <a
+              href='/mapset/{{ $rating->beatmapset_id }}'>{{ $rating->beatmap->difficulty_name }}</a>
             {{--
 // echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
 --}}

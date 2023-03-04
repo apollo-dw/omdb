@@ -24,7 +24,8 @@
       <div class="profileStats">
         <?php
         /*
-                                                                                            <b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?>
+                                                                                                    <b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?>
+        ?>
         ?>
         ?>
         ?>
@@ -136,12 +137,13 @@
 
   <?php
   /*
-                    <hr style="margin-bottom:2rem;">
-                    <div style="text-align:center;" >
-                        <?php
-                          $result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
-                          while($row = $result->fetch_assoc()){
-                        ?>
+                      <hr style="margin-bottom:2rem;">
+                      <div style="text-align:center;" >
+                          <?php
+                            $result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
+                            while($row = $result->fetch_assoc()){
+                          ?>
+  ?>
   ?>
   ?>
   ?>

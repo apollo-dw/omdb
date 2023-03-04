@@ -1,6 +1,8 @@
 @foreach ($ratings as $rating)
   <div class="flex-container ratingContainer" <?php
-    if($loop->odd){ echo "style='background-color:#203838;' altcolour"; }
+  if ($loop->odd) {
+      echo "style='background-color:#203838;' altcolour";
+  }
   ?>>
     <div class="flex-child">
       <a href="/profile/{{ $rating->user_id }}">
@@ -11,17 +13,8 @@
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
       <x-ratings.display :rating="$rating" />
-        on
+      on
       {{ $rating->beatmap->difficulty_name }}
-      <?php
-      /* $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
-            $stmt2->bind_param("s", $row["BeatmapID"]);
-            $stmt2->execute();
-            $result2 = $stmt2->get_result();
-            $row2 = $result2->fetch_row();
-            echo renderRating($conn, $row) . " on " .
-                htmlspecialchars($row2[0]); */
-      ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
       {{ $rating->updated_at->diffForHumans() }}
