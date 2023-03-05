@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OsuUser;
+use Illuminate\Support\Facades\DB;
 use App\Models\OmdbUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,32 +21,33 @@ class ProfileController extends Controller
       ->first();
     $omdb_user = $osu_user?->omdb_user;
 
-    $is_you = false;
-    $rating_counts = null;
-    $max_rating = 1.0;
+    $context = [
+      "is_you" => false,
+      "rating_counts" => null,
+    ];
 
     // Only applicable to OMDB users
-    if ($osu_user !== null) {
+    if ($omdb_user !== null) {
+      $context["osu_user"] = $osu_user;
+
       // Check if the user requested is the logged in user ("you")
       if (Auth::check()) {
-        $is_you = Auth::user()->user_id == $osu_user->user_id;
+        $context["is_you"] = Auth::user()->user_id == $osu_user->user_id;
       }
 
-      // TODO: Actually fetch this
-      $rating_counts = [
-        "0.0" => 1,
-        "1.0" => 1,
-        "2.0" => 1,
-        "3.0" => 1,
-        "4.0" => 1,
-        "5.0" => 1,
-        "0.5" => 1,
-        "1.5" => 1,
-        "2.5" => 1,
-        "3.5" => 1,
-        "4.5" => 1,
-      ];
-      $max_rating = max($rating_counts);
+      $rating_counts = $omdb_user
+        ->ratings()
+        ->groupBy("score")
+        ->select("score", DB::raw("count(*) as count"))
+        ->get()
+        ->keyBy("score")
+        ->toArray();
+      $context["rating_counts"] = $rating_counts;
+      $context["total_ratings"] = array_sum(array_values($rating_counts));
+      $context["max_rating"] = max(array_values($rating_counts))["count"];
+
+      $comment_count = $omdb_user->comments()->count();
+      $context["comment_count"] = $comment_count;
     } else {
       // Fetch the user from OSU api
       // TODO: Figure out a way to get some kind of global API client so
@@ -75,13 +77,43 @@ class ProfileController extends Controller
       $osu_user = new \stdClass();
       $osu_user->id = $user_id;
       $osu_user->username = $data["username"];
+
+      $context["osu_user"] = $osu_user;
     }
 
-    return view("profile", [
+    return view("profile", $context);
+    /*[
       "osu_user" => $osu_user,
       "is_you" => $is_you,
       "rating_counts" => $rating_counts,
       "max_rating" => $max_rating,
+      'comments' => $comments,
+      ]);*/
+  }
+
+  public function comments(Request $request): View
+  {
+    $page_size = 25;
+
+    $page = $request->query("page") ?? 1;
+    $user_id = $request->route("user_id");
+
+    $omdb_user = OmdbUser::where("user_id", $user_id)
+      ->with("osu_user")
+      ->first();
+
+    if ($omdb_user == null) {
+      return abort(404);
+    }
+
+    $comments = $omdb_user->comments()->orderByDesc('created_at')->get();
+    $comment_count = $omdb_user->comments()->count();
+    $num_pages = ceil($comment_count / $page_size);
+
+    return view("profile.comments", [
+      "page" => $page,
+      "num_pages" => $num_pages,
+      "comments" => $comments,
     ]);
   }
 }

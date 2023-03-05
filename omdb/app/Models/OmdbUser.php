@@ -34,4 +34,9 @@ class OmdbUser extends Authenticatable
   {
     return $this->hasMany("App\\Models\\Rating", "user_id", "user_id");
   }
+
+  public function comments()
+  {
+    return $this->hasMany("App\\Models\\Comment", "user_id", "user_id");
+  }
 }

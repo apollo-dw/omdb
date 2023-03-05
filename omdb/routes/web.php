@@ -19,6 +19,7 @@ Route::get("/charts", "ChartsController@show");
 Route::get("/maps", "MapsController@show");
 Route::get("/mapset/{mapset_id}", "MapsetController@show");
 Route::get("/profile/{user_id}", "ProfileController@show");
+Route::get("/profile/{user_id}/comments", "ProfileController@comments");
 Route::get("/random", "RandomController@show");
 Route::post("/search", "SearchController@query");
 

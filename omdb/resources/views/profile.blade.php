@@ -17,41 +17,25 @@
           <i class="icon-external-link" style="font-size:10px;"></i>
         </a>
       </div>
+
       <div class="profileImage">
         <img src="https://s.ppy.sh/a/{{ $osu_user->user_id }}"
           style="width:146px;height:146px;" />
       </div>
+
       <div class="profileStats">
-        <?php
-        /*
-                                                                                                                                                                                            <b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?>
-        ?><br>
-        <a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b>
-          <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
+        @if ($osu_user->omdb_user)
+          <b>Ratings:</b> {{ $total_ratings }}<br />
+
+          <a href="/profile/{{ $osu_user->user_id }}/comments">
+            <b>Comments:</b> {{ $comment_count }}
+          </a><br>
+
+          {{--
+              TODO Add ranked mapsets search
         <b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
-        */
-        ?>
+              --}}
+        @endif
       </div>
 
       @if ($is_you)
@@ -60,23 +44,20 @@
             @for ($r = 0; $r <= 10; $r++)
               @php
                 $rs = number_format((10 - $r) / 2, 1);
+                $rs1 = strval($r);
+                $l = $rating_counts[$rs1]['count'] ?? 0;
               @endphp
 
               <div class="profileRankingDistributionBar"
-                style="width:
-							<?php echo ($rating_counts[$rs] / $max_rating) * 90; ?>%;">
+                style="width: {{ ($l / $max_rating) * 90 }}%;">
                 <a href="ratings/?id={{ $osu_user->user_id }}&r=5.0&p=1">
                   {{ $rs }}
-                  <?php
-                  /* if ($profile["Custom50Rating"] != "") {
-                                echo " - " .
-                            htmlspecialchars($profile["Custom50Rating"]); } */
-                  ?>
                 </a>
               </div>
             @endfor
           @endif
         </div>
+
         <div style="margin-bottom:1.5em;">
           Rating Distribution<br>
         </div>
@@ -123,19 +104,25 @@
                 href="ratings/?id={{ $osu_user->user_id }}&r={{ $rs }}&p=1"
                 class="ratingChoice">
                 @for ($j = 0; $j < 5; $j++)
-                  @if ($r < $j)
+                  @if ($r <= $j)
                     <i class="icon-star-empty"></i>
-                  @elseif ($r > $j && $r < $j + 1)
+                  @elseif ($r < $j + 1)
                     <i class="icon-star-half-empty"></i>
                   @else
                     <i class="icon-star"></i>
                   @endif
                 @endfor
               </a>
+
+              @if ($r == 2.5)
+                <br />
+              @endif
             @endfor
           </div>
         </center>
+      @endif
 
+      @if ($osu_user->omdb_user)
         <div id="ratingDisplay">
           <center>Latest 50 Ratings</center>
           <x-ratings.latest :user-id="$osu_user->user_id" />
@@ -148,12 +135,12 @@
 
   <?php
   /*
-                                            <hr style="margin-bottom:2rem;">
-                                            <div style="text-align:center;" >
-                                                <?php
-                                                  $result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
-                                                  while($row = $result->fetch_assoc()){
-                                                ?>
+                                                            <hr style="margin-bottom:2rem;">
+                                                            <div style="text-align:center;" >
+                                                                <?php
+                                                                  $result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
+                                                                  while($row = $result->fetch_assoc()){
+                                                                ?>
   ?>
   ?>
   ?>
@@ -176,8 +163,15 @@
   ?>
   ?>
   ?>
-  <a href="/mapset/<?php echo $row['SetID']; ?>" target='_blank'
-    rel='noopener noreferrer'>
+  ?>
+  ?>
+  ?>
+  ?>
+  ?>
+  ?>
+  ?>
+  ?>
+  <a href="/mapset/<?php echo $row['SetID']; ?>" target='_blank' rel='noopener noreferrer'>
     <div class="beatmapCard"
       style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://assets.ppy.sh/beatmaps/<?php echo $row['SetID']; ?>/covers/cover.jpg');">
       <?php echo "{$row['Artist']} - {$row['Title']}"; ?>

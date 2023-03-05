@@ -14,6 +14,11 @@ class Comment extends Model
 
   protected $fillable = ["user_id", "beatmapset_id", "comment"];
 
+  public function beatmapset()
+  {
+    return $this->hasOne("App\\Models\\BeatmapSet", "id", "beatmapset_id");
+  }
+
   public function osu_user()
   {
     $osu_user = $this->hasOne("App\\Models\\OsuUser", "user_id", "user_id");
