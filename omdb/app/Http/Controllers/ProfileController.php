@@ -93,7 +93,7 @@ class ProfileController extends Controller
 
   public function comments(Request $request): View
   {
-    $page_size = 3;
+    $page_size = 25;
     $page = $request->query("page") ?? 1;
     $user_id = $request->route("user_id");
 
