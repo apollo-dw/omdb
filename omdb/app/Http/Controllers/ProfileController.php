@@ -93,8 +93,7 @@ class ProfileController extends Controller
 
   public function comments(Request $request): View
   {
-    $page_size = 25;
-
+    $page_size = 3;
     $page = $request->query("page") ?? 1;
     $user_id = $request->route("user_id");
 
@@ -106,7 +105,10 @@ class ProfileController extends Controller
       return abort(404);
     }
 
-    $comments = $omdb_user->comments()->orderByDesc('created_at')->get();
+    $comments = $omdb_user
+      ->comments()
+      ->orderByDesc("created_at")
+      ->simplePaginate($page_size);
     $comment_count = $omdb_user->comments()->count();
     $num_pages = ceil($comment_count / $page_size);
 

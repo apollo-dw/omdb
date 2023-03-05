@@ -165,7 +165,8 @@
 
           <?php
           /*
-                                                                                                                                                                                                                                                                                                                            Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+                                                                                                                                                                                                                                                                                                                                      Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
+          ?>
           ?>
           ?>
           ?>

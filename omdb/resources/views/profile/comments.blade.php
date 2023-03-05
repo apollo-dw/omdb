@@ -5,21 +5,7 @@
 @section('content')
 
   <div style="text-align:center;">
-    <div class="pagination">
-      @if ($page > 1)
-        <b><span>
-            <a href='?page={{ $page - 1 }}'>&laquo; </a>
-          </span></b>
-      @endif
-
-      <span id="page"><?php echo $page; ?></span>
-
-      @if ($page < $num_pages)
-        <b><span>
-            echo "<a href='?id=${profileId}&p=${nextPage}'>&raquo; </a>";
-          </span></b>
-      @endif
-    </div>
+    <x-paginator :page="$page" :num-pages="$num_pages" />
   </div>
 
   <div class="flex-container commentContainer" style="width:100%;">
@@ -44,6 +30,7 @@
             <i class="icon-remove removeComment" style="color:#f94141;"
               value="{{ $comment->id }}"></i>
           @endif
+
           {{ $comment->created_at->diffForHumans() }}
         </div>
       </div>
@@ -64,20 +51,7 @@
   </div>
 
   <div style="text-align:center;">
-    <div class="pagination">
-      @if ($page > 1)
-        <b><span>
-            <a href='?page={{ $page - 1 }}'>&laquo; </a>
-          </span></b>
-      @endif
-
-      <span id="page"><?php echo $page; ?></span>
-
-      @if ($page < $num_pages)
-        <b><span>
-            echo "<a href='?id=${profileId}&p=${nextPage}'>&raquo; </a>";
-          </span></b>
-      @endif
-    </div>
+    <x-paginator :page="$page" :num-pages="$num_pages" />
   </div>
+
 @endsection
