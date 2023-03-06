@@ -1,3 +1,4 @@
 # Summary
 
-- [Developers](./developers.md)
+- [Developers](./developers/index.md)
+  - [Commands](./developers/commands.md)
