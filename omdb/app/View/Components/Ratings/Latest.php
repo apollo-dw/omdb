@@ -13,6 +13,7 @@ class Latest extends Component
   protected $beatmapset_id = null;
   protected $show_user = true;
   protected $show_map_meta = true;
+  protected $paginated = true;
 
   /**
    * Create a new component instance.
@@ -21,7 +22,8 @@ class Latest extends Component
     string $beatmapsetId = "",
     string $userId = "",
     bool $showUser = true,
-    bool $showMapMeta = true
+    bool $showMapMeta = true,
+    bool $paginated = false
   ) {
     if ($beatmapsetId !== "") {
       $this->beatmapset_id = intval($beatmapsetId);
@@ -50,13 +52,20 @@ class Latest extends Component
       $query = $query->where("beatmapset_id", $this->beatmapset_id);
     }
 
-    $ratings = $query->orderByDesc("updated_at")->get();
+    $query = $query->orderByDesc("updated_at");
+
+    if ($this->paginated) {
+      $ratings = $query->paginate(10);
+    } else {
+      $ratings = $query->get();
+    }
 
     return view("components.ratings.latest", [
       "beatmapset_id" => $this->beatmapset_id,
       "ratings" => $ratings,
       "show_user" => $this->show_user,
       "show_map_meta" => $this->show_map_meta,
+      "paginated" => $this->paginated,
     ]);
   }
 }

@@ -42,10 +42,14 @@
       /* echo $numberOfSetRatings; */
       ?>
         votes</span><br>
-      <?php if (true) {
-          // $isLoved)
-          echo 'Loved Mapset';
-      } ?>
+      @php
+        $is_loved = $mapset->status == 4;
+      @endphp
+
+      {{ $mapset->status }}
+      @if ($is_loved)
+        Loved Mapset
+      @endif
     </div>
   </div>
 
@@ -249,7 +253,7 @@
     <div class="flex-child" style="width:40%;">
       Latest Ratings<br><br>
       <div id="setRatingsDisplay">
-        <x-ratings.latest :beatmapset-id="$mapset->id" :show-map-meta="false" />
+        <x-ratings.latest :beatmapset-id="$mapset->id" :show-map-meta="false" :paginated="true" />
       </div>
     </div>
 
@@ -301,7 +305,7 @@
           <div class="flex-child comment" style="min-width:0;overflow: hidden;">
             <p>
               <!-- TODO: ParseOsuLinks -->
-              {{ nl2br($comment->comment) }}
+              {!! nl2br(e($comment->comment)) !!}
             </p>
           </div>
         @endforeach

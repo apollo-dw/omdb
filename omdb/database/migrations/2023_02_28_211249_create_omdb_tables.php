@@ -48,6 +48,7 @@ return new class extends Migration {
       $table->integer("genre");
       $table->integer("language");
       $table->dateTime("date_ranked");
+      $table->integer("status");
     });
 
     Schema::create("beatmaps", function (Blueprint $table) {
@@ -61,7 +62,6 @@ return new class extends Migration {
       // Metadata
       $table->string("difficulty_name");
       $table->integer("mode");
-      $table->integer("status");
       $table->float("star_rating");
       $table->boolean("blacklisted")->default(false);
 

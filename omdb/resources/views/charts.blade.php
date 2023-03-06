@@ -35,18 +35,18 @@
     }
 
     /*
-        .pagination {
-          display: inline-block;
-          color: DarkSlateGrey;
-        }
+          .pagination {
+            display: inline-block;
+            color: DarkSlateGrey;
+          }
 
-        .pagination span {
-          float: left;
-          padding: 8px 16px;
-          text-decoration: none;
-          cursor: pointer;
-        }
-        */
+          .pagination span {
+            float: left;
+            padding: 8px 16px;
+            text-decoration: none;
+            cursor: pointer;
+          }
+          */
     .active {
       font-weight: 900;
       color: white;

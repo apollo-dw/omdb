@@ -86,7 +86,7 @@
     <a href="/">
       <div class="topBarLink">home</div>
     </a>
-    <a href="/charts/">
+    <a href="/charts/?year={{ now()->year }}">
       <div class="topBarLink">charts</div>
     </a>
     <div class="topBarDropDown">

@@ -46,6 +46,7 @@ class ChartsController extends Controller
         break;
       case "most":
         $order_by_column = "cached_rating_count";
+        $order_direction = "desc";
         break;
       case "lowest":
         $order_direction = "desc";

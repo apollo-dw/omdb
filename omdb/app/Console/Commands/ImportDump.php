@@ -20,7 +20,7 @@ class ImportDump extends Command
    *
    * @var string
    */
-  protected $signature = "omdb:import_dump {path}";
+  protected $signature = "omdb:import_dump {path} {--cache=}";
 
   /**
    * The console command description.
@@ -30,6 +30,8 @@ class ImportDump extends Command
   protected $description = "Import a legacy OMDB dump";
 
   private $db;
+  private $cache_db;
+  private $client;
   private $access_token;
 
   /**
@@ -39,6 +41,20 @@ class ImportDump extends Command
   {
     $path = $this->argument("path");
     $this->db = new \PDO("sqlite:{$path}");
+
+    $cache_path = $this->option("cache");
+    $cache = $cache_path !== null;
+    if ($cache) {
+      $this->cache_db = new \PDO("sqlite:{$cache_path}");
+      $this->cache_db->exec("
+        create table if not exists osus_api (
+          key string primary key,
+          status int,
+          value json
+        )
+      ");
+      $this->info("Using cache.");
+    }
 
     // Get an API key
     $response = Http::asForm()->post("https://osu.ppy.sh/oauth/token", [
@@ -52,10 +68,10 @@ class ImportDump extends Command
 
     $this->info("Got access token.");
 
-    $client = new GuzzleClient([
+    $this->client = new GuzzleClient([
       "base_uri" => "https://osu.ppy.sh/api/v2",
-      "request.options" => [
-        "headers" => "Bearer {$this->access_token}",
+      "headers" => [
+        "Authorization" => "Bearer {$this->access_token}",
       ],
     ]);
 
@@ -63,6 +79,56 @@ class ImportDump extends Command
     $this->import_beatmaps();
     $this->import_ratings();
     $this->import_comments();
+  }
+
+  private function api_request(string $method, string $url, $options)
+  {
+    $get_result = function ($method, $url, $options) {
+      $options["http_errors"] = false;
+      $response = $this->client->request($method, $url, $options);
+      $status = $response->getStatusCode();
+      $body = null;
+      if ($status === 200) {
+        $body = json_decode($response->getBody(), true);
+      }
+      return ["status" => $status, "body" => $body];
+    };
+
+    if ($this->cache_db === null) {
+      return $get_result($method, $url, $options);
+    }
+
+    $key_json = [
+      "method" => $method,
+      "url" => $url,
+    ];
+    ksort($key_json); // OOF
+    $key = json_encode($key_json);
+
+    $stmt = $this->cache_db->prepare(
+      "SELECT status, value FROM osus_api WHERE key = ?"
+    );
+    $stmt->execute([$key]);
+    $result = $stmt->fetch();
+
+    if ($result !== false) {
+      // $this->info("Cache hit on {$key}, status " . $result['status']);
+      // TODO: If the status was 500 or something then try again
+      return [
+        "status" => $result["status"],
+        "body" => json_decode($result["value"], true),
+      ];
+    }
+
+    // $this->info("Cache miss on {$key}, making a request instead.");
+    $result = $get_result($method, $url, $options);
+    $body_json = json_encode($result["body"]);
+
+    $sql = "INSERT INTO osus_api (key, status, value) VALUES (?, ?, ?)";
+    $stmt = $this->cache_db->prepare($sql);
+    $stmt->execute([$key, $result["status"], $body_json]);
+
+    return $result;
   }
 
   private function import_users()
@@ -117,19 +183,23 @@ class ImportDump extends Command
           continue;
         }
 
-        $response = Http::withToken($this->access_token)
-          ->withUrlParameters(["id" => $creator])
-          ->get("https://osu.ppy.sh/api/v2/users/{id}");
-        $user_json = $response->json();
+        $result = $this->api_request(
+          "GET",
+          "https://osu.ppy.sh/api/v2/users/{$creator}",
+          []
+        );
 
-        if (!array_key_exists("username", $user_json)) {
+        if (
+          $result["status"] !== 200 ||
+          !array_key_exists("username", $result["body"])
+        ) {
           $this->info("Could not get user " . $creator);
-          $user_json = ["username" => ""];
+          $result["body"] = ["username" => ""];
         }
 
         OsuUser::updateOrCreate(
           ["user_id" => $creator],
-          ["username" => $user_json["username"]]
+          ["username" => $result["body"]["username"]]
         );
       }
 
@@ -160,18 +230,41 @@ class ImportDump extends Command
         continue;
       }
 
+      $bsid = $row["SetID"];
+      $result = $this->api_request(
+        "GET",
+        "https://osu.ppy.sh/api/v2/beatmapsets/{$bsid}",
+        []
+      );
+
+      if ($result["status"] !== 200) {
+        $this->error(
+          "Could not fetch beatmap " .
+            $row["SetID"] .
+            " " .
+            $row["Artist"] .
+            " - " .
+            $row["Title"] .
+            " (Status: " .
+            $result["status"] .
+            ")"
+        );
+        continue;
+      }
+
       $creators[$row["SetCreatorID"]] = 1;
       $creators[$row["CreatorID"]] = 1;
 
       $beatmapsets[$row["SetID"]] = [
         "id" => $row["SetID"],
-        "creator" => "", // TODO: Retrieve this from the OSU api
+        "creator" => $result["body"]["creator"],
         "creator_id" => $row["SetCreatorID"],
         "date_ranked" => $row["DateRanked"],
         "artist" => $row["Artist"],
         "title" => $row["Title"],
         "genre" => $row["Genre"],
         "language" => $row["Lang"],
+        "status" => $row["Status"],
       ];
 
       // Only take the beatmap creator id if it's different from the host (guest diff)
@@ -184,7 +277,6 @@ class ImportDump extends Command
         "creator_id" => $creator_id,
         "difficulty_name" => $row["DifficultyName"],
         "mode" => $row["Mode"],
-        "status" => $row["Status"],
         "star_rating" => $row["SR"],
         "blacklisted" => $row["Blacklisted"],
       ]);

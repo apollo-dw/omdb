@@ -27,6 +27,7 @@ class MapsetController extends Controller
 
     $beatmaps = Beatmap::where("beatmapset_id", $mapset_id)
       ->with("ratings")
+      ->orderByDesc("star_rating")
       ->get();
 
     $average_rating = DB::select("
