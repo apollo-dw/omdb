@@ -34,6 +34,7 @@
       object-fit: cover;
     }
 
+    /*
     .pagination {
       display: inline-block;
       color: DarkSlateGrey;
@@ -45,6 +46,7 @@
       text-decoration: none;
       cursor: pointer;
     }
+    */
 
     .active {
       font-weight: 900;
@@ -70,9 +72,9 @@
       <form>
         <select name="order" id="order" autocomplete="off"
           onchange="updateChart();">
-          <option value="1" selected="selected">Highest Rated</option>
-          <option value="2">Lowest Rated</option>
-          <option value="3">Most Rated</option>
+          <option value="highest" selected="selected">Highest Rated</option>
+          <option value="lowest">Lowest Rated</option>
+          <option value="most">Most Rated</option>
         </select> maps of
         <select name="year" id="year" autocomplete="off"
           onchange="updateChart();">
@@ -90,21 +92,36 @@
         <label>Genre:</label>
         <select name="genre" id="genre" autocomplete="off"
           onchange="updateChart();">
-          <option value="0" selected="selected">Any</option>
-          <option value="2">Video Game</option>
-          <option value="3">Anime</option>
-          <option value="4">Rock</option>
-          <option value="5">Pop</option>
-          <option value="6">Other</option>
-          <option value="7">Novelty</option>
-          <option value="9">Hip Hop</option>
-          <option value="10">Electronic</option>
-          <option value="11">Metal</option>
-          <option value="12">Classical</option>
-          <option value="13">Folk</option>
-          <option value="14">Jazz</option>
+          @php
+            $genres = [
+          "0" => "Any",
+          "2" => "Video Game",
+          "3" => "Anime",
+          "4" => "Rock",
+          "5" => "Pop",
+          "6" => "Other",
+          "7" => "Novelty",
+          "9" => "Hip Hop",
+          "10" => "Electronic",
+          "11" => "Metal",
+          "12" => "Classical",
+          "13" => "Folk",
+          "14" => "Jazz",
+            ];
+          @endphp
+
+          @foreach ($genres as $genre_number => $genre_name)
+            <option value="{{ $genre_number }}"
+                    @if ($genre == $genre_number)
+                      selected="selected"
+                    @endif
+                      >
+                      {{ $genre_name }}
+            </option>
+          @endforeach
         </select>
       </form><br>
+
       <span>Info</span>
       <hr>
       Chart is based on an implementation of the Bayesian average method.<br><br>
@@ -174,6 +191,7 @@
       let params = new URLSearchParams();
       if (year != -1) params.set("year", year);
       params.set("page", page);
+      if (genre != 0) params.set("genre", genre);
       params.set("order", order);
 
       location.href = "?" + params.toString();

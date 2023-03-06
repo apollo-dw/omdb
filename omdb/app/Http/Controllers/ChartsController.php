@@ -14,6 +14,7 @@ class ChartsController extends Controller
     $page = $request->query("page") ?? 1;
     $year = $request->query("year");
     $genre = $request->query("genre");
+    $order = $request->query("order");
 
     $beatmaps_query = DB::table("beatmaps")
       ->join("beatmapsets", "beatmaps.beatmapset_id", "=", "beatmapsets.id")
@@ -25,7 +26,7 @@ class ChartsController extends Controller
       $beatmaps_query = $beatmaps_query->where(
         "beatmapsets.genre",
         "=",
-        $genre
+        intval($genre)
       );
     }
 
@@ -39,7 +40,18 @@ class ChartsController extends Controller
     }
 
     $order_by_column = "cached_chart_rank";
-    $beatmaps_query = $beatmaps_query->orderBy($order_by_column);
+    $order_direction = "asc";
+    switch ($order) {
+      case "highest": break;
+      case "most":
+        $order_by_column = "cached_rating_count";
+        break;
+      case "lowest":
+        $order_direction = "desc";
+        break;
+      default: break;
+    }
+    $beatmaps_query = $beatmaps_query->orderBy($order_by_column, $order_direction);
 
     $query_string = $beatmaps_query->toSql();
 
@@ -54,6 +66,7 @@ class ChartsController extends Controller
     return view("charts", [
       "year" => $year,
       "page" => $page,
+      'genre' => $genre,
       "query_string" => $query_string,
       "beatmaps" => $beatmaps,
       "num_pages" => $num_pages,

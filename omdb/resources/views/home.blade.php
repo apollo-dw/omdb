@@ -50,7 +50,7 @@
           </div>
           <div class="flex-child"
             style="width:100%;text-align:right;min-width:0%;">
-            {{ $rating->created_at->diffForHumans() }}
+            <x-timestamp :time="$rating->updated_at" />
           </div>
         </div>
       @endforeach
@@ -86,7 +86,7 @@
 
           <div class="flex-child"
             style="width:100%;text-align:right;min-width:0%;">
-            {{ $comment->created_at->diffForHumans() }}
+            <x-timestamp :time="$comment->created_at" />
           </div>
         </div>
       @endforeach

@@ -52,7 +52,7 @@
           href="/mapset/{{ $beatmap->beatmapset_id }}"><b>{{ $beatmap->difficulty_name }}</b></a>
         <span class="subText">
           {{ number_format($beatmap->star_rating, 2) }}*</span><br>
-        {{ \Carbon\Carbon::parse($beatmap->date_ranked)->diffForHumans() }}<br>
+        {{ \Carbon\Carbon::parse($beatmap->date_ranked)->format("M jS, Y") }}<br>
         <a href="/profile/{{ $beatmap->creator_id }}">
           {{ $beatmap->username }}</a>
         <a href="https://osu.ppy.sh/u/{{ $beatmap->creator_id }}"

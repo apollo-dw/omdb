@@ -21,7 +21,7 @@ class HomeController extends Controller
                 (SELECT COUNT(*) FROM comments) as comment_count,
                 (SELECT COUNT(*) FROM ratings) as rating_count")[0];
 
-    $recent_ratings = Rating::latest()
+    $recent_ratings = Rating::latest('updated_at')
       ->with("osu_user")
       ->take(40)
       ->get();
