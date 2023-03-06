@@ -12,7 +12,7 @@
 
   <span class="page current">{{ $page }}</span>
 
-  @for ($i = $page + 1; $i < min($page + 3, $num_pages); $i++)
+  @for ($i = $page + 1; $i < min($page + 3, $num_pages + 1); $i++)
     <a class="page" href='?page={{ $i }}'>{{ $i }}</a>
   @endfor
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use App\Models\BeatmapSet;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -10,6 +11,38 @@ class MapsController extends Controller
 {
   public function show(Request $request)
   {
+    $page = $request->query("page") ?? 1;
+    $page_size = 20;
+
+    $year = $request->query("year") ?? now()->year;
+    $month = $request->query("month") ?? now()->month;
+
+    $ratings_subquery = DB::table('ratings')
+      ->groupBy('beatmapset_id')
+      ->select(
+        'beatmapset_id',
+        DB::raw('round(avg(ratings.score), 2) as rating_avg'),
+        DB::raw('count(*) as rating_count'),
+      );
+
+    $beatmapsets_query = BeatmapSet::whereYear("date_ranked", $year)
+      ->whereMonth("date_ranked", $month)
+      ->joinSub($ratings_subquery, 'ratings', function($join) {
+        $join->on('ratings.beatmapset_id', '=', 'beatmapsets.id');
+      });
+
+    $num_beatmapsets = $beatmapsets_query->count();
+    $beatmapsets = $beatmapsets_query->paginate($page_size);
+
+    $num_pages = ceil($num_beatmapsets / $page_size);
+
+    return view("maps", [
+      "year" => $year,
+      "month" => $month,
+      "page" => $page,
+      "num_pages" => $num_pages,
+      "beatmapsets" => $beatmapsets,
+    ]);
   }
 
   public function random(Request $request)
