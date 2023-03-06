@@ -91,6 +91,7 @@
         @endif
       @endif
     </div>
+
     <div class="ratingsCard">
       @if ($is_you)
         <center>
@@ -125,7 +126,7 @@
       @if ($osu_user->omdb_user)
         <div id="ratingDisplay">
           <center>Latest 50 Ratings</center>
-          <x-ratings.latest :user-id="$osu_user->user_id" />
+          <x-ratings.latest :user-id="$osu_user->user_id" :show-user="false" />
         </div>
       @else
         This person is not an OMDB user :(

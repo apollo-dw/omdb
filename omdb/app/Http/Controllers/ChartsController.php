@@ -42,16 +42,21 @@ class ChartsController extends Controller
     $order_by_column = "cached_chart_rank";
     $order_direction = "asc";
     switch ($order) {
-      case "highest": break;
+      case "highest":
+        break;
       case "most":
         $order_by_column = "cached_rating_count";
         break;
       case "lowest":
         $order_direction = "desc";
         break;
-      default: break;
+      default:
+        break;
     }
-    $beatmaps_query = $beatmaps_query->orderBy($order_by_column, $order_direction);
+    $beatmaps_query = $beatmaps_query->orderBy(
+      $order_by_column,
+      $order_direction
+    );
 
     $query_string = $beatmaps_query->toSql();
 
@@ -66,7 +71,7 @@ class ChartsController extends Controller
     return view("charts", [
       "year" => $year,
       "page" => $page,
-      'genre' => $genre,
+      "genre" => $genre,
       "query_string" => $query_string,
       "beatmaps" => $beatmaps,
       "num_pages" => $num_pages,

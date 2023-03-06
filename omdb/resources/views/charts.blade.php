@@ -35,19 +35,18 @@
     }
 
     /*
-    .pagination {
-      display: inline-block;
-      color: DarkSlateGrey;
-    }
+        .pagination {
+          display: inline-block;
+          color: DarkSlateGrey;
+        }
 
-    .pagination span {
-      float: left;
-      padding: 8px 16px;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    */
-
+        .pagination span {
+          float: left;
+          padding: 8px 16px;
+          text-decoration: none;
+          cursor: pointer;
+        }
+        */
     .active {
       font-weight: 900;
       color: white;
@@ -94,29 +93,26 @@
           onchange="updateChart();">
           @php
             $genres = [
-          "0" => "Any",
-          "2" => "Video Game",
-          "3" => "Anime",
-          "4" => "Rock",
-          "5" => "Pop",
-          "6" => "Other",
-          "7" => "Novelty",
-          "9" => "Hip Hop",
-          "10" => "Electronic",
-          "11" => "Metal",
-          "12" => "Classical",
-          "13" => "Folk",
-          "14" => "Jazz",
+                '0' => 'Any',
+                '2' => 'Video Game',
+                '3' => 'Anime',
+                '4' => 'Rock',
+                '5' => 'Pop',
+                '6' => 'Other',
+                '7' => 'Novelty',
+                '9' => 'Hip Hop',
+                '10' => 'Electronic',
+                '11' => 'Metal',
+                '12' => 'Classical',
+                '13' => 'Folk',
+                '14' => 'Jazz',
             ];
           @endphp
 
           @foreach ($genres as $genre_number => $genre_name)
             <option value="{{ $genre_number }}"
-                    @if ($genre == $genre_number)
-                      selected="selected"
-                    @endif
-                      >
-                      {{ $genre_name }}
+              @if ($genre == $genre_number) selected="selected" @endif>
+              {{ $genre_name }}
             </option>
           @endforeach
         </select>

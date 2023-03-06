@@ -4,17 +4,37 @@
       echo "style='background-color:#203838;' altcolour";
   }
   ?>>
-    <div class="flex-child">
-      <a href="/profile/{{ $rating->user_id }}">
-        <img src="https://s.ppy.sh/a/{{ $rating->user_id }}"
-          style="height:24px;width:24px;"
-          title="{{ $rating->osu_user->username }}" />
-      </a>
-    </div>
+    @if ($show_map_meta)
+      <div class="flex-child">
+        <a href="/mapset/{{ $rating->beatmapset_id }}"><img
+            src="https://b.ppy.sh/thumb/{{ $rating->beatmapset_id }}l.jpg"
+            class="diffThumb"/
+            onerror="this.onerror=null;
+            this.src='../charts/INF.png';"></a>
+      </div>
+    @endif
+
+    @if ($show_user)
+      <div class="flex-child">
+        <a href="/profile/{{ $rating->user_id }}">
+          <img src="https://s.ppy.sh/a/{{ $rating->user_id }}"
+            style="height:24px;width:24px;"
+            title="{{ $rating->osu_user->username }}" />
+        </a>
+      </div>
+    @endif
+
     <div class="flex-child" style="flex:0 0 70%;">
       <x-ratings.display :rating="$rating" />
       on
-      {{ $rating->beatmap->difficulty_name }}
+      <a href="/mapset/{{ $rating->beatmapset_id }}">
+        @if ($show_map_meta)
+          {{ $rating->beatmapset->artist }} - {{ $rating->beatmapset->title }}
+          [{{ $rating->beatmap->difficulty_name }}]
+        @else
+          {{ $rating->beatmap->difficulty_name }}
+        @endif
+      </a>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
       <x-timestamp :time="$rating->updated_at" />

@@ -13,6 +13,11 @@ class Rating extends Model
 
   protected $fillable = ["user_id", "beatmapset_id", "beatmap_id", "score"];
 
+  public function beatmapset()
+  {
+    return $this->hasOne("App\\Models\\BeatmapSet", "id", "beatmapset_id");
+  }
+
   public function beatmap()
   {
     return $this->hasOne("App\\Models\\Beatmap", "id", "beatmap_id");

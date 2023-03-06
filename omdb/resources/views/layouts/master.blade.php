@@ -75,7 +75,8 @@
         something is wrong, please report it to the <a
           href="https://discord.gg/NwcphppBMG">omdb
           dev discord</a>. For the
-        production version, click <a href="https://omdb.nyahh.net">here</a>.
+        production version, click <a
+          href="https://omdb.nyahh.net{{ Request::getRequestUri() }}">here</a>.
       </div>
     @endif
 
