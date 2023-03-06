@@ -77,15 +77,6 @@ class RetrieveBeatmaps extends Command
       $db_beatmapsets = [];
       $db_beatmaps = [];
 
-      // TODO: Not doing ASYNC for now, as it seems to kick me from the
-      // osu API...
-      /* $requests = array();
-                  foreach ($beatmapsets as $beatmapset) {
-                      array_push($requests, $client->getAsync("/beatmapsets/{$beatmapset['id']}"));
-                  }
-                  $responses = Promise\Utils::unwrap($requests);
-                  info('WTF ' . json_encode($responses)); */
-
       foreach ($beatmapsets as $beatmapset) {
         // TODO: This is slow when running sequentially, need to
         // refactor this to use Guzzle async requests.

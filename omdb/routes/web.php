@@ -17,10 +17,10 @@ Route::get("/", "HomeController@show");
 Route::resource("/settings", "SettingsController")->only(["index", "store"]);
 Route::get("/charts", "ChartsController@show");
 Route::get("/maps", "MapsController@show");
+Route::get("/maps/random", "MapsController@random");
 Route::get("/mapset/{mapset_id}", "MapsetController@show");
 Route::get("/profile/{user_id}", "ProfileController@show");
 Route::get("/profile/{user_id}/comments", "ProfileController@comments");
-Route::get("/random", "RandomController@show");
 Route::post("/search", "SearchController@query");
 
 Route::group(["middleware" => "auth"], function () {
