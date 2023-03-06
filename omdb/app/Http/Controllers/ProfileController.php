@@ -79,7 +79,8 @@ class ProfileController extends Controller
 
       // Create a synthetic user so we can query just the data we need
       $osu_user = new \stdClass();
-      $osu_user->id = $user_id;
+      $osu_user->omdb_user = null;
+      $osu_user->user_id = $user_id;
       $osu_user->username = $data["username"];
 
       $context["osu_user"] = $osu_user;
