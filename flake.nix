@@ -6,8 +6,17 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        php = pkgs.php82.withExtensions
-          ({ enabled, all }: enabled ++ (with all; [ pdo pdo_sqlite ]));
+        php = pkgs.php82.buildEnv {
+          extensions =
+            ({ enabled, all }: enabled ++ (with all; [ pdo pdo_sqlite ]));
+          extraConfig = ''
+            opcache.enable=1
+            opcache.enable_cli=1
+            opcache.jit_buffer_size=100M
+            opcache.memory_consumption=256
+            opcache.interned_strings_buffer=8
+          '';
+        };
       in rec {
         devShell = pkgs.mkShell {
           packages = (with pkgs; [

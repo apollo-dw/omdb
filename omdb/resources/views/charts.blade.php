@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Home')
+@section('title', 'Charts')
 
 @section('content')
 
@@ -59,7 +59,7 @@
   </div>
 
   <div class="flex-container">
-    <!-- QUERY: {{ $query_string }} -->
+    <!-- QUERY: {!! $query_string !!} -->
     <div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.5em;">
       <x-charts.display :beatmaps="$beatmaps" :startAt="$start_at" />
     </div>
@@ -171,6 +171,13 @@
       var order = document.getElementById("order").value;
       var genre = document.getElementById("genre").value;
 
+      let params = new URLSearchParams();
+      if (year != -1) params.set("year", year);
+      params.set("page", page);
+      params.set("order", order);
+
+      location.href = "?" + params.toString();
+
       /*
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
@@ -185,8 +192,7 @@
       xmlhttp.send();
       */
 
-      let url = "?year=" + year + "&page=" + page + "&order=" + order;
-      location.href = url;
+      // let url = "?year=" + year + "&page=" + page + "&order=" + order;
     }
   </script>
 

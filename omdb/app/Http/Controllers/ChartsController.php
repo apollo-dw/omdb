@@ -38,6 +38,9 @@ class ChartsController extends Controller
       );
     }
 
+    $order_by_column = "cached_chart_rank";
+    $beatmaps_query = $beatmaps_query->orderBy($order_by_column);
+
     $query_string = $beatmaps_query->toSql();
 
     $num_beatmaps = $beatmaps_query->count();

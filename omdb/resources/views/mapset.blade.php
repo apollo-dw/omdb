@@ -121,17 +121,17 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-
+            
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-
+            
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-
+            
             $maxRating = max($ratingCounts);
           @endphp
 
@@ -292,8 +292,8 @@
               @if ($comment->user_id == $auth_user->user_id)
                 <i class="icon-remove removeComment" style="color:#f94141;"
                   value="{{ $comment->id }}"></i>
-                {{ $comment->created_at->diffForHumans() }}
               @endif
+              <x-timestamp :time="$comment->created_at" />
             </div>
           </div>
 

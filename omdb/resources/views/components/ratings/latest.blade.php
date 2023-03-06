@@ -17,7 +17,7 @@
       {{ $rating->beatmap->difficulty_name }}
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
-      {{ $rating->updated_at->diffForHumans() }}
+      <x-timestamp :time="$rating->updated_at" />
     </div>
   </div>
 @endforeach

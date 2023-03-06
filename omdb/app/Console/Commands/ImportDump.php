@@ -60,7 +60,7 @@ class ImportDump extends Command
     ]);
 
     // $this->import_users();
-    // $this->import_beatmaps();
+    $this->import_beatmaps();
     $this->import_ratings();
     $this->import_comments();
   }
@@ -155,6 +155,11 @@ class ImportDump extends Command
     };
 
     foreach ($this->db->query("SELECT * from beatmaps") as $row) {
+      $bm = Beatmap::where("id", $row["BeatmapID"])->first();
+      if ($bm !== null) {
+        continue;
+      }
+
       $creators[$row["SetCreatorID"]] = 1;
       $creators[$row["CreatorID"]] = 1;
 
@@ -169,15 +174,19 @@ class ImportDump extends Command
         "language" => $row["Lang"],
       ];
 
+      // Only take the beatmap creator id if it's different from the host (guest diff)
+      $creator_id =
+        $row["SetCreatorID"] == $row["CreatorID"] ? null : $row["CreatorID"];
+
       array_push($beatmaps, [
         "id" => $row["BeatmapID"],
         "beatmapset_id" => $row["SetID"],
-        "creator_id" =>
-          $row["SetCreatorID"] == $row["CreatorID"] ? null : $row["CreatorID"],
+        "creator_id" => $creator_id,
         "difficulty_name" => $row["DifficultyName"],
         "mode" => $row["Mode"],
         "status" => $row["Status"],
         "star_rating" => $row["SR"],
+        "blacklisted" => $row["Blacklisted"],
       ]);
 
       if (count($beatmaps) > 1024) {

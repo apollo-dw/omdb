@@ -27,7 +27,7 @@ class Display extends Component
   {
     return view("components.charts.display", [
       "beatmaps" => $this->beatmaps,
-      'start_at' => $this->start_at,
+      "start_at" => $this->start_at,
     ]);
   }
 }
