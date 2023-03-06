@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use App\Models\OsuUser;
 use App\Models\OmdbUser;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +36,44 @@ class AuthController extends Controller
       "https://osu.ppy.sh/oauth/authorize?" . http_build_query($oauthFields);
 
     return redirect()->away($url);
+  }
+
+  // TODO: This is an developer-only endpoint that allows a developer to change
+  // to any user on a non-production environment for the sake of debugging.
+  // The TODO is to find a better way of doing this -_ -
+  // Possibly this will involve some kind of auth hook for impersonation, and
+  // may involve writing a wrapper around Auth::user()
+  // https://github.com/404labfr/laravel-impersonate
+  public function relogin(Request $request) {
+    $omdb_user = Auth::user();
+
+    if ($omdb_user->user_id !== 2688103) // IOException
+      return abort(403);
+
+    $target_user_id = intval($request->route('user_id'));
+
+    $target_user = OmdbUser::where('id', '=', $target_user_id)->first();
+
+    if ($target_user === null) {
+      $target_user = DB::transaction(function() use ($target_user_id, $target_user) {
+        $target_user = OsuUser::updateOrCreate(
+          [ 'user_id' => $target_user_id ],
+          [ 'username' => "User{$target_user_id}" ],
+        );
+
+        return OmdbUser::updateOrCreate(
+          [ 'user_id' => $target_user_id ],
+          [
+            'access_token' => '',
+            'refresh_token' => '',
+          ]
+        );
+      });
+    }
+
+    Auth::login($target_user);
+
+    return redirect('/');
   }
 
   public function callback(Request $request)
@@ -144,5 +183,11 @@ class AuthController extends Controller
              */
 
     return redirect($redirect_url);
+  }
+
+  public function logout(Request $request) {
+    Auth::logout($request);
+
+    return redirect('/');
   }
 }

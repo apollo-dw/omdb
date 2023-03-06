@@ -44,7 +44,11 @@ class ProfileController extends Controller
         ->toArray();
       $context["rating_counts"] = $rating_counts;
       $context["total_ratings"] = array_sum(array_values($rating_counts));
-      $context["max_rating"] = max(array_values($rating_counts))["count"];
+
+      if (count($rating_counts) == 0)
+        $context["max_rating"] = 1;
+      else
+        $context["max_rating"] = max(array_values($rating_counts))["count"];
 
       $comment_count = $omdb_user->comments()->count();
       $context["comment_count"] = $comment_count;

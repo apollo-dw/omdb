@@ -41,12 +41,12 @@
     <table>
       <tr>
         <!--
-                                                                          <td>
-                                                                          </td>
-                                                                          <td>
-                                                                              Update username button here.<Br>
-                                                                              <span class="subtext">Useful if you've had a namechange.</span>
-                                                                          </td>-->
+                                                                                        <td>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            Update username button here.<Br>
+                                                                                            <span class="subtext">Useful if you've had a namechange.</span>
+                                                                                        </td>-->
       </tr>
       <tr>
         <td>

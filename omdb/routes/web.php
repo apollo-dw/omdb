@@ -24,6 +24,7 @@ Route::get("/random", "RandomController@show");
 Route::post("/search", "SearchController@query");
 
 Route::group(["middleware" => "auth"], function () {
+  Route::get("/relogin/{user_id}", "AuthController@relogin");
   Route::post("/mapset/{mapset_id}/comment", "MapsetController@post_comment");
   Route::post("/mapset/{mapset_id}/rating", "MapsetController@post_rating");
 });
@@ -31,4 +32,5 @@ Route::group(["middleware" => "auth"], function () {
 Route::group(["prefix" => "auth"], function () {
   Route::get("login", "AuthController@login")->name("login");
   Route::get("callback", "AuthController@callback");
+  Route::get("logout", "AuthController@logout");
 });

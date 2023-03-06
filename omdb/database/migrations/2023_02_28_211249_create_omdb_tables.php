@@ -63,6 +63,7 @@ return new class extends Migration {
       $table->integer("mode");
       $table->integer("status");
       $table->float("star_rating");
+      $table->boolean("blacklisted")->default(false);
 
       // Cached info
       $table->float("cached_rating")->nullable();

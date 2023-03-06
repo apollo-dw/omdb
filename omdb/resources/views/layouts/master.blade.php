@@ -128,7 +128,7 @@
   </div>
   -->
 
-  <div class="content" style="margin-top:6em;">
+  <div class="content">
     @yield('content')
   </div>
 
