@@ -44,28 +44,34 @@ class AuthController extends Controller
   // Possibly this will involve some kind of auth hook for impersonation, and
   // may involve writing a wrapper around Auth::user()
   // https://github.com/404labfr/laravel-impersonate
-  public function relogin(Request $request) {
+  public function relogin(Request $request)
+  {
     $omdb_user = Auth::user();
 
-    if ($omdb_user->user_id !== 2688103) // IOException
+    if ($omdb_user->user_id !== 2688103) {
+      // IOException
       return abort(403);
+    }
 
-    $target_user_id = intval($request->route('user_id'));
+    $target_user_id = intval($request->route("user_id"));
 
-    $target_user = OmdbUser::where('id', '=', $target_user_id)->first();
+    $target_user = OmdbUser::where("id", "=", $target_user_id)->first();
 
     if ($target_user === null) {
-      $target_user = DB::transaction(function() use ($target_user_id, $target_user) {
+      $target_user = DB::transaction(function () use (
+        $target_user_id,
+        $target_user
+      ) {
         $target_user = OsuUser::updateOrCreate(
-          [ 'user_id' => $target_user_id ],
-          [ 'username' => "User{$target_user_id}" ],
+          ["user_id" => $target_user_id],
+          ["username" => "User{$target_user_id}"]
         );
 
         return OmdbUser::updateOrCreate(
-          [ 'user_id' => $target_user_id ],
+          ["user_id" => $target_user_id],
           [
-            'access_token' => '',
-            'refresh_token' => '',
+            "access_token" => "",
+            "refresh_token" => "",
           ]
         );
       });
@@ -73,7 +79,7 @@ class AuthController extends Controller
 
     Auth::login($target_user);
 
-    return redirect('/');
+    return redirect("/");
   }
 
   public function callback(Request $request)
@@ -185,9 +191,10 @@ class AuthController extends Controller
     return redirect($redirect_url);
   }
 
-  public function logout(Request $request) {
+  public function logout(Request $request)
+  {
     Auth::logout($request);
 
-    return redirect('/');
+    return redirect("/");
   }
 }

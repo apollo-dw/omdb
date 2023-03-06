@@ -15,19 +15,27 @@ class ChartsController extends Controller
     $year = $request->query("year");
     $genre = $request->query("genre");
 
-    $beatmaps_query = DB::table('beatmaps')
-      ->join('beatmapsets', 'beatmaps.beatmapset_id', '=', 'beatmapsets.id')
-      ->join('osu_users', 'beatmapsets.creator_id', '=', 'osu_users.user_id')
+    $beatmaps_query = DB::table("beatmaps")
+      ->join("beatmapsets", "beatmaps.beatmapset_id", "=", "beatmapsets.id")
+      ->join("osu_users", "beatmapsets.creator_id", "=", "osu_users.user_id")
       ->whereNotNull("beatmaps.cached_rating");
 
     if ($genre !== null) {
       // TODO: Verify genre is valid
-      $beatmaps_query = $beatmaps_query->where("beatmapsets.genre", "=", $genre);
+      $beatmaps_query = $beatmaps_query->where(
+        "beatmapsets.genre",
+        "=",
+        $genre
+      );
     }
 
     if ($year !== null) {
       // TODO: Verify year is valid
-      $beatmaps_query = $beatmaps_query->whereYear('beatmapsets.date_ranked', '=', $year);
+      $beatmaps_query = $beatmaps_query->whereYear(
+        "beatmapsets.date_ranked",
+        "=",
+        $year
+      );
     }
 
     $query_string = $beatmaps_query->toSql();
@@ -36,8 +44,9 @@ class ChartsController extends Controller
     $num_pages = ceil($num_beatmaps / $page_size);
 
     $beatmaps = $beatmaps_query->simplePaginate($page_size);
+    $start_at = ($page - 1) * $page_size;
 
-    $year = $request->query("year") ?? date("Y");
+    // $year = $request->query("year") ?? date("Y");
 
     return view("charts", [
       "year" => $year,
@@ -45,6 +54,7 @@ class ChartsController extends Controller
       "query_string" => $query_string,
       "beatmaps" => $beatmaps,
       "num_pages" => $num_pages,
+      "start_at" => $start_at,
     ]);
   }
 }

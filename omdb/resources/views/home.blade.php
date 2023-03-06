@@ -116,7 +116,12 @@
           <a href="/profile/{{ $mapset->creator_id }}">
             {{ $mapset->creator_user->username }}
           </a> <br>
-          {{ $mapset->date_ranked->diffForHumans() }}
+
+          <span
+            style="text-decoration-line: underline; text-decoration-style: dotted;"
+            title="{{ $mapset->date_ranked }}">
+            {{ $mapset->date_ranked->diffForHumans() }}
+          </span>
         </span>
       </div>
     @endforeach

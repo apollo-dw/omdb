@@ -43,3 +43,4 @@ site.webmanifest
 
 /vendor/
 node_modules
+/dumps

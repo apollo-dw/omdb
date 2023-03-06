@@ -163,19 +163,13 @@
           </span>
           <br>
 
-          <?php
-          /*
-Ranking: <b>#<?php echo $row["ChartYearRank"]; ?>
-          ?>
-          ?>
-          ?>
-          ?></b> for <a
-            href="/charts/?y=<?php echo $year; ?>"><?php echo $year; ?></a>,
-          <b>#<?php echo $row['ChartRank']; ?></b> <a href="/charts/">overall</a>
-          */
-          ?>
+          Ranking: <b>{{ $beatmap->cached_chart_year_rank }}</b>
+          for <a href="/charts"></a>,
+          <b>{{ $beatmap->cached_chart_rank }}</b> <a
+            href="/charts">overall</a></b>
         @endif
       </div>
+
       <div class="flex-child diffBox" style="padding:auto;width:30%;">
         @if (Auth::check())
           @php

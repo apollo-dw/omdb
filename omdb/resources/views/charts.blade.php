@@ -4,7 +4,7 @@
 
 @section('content')
 
-  <h1 id="heading">Highest Rated Maps of {{ $year }}</h1>
+  <h1 id="heading">Highest Rated Maps of {{ $year ?? 'All Time' }}</h1>
 
   <style>
     .flex-container {
@@ -61,7 +61,7 @@
   <div class="flex-container">
     <!-- QUERY: {{ $query_string }} -->
     <div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.5em;">
-      <x-charts.display :beatmaps="$beatmaps" />
+      <x-charts.display :beatmaps="$beatmaps" :startAt="$start_at" />
     </div>
 
     <div style="padding:1em;" class="flex-item">
@@ -170,6 +170,8 @@
       var year = document.getElementById("year").value;
       var order = document.getElementById("order").value;
       var genre = document.getElementById("genre").value;
+
+      /*
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -181,6 +183,10 @@
       xmlhttp.open("GET", "chart.php?y=" + year + "&p=" + page + "&o=" + order +
         "&g=" + genre, true);
       xmlhttp.send();
+      */
+
+      let url = "?year=" + year + "&page=" + page + "&order=" + order;
+      location.href = url;
     }
   </script>
 

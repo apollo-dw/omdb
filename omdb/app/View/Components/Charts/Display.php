@@ -9,13 +9,15 @@ use Illuminate\View\Component;
 class Display extends Component
 {
   protected $beatmaps;
+  protected $start_at;
 
   /**
    * Create a new component instance.
    */
-  public function __construct($beatmaps)
+  public function __construct($beatmaps, $startAt)
   {
     $this->beatmaps = $beatmaps;
+    $this->start_at = $startAt;
   }
 
   /**
@@ -25,6 +27,7 @@ class Display extends Component
   {
     return view("components.charts.display", [
       "beatmaps" => $this->beatmaps,
+      'start_at' => $this->start_at,
     ]);
   }
 }

@@ -37,7 +37,7 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_sqlite
 
 RUN mkdir -p /code
 WORKDIR /code

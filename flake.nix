@@ -7,7 +7,7 @@
         pkgs = import nixpkgs { inherit system; };
 
         php = pkgs.php82.withExtensions
-          ({ enabled, all }: enabled ++ (with all; [ ]));
+          ({ enabled, all }: enabled ++ (with all; [ pdo pdo_sqlite ]));
       in rec {
         devShell = pkgs.mkShell {
           packages = (with pkgs; [

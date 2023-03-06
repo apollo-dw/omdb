@@ -37,7 +37,7 @@ class HomeController extends Controller
       ->get();
 
     $ratings_subquery = DB::table("ratings")
-      ->whereDate("ratings.created_at", ">=", Carbon::now()->subWeek())
+      ->whereDate("ratings.updated_at", ">=", Carbon::now()->subWeek())
       ->groupBy("ratings.beatmap_id")
       ->select("beatmap_id", DB::raw("count(*) as num_ratings"));
 
@@ -55,6 +55,7 @@ class HomeController extends Controller
         "ratings.num_ratings"
       )
       ->orderByDesc("num_ratings")
+      ->take(10)
       ->get();
 
     /*DB::table("beatmaps")
