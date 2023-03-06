@@ -22,40 +22,62 @@
   @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 
   <script>
+    // Debounce user input so it's not constantly bombarding the server with requests
+    // TODO: Put this in some helper file
+    function debounce(func, timeout = 300) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          func.apply(this, args);
+        }, timeout);
+      };
+    }
+
     function showResult(query) {
+      debounce(showResultHelper, 1000)(query);
+    }
+
+    async function showResultHelper(query) {
       if (query.length == 0) {
         document.getElementById("topBarSearchResults").innerHTML = "";
         document.getElementById("topBarSearchResults").style.display = "none";
         return;
       }
 
+      if (query.length < 3) return;
+
       let payload = {
         query
       };
-      fetch('/search', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-TOKEN": "{{ csrf_token() }}",
-        },
-        body: JSON.stringify(query),
-      }).then(result => {
-        if (result.status == 200) {
-          document.getElementById("topBarSearchResults").innerHTML = this
-            .responseText;
-          document.getElementById("topBarSearchResults").style.display =
-            "block";
-        }
-      });
-      /*
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-        }
+
+      let url = '/search?query=' + encodeURI(query);
+      let response = await fetch(url);
+
+      if (!response.ok) return;
+
+      // alert('result ' + JSON.stringify(response.json()));
+
+      let result = await response.json();
+      let searchResultsHtml = '';
+      for (let beatmap of result) {
+        let diff_name = '';
+        if ('difficulty_name' in beatmap)
+          diff_name = `[${beatmap.difficulty_name}]`;
+
+        searchResultsHtml += `
+        <a href="/mapset/${beatmap.beatmapset_id}">
+          <div style="margin: 0; background-color: DarkSlateGrey;">
+            ${beatmap.artist} - ${beatmap.title}
+            ${diff_name}
+          </div>
+        </a>
+        `;
       }
-      xmlhttp.open("POST", "/search?q=" + str, true);
-      xmlhttp.send();
-      */
+      document.getElementById("topBarSearchResults").innerHTML =
+        searchResultsHtml;
+      document.getElementById("topBarSearchResults").style.display =
+        "block";
     }
 
     function searchFocus() {
@@ -93,13 +115,13 @@
       <div class="topBarLink topBarDropDownButton">maps</div>
       <div class="dropdown-content">
         <a href="/maps/?m=02&y=2023">latest</a>
-        <a href="/random/">random</a>
+        <a href="/maps/random/">random</a>
       </div>
     </div>
 
     <form class="topBarSearch">
       <input class="topBarSearchBar" type="text" size="30"
-        onfocusin="searchFocus()" onkeyup="showResult(this.value)"
+        onfocusin="searchFocus()" oninput="showResult(this.value)"
         value="" autocomplete="off"
         placeholder="Search... (or paste link)">
       <div id="topBarSearchResults"></div>

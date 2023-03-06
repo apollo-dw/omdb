@@ -43,6 +43,5 @@ services:
     ports: [8173:8173]
     env_file: ./omdb/.env
     working_dir: /code/omdb
-    command: npm install && npm run dev
     volumes:
       - .:/code

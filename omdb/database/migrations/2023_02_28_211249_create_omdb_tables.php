@@ -53,6 +53,9 @@ return new class extends Migration {
       $table->integer("language");
       $table->dateTime("date_ranked");
       $table->integer("status");
+
+      // Full text index
+      $table->fullText(["artist", "title"]);
     });
 
     Schema::create("beatmaps", function (Blueprint $table) {
@@ -81,6 +84,9 @@ return new class extends Migration {
         ->foreign("beatmapset_id")
         ->references("id")
         ->on("beatmapsets");
+
+      // Full text index
+      $table->fullText(["difficulty_name"]);
     });
 
     Schema::create("comments", function (Blueprint $table) {
