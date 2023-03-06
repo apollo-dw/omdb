@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Config extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
   protected $table = "config";
-  protected $fillable = [
-    "last_beatmap_retrieval",
-  ];
+  protected $fillable = ["last_beatmap_retrieval"];
 }
