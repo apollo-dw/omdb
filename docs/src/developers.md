@@ -63,20 +63,6 @@ particular API methods, consult Laravel documentation.
 - Run `npm install` if you haven't already. This should only need to be done
     once, each time you change node dependencies.
 
-- Run both of these in separate terminal windows. Leave them running for the
-    duration of your development session.
-
-  - `php artisan serve --host 0.0.0.0`: This starts the main PHP server.
-
-    You need the `--host` part since otherwise it's only available to view
-    within the Docker container.
-
-  - `npm run dev -- --host 0.0.0.0`: This starts the Vite server, which is
-    responsible for hot-reloading assets such as SCSS or JS when they are
-    edited.
-
-    As before, `--host` is needed.
-
 ## Setting up Docker
 
 **IMPORTANT.** Create a `.env` file, containing the environment variables you
