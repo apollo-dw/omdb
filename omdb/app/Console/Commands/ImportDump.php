@@ -114,17 +114,20 @@ class ImportDump extends Command
     if ($result !== false) {
       // $this->info("Cache hit on {$key}, status " . $result['status']);
       // TODO: If the status was 500 or something then try again
-      return [
-        "status" => $result["status"],
-        "body" => json_decode($result["value"], true),
-      ];
+      if ($result["status"] != 504) {
+        return [
+          "status" => $result["status"],
+          "body" => json_decode($result["value"], true),
+        ];
+      }
     }
 
     // $this->info("Cache miss on {$key}, making a request instead.");
     $result = $get_result($method, $url, $options);
     $body_json = json_encode($result["body"]);
 
-    $sql = "INSERT INTO osus_api (key, status, value) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO osus_api (key, status, value) VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET status=excluded.status, value=excluded.value";
     $stmt = $this->cache_db->prepare($sql);
     $stmt->execute([$key, $result["status"], $body_json]);
 
