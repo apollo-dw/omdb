@@ -75,7 +75,7 @@ class ImportDump extends Command
       ],
     ]);
 
-    // $this->import_users();
+    $this->import_users();
     $this->import_beatmaps();
     $this->import_ratings();
     $this->import_comments();
@@ -113,7 +113,6 @@ class ImportDump extends Command
 
     if ($result !== false) {
       // $this->info("Cache hit on {$key}, status " . $result['status']);
-      // TODO: If the status was 500 or something then try again
       if ($result["status"] != 504) {
         return [
           "status" => $result["status"],

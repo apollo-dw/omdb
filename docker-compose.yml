@@ -23,7 +23,7 @@ services:
     build:
       context: ./.
       dockerfile: ./docker/dev.Dockerfile
-    ports: [8400:8000, 8173:8173]
+    ports: [8400:8000]
     env_file: ./omdb/.env
     environment:
       DB_CONNECTION: mysql
@@ -32,5 +32,17 @@ services:
       DB_USER: root
       DB_PASSWORD: example
     working_dir: /code/omdb
+    command: php artisan serve --host 0.0.0.0
+    volumes:
+      - .:/code
+
+  dev-frontend:
+    build:
+      context: ./.
+      dockerfile: ./docker/dev-frontend.Dockerfile
+    ports: [8173:8173]
+    env_file: ./omdb/.env
+    working_dir: /code/omdb
+    command: npm run dev
     volumes:
       - .:/code
