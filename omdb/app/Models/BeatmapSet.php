@@ -13,7 +13,6 @@ class BeatmapSet extends Model
 
   protected $fillable = ["id", "beatmapset_id", "creator", "creator_id"];
 
-  protected $dateFormat = \DateTime::ISO8601;
   protected $casts = [
     "date_ranked" => "datetime:c",
   ];
