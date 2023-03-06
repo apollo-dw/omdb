@@ -28,8 +28,10 @@ ENV SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     git \
-    zip \
+    libsqlite3-dev \
+    sqlite3 \
     unzip \
+    zip \
     ;
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
