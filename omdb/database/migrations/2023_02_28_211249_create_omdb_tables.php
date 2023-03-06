@@ -10,6 +10,10 @@ return new class extends Migration {
    */
   public function up(): void
   {
+    Schema::create("config", function (Blueprint $table) {
+      $table->dateTime("last_beatmap_retrieval")->nullable();
+    });
+
     Schema::create("osu_users", function (Blueprint $table) {
       $table->id("user_id");
       $table->timestamps();
