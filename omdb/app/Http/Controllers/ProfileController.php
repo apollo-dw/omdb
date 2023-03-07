@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OsuUser;
+use App\Models\BeatmapSet;
 use Illuminate\Support\Facades\DB;
 use App\Models\OmdbUser;
 use Illuminate\Http\Request;
@@ -35,20 +36,28 @@ class ProfileController extends Controller
         $context["is_you"] = Auth::user()->user_id == $osu_user->user_id;
       }
 
-      $rating_counts = $omdb_user
+      $rating_counts_orig = $omdb_user
         ->ratings()
         ->groupBy("score")
         ->select("score", DB::raw("count(*) as count"))
-        ->get()
-        ->keyBy("score")
-        ->toArray();
+        ->get();
+
+      // Can't use keyBy + toArray because we need specific precision
+      $rating_counts = [];
+      foreach ($rating_counts_orig as $row) {
+        $rs = number_format($row['score'], 1);
+        $rating_counts[$rs] = $row['count'];
+      }
+
       $context["rating_counts"] = $rating_counts;
       $context["total_ratings"] = array_sum(array_values($rating_counts));
+
+      info('rating', ['rating_counts' => $rating_counts, 'id' => $osu_user->user_id, 'sum' => $context['total_ratings']]);
 
       if (count($rating_counts) == 0) {
         $context["max_rating"] = 1;
       } else {
-        $context["max_rating"] = max(array_values($rating_counts))["count"];
+        $context["max_rating"] = max(array_values($rating_counts));
       }
 
       $comment_count = $omdb_user->comments()->count();
@@ -86,6 +95,11 @@ class ProfileController extends Controller
 
       $context["osu_user"] = $osu_user;
     }
+
+    $ranked_beatmaps = BeatmapSet::where('creator_id', $user_id)
+      ->orderByDesc('date_ranked')
+      ->get();
+    $context['ranked_beatmaps'] = $ranked_beatmaps;
 
     return view("profile", $context);
     /*[

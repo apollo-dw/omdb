@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Home')
+@section('title', e($osu_user->username))
 
 @section('content')
 
@@ -31,42 +31,42 @@
             <b>Comments:</b> {{ $comment_count }}
           </a><br>
 
-          {{--
-              TODO Add ranked mapsets search
-        <b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
-              --}}
+          <b>Ranked Mapsets:</b> {{ count($ranked_beatmaps) }}<br />
         @endif
       </div>
 
-      @if ($is_you)
+      @if ($osu_user->omdb_user && $rating_counts)
         <div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-          @if ($rating_counts)
             @for ($r = 0; $r <= 10; $r++)
               @php
                 $rs = number_format((10 - $r) / 2, 1);
                 $rs1 = strval($r);
-                $l = $rating_counts[$rs1]['count'] ?? 0;
+                $l = $rating_counts[$rs] ?? 0;
+                $names = json_decode($osu_user->omdb_user->custom_ratings, true) ?? [];
               @endphp
 
               <div class="profileRankingDistributionBar"
                 style="width: {{ ($l / $max_rating) * 90 }}%;">
                 <a href="ratings/?id={{ $osu_user->user_id }}&r=5.0&p=1">
-                  {{ $rs }}
+                  {{ $rs }} -
+                  {{ $names[$rs] ?? '' }}
                 </a>
               </div>
             @endfor
-          @endif
         </div>
-
         <div style="margin-bottom:1.5em;">
           Rating Distribution<br>
         </div>
+          @endif
+
+      @if ($is_you)
+
 
         @if (Auth::check() && !$is_you)
           @php
             $widthPercentage = abs(($correlation / 2) * 100);
             $leftMargin = 0;
-            
+
             if ($correlation < 0) {
                 $leftMargin = 50 - $widthPercentage;
             }
@@ -133,5 +133,19 @@
       @endif
     </div>
   </div>
+
+<hr style="margin-bottom:2rem;">
+
+<div style="text-align:center;" >
+  @foreach ($ranked_beatmaps as $beatmapset)
+    <a href="/mapset/{{ $beatmapset->id }}"  target='_blank' rel='noopener noreferrer'>
+			<div class="beatmapCard" style="background-image:
+              linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('https://assets.ppy.sh/beatmaps/{{ $beatmapset->id }}/covers/cover.jpg');">
+              {{ $beatmapset->artist }} - {{ $beatmapset->title }}
+			</div>
+		</a>
+      @endforeach
+</div>
 
 @endsection
