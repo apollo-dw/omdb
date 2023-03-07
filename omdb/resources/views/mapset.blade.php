@@ -24,29 +24,25 @@
         style="height:6rem;width:21.6rem;border-radius:16px;"
         onerror="this.onerror=null; this.src='INF.png';" />
     </div>
+    @php
+      $is_loved = $mapset->status == 4;
+    @endphp
 
     <div class="flex-child">
-      <?php if (true) {
-          // $isLoved)
-          echo 'Submitted: ';
-      } else {
-          echo 'Ranked: ';
-      }
-      // echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
-      ?>
+      @if ($is_loved)
+        Submitted:
+      @else
+        Ranked:
+      @endif
+      {{ $mapset->date_ranked->format('M jS, Y') }}
       <br>
 
       Average Rating:
       <b>{{ $average_rating }}</b>
-      <span style="font-size:12px;color:grey;">/ 5.00 from <?php
-      /* echo $numberOfSetRatings; */
-      ?>
+      <span style="font-size:12px;color:grey;">/ 5.00 from
+        {{ count($mapset->ratings) }}
         votes</span><br>
-      @php
-        $is_loved = $mapset->status == 4;
-      @endphp
 
-      {{ $mapset->status }}
       @if ($is_loved)
         Loved Mapset
       @endif
@@ -55,48 +51,6 @@
 
   <br>
   <hr style="margin-bottom:1em;">
-
-  <?php
-  /*
-    $counter = 0;
-    while($row = $result->fetch_assoc()) {
-        $ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID`='{$userId}';");
-        $userHasRatedThis = $ratedQueryResult->num_rows == 1 ? true : false;
-        $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
-        $counter += 1;
-
-        $ratingCounts = array();
-
-        $ratingQuery = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' GROUP BY `Score`";
-        $ratingResult = $conn->query($ratingQuery);
-
-        $blackListed = $row["Blacklisted"] == 1;
-
-        $hasRatings = true;
-        if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null){
-            $hasRatings = false;
-        }
-
-        // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
-        $ratingCounts['0.0'] = 0;
-        $ratingCounts['0.5'] = 0;
-        $ratingCounts['1.0'] = 0;
-        $ratingCounts['1.5'] = 0;
-        $ratingCounts['2.0'] = 0;
-        $ratingCounts['2.5'] = 0;
-        $ratingCounts['3.0'] = 0;
-        $ratingCounts['3.5'] = 0;
-        $ratingCounts['4.0'] = 0;
-        $ratingCounts['4.5'] = 0;
-        $ratingCounts['5.0'] = 0;
-
-        while ($ratingRow = $ratingResult->fetch_assoc()) {
-            $ratingCounts[$ratingRow['Score']] = $ratingRow['count'];
-        }
-
-        $maxRating = max($ratingCounts);
-        */
-  ?>
 
   @foreach ($beatmaps as $beatmap)
     <div class="flex-container diffContainer <?php if (true || $blackListed) {
@@ -125,17 +79,17 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-            
+
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-            
+
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-            
+
             $maxRating = max($ratingCounts);
           @endphp
 
@@ -157,9 +111,9 @@
       <div class="flex-child diffBox" style="text-align:right;width:40%;">
         @if (count($beatmap->ratings) > 0)
           Rating:
-          <b><?php
-          /* echo number_format($row["WeightedAvg"], 2); */
-          ?></b>
+          <b>
+            {{ $beatmap->cached_weighted_avg }}
+          </b>
           <span class="subText">
             / 5.00 from
             <span style="color:white">{{ count($beatmap->ratings) }}</span>

@@ -146,24 +146,24 @@ class ImportDump extends Command
       ]);
 
       $custom_ratings = [
-        '0.0' => $row['Custom00Rating'],
-        '0.5' => $row['Custom05Rating'],
-        '1.0' => $row['Custom10Rating'],
-        '1.5' => $row['Custom15Rating'],
-        '2.0' => $row['Custom20Rating'],
-        '2.5' => $row['Custom25Rating'],
-        '3.0' => $row['Custom30Rating'],
-        '3.5' => $row['Custom35Rating'],
-        '4.0' => $row['Custom40Rating'],
-        '4.5' => $row['Custom45Rating'],
-        '5.0' => $row['Custom50Rating'],
+        "0.0" => $row["Custom00Rating"],
+        "0.5" => $row["Custom05Rating"],
+        "1.0" => $row["Custom10Rating"],
+        "1.5" => $row["Custom15Rating"],
+        "2.0" => $row["Custom20Rating"],
+        "2.5" => $row["Custom25Rating"],
+        "3.0" => $row["Custom30Rating"],
+        "3.5" => $row["Custom35Rating"],
+        "4.0" => $row["Custom40Rating"],
+        "4.5" => $row["Custom45Rating"],
+        "5.0" => $row["Custom50Rating"],
       ];
 
       array_push($omdb_users, [
         "user_id" => $row["UserID"],
         "access_token" => "",
         "refresh_token" => "",
-        'custom_ratings' => json_encode($custom_ratings),
+        "custom_ratings" => json_encode($custom_ratings),
       ]);
     }
 
@@ -172,7 +172,7 @@ class ImportDump extends Command
       OmdbUser::upsert(
         $omdb_users,
         ["user_id"],
-        ["access_token", "refresh_token", 'custom_ratings']
+        ["access_token", "refresh_token", "custom_ratings"]
       );
     });
     $this->info("Inserted users.");

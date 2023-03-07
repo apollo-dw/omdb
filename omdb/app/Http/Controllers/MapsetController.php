@@ -20,6 +20,7 @@ class MapsetController extends Controller
 
     $mapset = BeatmapSet::where("id", $mapset_id)
       ->with("creator_user")
+      ->withCount("ratings")
       ->first();
     if ($mapset === null) {
       return abort(404);
@@ -30,11 +31,10 @@ class MapsetController extends Controller
       ->orderByDesc("star_rating")
       ->get();
 
-    $average_rating = DB::select("
-            SELECT ROUND(AVG(Score), 2) as average
-            FROM `ratings`
-            WHERE id IN (SELECT id FROM beatmaps WHERE beatmapset_id={$mapset_id})
-        ")[0]->average;
+    $average_rating = DB::table("ratings")
+      ->where("beatmapset_id", $mapset_id)
+      ->selectRaw("round(avg(score), 2) as average")
+      ->first()->average;
 
     $comments = Comment::where("beatmapset_id", $mapset_id)
       ->with("osu_user")

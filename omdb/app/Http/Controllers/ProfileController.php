@@ -45,14 +45,18 @@ class ProfileController extends Controller
       // Can't use keyBy + toArray because we need specific precision
       $rating_counts = [];
       foreach ($rating_counts_orig as $row) {
-        $rs = number_format($row['score'], 1);
-        $rating_counts[$rs] = $row['count'];
+        $rs = number_format($row["score"], 1);
+        $rating_counts[$rs] = $row["count"];
       }
 
       $context["rating_counts"] = $rating_counts;
       $context["total_ratings"] = array_sum(array_values($rating_counts));
 
-      info('rating', ['rating_counts' => $rating_counts, 'id' => $osu_user->user_id, 'sum' => $context['total_ratings']]);
+      info("rating", [
+        "rating_counts" => $rating_counts,
+        "id" => $osu_user->user_id,
+        "sum" => $context["total_ratings"],
+      ]);
 
       if (count($rating_counts) == 0) {
         $context["max_rating"] = 1;
@@ -96,19 +100,12 @@ class ProfileController extends Controller
       $context["osu_user"] = $osu_user;
     }
 
-    $ranked_beatmaps = BeatmapSet::where('creator_id', $user_id)
-      ->orderByDesc('date_ranked')
+    $ranked_beatmaps = BeatmapSet::where("creator_id", $user_id)
+      ->orderByDesc("date_ranked")
       ->get();
-    $context['ranked_beatmaps'] = $ranked_beatmaps;
+    $context["ranked_beatmaps"] = $ranked_beatmaps;
 
     return view("profile", $context);
-    /*[
-      "osu_user" => $osu_user,
-      "is_you" => $is_you,
-      "rating_counts" => $rating_counts,
-      "max_rating" => $max_rating,
-      'comments' => $comments,
-      ]);*/
   }
 
   public function comments(Request $request): View
