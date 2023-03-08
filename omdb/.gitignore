@@ -17,4 +17,4 @@ yarn-error.log
 /.idea
 /.vscode
 .php-cs-fixer.*
-ChartUpdate.php
+# ChartUpdate.php
