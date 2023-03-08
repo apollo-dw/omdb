@@ -78,133 +78,137 @@
         ?>
       </div>
 
-      <?php if (true || !$blackListed) { ?>
-      <div class="flex-child diffBox" style="width:20%;text-align:center;">
-        @if (count($beatmap->ratings) > 0)
-          @php
-            $ratingCounts = [];
-            
-            for ($r = 0.0; $r <= 5.0; $r += 0.5) {
-                $rs = number_format($r, 1);
-                $ratingCounts[$rs] = 0;
-            }
-            
-            foreach ($beatmap->ratings as $rating) {
-                $rs = number_format($rating->score, 1);
-                $ratingCounts[$rs] += 1;
-            }
-            
-            $maxRating = max($ratingCounts);
-          @endphp
+      @if (!$beatmap->is_blacklisted())
+        @php
+          $has_ratings = count($beatmap->ratings) > 0 && $beatmap->cached_chart_year_rank !== null;
+        @endphp
 
-          <div class="mapsetRankingDistribution">
-            @for ($r = 5.0; $r >= 0.0; $r -= 0.5)
-              @php
-                $rs = number_format($r, 1);
-              @endphp
+        <div class="flex-child diffBox" style="width:20%;text-align:center;">
+          @if ($has_ratings)
+            @php
+              $ratingCounts = [];
 
-              <div class="mapsetRankingDistributionBar"
-                style="height: {{ ($ratingCounts[$rs] / $maxRating) * 90 }}%;">
-              </div>
-            @endfor
-          </div>
-          <span class="subText" style="width:100%;">Rating Distribution</span>
-        @endif
-      </div>
+              for ($r = 0.0; $r <= 5.0; $r += 0.5) {
+                  $rs = number_format($r, 1);
+                  $ratingCounts[$rs] = 0;
+              }
 
-      <div class="flex-child diffBox" style="text-align:right;width:40%;">
-        @if (count($beatmap->ratings) > 0)
-          Rating:
-          <b>
-            {{ $beatmap->cached_weighted_avg }}
-          </b>
-          <span class="subText">
-            / 5.00 from
-            <span style="color:white">{{ count($beatmap->ratings) }}</span>
-            votes
-          </span>
-          <br>
+              foreach ($beatmap->ratings as $rating) {
+                  $rs = number_format($rating->score, 1);
+                  $ratingCounts[$rs] += 1;
+              }
 
-          Ranking:
-          <b>#{{ $beatmap->cached_chart_year_rank }}</b>
-          for
-          <a href="/charts/?year={{ $mapset->date_ranked->year }}">
-            {{ $mapset->date_ranked->year }}</a>,
+              $maxRating = max($ratingCounts);
+            @endphp
 
-          <b>#{{ $beatmap->cached_chart_rank }}</b>
-          <a href="/charts">overall</a>
-        @endif
-      </div>
+            <div class="mapsetRankingDistribution">
+              @for ($r = 5.0; $r >= 0.0; $r -= 0.5)
+                @php
+                  $rs = number_format($r, 1);
+                @endphp
 
-      <div class="flex-child diffBox" style="padding:auto;width:30%;">
-        @if (Auth::check())
-          @php
-            $userHasRatedThis = !empty($beatmap->user_score);
-            $userMapRating = $beatmap->user_score;
-          @endphp
+                <div class="mapsetRankingDistributionBar"
+                  style="height: {{ ($ratingCounts[$rs] / $maxRating) * 90 }}%;">
+                </div>
+              @endfor
+            </div>
+            <span class="subText" style="width:100%;">Rating Distribution</span>
+          @endif
+        </div>
 
-          <span class="identifier" style="display: inline-block;">
-            <ol class="star-rating-list <?php if (!$userHasRatedThis) {
-                echo 'unrated';
+        <div class="flex-child diffBox" style="text-align:right;width:40%;">
+          @if ($has_ratings)
+            Rating:
+            <b>
+              {{ $beatmap->cached_weighted_avg }}
+            </b>
+            <span class="subText">
+              / 5.00 from
+              <span style="color:white">{{ count($beatmap->ratings) }}</span>
+              votes
+            </span>
+            <br>
+
+            Ranking:
+            <b>#{{ $beatmap->cached_chart_year_rank }}</b>
+            for
+            <a href="/charts/?year={{ $mapset->date_ranked->year }}">
+              {{ $mapset->date_ranked->year }}</a>,
+
+            <b>#{{ $beatmap->cached_chart_rank }}</b>
+            <a href="/charts">overall</a>
+          @endif
+        </div>
+
+        <div class="flex-child diffBox" style="padding:auto;width:30%;">
+          @if (Auth::check())
+            @php
+              $userHasRatedThis = !empty($beatmap->user_score);
+              $userMapRating = $beatmap->user_score;
+            @endphp
+
+            <span class="identifier" style="display: inline-block;">
+              <ol class="star-rating-list <?php if (!$userHasRatedThis) {
+                  echo 'unrated';
+              } ?>"
+                beatmapid="{{ $beatmap->id }}" rating="<?php echo $userMapRating; ?>">
+                <!-- The holy grail of PHP code. If I want to make this public on github i NEED to rewrite this-->
+                <i class="icon-remove" style="opacity:0;"></i>
+                <li class="star icon-star<?php if ($userMapRating == 0 || !$userHasRatedThis) {
+                    echo '-empty';
+                } elseif ($userMapRating == 0.5) {
+                    echo '-half-empty';
+                } ?>" value="1" />
+                <li class="star icon-star<?php if ($userMapRating <= 1) {
+                    echo '-empty';
+                } elseif ($userMapRating == 1.5) {
+                    echo '-half-empty';
+                } ?>" value="2" />
+                <li class="star icon-star<?php if ($userMapRating <= 2) {
+                    echo '-empty';
+                } elseif ($userMapRating == 2.5) {
+                    echo '-half-empty';
+                } ?>" value="3" />
+                <li class="star icon-star<?php if ($userMapRating <= 3) {
+                    echo '-empty';
+                } elseif ($userMapRating == 3.5) {
+                    echo '-half-empty';
+                } ?>" value="4" />
+                <li class="star icon-star<?php if ($userMapRating <= 4) {
+                    echo '-empty';
+                } elseif ($userMapRating == 4.5) {
+                    echo '-half-empty';
+                } ?>" value="5" />
+              </ol>
+            </span>
+
+            <span class="starRemoveButton <?php if (!$userHasRatedThis) {
+                echo 'disabled';
             } ?>"
-              beatmapid="{{ $beatmap->id }}" rating="<?php echo $userMapRating; ?>">
-              <!-- The holy grail of PHP code. If I want to make this public on github i NEED to rewrite this-->
-              <i class="icon-remove" style="opacity:0;"></i>
-              <li class="star icon-star<?php if ($userMapRating == 0 || !$userHasRatedThis) {
-                  echo '-empty';
-              } elseif ($userMapRating == 0.5) {
-                  echo '-half-empty';
-              } ?>" value="1" />
-              <li class="star icon-star<?php if ($userMapRating <= 1) {
-                  echo '-empty';
-              } elseif ($userMapRating == 1.5) {
-                  echo '-half-empty';
-              } ?>" value="2" />
-              <li class="star icon-star<?php if ($userMapRating <= 2) {
-                  echo '-empty';
-              } elseif ($userMapRating == 2.5) {
-                  echo '-half-empty';
-              } ?>" value="3" />
-              <li class="star icon-star<?php if ($userMapRating <= 3) {
-                  echo '-empty';
-              } elseif ($userMapRating == 3.5) {
-                  echo '-half-empty';
-              } ?>" value="4" />
-              <li class="star icon-star<?php if ($userMapRating <= 4) {
-                  echo '-empty';
-              } elseif ($userMapRating == 4.5) {
-                  echo '-half-empty';
-              } ?>" value="5" />
-            </ol>
-          </span>
+              beatmapid="{{ $beatmap->id }}">
+              <i class="icon-remove"></i>
+            </span>
 
-          <span class="starRemoveButton <?php if (!$userHasRatedThis) {
-              echo 'disabled';
-          } ?>"
-            beatmapid="{{ $beatmap->id }}">
-            <i class="icon-remove"></i>
-          </span>
-
-          <span style="display: inline-block; padding-left:0.25em;"
-            class="star-value <?php if (!$userHasRatedThis) {
-                echo 'unrated';
-            } ?>">
-            @if ($userHasRatedThis)
-              {{ number_format($userMapRating, 1) }}
-            @endif
-          </span>
-        @else
-          Log in to rate maps!
-        @endif
-      </div>
-      <?php } else { ?>
-      <div class="flex-child diffBox" style="padding:auto;width:91%;">
-        <b>This difficulty has been blacklisted from OMDB.</b><br>
-        Reason: <?php
-        /* echo $row["BlacklistReason"]; */
-        ?>
-      </div>
-      <?php } ?>
+            <span style="display: inline-block; padding-left:0.25em;"
+              class="star-value <?php if (!$userHasRatedThis) {
+                  echo 'unrated';
+              } ?>">
+              @if ($userHasRatedThis)
+                {{ number_format($userMapRating, 1) }}
+              @endif
+            </span>
+          @else
+            Log in to rate maps!
+          @endif
+        </div>
+      @else
+        <div class="flex-child diffBox" style="padding:auto;width:91%;">
+          <b>This difficulty has been blacklisted from OMDB.</b><br>
+          Reason: <?php
+          /* echo $row["BlacklistReason"]; */
+          ?>
+        </div>
+      @endif
     </div>
   @endforeach
 
@@ -419,11 +423,14 @@
         body: JSON.stringify(payload),
       }).then(result => {
         if (result.status == 200) {
+          /*
           $this.addClass("disabled");
           $this.parent().find('.star-value').html("&ZeroWidthSpace;");
           $this.parent().find('.star-value').addClass("unrated");
           $this.parent().find('.identifier').find('.star-rating-list')
             .addClass("unrated");
+            */
+          location.reload();
         }
       });
     });
