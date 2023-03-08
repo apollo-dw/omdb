@@ -404,26 +404,25 @@
       var $this = $(this);
       var bID = $(this).attr("beatmapid");
 
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          console.log(this.responseText);
+      $this.parent().find('.star-value').html("removing...");
 
+      let payload = { beatmap_id: bID };
+      fetch("/mapset/{{ $mapset->id }}/rating", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": "{{ csrf_token() }}",
+        },
+        body: JSON.stringify(payload),
+      }).then(result => {
+        if (result.status == 200) {
           $this.addClass("disabled");
           $this.parent().find('.star-value').html("&ZeroWidthSpace;");
           $this.parent().find('.star-value').addClass("unrated");
           $this.parent().find('.identifier').find('.star-rating-list')
             .addClass("unrated");
         }
-      };
-
-      $this.attr("rating", "");
-      xhttp.open("POST", "SubmitRating.php", true);
-      xhttp.setRequestHeader("Content-type",
-        "application/x-www-form-urlencoded");
-      xhttp.send("bID=" + bID + "&rating=" + -2);
-      $this.parent().find('.star-value').html("removing...");
-
+      });
     });
 
     $(".star-rating-list").click(function(event) {

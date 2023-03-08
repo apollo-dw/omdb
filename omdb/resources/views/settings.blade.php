@@ -97,9 +97,16 @@
     <details>
       <summary>
         {{ $api_key->name }}
-        <a href='RemoveApiApp.php?id={$row["ApiID"]}'>
+
+        <form action="/settings/delete_api_key" method="post" style="display:
+        inline-block;">
+          @csrf
+          <button type="submit" style="display: inline-block; background: none;  color: inherit;  border: none;">
+            <input type="hidden" name="api_key" value="{{ $api_key->api_key }}" />
           <i class='icon-remove'></i>
+          </button>
         </a>
+        </form>
       </summary>
       <span class='subText'>
         {{ $api_key->api_key }}

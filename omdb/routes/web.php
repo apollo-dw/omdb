@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::get("/", "HomeController@show");
 Route::resource("/settings", "SettingsController")->only(["index", "store"]);
 Route::post("/settings/api_key", "SettingsController@api_key");
+// TODO: This is only post because we can't send delete from html forms, to be
+// changed later
+Route::post("/settings/delete_api_key", "SettingsController@delete_api_key");
 Route::get("/charts", "ChartsController@show");
 Route::get("/maps", "MapsController@show");
 Route::get("/maps/random", "MapsController@random");
@@ -29,6 +32,7 @@ Route::group(["middleware" => "auth"], function () {
   Route::get("/relogin/{user_id}", "AuthController@relogin");
   Route::post("/mapset/{mapset_id}/comment", "MapsetController@post_comment");
   Route::post("/mapset/{mapset_id}/rating", "MapsetController@post_rating");
+  Route::delete("/mapset/{mapset_id}/rating", "MapsetController@delete_rating");
 });
 
 Route::group(["prefix" => "auth"], function () {

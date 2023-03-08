@@ -108,4 +108,20 @@ class MapsetController extends Controller
 
     return response()->json(["success" => "success"], 200);
   }
+
+  public function delete_rating(Request $request) {
+    $mapset_id = $request->route("mapset_id");
+    $map_id = $request->input("beatmap_id");
+
+    $omdb_user = Auth::user();
+
+    // TODO: Make sure the beatmapset exists
+    // TODO: Make sure the beatmap exists
+
+    Rating::where('user_id', $omdb_user->user_id)
+      ->where('beatmap_id', $map_id)
+      ->delete();
+
+    return response()->json(["success" => "success"], 200);
+  }
 }

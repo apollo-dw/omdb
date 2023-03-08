@@ -68,7 +68,19 @@ class SettingsController extends Controller
       $api_key->save();
     }
 
-    $request->session()->flash("status", "Created API key: " . $apiKey);
+    // TODO: Put this back when the flash looks good
+    // $request->session()->flash("status", "Created API key: " . $apiKey);
+
+    return redirect("/settings");
+  }
+
+  public function delete_api_key(Request $request)
+  {
+    $user = Auth::user();
+    $api_key = $request->input("api_key");
+
+    ApiKey::where('api_key', $api_key)->delete();
+
     return redirect("/settings");
   }
 }
