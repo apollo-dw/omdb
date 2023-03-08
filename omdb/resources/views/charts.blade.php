@@ -4,7 +4,16 @@
 
 @section('content')
 
-  <h1 id="heading">Highest Rated Maps of {{ $year ?? 'All Time' }}</h1>
+  <h1 id="heading">
+    @php
+      $order_names = [
+        'highest' => 'Highest Rated Maps',
+        'lowest' => 'Lowest Rated Maps',
+        'most' => 'Most Rated Maps',
+      ];
+    @endphp
+
+    {{ $order_names[$order] }} of {{ $year ?? 'All Time' }}</h1>
 
   <style>
     .flex-container {

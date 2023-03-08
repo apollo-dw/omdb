@@ -30,13 +30,6 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 sensitiveStrings.php
 .idea/
-android-chrome-192x192.png
-android-chrome-512x512.png
-apple-touch-icon.png
-favicon-16x16.png
-favicon-32x32.png
-favicon.ico
-site.webmanifest
 /docker-data
 /.env
 /.direnv
