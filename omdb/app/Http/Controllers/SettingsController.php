@@ -79,7 +79,7 @@ class SettingsController extends Controller
     $user = Auth::user();
     $api_key = $request->input("api_key");
 
-    ApiKey::where('api_key', $api_key)->delete();
+    ApiKey::where("api_key", $api_key)->delete();
 
     return redirect("/settings");
   }

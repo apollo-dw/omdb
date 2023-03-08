@@ -42,7 +42,7 @@ class RetrieveBeatmaps extends Command
     $result = $response->json();
     $access_token = $result["access_token"];
 
-    info("Got access token.", ["access_token" => $access_token]);
+    $this->info("Got access token.");
 
     $cursor = null;
 
@@ -53,16 +53,26 @@ class RetrieveBeatmaps extends Command
       ],
     ]);
 
+    $latest_beatmap = BeatmapSet::latest("date_ranked")->first();
+
     while (true) {
+      $params = [
+        "sort" => "ranked_asc",
+        "explicit_content" => "show",
+        "cursor_string" => $cursor,
+      ];
+
+      if ($latest_beatmap !== null) {
+        $retrieve_since = $latest_beatmap->date_ranked;
+        $date = $retrieve_since->format("Y/m/d");
+        $params["query"] = "ranked>{$date}";
+        $this->info("Retrieving beatmaps with query " . $params["query"]);
+      }
+
       // Retrieve beatmaps
       $response = Http::withToken($access_token)->get(
         "https://osu.ppy.sh/api/v2/beatmapsets/search",
-        [
-          "query" => "ranked>2023/03/01",
-          "sort" => "ranked_asc",
-          "explicit_content" => "show",
-          "cursor_string" => $cursor,
-        ]
+        $params
       );
 
       $result = $response->json();
@@ -107,6 +117,7 @@ class RetrieveBeatmaps extends Command
           "title" => $beatmapset["title"],
           "genre" => $full_beatmapset["genre"]["id"],
           "language" => $full_beatmapset["language"]["id"],
+          "status" => $beatmapset["ranked"],
           "date_ranked" => Carbon::parse($beatmapset["ranked_date"]),
         ]);
 
@@ -117,7 +128,6 @@ class RetrieveBeatmaps extends Command
             "beatmapset_id" => $beatmapset["id"],
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
-            "status" => $beatmap["ranked"],
             "star_rating" => $beatmap["difficulty_rating"],
           ]);
         }

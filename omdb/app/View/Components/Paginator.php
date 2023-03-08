@@ -15,8 +15,11 @@ class Paginator extends Component
   /**
    * Create a new component instance.
    */
-  public function __construct(int $page, int $numPages, string $pageVariable = "page")
-  {
+  public function __construct(
+    int $page,
+    int $numPages,
+    string $pageVariable = "page"
+  ) {
     $this->page = $page;
     $this->num_pages = $numPages;
     $this->page_variable = $pageVariable;
@@ -30,7 +33,7 @@ class Paginator extends Component
     return view("components.paginator", [
       "page" => $this->page,
       "num_pages" => $this->num_pages,
-      'page_variable' => $this->page_variable,
+      "page_variable" => $this->page_variable,
     ]);
   }
 }

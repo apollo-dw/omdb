@@ -83,17 +83,17 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-
+            
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-
+            
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-
+            
             $maxRating = max($ratingCounts);
           @endphp
 
@@ -214,10 +214,7 @@
     <div class="flex-child" style="width:40%;">
       Latest Ratings<br><br>
       <div id="setRatingsDisplay">
-        <x-ratings.latest
-          :beatmapset-id="$mapset->id"
-          :show-map-meta="false"
-          :paginated="true"
+        <x-ratings.latest :beatmapset-id="$mapset->id" :show-map-meta="false" :paginated="true"
           page-variable="ratings_page" />
       </div>
     </div>
@@ -410,7 +407,9 @@
 
       $this.parent().find('.star-value').html("removing...");
 
-      let payload = { beatmap_id: bID };
+      let payload = {
+        beatmap_id: bID
+      };
       fetch("/mapset/{{ $mapset->id }}/rating", {
         method: "DELETE",
         headers: {

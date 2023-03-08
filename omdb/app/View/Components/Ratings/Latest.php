@@ -25,7 +25,7 @@ class Latest extends Component
     bool $showUser = true,
     bool $showMapMeta = true,
     bool $paginated = false,
-    string $pageVariable = "page",
+    string $pageVariable = "page"
   ) {
     if ($beatmapsetId !== "") {
       $this->beatmapset_id = intval($beatmapsetId);
@@ -67,8 +67,8 @@ class Latest extends Component
       $num_pages = ceil($num_ratings / $page_size);
 
       $page = request()->query($this->page_variable) ?? 1;
-      info('page ' . $page);
-      $ratings = $query->paginate($page_size, ['*'], $this->page_variable);
+      info("page " . $page);
+      $ratings = $query->paginate($page_size, ["*"], $this->page_variable);
     } else {
       $ratings = $query->get();
     }
@@ -78,8 +78,8 @@ class Latest extends Component
       "ratings" => $ratings,
       "show_user" => $this->show_user,
       "show_map_meta" => $this->show_map_meta,
-      'page' => $page,
-      'num_pages' => $num_pages,
+      "page" => $page,
+      "num_pages" => $num_pages,
       "paginated" => $this->paginated,
       "page_variable" => $this->page_variable,
     ]);

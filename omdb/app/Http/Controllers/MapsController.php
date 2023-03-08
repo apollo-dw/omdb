@@ -26,8 +26,9 @@ class MapsController extends Controller
       );
 
     $beatmapsets_query = BeatmapSet::whereYear("date_ranked", $year)
+      ->orderByDesc("date_ranked")
       ->whereMonth("date_ranked", $month)
-      ->joinSub($ratings_subquery, "ratings", function ($join) {
+      ->leftJoinSub($ratings_subquery, "ratings", function ($join) {
         $join->on("ratings.beatmapset_id", "=", "beatmapsets.id");
       });
 

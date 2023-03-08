@@ -272,27 +272,27 @@ select {
   align-content: center;
   flex-wrap: wrap;
 
-.commentHeader {
-  align-items: center;
-  width: 100%;
-  background-color: #203838;
-  padding: 0.25em;
-  margin: 0;
-}
+  .commentHeader {
+    align-items: center;
+    width: 100%;
+    background-color: #203838;
+    padding: 0.25em;
+    margin: 0;
+  }
 
-.comment {
-  padding-left: 1em;
-  padding-right: 1em;
-  margin-bottom: 1.5em;
-  min-height: 3em;
-  width: 100%;
-}
+  .comment {
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 1.5em;
+    min-height: 3em;
+    width: 100%;
+  }
 
-.commentComposer {
-  width: 100%;
-  text-align: right;
-  margin: 1em;
-}
+  .commentComposer {
+    width: 100%;
+    text-align: right;
+    margin: 1em;
+  }
 }
 
 textarea#commentForm {

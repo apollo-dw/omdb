@@ -21,15 +21,15 @@
             class="diffThumb" style="height:82px;width:82px;"
             onerror="this.onerror=null; this.src='/images/chart-INF.png';"></a>
       </div>
-      <div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
+      <div class="flex-child" style="flex-grow: 1;">
         <a href="/mapset/{{ $beatmapset->id }}">
-          {{ $beatmapset->artist }} - {{ $beatmapset->title }}
-          by
-          <a href='/profile/{{ $beatmapset->creator_id }}'>
-            {{ $beatmapset->creator_user->username }}
-          </a>
-          <a href="osu://s/{{ $beatmapset->id }}"><i
-              class="icon-download-alt">&ZeroWidthSpace;</i></a>
+          {{ $beatmapset->artist }} - {{ $beatmapset->title }}</a>
+        by
+        <a href='/profile/{{ $beatmapset->creator_id }}'>
+          {{ $beatmapset->creator_user->username }}
+        </a>
+        <a href="osu://s/{{ $beatmapset->id }}"><i
+            class="icon-download-alt">&ZeroWidthSpace;</i></a>
       </div>
       <div class="flex-child" style="flex: 0 0 3%;min-width: 0;">
         <x-timestamp :time="$beatmapset->date_ranked" />
