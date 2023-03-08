@@ -73,9 +73,9 @@
         <a href="osu://b/{{ $beatmap->id }}"><i
             class="icon-download-alt">&ZeroWidthSpace;</i></a>
         <span class="subText"><?php echo number_format((float) $beatmap->star_rating, 2, '.', ''); ?>*</span>
-        <?php
-        /* if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } */
-        ?>
+          @if ($mapset->creator_id != $beatmap->creator_id)
+              <br><span class='subText'>mapped by <a href='/profile/{{ $beatmap->creator_id }}'> {{ $beatmap->creator_user->username }} </a></span>
+          @endif
       </div>
 
       @if (!$beatmap->is_blacklisted())

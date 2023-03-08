@@ -103,9 +103,11 @@ class RetrieveBeatmaps extends Command
             ->get("https://osu.ppy.sh/api/v2/users/{user_id}");
 
           $mapper = $response->json();
+
+          // TODO: Investigate the 'no username' here. Case: HolyCOW https://osu.ppy.sh/beatmapsets/25#osu/165
           $osu_users[$creator_id] = [
             "user_id" => $creator_id,
-            "username" => $mapper["username"],
+            "username" => $mapper["username"] ?? "NO USERNAME",
           ];
         }
 
@@ -129,6 +131,7 @@ class RetrieveBeatmaps extends Command
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
             "star_rating" => $beatmap["difficulty_rating"],
+            "creator_id" => $beatmap["user_id"]
           ]);
         }
       }

@@ -31,6 +31,11 @@ class Beatmap extends Model
     "blacklisted",
   ];
 
+  public function creator_user()
+  {
+    return $this->hasOne("App\\Models\\OsuUser", "user_id", "creator_id");
+  }
+
   public function beatmapset()
   {
     return $this->hasOne("App\\Models\\BeatmapSet", "id", "beatmapset_id");
