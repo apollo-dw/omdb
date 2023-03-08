@@ -1,12 +1,11 @@
-version: '3'
+version: "3.7"
 
 services:
   omdb:
-    build: .
-    ports: [8400:80]
+    build:
+      context: ./omdb
+      dockerfile: ./Dockerfile
     env_file: .env
-    volumes:
-      - .:/var/www/html
 
   db:
     image: mysql:8
@@ -19,3 +18,30 @@ services:
     volumes:
       - ./docker-data/mysql:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dev:
+    build:
+      context: ./.
+      dockerfile: ./docker/dev.Dockerfile
+    ports: [8400:8000]
+    env_file: ./omdb/.env
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: omdb
+      DB_USER: root
+      DB_PASSWORD: example
+    working_dir: /code/omdb
+    command: php artisan serve --host 0.0.0.0
+    volumes:
+      - .:/code
+
+  dev-frontend:
+    build:
+      context: ./.
+      dockerfile: ./docker/dev-frontend.Dockerfile
+    ports: [8173:8173]
+    env_file: ./omdb/.env
+    working_dir: /code/omdb
+    volumes:
+      - .:/code

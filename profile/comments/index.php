@@ -87,7 +87,7 @@
 				</div>
 				<div class="flex-child comment" style="min-width:0;overflow: hidden;">
 					<div>
-						<a href="../../mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';" style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
+						<a href="../../mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/images/chart-INF.png';" style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
 					</div>
 					<p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
 				</div>
