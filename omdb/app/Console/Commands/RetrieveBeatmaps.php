@@ -65,7 +65,7 @@ class RetrieveBeatmaps extends Command
       if ($latest_beatmap !== null) {
         $retrieve_since = $latest_beatmap->date_ranked;
         $date = $retrieve_since->format("Y/m/d");
-        $params["query"] = "ranked>{$date}";
+        $params["query"] = "ranked>={$date}";
         $this->info("Retrieving beatmaps with query " . $params["query"]);
       }
 
@@ -137,7 +137,7 @@ class RetrieveBeatmaps extends Command
       }
 
       OsuUser::upsert(array_values($osu_users), ["user_id"], ["username"]);
-      BeatmapSet::insert(
+      BeatmapSet::insertOrIgnore(
         $db_beatmapsets,
         ["id"],
         [
@@ -150,7 +150,7 @@ class RetrieveBeatmaps extends Command
           "date_ranked",
         ]
       );
-      Beatmap::insert(
+      Beatmap::insertOrIgnore(
         $db_beatmaps,
         ["id"],
         ["beatmapset_id", "difficulty_name", "mode", "status", "star_rating"]
