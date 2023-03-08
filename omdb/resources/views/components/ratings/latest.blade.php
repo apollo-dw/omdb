@@ -42,6 +42,13 @@
   </div>
 @endforeach
 
+@if ($paginated)
+  <div style="text-align: center;">
+  <x-paginator :page="$page" :num-pages="$num_pages"
+    :page-variable="$page_variable" />
+  </div>
+@endif
+
 {{--
 <br>
 <div style="text-align:center;">

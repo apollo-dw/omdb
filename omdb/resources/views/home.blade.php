@@ -39,16 +39,15 @@
                 title="{{ $rating->osu_user->username }}" /></a>
           </div>
 
-          <div class="flex-child" style="flex-grow: 1;">
+          <div class="flex-child rating-and-map">
             <x-ratings.display :rating="$rating" />
             on
-            <a
-              href='/mapset/{{ $rating->beatmapset_id }}'>{{ $rating->beatmap->difficulty_name }}</a>
-            {{--
-// echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
---}}
+            <a href='/mapset/{{ $rating->beatmapset_id }}'>
+              {{ $rating->beatmap->difficulty_name }}
+            </a>
           </div>
-          <div class="flex-child" style="text-align:right;min-width:0%;">
+
+          <div class="flex-child timestamp">
             <x-timestamp :time="$rating->updated_at" />
           </div>
         </div>
@@ -76,15 +75,13 @@
                 title="{{ $comment->osu_user->username }}" /></a>
           </div>
 
-          <div class="flex-child"
-            style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
+          <div class="flex-child comment">
             <a style="color:white;" href="/mapset/{{ $comment->beatmapset_id }}">
               {{ $comment->comment }}
             </a>
           </div>
 
-          <div class="flex-child"
-            style="width:100%;text-align:right;min-width:0%;">
+          <div class="flex-child timestamp">
             <x-timestamp :time="$comment->created_at" />
           </div>
         </div>

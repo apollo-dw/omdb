@@ -228,6 +228,27 @@ span.subText {
   vertical-align: middle;
 }
 
+.ratingContainer {
+  .rating-and-map {
+    flex-grow: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .comment {
+    flex-grow: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .timestamp {
+    flex-shrink: 1;
+    white-space: nowrap;
+  }
+}
+
 .diffThumb {
   height: 32px;
   width: 32px;
@@ -250,7 +271,6 @@ select {
   align-items: center;
   align-content: center;
   flex-wrap: wrap;
-}
 
 .commentHeader {
   align-items: center;
@@ -272,6 +292,7 @@ select {
   width: 100%;
   text-align: right;
   margin: 1em;
+}
 }
 
 textarea#commentForm {

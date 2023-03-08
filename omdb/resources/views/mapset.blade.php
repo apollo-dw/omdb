@@ -214,7 +214,11 @@
     <div class="flex-child" style="width:40%;">
       Latest Ratings<br><br>
       <div id="setRatingsDisplay">
-        <x-ratings.latest :beatmapset-id="$mapset->id" :show-map-meta="false" :paginated="true" />
+        <x-ratings.latest
+          :beatmapset-id="$mapset->id"
+          :show-map-meta="false"
+          :paginated="true"
+          page-variable="ratings_page" />
       </div>
     </div>
 
