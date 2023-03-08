@@ -20,7 +20,7 @@
         <div class="flex-child">
           <a
             href="/profile/{{ $comment->user_id }}">{{ $comment->osu_user->username }}</a>
-          on <a href="../../mapset/{{ $comment->user_id }}">
+          on <a href="../../mapset/{{ $comment->beatmapset_id }}">
             {{ $comment->beatmapset->artist }} -
             {{ $comment->beatmapset->title }}
           </a>
