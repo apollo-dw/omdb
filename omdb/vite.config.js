@@ -6,8 +6,7 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 8173,
     hmr: {
-      host: "192.168.0.133",
-      // host: "10.101.0.11",
+      host: process.env.VITE_HOST,
     },
   },
 
