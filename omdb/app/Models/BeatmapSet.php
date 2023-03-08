@@ -22,6 +22,11 @@ class BeatmapSet extends Model
     return $this->hasOne("App\\Models\\OsuUser", "user_id", "creator_id");
   }
 
+  public function beatmaps()
+  {
+    return $this->hasMany("App\\Models\\Beatmap", "beatmapset_id");
+  }
+
   public function ratings()
   {
     return $this->hasMany("App\\Models\\Rating", "beatmapset_id");

@@ -27,6 +27,17 @@ particular API methods, consult Laravel documentation.
 
 - Copy `.env.sample` to `.env` and then modify some values to your liking.
 
+- Install Composer dependencies. Run this command:
+ 
+      docker compose run dev bash
+
+  This should bring you to a bash shell. Run:
+
+      composer install
+
+  This will spin for a minute, installing all the PHP dependencies. After this,
+  you should be good to go.
+
 ## Setting up OAuth (Only needs to be done once)
 
 - Go to https://osu.ppy.sh/home/account/edit
@@ -43,7 +54,7 @@ particular API methods, consult Laravel documentation.
     locations (probably `OSU_CLIENT_ID` and `OSU_CLIENT_SECRET` in the `.env`
     file)
 
-## Developing setup (Needs to be done EVERY time you start developing)
+## Developing setup + Installing dependencies (Needs to be done EVERY time you start developing)
 
 - Start up the development Docker container by running:
 

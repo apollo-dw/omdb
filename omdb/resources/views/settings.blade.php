@@ -93,26 +93,28 @@
     bad as having your PASSWORD leaked.<br> Click your application name to REVEAL
     your API key.</span><br><br>
 
-  {{--
-    $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE UserID=?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows != 0) {
-        while ($row = $result->fetch_assoc()) {
-            echo "<details><summary>{$row["Name"]} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
-        }
-    }
---}}
-  ?>
+  @foreach ($api_keys as $api_key)
+    <details>
+      <summary>
+        {{ $api_key->name }}
+        <a href='RemoveApiApp.php?id={$row["ApiID"]}'>
+          <i class='icon-remove'></i>
+        </a>
+      </summary>
+      <span class='subText'>
+        {{ $api_key->api_key }}
+      </span>
+    </details>
+  @endforeach
 
-  <form action="CreateNewApiApp.php" method="get">
+  <form action="/settings/api_key" method="post">
     <table>
       <tr>
         <td>
           <label>New Application Name:</label><br>
         </td>
         <td>
+          @csrf
           <input type="text" autocomplete="off" name="apiname" id="apiname"
             placeholder="omdb application" maxlength="255" minlength="1"
             value="" required><br>

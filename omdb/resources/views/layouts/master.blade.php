@@ -131,7 +131,7 @@
               style="margin-right:0.5em;"></i></b></a>
         <a href="/profile/{{ $user->user_id }}" style="color:white;">
           <img src="https://s.ppy.sh/a/{{ $user->user_id }}"
-               style="height:2rem;vertical-align:middle;" /></a>
+            style="height:2rem;vertical-align:middle;" /></a>
         <a href="/profile/{{ $user->user_id }}" style="color:white;">
           <b>{{ $user->osu_user->username }}</b>
         </a>
@@ -146,6 +146,10 @@
    <i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
   </div>
   -->
+
+  @if (session('status'))
+    {{ session('status') }}
+  @endif
 
   <div class="content">
     @yield('content')
