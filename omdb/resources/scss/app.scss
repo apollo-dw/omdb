@@ -39,7 +39,7 @@ body {
   padding-left: 20%;
   padding-right: 20%;
   box-sizing: border-box;
-  // margin-top: 15rem;
+  margin-top: 5rem;
   margin-bottom: 5rem;
   margin-left: 0;
   color: grey;
@@ -64,14 +64,12 @@ a:hover {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
   margin: 0px;
-}
-
-a .topBarLink {
   color: white;
-}
 
-.topBarLink:hover {
-  background-color: #0c1515;
+  &:hover {
+    background-color: #0c1515;
+    text-decoration: none;
+  }
 }
 
 .topBarDropDown {
@@ -315,21 +313,22 @@ input#commentSubmit:hover {
 }
 
 .starRatingDisplay {
-  display: inline-block;
+  display: inline-flex;
   white-space: nowrap;
-  width: 5em;
-  padding-right: 0.25em;
-}
+  margin-right: 0.25em;
 
-.starRatingDisplay .icon-star {
-  margin: 0.05em;
+  .icon-star {
+    margin: 0.05em;
+  }
 }
 
 .starBackground {
   color: #203838;
   z-index: 0;
-  display: inline-block;
-  position: absolute;
+  display: inline-flex;
+  position: relative;
+  gap: 0;
+  align-items: center;
 }
 
 .ratingContainer[altcolour] .starBackground {
@@ -339,8 +338,17 @@ input#commentSubmit:hover {
 .starForeground {
   color: white;
   z-index: 2;
-  display: inline-block;
-  position: relative;
+  display: inline-flex;
+  gap: 0;
+  align-items: center;
+  position: absolute;
+  left: 0;
+}
+
+.ratingChoice {
+  display: inline-flex;
+  gap: 0;
+  align-items: center;
 }
 
 .pagination {
@@ -348,6 +356,7 @@ input#commentSubmit:hover {
   color: DarkSlateGrey;
 
   .page {
+    display: inline-block;
     padding: 8px 16px;
 
     &.current {

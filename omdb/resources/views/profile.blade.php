@@ -47,7 +47,8 @@
 
             <div class="profileRankingDistributionBar"
               style="width: {{ ($l / $max_rating) * 90 }}%;">
-              <a href="ratings/?id={{ $osu_user->user_id }}&r=5.0&p=1">
+              <a
+                href="/profile/{{ $osu_user->user_id }}/ratings/?score={{ $rs }}">
                 {{ $rs }}
                 @if (!empty($names[$rs]))
                   -
@@ -95,35 +96,29 @@
     </div>
 
     <div class="ratingsCard">
-      @if ($is_you)
-        <center>
-          <div class="ratingChoices">
-            @for ($r = 0.0; $r <= 5.0; $r += 0.5)
-              @php
-                $rs = number_format($r, 1);
-              @endphp
+      <center>
+        <div class="ratingChoices">
+          @for ($r = 0.0; $r <= 5.0; $r += 0.5)
+            @php
+              $rs = number_format($r, 1);
+            @endphp
 
-              <a id="{{ $rs }}Rating"
-                href="ratings/?id={{ $osu_user->user_id }}&r={{ $rs }}&p=1"
-                class="ratingChoice">
-                @for ($j = 0; $j < 5; $j++)
-                  @if ($r <= $j)
-                    <i class="icon-star-empty"></i>
-                  @elseif ($r < $j + 1)
-                    <i class="icon-star-half-empty"></i>
-                  @else
-                    <i class="icon-star"></i>
-                  @endif
-                @endfor
-              </a>
-
-              @if ($r == 2.5)
-                <br />
-              @endif
-            @endfor
-          </div>
-        </center>
-      @endif
+            <a id="{{ $rs }}Rating"
+              href="ratings/?id={{ $osu_user->user_id }}&r={{ $rs }}&p=1"
+              class="ratingChoice">
+              @for ($j = 0; $j < 5; $j++)
+                @if ($r <= $j)
+                  <i class="icon-star-empty"></i>
+                @elseif ($r < $j + 1)
+                  <i class="icon-star-half-empty"></i>
+                @else
+                  <i class="icon-star"></i>
+                @endif
+              @endfor
+            </a>
+          @endfor
+        </div>
+      </center>
 
       @if ($osu_user->omdb_user)
         <div id="ratingDisplay">

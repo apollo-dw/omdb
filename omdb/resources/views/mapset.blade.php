@@ -53,9 +53,13 @@
   <hr style="margin-bottom:1em;">
 
   @foreach ($beatmaps as $beatmap)
-    <div class="flex-container diffContainer <?php if (true || $blackListed) {
-        echo 'faded';
-    } ?>">
+    <div
+      class="flex-container diffContainer
+    @if ($beatmap->is_blacklisted()) faded @endif
+    "
+      <?php if ($loop->odd) {
+          echo "style='background-color:#203838;'";
+      } ?>>
       <div class="flex-child diffBox" style="text-align:center;width:60%;">
         <a href="https://osu.ppy.sh/b/{{ $beatmap->id }}" target="_blank"
           rel="noopener noreferrer" <?php
@@ -79,17 +83,17 @@
         @if (count($beatmap->ratings) > 0)
           @php
             $ratingCounts = [];
-            
+
             for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                 $rs = number_format($r, 1);
                 $ratingCounts[$rs] = 0;
             }
-            
+
             foreach ($beatmap->ratings as $rating) {
                 $rs = number_format($rating->score, 1);
                 $ratingCounts[$rs] += 1;
             }
-            
+
             $maxRating = max($ratingCounts);
           @endphp
 
@@ -121,10 +125,14 @@
           </span>
           <br>
 
-          Ranking: <b>{{ $beatmap->cached_chart_year_rank }}</b>
-          for <a href="/charts"></a>,
-          <b>{{ $beatmap->cached_chart_rank }}</b> <a
-            href="/charts">overall</a></b>
+          Ranking:
+          <b>#{{ $beatmap->cached_chart_year_rank }}</b>
+          for
+          <a href="/charts/?year={{ $mapset->date_ranked->year }}">
+            {{ $mapset->date_ranked->year }}</a>,
+
+          <b>#{{ $beatmap->cached_chart_rank }}</b>
+          <a href="/charts">overall</a>
         @endif
       </div>
 
@@ -242,15 +250,19 @@
                 {{ $comment->osu_user->username }}
               </a>
             </div>
-            <div class="flex-child" style="margin-left:auto;">
-              @php
-                $auth_user = Auth::user();
-              @endphp
 
-              @if ($comment->user_id == $auth_user->user_id)
-                <i class="icon-remove removeComment" style="color:#f94141;"
-                  value="{{ $comment->id }}"></i>
+            <div class="flex-child" style="margin-left:auto;">
+              @if (Auth::check())
+                @php
+                  $auth_user = Auth::user();
+                @endphp
+
+                @if ($comment->user_id == $auth_user->user_id)
+                  <i class="icon-remove removeComment" style="color:#f94141;"
+                    value="{{ $comment->id }}"></i>
+                @endif
               @endif
+
               <x-timestamp :time="$comment->created_at" />
             </div>
           </div>

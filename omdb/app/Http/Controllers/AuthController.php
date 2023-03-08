@@ -14,7 +14,7 @@ class AuthController extends Controller
 {
   public function login(Request $request)
   {
-    $redirect_url = URL::to("/");
+    $redirect_url = $request->headers->get('referer');
     if ($request->has("redirect_url")) {
       $redirect_url = $request->redirect_url;
     }

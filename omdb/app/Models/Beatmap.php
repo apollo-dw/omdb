@@ -28,6 +28,7 @@ class Beatmap extends Model
     "language",
     "star_rating",
     "date_ranked",
+    "blacklisted",
   ];
 
   public function beatmapset()
@@ -38,5 +39,10 @@ class Beatmap extends Model
   public function ratings()
   {
     return $this->hasMany("App\\Models\\Rating", "beatmap_id");
+  }
+
+  public function is_blacklisted()
+  {
+    return $this->blacklisted;
   }
 }

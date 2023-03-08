@@ -21,6 +21,7 @@ Route::get("/maps/random", "MapsController@random");
 Route::get("/mapset/{mapset_id}", "MapsetController@show");
 Route::get("/profile/{user_id}", "ProfileController@show");
 Route::get("/profile/{user_id}/comments", "ProfileController@comments");
+Route::get("/profile/{user_id}/ratings", "ProfileController@ratings");
 Route::any("/search", "SearchController@query");
 
 Route::group(["middleware" => "auth"], function () {

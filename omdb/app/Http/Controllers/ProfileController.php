@@ -135,4 +135,41 @@ class ProfileController extends Controller
       "comments" => $comments,
     ]);
   }
+
+  public function ratings(Request $request): View
+  {
+    $page_size = 25;
+    $page = $request->query("page") ?? 1;
+    $user_id = $request->route("user_id");
+    $score = $request->query("score");
+
+    $omdb_user = OmdbUser::where("user_id", $user_id)
+      ->with("osu_user")
+      ->first();
+
+    if ($omdb_user == null) {
+      return abort(404);
+    }
+
+    $ratings_query = $omdb_user->ratings()->orderByDesc("updated_at");
+
+    if ($score === null) {
+      return abort(400);
+    }
+
+    $score = floatval($score);
+    $ratings_query = $ratings_query->where("score", $score);
+
+    $ratings = $ratings_query->simplePaginate($page_size);
+    $rating_count = $omdb_user->ratings()->count();
+    $num_pages = ceil($rating_count / $page_size);
+
+    return view("profile.ratings", [
+      "page" => $page,
+      "num_pages" => $num_pages,
+      "ratings" => $ratings,
+      "omdb_user" => $omdb_user,
+      "score" => $score,
+    ]);
+  }
 }

@@ -105,16 +105,12 @@
     <a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map
       database</a>
 
-    <a href="/">
-      <div class="topBarLink">home</div>
-    </a>
-    <a href="/charts/?year={{ now()->year }}">
-      <div class="topBarLink">charts</div>
-    </a>
+    <a href="/" class="topBarLink">home</a>
+    <a href="/charts/?year={{ now()->year }}" class="topBarLink">charts</a>
     <div class="topBarDropDown">
       <div class="topBarLink topBarDropDownButton">maps</div>
       <div class="dropdown-content">
-        <a href="/maps/?m=02&y=2023">latest</a>
+        <a href="/maps">latest</a>
         <a href="/maps/random/">random</a>
       </div>
     </div>
@@ -135,8 +131,8 @@
               style="margin-right:0.5em;"></i></b></a>
         <a href="/profile/{{ $user->user_id }}" style="color:white;">
           <img src="https://s.ppy.sh/a/{{ $user->user_id }}"
-            style="height:2rem;vertical-align:middle;" />
-          &nbsp;
+               style="height:2rem;vertical-align:middle;" /></a>
+        <a href="/profile/{{ $user->user_id }}" style="color:white;">
           <b>{{ $user->osu_user->username }}</b>
         </a>
       @else

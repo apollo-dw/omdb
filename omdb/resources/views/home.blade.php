@@ -39,7 +39,7 @@
                 title="{{ $rating->osu_user->username }}" /></a>
           </div>
 
-          <div class="flex-child" style="flex:0 0 50%;">
+          <div class="flex-child" style="flex-grow: 1;">
             <x-ratings.display :rating="$rating" />
             on
             <a
@@ -48,8 +48,7 @@
 // echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
 --}}
           </div>
-          <div class="flex-child"
-            style="width:100%;text-align:right;min-width:0%;">
+          <div class="flex-child" style="text-align:right;min-width:0%;">
             <x-timestamp :time="$rating->updated_at" />
           </div>
         </div>
@@ -129,7 +128,7 @@
   <br>
 
   Most rated beatmaps in the last 7 days:<br>
-  <div style="width:100%;height:40em;">
+  <div style="width:100%;">
     @foreach ($last_7_days_ratings as $row)
       <div class="flex-container ratingContainer" <?php if ($loop->odd) {
           echo "style='background-color:#203838;' altcolour";

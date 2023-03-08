@@ -17,7 +17,7 @@
               style="height:24px;width:24px;"
               title="{{ $comment->osu_user->username }}" /></a>
         </div>
-        <div classz="flex-child">
+        <div class="flex-child">
           <a
             href="/profile/{{ $comment->user_id }}">{{ $comment->osu_user->username }}</a>
           on <a href="../../mapset/{{ $comment->user_id }}">
