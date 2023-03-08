@@ -35,8 +35,11 @@ particular API methods, consult Laravel documentation.
 
       composer install
 
-  This will spin for a minute, installing all the PHP dependencies. After this,
-  you should be good to go.
+  This will spin for a minute, installing all the PHP dependencies. 
+
+- Generate a key. In the same dev shell (`docker compose run dev bash`), run:
+
+      php artisan key:generate
 
 ## Setting up OAuth (Only needs to be done once)
 

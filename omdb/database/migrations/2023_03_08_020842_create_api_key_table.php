@@ -22,6 +22,19 @@ return new class extends Migration {
         ->references("user_id")
         ->on("omdb_users");
     });
+
+    DB::unprepared("
+      CREATE TABLE tmp_ratings SELECT * FROM ratings;
+      TRUNCATE TABLE ratings;
+      ALTER TABLE ratings ADD UNIQUE INDEX idx_ratings_unique_beatmap_user(beatmap_id, user_id);
+      INSERT IGNORE INTO ratings SELECT * from tmp_ratings;
+      DROP TABLE tmp_ratings;
+    ");
+    /*
+    Schema::table('ratings', function(Blueprint $table) {
+      $table->unique(['beatmap_id', 'user_id'], 'idx_ratings_unique_beatmap_user');
+    });
+     */
   }
 
   /**
@@ -30,5 +43,9 @@ return new class extends Migration {
   public function down(): void
   {
     Schema::dropIfExists("api_keys");
+
+    Schema::table('ratings', function(Blueprint $table) {
+        $table->dropUnique(['idx_ratings_unique_beatmap_user']);
+    });
   }
 };

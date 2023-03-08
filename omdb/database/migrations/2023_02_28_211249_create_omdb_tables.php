@@ -138,8 +138,12 @@ return new class extends Migration {
    */
   public function down(): void
   {
-    Schema::dropIfExists("beatmaps");
+    Schema::dropIfExists("ratings");
     Schema::dropIfExists("comments");
-    Schema::dropIfExists("users");
+    Schema::dropIfExists("beatmaps");
+    Schema::dropIfExists("beatmapsets");
+    Schema::dropIfExists("omdb_users");
+    Schema::dropIfExists("osu_users");
+    Schema::dropIfExists("config");
   }
 };
