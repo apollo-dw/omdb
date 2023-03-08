@@ -30,7 +30,6 @@ class Display extends Component
     if ($this->rating->omdb_user) {
       $custom_ratings =
         json_decode($this->rating->omdb_user->custom_ratings, true) ?? [];
-      info("custom ratings" . json_encode($custom_ratings));
       $rs = number_format($this->rating->score, 1);
       $hint = $custom_ratings[$rs] ?? null;
     }

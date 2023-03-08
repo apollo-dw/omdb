@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\BeatmapSet;
 
 class SearchController extends Controller
 {
@@ -37,28 +38,28 @@ class SearchController extends Controller
 
     $like = "%{$query}%";
 
-    $beatmapsets_subquery = DB::table("beatmapsets")->orWhereFullText(
-      ["artist", "title"],
-      $like
-    );
+    $beatmapsets_subquery = DB::table("beatmapsets")
+      ->orWhereFullText(["artist", "title"], $like)
+      ->select(DB::raw("id as beatmapset_id"), "artist", "title");
 
     $beatmaps = DB::table("beatmaps")
       ->orWhereFullText("difficulty_name", $like)
-      ->joinSub($beatmapsets_subquery, "beatmapsets", function ($join) {
-        $join->on("beatmapsets.id", "=", "beatmaps.beatmapset_id");
-      })
-      ->take(25)
-      ->get();
+      ->join("beatmapsets", "beatmapsets.id", "=", "beatmaps.beatmapset_id")
+      ->select("beatmapset_id", "beatmapsets.artist", "beatmapsets.title")
+      ->union($beatmapsets_subquery)
+      ->take(25);
+
+    $beatmaps = $beatmaps->get();
 
     // TODO: Probably a simpler way to convert this
     $results = [];
     foreach ($beatmaps as $beatmap) {
       array_push($results, [
         "beatmapset_id" => $beatmap->beatmapset_id,
-        "beatmap_id" => $beatmap->id,
+        // "beatmap_id" => $beatmap->id,
         "artist" => $beatmap->artist,
         "title" => $beatmap->title,
-        "difficulty_name" => $beatmap->difficulty_name,
+        // "difficulty_name" => $beatmap->difficulty_name,
       ]);
     }
 

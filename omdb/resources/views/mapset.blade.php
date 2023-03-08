@@ -379,7 +379,7 @@
 
     $(".star-rating-list").mouseleave(function(event) {
       var $this = $(this);
-      var sel = $this.attr("rating");
+      var sel = parseFloat($this.attr("rating"));
       var $options = $this.find(".star");
 
       for (var i = 0; i < 5; i++) {
@@ -394,10 +394,10 @@
         }
       }
 
-      if (sel == -1) {
+      if (sel == -1 || Number.isNaN(sel)) {
         $this.parent().parent().find('.star-value').html("&ZeroWidthSpace;");
       } else {
-        $this.parent().parent().find('.star-value').html(sel);
+        $this.parent().parent().find('.star-value').html(sel.toFixed(1));
       }
     });
 

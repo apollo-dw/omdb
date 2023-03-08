@@ -38,14 +38,16 @@
       debounce(showResultHelper, 1000)(query);
     }
 
+    let searchResults = [];
+
     async function showResultHelper(query) {
-      if (query.length == 0) {
+      searchResults = [];
+
+      if (query.length < 3) {
         document.getElementById("topBarSearchResults").innerHTML = "";
         document.getElementById("topBarSearchResults").style.display = "none";
         return;
       }
-
-      if (query.length < 3) return;
 
       let payload = {
         query
@@ -59,6 +61,7 @@
       // alert('result ' + JSON.stringify(response.json()));
 
       let result = await response.json();
+      searchResults = result;
       let searchResultsHtml = '';
       for (let beatmap of result) {
         let diff_name = '';
@@ -66,14 +69,12 @@
           diff_name = `[${beatmap.difficulty_name}]`;
 
         searchResultsHtml += `
-        <a href="/mapset/${beatmap.beatmapset_id}">
-          <div style="margin: 0; background-color: DarkSlateGrey;">
-            ${beatmap.artist} - ${beatmap.title}
-            ${diff_name}
-          </div>
+        <a href="/mapset/${beatmap.beatmapset_id}" class="search-entry">
+          ${beatmap.artist} - ${beatmap.title}
         </a>
         `;
       }
+
       document.getElementById("topBarSearchResults").innerHTML =
         searchResultsHtml;
       document.getElementById("topBarSearchResults").style.display =
@@ -81,8 +82,28 @@
     }
 
     function searchFocus() {
-      document.getElementById("topBarSearchResults").style.display = "block";
+      // document.getElementById("topBarSearchResults").style.display = "block";
+      if (searchResults.length > 0) {
+        document.getElementById("topBarSearchResults").style.display = "block";
+      }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("topBarSearchBar").addEventListener("click", (
+        event) => {
+        event.stopPropagation();
+      });
+
+      document.getElementById("topBarSearchResults").addEventListener("click",
+        (event) => {
+          event.stopPropagation();
+        });
+
+      document.body.addEventListener('click', function() {
+        document.getElementById("topBarSearchResults").style.display =
+          "none";
+      });
+    });
   </script>
 </head>
 
@@ -116,8 +137,8 @@
     </div>
 
     <form class="topBarSearch">
-      <input class="topBarSearchBar" type="text" size="30"
-        onfocusin="searchFocus()" oninput="showResult(this.value)"
+      <input id="topBarSearchBar" class="topBarSearchBar" type="text"
+        size="30" onfocus="searchFocus()" oninput="showResult(this.value)"
         value="" autocomplete="off"
         placeholder="Search... (or paste link)">
       <div id="topBarSearchResults"></div>

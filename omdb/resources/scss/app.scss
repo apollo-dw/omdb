@@ -84,6 +84,20 @@ a:hover {
   padding: 0px;
 }
 
+.search-entry {
+  background-color: DarkSlateGrey;
+  padding: 2px 10px;
+  box-sizing: border-box;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid lighten(DarkSlateGrey, 15%);
+  }
+
+  &:hover {
+    background-color: #203838;
+  }
+}
+
 #topBarSearchResults {
   display: none;
   position: absolute;
@@ -93,6 +107,7 @@ a:hover {
   height: 19em;
   width: 25em;
   border-radius: 6px;
+  box-shadow: 0 8px 15px black;
 }
 
 .topBarSearchBar {
@@ -108,10 +123,10 @@ a:hover {
   display: block;
   text-align: left;
   color: white;
-}
 
-#topBarSearchResults a:hover {
-  text-decoration: underline;
+  &:hover {
+    // text-decoration: underline;
+  }
 }
 
 .dropdown-content {
