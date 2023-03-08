@@ -55,4 +55,4 @@ RUN npm ci
 RUN npm run build
 
 EXPOSE 8000
-CMD ["bash", "-c", "php artisan config:cache; php artisan view:cache; php artisan serve --host 0.0.0.0"]
+CMD ["bash", "-c", "php artisan config:cache; php artisan view:cache; php artisan schedule:work & php artisan serve --host 0.0.0.0"]

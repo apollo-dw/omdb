@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
    */
   protected function schedule(Schedule $schedule): void
   {
-    $schedule->command('omdb:retrieve_beatmaps')->hourlyAt(5);
-    $schedule->command('omdb:chart_update')->hourlyAt(35);
+    $schedule->command('omdb:retrieve_beatmaps')->hourlyAt(15);
+    $schedule->command('omdb:chart_update')->hourlyAt(45);
   }
 
   /**
