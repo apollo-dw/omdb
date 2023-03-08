@@ -7,13 +7,31 @@
   <h1 id="heading">
     @php
       $order_names = [
-        'highest' => 'Highest Rated Maps',
-        'lowest' => 'Lowest Rated Maps',
-        'most' => 'Most Rated Maps',
+          'highest' => 'Highest Rated',
+          'lowest' => 'Lowest Rated',
+          'most' => 'Most Rated',
+      ];
+      
+      $genre_names = [
+          0 => '',
+          2 => 'Video Game',
+          3 => 'Anime',
+          4 => 'Rock',
+          5 => 'Pop',
+          6 => 'Other Genre',
+          7 => 'Novelty',
+          9 => 'Hip Hop',
+          10 => 'Electronic',
+          11 => 'Metal',
+          12 => 'Classical',
+          13 => 'Folk',
+          14 => 'Jazz',
       ];
     @endphp
 
-    {{ $order_names[$order] }} of {{ $year ?? 'All Time' }}</h1>
+    {{ $order_names[$order] }} {{ $genre_names[$genre] ?? '' }} Maps of
+    {{ $year ?? 'All Time' }}
+  </h1>
 
   <style>
     .flex-container {

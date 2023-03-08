@@ -139,9 +139,8 @@
       <div class="flex-child diffBox" style="padding:auto;width:30%;">
         @if (Auth::check())
           @php
-            // TODO: Finish
-            $userHasRatedThis = false;
-            $userMapRating = 0;
+            $userHasRatedThis = !empty($beatmap->user_score);
+            $userMapRating = $beatmap->user_score;
           @endphp
 
           <span class="identifier" style="display: inline-block;">
@@ -189,11 +188,11 @@
           <span style="display: inline-block; padding-left:0.25em;"
             class="star-value <?php if (!$userHasRatedThis) {
                 echo 'unrated';
-            } ?>"><?php if ($userHasRatedThis) {
-                echo $userMapRating;
-            } else {
-                echo '&ZeroWidthSpace;';
-            } ?></span>
+            } ?>">
+            @if ($userHasRatedThis)
+              {{ number_format($userMapRating, 1) }}
+            @endif
+          </span>
         @else
           Log in to rate maps!
         @endif

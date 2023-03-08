@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Facade;
 
 return [
-  'bayesian_confidence' => env('OMDB_BAYESIAN_CONFIDENCE', 1),
+  "bayesian_confidence" => env("OMDB_BAYESIAN_CONFIDENCE", 1),
 
   /*
     |--------------------------------------------------------------------------

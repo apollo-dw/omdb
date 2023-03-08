@@ -26,10 +26,27 @@ class MapsetController extends Controller
       return abort(404);
     }
 
-    $beatmaps = Beatmap::where("beatmapset_id", $mapset_id)
+    $beatmaps_query = Beatmap::where("beatmaps.beatmapset_id", $mapset_id)
       ->with("ratings")
-      ->orderByDesc("star_rating")
-      ->get();
+      ->orderByDesc("star_rating");
+
+    if (Auth::check()) {
+      $user = Auth::user();
+
+      $rating_subquery = DB::table("ratings")
+        ->where("user_id", $user->user_id)
+        ->where("ratings.beatmapset_id", $mapset->id)
+      ->select('beatmap_id', DB::raw('ratings.score as user_score'));
+      $beatmaps_query = $beatmaps_query->leftJoinSub(
+        $rating_subquery,
+        "user_ratings",
+        function ($join) {
+          $join->on("user_ratings.beatmap_id", "=", "beatmaps.id");
+        }
+      );
+    }
+
+    $beatmaps = $beatmaps_query->get();
 
     $average_rating = DB::table("ratings")
       ->where("beatmapset_id", $mapset_id)

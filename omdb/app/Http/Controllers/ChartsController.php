@@ -14,7 +14,7 @@ class ChartsController extends Controller
     $page = $request->query("page") ?? 1;
     $year = $request->query("year");
     $genre = $request->query("genre");
-    $order = $request->query("order") ?? 'highest';
+    $order = $request->query("order") ?? "highest";
 
     $beatmaps_query = DB::table("beatmaps")
       ->join("beatmapsets", "beatmaps.beatmapset_id", "=", "beatmapsets.id")
@@ -73,7 +73,7 @@ class ChartsController extends Controller
       "year" => $year,
       "page" => $page,
       "genre" => $genre,
-      'order' => $order,
+      "order" => $order,
       "query_string" => $query_string,
       "beatmaps" => $beatmaps,
       "num_pages" => $num_pages,

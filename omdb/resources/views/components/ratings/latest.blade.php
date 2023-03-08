@@ -24,7 +24,7 @@
       </div>
     @endif
 
-    <div class="flex-child" style="flex:0 0 70%;">
+    <div class="flex-child" style="flex-grow: 1;">
       <x-ratings.display :rating="$rating" />
       on
       <a href="/mapset/{{ $rating->beatmapset_id }}">
@@ -36,7 +36,7 @@
         @endif
       </a>
     </div>
-    <div class="flex-child" style="width:100%;text-align:right;">
+    <div class="flex-child" style="text-align:right;">
       <x-timestamp :time="$rating->updated_at" />
     </div>
   </div>
