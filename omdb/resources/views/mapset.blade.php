@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Home')
+@section('title', $mapset->title . ' by ' . $mapset->creator_user->username)
 
 @section('content')
 
