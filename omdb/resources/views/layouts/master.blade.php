@@ -75,10 +75,12 @@
         `;
       }
 
-      document.getElementById("topBarSearchResults").innerHTML =
-        searchResultsHtml;
-      document.getElementById("topBarSearchResults").style.display =
-        "block";
+      if (searchResults.length > 0) {
+          document.getElementById("topBarSearchResults").innerHTML =
+              searchResultsHtml;
+          document.getElementById("topBarSearchResults").style.display =
+              "block";
+      }
     }
 
     function searchFocus() {
