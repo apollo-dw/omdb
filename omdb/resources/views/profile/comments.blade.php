@@ -39,7 +39,7 @@
           <a href="../../mapset/{{ $comment->beatmapset_id }}"><img
               src="https://b.ppy.sh/thumb/{{ $comment->beatmapset_id }}l.jpg"
               class="diffThumb"
-              onerror="this.onerror=null; this.src='/charts/INF.png';"
+              onerror="this.onerror=null; this.src='/images/chart-INF.png';"
               style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
         </div>
         <p>

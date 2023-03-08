@@ -28,7 +28,7 @@
             <a href="/mapset/{{ $rating->beatmapset_id }}"><img
                 src="https://b.ppy.sh/thumb/{{ $rating->beatmapset_id }}l.jpg"
                 class="diffThumb"/
-                onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
+                onerror="this.onerror=null; this.src='/images/chart-INF.png';"></a>
           </div>
           <div class="flex-child" style="flex:0 0 60%;">
             <x-ratings.display :rating="$rating" />

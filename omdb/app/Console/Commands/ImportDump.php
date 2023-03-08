@@ -318,8 +318,8 @@ class ImportDump extends Command
       if (count($ratings) == 0) {
         return;
       }
-      $search_keys = ["beatmap_id", 'user_id'];
-      $value_keys = ['beatmapset_id', 'score', 'updated_at'];
+      $search_keys = ["beatmap_id", "user_id"];
+      $value_keys = ["beatmapset_id", "score", "updated_at"];
       Rating::upsert($ratings, $search_keys, $value_keys);
     };
 

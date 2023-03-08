@@ -20,10 +20,12 @@ class ApiController extends Controller
         return abort(401);
       }
 
-      $api_key = ApiKey::where('api_key', $api_key)->first();
-      if ($api_key === null) return abort(401);
+      $api_key = ApiKey::where("api_key", $api_key)->first();
+      if ($api_key === null) {
+        return abort(401);
+      }
 
-      $request->attributes->add(['user_id' => $api_key->user_id]);
+      $request->attributes->add(["user_id" => $api_key->user_id]);
 
       return $next($request);
     });
@@ -85,31 +87,33 @@ class ApiController extends Controller
   {
     $user_id = $request->route("user_id");
 
-    $year = $request->query('year');
-    $score = $request->query('score');
+    $year = $request->query("year");
+    $score = $request->query("score");
 
-    $ratings_query = DB::table('ratings')
-      ->join('beatmapsets', 'beatmapsets.id', '=', 'ratings.beatmapset_id')
-      ->join('beatmaps', 'beatmaps.id', '=', 'ratings.beatmap_id')
-      ->where('user_id', $user_id);
+    $ratings_query = DB::table("ratings")
+      ->join("beatmapsets", "beatmapsets.id", "=", "ratings.beatmapset_id")
+      ->join("beatmaps", "beatmaps.id", "=", "ratings.beatmap_id")
+      ->where("user_id", $user_id);
 
-    if ($year !== null)
-      $ratings_query = $ratings_query->whereYear('beatmapsets.date_ranked');
+    if ($year !== null) {
+      $ratings_query = $ratings_query->whereYear("beatmapsets.date_ranked");
+    }
 
-    if ($score !== null)
-      $ratings_query = $ratings_query->where('score', '=', floatval($score));
+    if ($score !== null) {
+      $ratings_query = $ratings_query->where("score", "=", floatval($score));
+    }
 
-    $ratings = $ratings_query->orderByDesc('ratings.updated_at')->get();
+    $ratings = $ratings_query->orderByDesc("ratings.updated_at")->get();
 
     $ratings_array = [];
     foreach ($ratings as $rating) {
       array_push($ratings_array, [
-        'SetID' => $rating->beatmapset_id,
-        'BeatmapID' => $rating->beatmap_id,
-        'Score' => $rating->score,
-        'Artist' => $rating->artist,
-        'Title' => $rating->title,
-        'Difficulty' => $rating->difficulty_name,
+        "SetID" => $rating->beatmapset_id,
+        "BeatmapID" => $rating->beatmap_id,
+        "Score" => $rating->score,
+        "Artist" => $rating->artist,
+        "Title" => $rating->title,
+        "Difficulty" => $rating->difficulty_name,
       ]);
     }
 
@@ -118,24 +122,30 @@ class ApiController extends Controller
 
   public function rate(Request $request)
   {
-    $auth_user_id = $request->get('user_id');
-    $auth_user = OmdbUser::where('user_id', $auth_user_id)->first();
-    if ($auth_user === null) return abort(401);
+    $auth_user_id = $request->get("user_id");
+    $auth_user = OmdbUser::where("user_id", $auth_user_id)->first();
+    if ($auth_user === null) {
+      return abort(401);
+    }
 
-    $beatmap_id = $request->route('beatmap_id');
-    $beatmap = Beatmap::where('id', $beatmap_id)->first();
-    if ($beatmap === null) return abort(400);
+    $beatmap_id = $request->route("beatmap_id");
+    $beatmap = Beatmap::where("id", $beatmap_id)->first();
+    if ($beatmap === null) {
+      return abort(400);
+    }
 
-    $score = $request->query('score');
-    if ($score === null) return abort(400);
+    $score = $request->query("score");
+    if ($score === null) {
+      return abort(400);
+    }
 
     $score = floatval($score);
 
     Rating::updateOrCreate(
-      ['beatmap_id' => $beatmap->id, 'user_id' => $auth_user->user_id],
-      ['beatmapset_id' => $beatmap->beatmapset_id, 'score' => $score],
+      ["beatmap_id" => $beatmap->id, "user_id" => $auth_user->user_id],
+      ["beatmapset_id" => $beatmap->beatmapset_id, "score" => $score]
     );
 
-    return response()->json('success');
+    return response()->json("success");
   }
 }

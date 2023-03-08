@@ -10,7 +10,7 @@
             src="https://b.ppy.sh/thumb/{{ $rating->beatmapset_id }}l.jpg"
             class="diffThumb"/
             onerror="this.onerror=null;
-            this.src='../charts/INF.png';"></a>
+            this.src='/images/chart-INF.png';"></a>
       </div>
     @endif
 

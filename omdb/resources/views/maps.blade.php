@@ -19,7 +19,7 @@
         <a href="/mapset/{{ $beatmapset->id }}">
           <img src="https://b.ppy.sh/thumb/{{ $beatmapset->id }}l.jpg"
             class="diffThumb" style="height:82px;width:82px;"
-            onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            onerror="this.onerror=null; this.src='/images/chart-INF.png';"></a>
       </div>
       <div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
         <a href="/mapset/{{ $beatmapset->id }}">

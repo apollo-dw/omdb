@@ -28,7 +28,7 @@
             <a href="/mapset/{{ $rating->beatmapset_id }}">
               <img src="https://b.ppy.sh/thumb/{{ $rating->beatmapset_id }}l.jpg"
                 class="diffThumb"
-                onerror="this.onerror=null; this.src='/charts/INF.png';">
+                onerror="this.onerror=null; this.src='/images/chart-INF.png';">
             </a>
           </div>
 
@@ -65,7 +65,7 @@
               <img
                 src="https://b.ppy.sh/thumb/{{ $comment->beatmapset_id }}l.jpg"
                 class="diffThumb"
-                onerror="this.onerror=null; this.src='/charts/INF.png';">
+                onerror="this.onerror=null; this.src='/images/chart-INF.png';">
             </a>
           </div>
 
@@ -103,7 +103,7 @@
         <a href="/mapset/{{ $mapset->id }}">
           <img src="https://b.ppy.sh/thumb/{{ $mapset->id }}l.jpg"
             class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;"
-            onerror="this.onerror=null; this.src='/charts/INF.png';">
+            onerror="this.onerror=null; this.src='/images/chart-INF.png';">
         </a>
         <br />
         <span class="subtext">
@@ -140,7 +140,7 @@
           <a href="/mapset/{{ $row->beatmapset_id }}"><img
               src="https://b.ppy.sh/thumb/{{ $row->beatmapset_id }}l.jpg"
               class="diffThumb"/
-              onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+              onerror="this.onerror=null; this.src='/images/chart-INF.png';"></a>
         </div>
         <div class="flex-child" style="flex:0 0 80%;">
           <a href="/mapset/{{ $row->beatmapset_id }}">{{ $row->artist }} -

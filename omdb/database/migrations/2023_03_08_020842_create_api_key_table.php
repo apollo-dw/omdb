@@ -30,6 +30,8 @@ return new class extends Migration {
       INSERT IGNORE INTO ratings SELECT * from tmp_ratings;
       DROP TABLE tmp_ratings;
     ");
+
+    info("Finished migrating ratings.");
     /*
     Schema::table('ratings', function(Blueprint $table) {
       $table->unique(['beatmap_id', 'user_id'], 'idx_ratings_unique_beatmap_user');
@@ -44,8 +46,8 @@ return new class extends Migration {
   {
     Schema::dropIfExists("api_keys");
 
-    Schema::table('ratings', function(Blueprint $table) {
-        $table->dropUnique(['idx_ratings_unique_beatmap_user']);
-    });
+    /* Schema::table('ratings', function(Blueprint $table) {
+      $table->dropUnique('idx_ratings_unique_beatmap_user');
+    }); */
   }
 };

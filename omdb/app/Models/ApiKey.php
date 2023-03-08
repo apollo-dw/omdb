@@ -11,7 +11,7 @@ class ApiKey extends Model
 
   protected $table = "api_keys";
   protected $primaryKey = "api_key";
-  protected $keyType = 'string';
+  protected $keyType = "string";
 
   public function user()
   {
