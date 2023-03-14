@@ -69,7 +69,7 @@
           @php
             $widthPercentage = abs(($correlation / 2) * 100);
             $leftMargin = 0;
-
+            
             if ($correlation < 0) {
                 $leftMargin = 50 - $widthPercentage;
             }
@@ -104,7 +104,7 @@
             @endphp
 
             <a id="{{ $rs }}Rating"
-               href="/profile/{{ $osu_user->user_id }}/ratings?score={{ $rs }}"
+              href="/profile/{{ $osu_user->user_id }}/ratings?score={{ $rs }}"
               class="ratingChoice">
               @for ($j = 0; $j < 5; $j++)
                 @if ($r <= $j)

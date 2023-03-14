@@ -76,10 +76,10 @@
       }
 
       if (searchResults.length > 0) {
-          document.getElementById("topBarSearchResults").innerHTML =
-              searchResultsHtml;
-          document.getElementById("topBarSearchResults").style.display =
-              "block";
+        document.getElementById("topBarSearchResults").innerHTML =
+          searchResultsHtml;
+        document.getElementById("topBarSearchResults").style.display =
+          "block";
       }
     }
 

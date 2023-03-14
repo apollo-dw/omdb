@@ -79,6 +79,7 @@ class ImportDump extends Command
     $this->import_beatmaps();
     $this->import_ratings();
     $this->import_comments();
+    $this->import_blacklisted_users();
   }
 
   private function api_request(string $method, string $url, $options)
@@ -384,5 +385,17 @@ class ImportDump extends Command
 
     $insert_comments($comments);
     $this->info("Inserted comments.");
+  }
+
+  private function import_blacklisted_users()
+  {
+    $blacklisted_users = [];
+
+    foreach ($this->db->query("SELECT * from blacklist") as $row) {
+      array_push($blacklisted_users, ['user_id' => $row['UserID']]);
+    }
+
+    // TODO: Insert model
+    $this->info("Inserted blacklisted users.");
   }
 }

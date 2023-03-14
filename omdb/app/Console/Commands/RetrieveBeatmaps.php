@@ -87,6 +87,8 @@ class RetrieveBeatmaps extends Command
       $db_beatmapsets = [];
       $db_beatmaps = [];
 
+      $osu_users_to_fetch = [];
+
       foreach ($beatmapsets as $beatmapset) {
         // TODO: This is slow when running sequentially, need to
         // refactor this to use Guzzle async requests.
@@ -97,19 +99,7 @@ class RetrieveBeatmaps extends Command
         $full_beatmapset = $response->json();
 
         $creator_id = $beatmapset["user_id"];
-        if (!array_key_exists($creator_id, $osu_users)) {
-          $response = Http::withToken($access_token)
-            ->withUrlParameters(["user_id" => $creator_id])
-            ->get("https://osu.ppy.sh/api/v2/users/{user_id}");
-
-          $mapper = $response->json();
-
-          // TODO: Investigate the 'no username' here. Case: HolyCOW https://osu.ppy.sh/beatmapsets/25#osu/165
-          $osu_users[$creator_id] = [
-            "user_id" => $creator_id,
-            "username" => $mapper["username"] ?? "NO USERNAME",
-          ];
-        }
+        $osu_users_to_fetch[$creator_id] = 1;
 
         array_push($db_beatmapsets, [
           "id" => $beatmapset["id"],
@@ -125,15 +115,34 @@ class RetrieveBeatmaps extends Command
 
         // TODO: Blacklisting
         foreach ($beatmapset["beatmaps"] as $beatmap) {
+          $beatmap_creator_id = null;
+          if ($beatmap["user_id"] != $creator_id) {
+            $beatmap_creator_id = $beatmap["user_id"];
+            $osu_users_to_fetch[$beatmap_creator_id] = 1;
+          }
+
           array_push($db_beatmaps, [
             "id" => $beatmap["id"],
             "beatmapset_id" => $beatmapset["id"],
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
             "star_rating" => $beatmap["difficulty_rating"],
-            "creator_id" => $beatmap["user_id"]
+            "creator_id" => $beatmap_creator_id,
           ]);
         }
+      }
+
+      foreach (array_keys($osu_users_to_fetch) as $user_id) {
+        $response = Http::withToken($access_token)
+          ->withUrlParameters(["user_id" => $user_id])
+          ->get("https://osu.ppy.sh/api/v2/users/{user_id}");
+
+        $mapper = $response->json();
+
+        $osu_users[$creator_id] = [
+          "user_id" => $creator_id,
+          "username" => $mapper["username"] ?? null,
+        ];
       }
 
       OsuUser::upsert(array_values($osu_users), ["user_id"], ["username"]);

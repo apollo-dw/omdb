@@ -73,9 +73,11 @@
         <a href="osu://b/{{ $beatmap->id }}"><i
             class="icon-download-alt">&ZeroWidthSpace;</i></a>
         <span class="subText"><?php echo number_format((float) $beatmap->star_rating, 2, '.', ''); ?>*</span>
-          @if ($mapset->creator_id != $beatmap->creator_id)
-              <br><span class='subText'>mapped by <a href='/profile/{{ $beatmap->creator_id }}'> {{ $beatmap->creator_user->username }} </a></span>
-          @endif
+        @if ($mapset->creator_id != $beatmap->creator_id)
+          <br><span class='subText'>mapped by <a
+              href='/profile/{{ $beatmap->creator_id }}'>
+              {{ $beatmap->creator_user->username }} </a></span>
+        @endif
       </div>
 
       @if (!$beatmap->is_blacklisted())
@@ -87,17 +89,17 @@
           @if ($has_ratings)
             @php
               $ratingCounts = [];
-
+              
               for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                   $rs = number_format($r, 1);
                   $ratingCounts[$rs] = 0;
               }
-
+              
               foreach ($beatmap->ratings as $rating) {
                   $rs = number_format($rating->score, 1);
                   $ratingCounts[$rs] += 1;
               }
-
+              
               $maxRating = max($ratingCounts);
             @endphp
 
