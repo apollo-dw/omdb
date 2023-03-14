@@ -11,7 +11,7 @@
         {{ $mapset->artist }} - {{ $mapset->title }}
       </a>
       by
-      <a href='/profile/{{ $mapset->creator_id }}'>
+      <a href='/profile/{{ $mapset->creator_user->user_id }}'>
         {{ $mapset->creator_user->username }}
       </a>
     </h1>
@@ -89,17 +89,17 @@
           @if ($has_ratings)
             @php
               $ratingCounts = [];
-              
+
               for ($r = 0.0; $r <= 5.0; $r += 0.5) {
                   $rs = number_format($r, 1);
                   $ratingCounts[$rs] = 0;
               }
-              
+
               foreach ($beatmap->ratings as $rating) {
                   $rs = number_format($rating->score, 1);
                   $ratingCounts[$rs] += 1;
               }
-              
+
               $maxRating = max($ratingCounts);
             @endphp
 
@@ -276,8 +276,7 @@
           {{-- Comment text itself --}}
           <div class="flex-child comment" style="min-width:0;overflow: hidden;">
             <p>
-              <!-- TODO: ParseOsuLinks -->
-              {!! nl2br(e($comment->comment)) !!}
+              {!! parse_osu_links(nl2br(e($comment->comment))) !!}
             </p>
           </div>
         @endforeach

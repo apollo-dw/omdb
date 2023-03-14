@@ -64,7 +64,8 @@ return new class extends Migration {
 
       // IDs
       $table->foreignId("beatmapset_id");
-      $table->integer("creator_id")->nullable();
+      $table->boolean("is_guest");
+      $table->integer("creator_id");
 
       // Metadata
       $table->string("difficulty_name");

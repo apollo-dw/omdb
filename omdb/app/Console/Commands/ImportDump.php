@@ -392,7 +392,7 @@ class ImportDump extends Command
     $blacklisted_users = [];
 
     foreach ($this->db->query("SELECT * from blacklist") as $row) {
-      array_push($blacklisted_users, ['user_id' => $row['UserID']]);
+      array_push($blacklisted_users, ["user_id" => $row["UserID"]]);
     }
 
     // TODO: Insert model

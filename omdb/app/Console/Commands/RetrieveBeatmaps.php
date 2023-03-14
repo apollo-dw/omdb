@@ -115,11 +115,7 @@ class RetrieveBeatmaps extends Command
 
         // TODO: Blacklisting
         foreach ($beatmapset["beatmaps"] as $beatmap) {
-          $beatmap_creator_id = null;
-          if ($beatmap["user_id"] != $creator_id) {
-            $beatmap_creator_id = $beatmap["user_id"];
-            $osu_users_to_fetch[$beatmap_creator_id] = 1;
-          }
+          $is_guest = $beatmap["user_id"] != $creator_id;
 
           array_push($db_beatmaps, [
             "id" => $beatmap["id"],
@@ -127,7 +123,8 @@ class RetrieveBeatmaps extends Command
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
             "star_rating" => $beatmap["difficulty_rating"],
-            "creator_id" => $beatmap_creator_id,
+            "creator_id" => $beatmap["user_id"],
+            "is_guest" => $is_guest,
           ]);
         }
       }
@@ -135,17 +132,22 @@ class RetrieveBeatmaps extends Command
       foreach (array_keys($osu_users_to_fetch) as $user_id) {
         $response = Http::withToken($access_token)
           ->withUrlParameters(["user_id" => $user_id])
-          ->get("https://osu.ppy.sh/api/v2/users/{user_id}");
+          ->get("https://osu.ppy.sh/api/v2/users/{user_id}?key=id");
 
         $mapper = $response->json();
+        if (!array_key_exists("id", $mapper)) {
+          continue;
+        }
 
-        $osu_users[$creator_id] = [
-          "user_id" => $creator_id,
-          "username" => $mapper["username"] ?? null,
+        $username = $mapper["username"] ?? null;
+        $osu_users[$user_id] = [
+          "user_id" => $user_id,
+          "username" => $username,
         ];
       }
 
       OsuUser::upsert(array_values($osu_users), ["user_id"], ["username"]);
+
       BeatmapSet::insertOrIgnore(
         $db_beatmapsets,
         ["id"],
@@ -159,13 +161,20 @@ class RetrieveBeatmaps extends Command
           "date_ranked",
         ]
       );
+
       Beatmap::insertOrIgnore(
         $db_beatmaps,
         ["id"],
         ["beatmapset_id", "difficulty_name", "mode", "status", "star_rating"]
       );
 
-      $this->info("Found and inserted " . count($beatmapsets) . " sets.");
+      $this->info(
+        "Found and inserted " .
+          count($osu_users) .
+          " users and " .
+          count($beatmapsets) .
+          " sets."
+      );
 
       $cursor = $result["cursor_string"];
       $this->info("Cursor: " . json_encode($result["cursor"]));

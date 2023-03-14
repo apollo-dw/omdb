@@ -108,10 +108,13 @@
             {{ $mapset->artist }} - {{ $mapset->title }}
           </a>
           <br />
-          by
-          <a href="/profile/{{ $mapset->creator_id }}">
-            {{ $mapset->creator_user->username }}
-          </a> <br>
+          @if ($mapset->creator_user)
+            by
+            <a href="/profile/{{ $mapset->creator_id }}">
+              {{ $mapset->creator_user->username }}
+            </a>
+          @endif
+          <br>
 
           <span
             style="text-decoration-line: underline; text-decoration-style: dotted;"

@@ -43,8 +43,7 @@
               style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
         </div>
         <p>
-          {{-- TODO: ParseOsuLinks --}}
-          {{ nl2br($comment->comment) }}
+          {!! parse_osu_links(nl2br(e($comment->comment))) !!}
         </p>
       </div>
     @endforeach

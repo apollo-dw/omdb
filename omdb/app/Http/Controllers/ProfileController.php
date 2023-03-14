@@ -25,12 +25,11 @@ class ProfileController extends Controller
     $context = [
       "is_you" => false,
       "rating_counts" => null,
+      "osu_user" => $osu_user,
     ];
 
     // Only applicable to OMDB users
     if ($omdb_user !== null) {
-      $context["osu_user"] = $osu_user;
-
       // Check if the user requested is the logged in user ("you")
       if (Auth::check()) {
         $context["is_you"] = Auth::user()->user_id == $osu_user->user_id;
@@ -66,7 +65,7 @@ class ProfileController extends Controller
 
       $comment_count = $omdb_user->comments()->count();
       $context["comment_count"] = $comment_count;
-    } else {
+    } elseif ($osu_user === null) {
       // Fetch the user from OSU api
       // TODO: Figure out a way to get some kind of global API client so
       // we don't need to do OAuth flow each time
@@ -82,8 +81,8 @@ class ProfileController extends Controller
       $access_token = $result["access_token"];
 
       $response = Http::withToken($access_token)
-        ->withURLParameters(["user" => $user_id])
-        ->get("https://osu.ppy.sh/api/v2/users/{user}", []);
+        ->withUrlParameters(["user_id" => $user_id])
+        ->get("https://osu.ppy.sh/api/v2/users/{user_id}?key=id");
 
       if (!$response->ok()) {
         return abort(404);
@@ -92,10 +91,10 @@ class ProfileController extends Controller
       $data = $response->json();
 
       // Create a synthetic user so we can query just the data we need
-      $osu_user = new \stdClass();
-      $osu_user->omdb_user = null;
+      $osu_user = new OsuUser();
       $osu_user->user_id = $user_id;
       $osu_user->username = $data["username"];
+      $osu_user->save();
 
       $context["osu_user"] = $osu_user;
     }
