@@ -115,7 +115,9 @@ class RetrieveBeatmaps extends Command
 
         // TODO: Blacklisting
         foreach ($beatmapset["beatmaps"] as $beatmap) {
-          $is_guest = $beatmap["user_id"] != $creator_id;
+          $beatmap_creator_id = $beatmap["user_id"];
+          $is_guest = $beatmap_creator_id != $creator_id;
+        if ($is_guest) $osu_users_to_fetch[$beatmap_creator_id] = 1;
 
           array_push($db_beatmaps, [
             "id" => $beatmap["id"],
@@ -123,7 +125,7 @@ class RetrieveBeatmaps extends Command
             "difficulty_name" => $beatmap["version"],
             "mode" => $beatmap["mode_int"],
             "star_rating" => $beatmap["difficulty_rating"],
-            "creator_id" => $beatmap["user_id"],
+            "creator_id" => $beatmap_creator_id,
             "is_guest" => $is_guest,
           ]);
         }
@@ -135,9 +137,6 @@ class RetrieveBeatmaps extends Command
           ->get("https://osu.ppy.sh/api/v2/users/{user_id}?key=id");
 
         $mapper = $response->json();
-        if (!array_key_exists("id", $mapper)) {
-          continue;
-        }
 
         $username = $mapper["username"] ?? null;
         $osu_users[$user_id] = [

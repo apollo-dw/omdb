@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', $mapset->title . ' by ' . $mapset->creator_user->username)
+@section('title', $mapset->title . ' by ' . $mapset->creator_username())
 
 @section('content')
 
@@ -12,7 +12,7 @@
       </a>
       by
       <a href='/profile/{{ $mapset->creator_user->user_id }}'>
-        {{ $mapset->creator_user->username }}
+        {{ $mapset->creator_username() }}
       </a>
     </h1>
   </center>
@@ -73,10 +73,14 @@
         <a href="osu://b/{{ $beatmap->id }}"><i
             class="icon-download-alt">&ZeroWidthSpace;</i></a>
         <span class="subText"><?php echo number_format((float) $beatmap->star_rating, 2, '.', ''); ?>*</span>
-        @if ($mapset->creator_id != $beatmap->creator_id)
-          <br><span class='subText'>mapped by <a
-              href='/profile/{{ $beatmap->creator_id }}'>
-              {{ $beatmap->creator_user->username }} </a></span>
+        @if ($beatmap->is_guest)
+          <br>
+          <span class='subText'>
+            mapped by
+            <a href='/profile/{{ $beatmap->creator_id }}'>
+              {{ $beatmap->creator_user->username }}
+            </a>
+          </span>
         @endif
       </div>
 

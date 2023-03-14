@@ -19,6 +19,9 @@ return new class extends Migration {
       $table->timestamps();
 
       $table->string("username");
+
+      // TODO: Implement this elsewhere
+      $table->boolean("is_banned");
     });
 
     Schema::create("omdb_users", function (Blueprint $table) {

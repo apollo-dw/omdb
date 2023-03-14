@@ -17,6 +17,10 @@ class BeatmapSet extends Model
     "date_ranked" => "datetime:c",
   ];
 
+  public function creator_username() {
+    return $this->creator_user()->username ?? $this->creator;
+  }
+
   public function creator_user()
   {
     return $this->hasOne("App\\Models\\OsuUser", "user_id", "creator_id");

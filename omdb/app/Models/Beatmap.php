@@ -29,6 +29,7 @@ class Beatmap extends Model
     "star_rating",
     "date_ranked",
     "blacklisted",
+    "is_guest",
   ];
 
   public function creator_user()
