@@ -67,7 +67,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			  </div>
 			  <div class="flex-child" style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
                     <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>"><?php
-				  echo mb_strimwidth(htmlspecialchars($row["Comment"]), 0, 55, "...");
+				  echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 55, "..."));
 				?></a>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
