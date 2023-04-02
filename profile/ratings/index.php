@@ -85,7 +85,7 @@
 			?>
 			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
 				<div class="flex-child">
-					<a href="/mapset/<?php echo $setID; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap[0]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
+					<a href="/mapset/<?php echo $beatmap[0]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap[0]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
 					<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $beatmap[0]; ?>"><?php echo htmlspecialchars("${beatmap[1]} - ${beatmap[2]} [${beatmap[3]}]");?></a>
