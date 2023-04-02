@@ -270,7 +270,7 @@
 <script>
 	function submitComment(){
 		console.log("yeah");
-		var text = encodeURIComponent($('#commentForm').val());
+		var text = $('#commentForm').val();
 		console.log(text);
 		
 		var xhttp = new XMLHttpRequest();
@@ -284,7 +284,7 @@
 			$('#commentSubmit').prop('disabled', true);
 			xhttp.open("POST", "SubmitComment.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + text);
+			xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + encodeURIComponent(text));
 		}
 	}
 
