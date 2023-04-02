@@ -86,7 +86,7 @@ Latest mapsets:<br>
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
 	<br>
 	<?php
-		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`='0' ORDER BY `DateRanked` DESC, `Timestamp` DESC LIMIT 8;");
+		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`='0' ORDER BY `Timestamp` DESC LIMIT 8;");
 		$stmt->execute();
 		$result = $stmt->get_result();
 		
