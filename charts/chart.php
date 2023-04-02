@@ -8,7 +8,7 @@
 	$order = $_GET['o'] ?? 1;
     $genre = $_GET['g'] ?? 0;
 	
-	if(!is_numeric($page) || !is_numeric($year)|| !is_numeric($order)){
+	if(!is_numeric($page) || !is_numeric($order)){
 		die("NOO");
 	}
 ?>
@@ -67,7 +67,7 @@
 
             $yearString = "ORDER BY {$columnString}";
 
-            if ($year != -1){
+            if ($year != "all-time"){
                 if ($order != 3)
                     $columnString = "ChartYearRank";
                 $yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY {$columnString}";

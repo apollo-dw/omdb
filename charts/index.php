@@ -4,7 +4,8 @@
     require '../header.php';
 
     $year = $_GET["y"] ?? 2023;
-    $yearString = $year == -1 ? 'All Time' : $year;
+    $page = $_GET['p'] ?? 1;
+    $yearString = $year == "all-time" ? 'All Time' : $year;
 ?>
 
 <h1 id="heading"><?php echo 'Highest Rated Maps of ' . $yearString; ?></h1>
@@ -56,20 +57,15 @@
 </style>
 
 <div style="text-align:left;">
-	<div class="pagination">
-	  <span onClick="changePage(page-1)">&laquo;</span>
-	  <span class="pageLink page1 active" onClick="changePage(1)" >1</span>
-	  <span class="pageLink page2" onClick="changePage(2)" >2</span>
-	  <span class="pageLink page3" onClick="changePage(3)" >3</span>
-	  <span class="pageLink page4"  onClick="changePage(4)" >4</span>
-	  <span class="pageLink page5" onClick="changePage(5)" >5</span>
-	  <span class="pageLink page6" onClick="changePage(6)" >6</span>
-	  <span class="pageLink page7" onClick="changePage(7)" >7</span>
-	  <span class="pageLink page8" onClick="changePage(8)" >8</span>
-	  <span class="pageLink page9" onClick="changePage(9)" >9</span>
-	  <span onClick="changePage(page+1)">&raquo;</span>
-	</div>
+    <div class="pagination">
+        <span onClick="changePage(<?php echo $page-1 ?>)">&laquo;</span>
+        <?php for ($i = 1; $i <= 9; $i++) { ?>
+            <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
+        <?php } ?>
+        <span onClick="changePage(<?php echo $page+1 ?>)">&raquo;</span>
+    </div>
 </div>
+
 
 <div class="flex-container">
 	<div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.5em;">
@@ -89,7 +85,7 @@
 			</select> maps of
 			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
                 <?php
-                    echo '<option value="-1"';
+                    echo '<option value="all-time"';
                     if ($year == -1) {
                         echo ' selected="selected"';
                     }
@@ -131,21 +127,15 @@
 
 </div>
 
-<div style="text-align:left;">
-	<div class="pagination">
-	  <span onClick="changePage(page-1)">&laquo;</span>
-	  <span class="pageLink page1 active" onClick="changePage(1)" >1</span>
-	  <span class="pageLink page2" onClick="changePage(2)" >2</span>
-	  <span class="pageLink page3" onClick="changePage(3)" >3</span>
-	  <span class="pageLink page4"  onClick="changePage(4)" >4</span>
-	  <span class="pageLink page5" onClick="changePage(5)" >5</span>
-	  <span class="pageLink page6" onClick="changePage(6)" >6</span>
-	  <span class="pageLink page7" onClick="changePage(7)" >7</span>
-	  <span class="pageLink page8" onClick="changePage(8)" >8</span>
-	  <span class="pageLink page9" onClick="changePage(9)" >9</span>
-	  <span onClick="changePage(page+1)">&raquo;</span>
-	</div>
-</div>
+    <div style="text-align:left;">
+        <div class="pagination">
+            <span onClick="changePage(<?php echo $page-1 ?>)">&laquo;</span>
+            <?php for ($i = 1; $i <= 9; $i++) { ?>
+                <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
+            <?php } ?>
+            <span onClick="changePage(<?php echo $page+1 ?>)">&raquo;</span>
+        </div>
+    </div>
 
 <script>
 	const numOfPages = <?php echo floor($conn->query("SELECT Count(*) FROM `beatmaps` WHERE `Rating` IS NOT NULL;")->fetch_row()[0] / 50) + 1; ?>;
@@ -188,8 +178,10 @@
             orderString = 'Lowest Rated ';
         else if (order == 3)
             orderString = 'Most Rated ';
-        var genreString = " " + genres[genre] + " ";
-        var yearString = year == -1 ? 'All Time' : year;
+        var genreString = " " + genres[genre] + "   ";
+        var yearString = year == "all-time" ? 'All Time' : year;
+
+        window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
 
         $('#heading').html(orderString + genreString + 'Maps of ' + yearString);
 	}
