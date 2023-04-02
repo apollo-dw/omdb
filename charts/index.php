@@ -117,11 +117,30 @@
                 <option value="13">Folk</option>
                 <option value="14">Jazz</option>
             </select>
-		</form><br>
+            <br>
+            <label>Language:</label>
+            <select name="language" id="language" autocomplete="off" onchange="updateChart();">
+                <option value="0" selected="selected">Any</option>
+                <option value="2">English</option>
+                <option value="3">Japanese</option>
+                <option value="4">Chinese</option>
+                <option value="5">Instrumental</option>
+                <option value="6">Korean</option>
+                <option value="7">French</option>
+                <option value="8">German</option>
+                <option value="9">Swedish</option>
+                <option value="10">Spanish</option>
+                <option value="11">Italian</option>
+                <option value="12">Russian</option>
+                <option value="13">Polish</option>
+                <option value="14">Other</option>
+            </select>
+
+        </form><br>
 		<span>Info</span>
 		<hr>
 		Chart is based on an implementation of the Bayesian average method.<br><br>
-		The chart updates once every <b>hour.</b><br><br>
+		The chart updates <b>once every hour.</b><br><br>
         Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
 
@@ -156,6 +175,23 @@
         13 : "Folk",
         14 : "Jazz",
     }
+
+    var languages = {
+        0: "",
+        2: "English",
+        3: "Japanese",
+        4: "Chinese",
+        5: "Instrumental",
+        6: "Korean",
+        7: "French",
+        8: "German",
+        9: "Swedish",
+        10: "Spanish",
+        11: "Italian",
+        12: "Russian",
+        13: "Polish",
+        14: "Other Language"
+    };
 	 
 	function changePage(newPage) {
 		page = Math.min(Math.max(newPage, 1), 9);
@@ -172,6 +208,7 @@
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
+        var language = document.getElementById("language").value;
 
         var orderString = 'Highest Rated ';
         if (order == 2)
@@ -179,17 +216,20 @@
         else if (order == 3)
             orderString = 'Most Rated ';
         var genreString = " " + genres[genre] + "   ";
+        var languageString = " " + languages[language] + "   ";
         var yearString = year == "all-time" ? 'All Time' : year;
 
         window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
 
-        $('#heading').html(orderString + genreString + 'Maps of ' + yearString);
+        $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
 	}
 	 
 	function updateChart() {
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
+        var language = document.getElementById("language").value;
+
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
 			if (this.readyState==4 && this.status==200) {
@@ -197,7 +237,7 @@
 				resetPaginationDisplay();
 			}
 		}
-		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre, true);
+		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language, true);
 		xmlhttp.send();
 	}
 </script>

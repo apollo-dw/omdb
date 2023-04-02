@@ -7,8 +7,9 @@
 	$year = $_GET['y'] ?? $year;
 	$order = $_GET['o'] ?? 1;
     $genre = $_GET['g'] ?? 0;
-	
-	if(!is_numeric($page) || !is_numeric($order)){
+    $language = $_GET['l'] ?? 0;
+
+	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language)){
 		die("NOO");
 	}
 ?>
@@ -78,8 +79,14 @@
             if ($genre > 0){
                 $genreString = "AND `Genre`='{$genre}'";
             }
+
+            $languageString = "";
+
+            if ($language > 0){
+                $languageString = "AND `Lang`='{$language}'";
+            }
 			
-			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} {$yearString} {$orderString}, BeatmapID {$pageString};");
+			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} {$languageString} {$yearString} {$orderString}, BeatmapID {$pageString};");
 			$stmt->execute();
 			$result = $stmt->get_result();
 
