@@ -193,30 +193,32 @@
 		</div>
         <div class="profileActions">
             <?php
-                $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
-                $stmt_check->bind_param("ii", $userId, $profileId);
-                $stmt_check->execute();
-                $result = $stmt_check->get_result();
+                if ($profileId != $userId){
+                    $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
+                    $stmt_check->bind_param("ii", $userId, $profileId);
+                    $stmt_check->execute();
+                    $result = $stmt_check->get_result();
 
-                $is_friend = $result->num_rows > 0;
+                    $is_friend = $result->num_rows > 0;
 
-                $stmt_check2 = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
-                $stmt_check2->bind_param("ii", $profileId, $userId);
-                $stmt_check2->execute();
-                $result2 = $stmt_check2->get_result();
+                    $stmt_check2 = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
+                    $stmt_check2->bind_param("ii", $profileId, $userId);
+                    $stmt_check2->execute();
+                    $result2 = $stmt_check2->get_result();
 
-                $is_friended = $result2->num_rows > 0;
+                    $is_friended = $result2->num_rows > 0;
 
-                if ($is_friend && $is_friended) {
-                    echo '<button id="friendButton" class="mutual">Mutual</button>';
-                } elseif ($is_friend && !$is_friended) {
-                    echo '<button id="friendButton">Friend</button>';
-                } else {
-                    echo '<button id="friendButton">Add Friend</button>';
+                    if ($is_friend && $is_friended) {
+                        echo '<button id="friendButton" class="mutual">Mutual</button>';
+                    } elseif ($is_friend && !$is_friended) {
+                        echo '<button id="friendButton">Friend</button>';
+                    } else {
+                        echo '<button id="friendButton">Add Friend</button>';
+                    }
+
+                    $stmt_check->close();
+                    $stmt_check2->close();
                 }
-
-                $stmt_check->close();
-                $stmt_check2->close();
             ?>
         </div>
 		<div class="profileStats">
