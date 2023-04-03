@@ -4,7 +4,7 @@ include '../base.php';
 $user_id_from = $_POST['user_id_from'];
 $user_id_to = $_POST['user_id_to'];
 
-if ($user_id_from != $userId || !$loggedIn){
+if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to){
     die("NOOO");
 }
 
