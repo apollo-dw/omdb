@@ -35,5 +35,5 @@
 		http_response_code(404);
 		echo "No beatmaps";
 	} else {
-		siteRedirect("/mapset/" . $result);
+		siteRedirect("/mapset/" . $result[0]);
 	}
