@@ -60,7 +60,7 @@
 <style>
 	.profileContainer{
 		display: flex;
-		height:44em;
+		height:46em;
 	}
 	
 	.profileCard{
@@ -87,6 +87,32 @@
 		text-align: left;
 		margin: 0.5em;
 	}
+
+    .profileActions{
+        margin-top: 0.5em;
+        display: block;
+        min-height: 1.5em;
+    }
+
+    #friendButton {
+        width: 6em;
+        border: 1px solid white;
+        background-color: #203838;
+        color: white;
+    }
+
+    #friendButton.mutual{
+        background-color: #714977;
+    }
+
+    #friendButton.mutual:hover{
+        background-color: #492450;
+    }
+
+    #friendButton:hover {
+        background-color: #182828;
+        cursor:pointer;
+    }
 	
 	.beatmapCard{
 		margin:0.5rem;
@@ -165,14 +191,40 @@
 		<div class="profileImage">
 			<img src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
 		</div>
+        <div class="profileActions">
+            <?php
+                $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
+                $stmt_check->bind_param("ii", $userId, $profileId);
+                $stmt_check->execute();
+                $result = $stmt_check->get_result();
+
+                $is_friend = $result->num_rows > 0;
+
+                $stmt_check2 = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
+                $stmt_check2->bind_param("ii", $profileId, $userId);
+                $stmt_check2->execute();
+                $result2 = $stmt_check2->get_result();
+
+                $is_friended = $result2->num_rows > 0;
+
+                if ($is_friend && $is_friended) {
+                    echo '<button id="friendButton" class="mutual">Mutual</button>';
+                } elseif ($is_friend && !$is_friended) {
+                    echo '<button id="friendButton">Friend</button>';
+                } else {
+                    echo '<button id="friendButton">Add Friend</button>';
+                }
+
+                $stmt_check->close();
+                $stmt_check2->close();
+            ?>
+        </div>
 		<div class="profileStats">
 			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
 			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
 			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
 		</div>
-		<?php
-			if ($isUser){
-		?>
+		<?php if ($isUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
                 <div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
 				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"]); } ?></a></div>
@@ -207,12 +259,8 @@
                     <div style="margin-bottom:0.5em;"><span class="subText"><?php echo round($correlation, 3); ?></span></div>
 					Rating Similarity To You<br>
 				</div>
-			<?php
-				}
-			?>
-		<?php
-			}
-		?>
+			<?php }
+		    } ?>
 	</div>
 	<div class="ratingsCard">
 		<?php
@@ -262,6 +310,31 @@
 		}
 	?>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#friendButton').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: 'DoFriendButton.php',
+                data: {
+                    'user_id_from': <?php echo $userId; ?>,
+                    'user_id_to': <?php echo $profileId; ?>
+                },
+                success: function(response) {
+                    console.log(response)
+                    if (response == 'added') {
+                        $('#friendButton').text('Friend');
+                    } else if (response == 'mutual') {
+                        $('#friendButton').text('Mutual').addClass("mutual");
+                    } else {
+                        $('#friendButton').text('Add Friend').removeClass("mutual");
+                    }
+                }
+            });
+        });
+    });
+</script>
 
 <?php
     require '../footer.php';
