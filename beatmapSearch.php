@@ -22,15 +22,15 @@
 		die();
 	}
 
-    $userStmt = $conn->prepare("SELECT `UserID`, `Username` FROM mappernames WHERE username LIKE ? LIMIT 5;");
+    $userStmt = $conn->prepare("(SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ?) UNION (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ?) LIMIT 5;");
     $like = "%$q%";
-    $userStmt->bind_param("s", $like);
+    $userStmt->bind_param("ss", $like, $like);
     $userStmt->execute();
     $userStmt->bind_result($userID, $username);
     $userStmt->store_result();
 
     if ($userStmt->num_rows > 0){
-        echo "<div style='background-color:#182828;><b>Users</b></div>";
+        echo "<div style='background-color:#182828;'><b>Users</b></div>";
         $counter = 0;
         while ($userStmt->fetch()) {
             $counter += 1;
