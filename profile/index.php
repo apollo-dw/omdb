@@ -193,7 +193,7 @@
 		</div>
         <div class="profileActions">
             <?php
-                if ($profileId != $userId){
+                if ($profileId != $userId && $isUser){
                     $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
                     $stmt_check->bind_param("ii", $userId, $profileId);
                     $stmt_check->execute();
