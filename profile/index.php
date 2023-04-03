@@ -60,7 +60,7 @@
 <style>
 	.profileContainer{
 		display: flex;
-		height:46em;
+		height:47em;
 	}
 	
 	.profileCard{
@@ -220,6 +220,7 @@
             ?>
         </div>
 		<div class="profileStats">
+            <b>Friends:</b> <?php echo $conn->query("SELECT Count(*) FROM `user_relations` WHERE `UserIDTo`='{$profileId}' AND `type`='1';")->fetch_row()[0]; ?><br>
 			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
 			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
 			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
