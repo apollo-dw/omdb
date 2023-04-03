@@ -8,6 +8,10 @@ if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to){
     die("NOOO");
 }
 
+$otherUser = $conn->query("SELECT * FROM `users` WHERE `UserID`='${user_id_to}';")->fetch_assoc();
+if ($otherUser == NULL)
+    die("NOOO");
+
 // Check if the users are already friends
 $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
 $stmt_check->bind_param("ii", $user_id_from, $user_id_to);
