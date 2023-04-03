@@ -4,6 +4,10 @@ include '../base.php';
 $user_id_from = $_POST['user_id_from'];
 $user_id_to = $_POST['user_id_to'];
 
+if ($user_id_from != $userId || !$loggedIn){
+    die("NOOO");
+}
+
 // Check if the users are already friends
 $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
 $stmt_check->bind_param("ii", $user_id_from, $user_id_to);
