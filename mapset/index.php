@@ -191,7 +191,7 @@
             <?php
             if ($hasFriendsRatings) {
             ?>
-                Friend Rating: <b style="color:#D587AE;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
+                Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
             <?php
             }
             ?>
