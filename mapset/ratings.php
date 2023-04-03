@@ -26,15 +26,23 @@
         $pageString = "LIMIT {$lower}, {$lim}";
     }
 
-    $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC {$pageString};");
-    $stmt->bind_param("s", $mapset_id);
+    $stmt = $conn->prepare("SELECT r.*, 
+        CASE
+            WHEN r.UserID = ? THEN 3  -- if the rating is made by the logged-in user, give it the highest weight
+            WHEN r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1) THEN 2  -- if the rating is made by a friend, give it a high weight
+            ELSE 1  -- for all other ratings, give a default weight
+        END AS order_weight
+    FROM `ratings` r 
+    WHERE r.BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)
+    ORDER BY order_weight DESC, date DESC {$pageString}");
+    $stmt->bind_param("iii", $userId, $userId, $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
     while($row = $result->fetch_assoc()) {
         $counter += 1;
 ?>
-<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+<div class="flex-container ratingContainer" <?php if($row["order_weight"] == 2){ echo "style='background-color:#4F2F3F;'"; } else if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
     <div class="flex-child">
         <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
     </div>
