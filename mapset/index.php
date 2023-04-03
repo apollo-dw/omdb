@@ -27,6 +27,7 @@
 		background-color:DarkSlateGrey;
 		justify-content: space-between;
 		align-items: center;
+        height:
 	}
 	
 	.diffBox{
@@ -105,7 +106,7 @@
 	$counter = 0;
 	while($row = $result->fetch_assoc()) {
 		$ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID`='{$userId}';");
-		$userHasRatedThis = $ratedQueryResult->num_rows == 1 ? true : false;
+		$userHasRatedThis = $ratedQueryResult->num_rows == 1;
 		$userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 		$counter += 1;
 
@@ -117,9 +118,18 @@
         $blackListed = $row["Blacklisted"] == 1;
 
         $hasRatings = true;
-        if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null){
+        if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null) {
             $hasRatings = false;
         }
+
+        $friendRatingQuery = $conn->query("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = '{$userId}' AND `type`=1)");
+        $friendRatingResult = $friendRatingQuery->fetch_assoc();
+        $friendRatingCount = $friendRatingResult["count"];
+        $friendRatingAvg = $friendRatingResult["avg"];
+
+        $hasFriendsRatings = false;
+        if($loggedIn && $friendRatingCount > 0)
+            $hasFriendsRatings = true;
 
         // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
         $ratingCounts['0.0'] = 0;
@@ -177,8 +187,15 @@
         <?php
         if($hasRatings){
         ?>
-		Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
-		Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a>
+		    Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+            <?php
+            if ($hasFriendsRatings) {
+            ?>
+                Friend Rating: <b style="color:#D587AE;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
+            <?php
+            }
+            ?>
+		    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a>
         <?php
         }
         ?>
