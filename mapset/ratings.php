@@ -42,7 +42,16 @@
     while($row = $result->fetch_assoc()) {
         $counter += 1;
 ?>
-<div class="flex-container ratingContainer" <?php if($row["order_weight"] == 2){ echo "style='background-color:#4F2F3F;' altcolour"; } else if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+<div class="flex-container ratingContainer" <?php
+        if ($row["order_weight"] == 2) {
+            $bgColor = ($counter % 2 == 1) ? "#4F2F3F" : "#6A4256";
+        } else {
+            $bgColor = ($counter % 2 == 1) ? "#203838" : "";
+        }
+        if (!empty($bgColor)) {
+            echo "style='background-color:{$bgColor};' altcolour";
+        }
+        ?>>
     <div class="flex-child">
         <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
     </div>
