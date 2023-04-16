@@ -196,6 +196,7 @@
 	function changePage(newPage) {
 		page = Math.min(Math.max(newPage, 1), 9);
 		updateChart();
+		window.scrollTo(0,0);
 	}
 	
 	function resetPaginationDisplay() {
