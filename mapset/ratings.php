@@ -34,7 +34,7 @@
     FROM `ratings` r 
     WHERE r.BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)
     ORDER BY order_weight DESC, date DESC {$pageString}");
-    $stmt->bind_param("iii", $userId, $userId, $mapset_id);
+    $stmt->bind_param("ii", $userId, $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
