@@ -196,7 +196,6 @@
 	function changePage(newPage) {
 		page = Math.min(Math.max(newPage, 1), 9);
 		updateChart();
-		window.scrollTo(0,0);
 	}
 	
 	function resetPaginationDisplay() {
@@ -223,6 +222,7 @@
         window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
 
         $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
+	window.scrollTo({top: 0, behavior: 'smooth'});
 	}
 	 
 	function updateChart() {
