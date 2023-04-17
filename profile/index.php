@@ -337,7 +337,7 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $setsResult = $conn->query("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID='{$profileId}' AND `Mode`='0' GROUP BY `SetID`;");
+        $setsResult = $conn->query("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID='{$profileId}' AND `Mode`='0' GROUP BY `SetID`, `Artist`, `Title`;");
 
         $sets = [];
         while($row = $setsResult->fetch_assoc())
