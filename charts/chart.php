@@ -57,7 +57,7 @@
 			
 			$orderString = "ASC";
 			
-			if ($order == 2 || $order == 3){
+			if ($order == 2 || $order == 3 || $order == 4){
 				$orderString = "DESC";
 			}
 
@@ -65,11 +65,14 @@
 
             if ($order == 3)
                 $columnString = "RatingCount";
+            else if ($order == 4){
+                $columnString = "controversy";
+            }
 
             $yearString = "ORDER BY {$columnString}";
 
             if ($year != "all-time"){
-                if ($order != 3)
+                if ($order <= 2)
                     $columnString = "ChartYearRank";
                 $yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY {$columnString}";
             }
@@ -85,7 +88,7 @@
             if ($language > 0){
                 $languageString = "AND `Lang`='{$language}'";
             }
-			
+
 			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} {$languageString} {$yearString} {$orderString}, BeatmapID {$pageString};");
 			$stmt->execute();
 			$result = $stmt->get_result();
