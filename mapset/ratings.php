@@ -28,7 +28,6 @@
 
     $stmt = $conn->prepare("SELECT r.*, 
         CASE
-            WHEN r.UserID = ? THEN 3  -- if the rating is made by the logged-in user, give it the highest weight
             WHEN r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1) THEN 2  -- if the rating is made by a friend, give it a high weight
             ELSE 1  -- for all other ratings, give a default weight
         END AS order_weight
