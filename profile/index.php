@@ -181,6 +181,15 @@
         bottom: 100%;
         display: inline-block;
     }
+
+    .difficultyContainer {
+        background-color: darkslategray;
+        align-items: center;
+    }
+
+    .difficultyContainer:nth-child(even) {
+        background-color: #203838;
+    }
 </style>
 
 <div class="profileContainer">
@@ -298,23 +307,115 @@
 	</div>
 </div>
 
-<hr style="margin-bottom:2rem;">
-<div style="text-align:center;" >
-	<?php
-		$result = $conn->query("SELECT DISTINCT `SetID`, Artist, Title, DateRanked FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}' AND `Mode`='0' ORDER BY `DateRanked` DESC;");
-		while($row = $result->fetch_assoc()){		
-	?>
-		<a href="/mapset/<?php echo $row['SetID']; ?>"  target='_blank' rel='noopener noreferrer'>
-			<div class="beatmapCard" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://assets.ppy.sh/beatmaps/<?php echo $row['SetID']; ?>/covers/cover.jpg');">
-				<?php echo "{$row['Artist']} - {$row['Title']}"; ?>
-			</div>
-		</a>
-	<?php
-		}
-	?>
+<hr>
+
+<style>
+    .top-map {
+        padding: 0.5em;
+        width: 100%;
+        background-color: darkslategray;
+        display:flex;
+        align-items: center;
+    }
+
+    .clickable {
+        cursor: pointer;
+    }
+
+    .lesser-map {
+        margin-left:50%;
+        margin-right:0;
+        background-color:darkslategray;
+        padding: 1em;
+    }
+
+    .lesser-map:nth-last-child(1){
+        margin-bottom:1em;
+    }
+</style>
+
+<span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
+<div id="beatmaps">
+    <?php
+        $setsResult = $conn->query("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID='{$profileId}' AND `Mode`='0' GROUP BY `SetID`;");
+
+        $sets = [];
+        while($row = $setsResult->fetch_assoc())
+            $sets[] = $row;
+
+        $counter = 0;
+        foreach($sets as $set) {
+            $counter += 1;
+            $difficultyResult = $conn->query("SELECT `BeatmapID`, `DateRanked`, `DifficultyName`, `WeightedAvg`, `RatingCount`, `SR`, `ChartRank` FROM beatmaps WHERE SetID='{$set["SetID"]}' AND `CreatorID`='{$profileId}' ORDER BY `RatingCount` DESC;");
+            $commentCount = $conn->query("SELECT Count(*) FROM comments WHERE SetID='{$set["SetID"]}';")->fetch_row()[0];
+            $topMap = $difficultyResult->fetch_assoc();
+            $topMapIsBolded = $topMap["ChartRank"] <= 250 && isset($topMap["ChartRank"]);
+            ?>
+            <div class="top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>" <?php if ($counter % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
+                <div>
+                    <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
+                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>*</span><br>
+                    <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
+                </div>
+                <div style="margin-left:auto;">
+                    <span style="display: inline-block;margin-right:1em;">
+                        <?php echo $commentCount; ?> <span class="subText">comment<?php if ($commentCount != 1) echo 's'; ?></span>
+                    </span>
+                    <span style="display: inline-block;min-width:13em;">
+                        <?php if (isset($topMap["WeightedAvg"])) { ?>
+                        <b><?php echo number_format($topMap["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes</span><br>
+                        <?php } ?>
+                    </span>
+                    <span class="collapse-arrow" style="display: inline-block;<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>user-select:none;margin-left:0.5em;margin-right:0.5em;width:1em;">
+                        ◀
+                    </span>
+                </div>
+            </div>
+
+            <div class="lesser-maps" style="display: none;">
+                <?php
+                    $counter2 = $counter;
+                    while($map = $difficultyResult->fetch_assoc()){
+                        $counter2 += 1;
+                        $mapIsBolded = $map["ChartRank"] <= 250 && isset($map["ChartRank"]);
+                ?>
+                    <div class="lesser-map" <?php if ($counter2 % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+                        <div style="display:inline-block;">
+                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>*</span><br>
+                        </div>
+
+                        <?php if (isset($map["ChartRank"])) { ?>
+                        <div style="float:right;display: inline-block;text-align:right;">
+                        <b><?php echo number_format($map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
+                        </div>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+            </div>
+        <?php
+        }
+        ?>
 </div>
 
 <script>
+    var coll = document.getElementsByClassName("top-map");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            var arrow = this.querySelector(".collapse-arrow");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                arrow.textContent = "◀";
+            } else {
+                content.style.display = "block";
+                arrow.textContent = "▼";
+            }
+        });
+    }
+
     $(document).ready(function() {
         $('#friendButton').click(function() {
             $.ajax({
