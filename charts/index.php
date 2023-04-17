@@ -222,6 +222,7 @@
         window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
 
         $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
+	window.scrollTo({top: 0, behavior: 'smooth'});
 	}
 	 
 	function updateChart() {
