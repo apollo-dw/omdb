@@ -117,19 +117,10 @@
 
         $blackListed = $row["Blacklisted"] == 1;
 
-        $hasRatings = true;
+        $hasCharted = true;
         if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null) {
-            $hasRatings = false;
+            $hasCharted = false;
         }
-
-        $friendRatingQuery = $conn->query("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = '{$userId}' AND `type`=1)");
-        $friendRatingResult = $friendRatingQuery->fetch_assoc();
-        $friendRatingCount = $friendRatingResult["count"];
-        $friendRatingAvg = $friendRatingResult["avg"];
-
-        $hasFriendsRatings = false;
-        if($loggedIn && $friendRatingCount > 0)
-            $hasFriendsRatings = true;
 
         // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
         $ratingCounts['0.0'] = 0;
@@ -148,7 +139,30 @@
             $ratingCounts[$ratingRow['Score']] = $ratingRow['count'];
         }
 
-        $maxRating = max($ratingCounts);
+        $maxRating = max(max($ratingCounts), 5);
+
+        $totalScore = 0;
+        $totalRatings = 0;
+        $averageRating = 0;
+
+        foreach ($ratingCounts as $rating => $count) {
+            $score = (float) $rating * $count;
+            $totalScore += $score;
+            $totalRatings += $count;
+        }
+
+        if ($totalRatings > 0) {
+            $averageRating = round($totalScore / $totalRatings, 1);
+        }
+
+        $friendRatingQuery = $conn->query("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = '{$userId}' AND `type`=1)");
+        $friendRatingResult = $friendRatingQuery->fetch_assoc();
+        $friendRatingCount = $friendRatingResult["count"];
+        $friendRatingAvg = $friendRatingResult["avg"];
+
+        $hasFriendsRatings = false;
+        if($loggedIn && $friendRatingCount > 0)
+            $hasFriendsRatings = true;
 ?>
 
 <div class="flex-container diffContainer <?php if($blackListed){ echo "faded"; }?>" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
@@ -163,7 +177,7 @@
     <?php if (!$blackListed) { ?>
 	<div class="flex-child diffBox" style="width:20%;text-align:center;">
         <?php
-        if($hasRatings){
+        if($totalRatings > 0){
         ?>
             <div class="mapsetRankingDistribution">
                 <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
@@ -185,16 +199,19 @@
 	</div>
 	<div class="flex-child diffBox" style="text-align:right;width:40%;">
         <?php
-        if($hasRatings){
+        $averageRating = ($hasCharted) ? number_format($row["WeightedAvg"], 2) : number_format($averageRating, 2);
+        if ($totalRatings > 0) {
         ?>
-		    Rating: <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
-            <?php
-            if ($hasFriendsRatings) {
-            ?>
-                Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
-            <?php
-            }
-            ?>
+        Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
+        <?php
+        }
+        if ($hasFriendsRatings) {
+        ?>
+            Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
+        <?php
+        }
+        if($hasCharted) {
+        ?>
 		    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a>
         <?php
         }
