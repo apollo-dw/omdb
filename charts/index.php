@@ -68,13 +68,13 @@
 
 
 <div class="flex-container">
-	<div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.5em;">
+	<div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
 		<?php
 			include 'chart.php';
 		?>
 	</div>
 
-	<div style="padding:1em;" class="flex-item">
+	<div style="padding-top:0.5em;" class="flex-item">
 		<span>Filters</span>
 		<hr>
 		<form>
@@ -140,8 +140,8 @@
         </form><br>
 		<span>Info</span>
 		<hr>
-		Chart is based on an implementation of the Bayesian average method.<br><br>
-		The chart updates <b>once every six hours.</b><br><br>
+		The chart is based on an implementation of the Bayesian average method. It updates <b>once every six hours.</b><br><br>
+		The next update will happen in <span id="updateText">---</span><br><br>
         Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
 
@@ -158,6 +158,7 @@
     </div>
 
 <script>
+    const cronInterval = 6 * 60 * 60 * 1000; // 6 hours
 	const numOfPages = <?php echo floor($conn->query("SELECT Count(*) FROM `beatmaps` WHERE `Rating` IS NOT NULL;")->fetch_row()[0] / 50) + 1; ?>;
 	var page = 1;
 
@@ -225,7 +226,7 @@
         window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
 
         $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
-	window.scrollTo({top: 0, behavior: 'smooth'});
+	    window.scrollTo({top: 0, behavior: 'smooth'});
 	}
 	 
 	function updateChart() {
@@ -244,6 +245,25 @@
 		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language, true);
 		xmlhttp.send();
 	}
+
+    function displayTimeRemaining() {
+        const currentTime = new Date().getTime();
+        const timeSinceLastCronJob = currentTime % cronInterval;
+        const timeRemaining = cronInterval - timeSinceLastCronJob;
+
+        const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+        const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
+        const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
+
+        const hoursText = hoursRemaining === 1 ? 'hour' : 'hours';
+        const minutesText = minutesRemaining === 1 ? 'minute' : 'minutes';
+        const secondsText = secondsRemaining === 1 ? 'second' : 'seconds';
+
+        document.getElementById('updateText').textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
+    }
+
+    displayTimeRemaining();
+    setInterval(displayTimeRemaining, 1000);
 </script>
 
 <?php
