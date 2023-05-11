@@ -26,8 +26,6 @@
         }
 
         $maxRating = max($ratingCounts);
-    } else {
-        die ("Not a valid user!");
     }
 
     $is_friend = $is_blocked = $is_friended = 0;
