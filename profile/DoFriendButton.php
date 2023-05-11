@@ -8,7 +8,7 @@ if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to){
     die("NOOO");
 }
 
-$otherUser = $conn->query("SELECT * FROM `users` WHERE `UserID`='${user_id_to}';")->fetch_assoc();
+$otherUser = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$user_id_to}';")->fetch_assoc();
 if ($otherUser == NULL)
     die("NOOO");
 

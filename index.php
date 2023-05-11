@@ -56,7 +56,16 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  $result = $stmt->get_result();
 
 		  while($row = $result->fetch_assoc()) {
-			$counter += 1;
+              $counter += 1;
+
+              $is_blocked = 0;
+
+              if ($loggedIn) {
+                  $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
+                  $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                  $stmt_relation_to_profile_user->execute();
+                  $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+              }
 		  ?>
 			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
 			  <div class="flex-child">
@@ -66,9 +75,14 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
 			  </div>
 			  <div class="flex-child" style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
-                    <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>"><?php
-				  echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 55, "..."));
-				?></a>
+                    <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>">
+                        <?php
+                            if (!$is_blocked)
+                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 55, "..."));
+                            else
+                                echo "[blocked comment]";
+                        ?>
+                    </a>
 			  </div>
 			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
 				<?php echo GetHumanTime($row["date"]); ?>

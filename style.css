@@ -336,3 +336,7 @@ input#commentSubmit:hover {
     display: inline-block;
     position:relative;
 }
+
+.faded {
+    opacity: 0.33;
+}

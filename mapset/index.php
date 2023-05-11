@@ -71,10 +71,6 @@ $numberOfSetRatings = $stmt->get_result()->fetch_row()[0];
         background-color: rgba(125, 125, 125, 0.33);
         border-bottom: 1px solid rgba(125, 125, 125, 0.33);
     }
-
-    .faded {
-        opacity: 0.5;
-    }
 </style>
 
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
@@ -278,12 +274,21 @@ while($row = $result->fetch_assoc()) {
             $result = $stmt->get_result();
             if ($result->num_rows != 0) {
                 while ($row = $result->fetch_assoc()) {
+                    $is_blocked = 0;
+
+                    if ($loggedIn) {
+                        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
+                        $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                        $stmt_relation_to_profile_user->execute();
+                        $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+                    }
+
                     ?>
                     <div class="flex-container flex-child commentHeader">
-                        <div class="flex-child" style="height:24px;width:24px;">
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
                         </div>
-                        <div class="flex-child">
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
@@ -291,7 +296,12 @@ while($row = $result->fetch_assoc()) {
                         </div>
                     </div>
                     <div class="flex-child comment" style="min-width:0;overflow: hidden;">
-                        <p><?php echo ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))); ?></p>
+                        <?php
+                            if (!$is_blocked)
+                                echo "<p>" . ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))) . "</p>";
+                            else
+                                echo "<p>[blocked comment]</p>";
+                        ?>
                     </div>
                     <?php
                 }

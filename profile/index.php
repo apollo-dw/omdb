@@ -4,20 +4,20 @@
 
 	require "../base.php";
     require '../header.php';
-	
+
 	if ($profileId == -1 || !is_numeric($profileId)) {
 		siteRedirect();
 	}
-	
-	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_assoc();
-	$isUser = true;
-	
+
+	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$profileId}';")->fetch_assoc();
+	$isValidUser = true;
+
 	if ($profile == NULL)
-		$isUser = false;
-	
+		$isValidUser = false;
+
 	$ratingCounts = array();
 
-    if ($isUser) {
+    if ($isValidUser) {
         $query = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID`='{$profileId}' GROUP BY `Score`";
         $result = $conn->query($query);
 
@@ -26,35 +26,52 @@
         }
 
         $maxRating = max($ratingCounts);
+    } else {
+        die ("Not a valid user!");
     }
-	
- 	if ($loggedIn && $profileId != $userId){
-		$userScores = array();
-		$profileScores = array();
 
-		// Prepare the SELECT statement
-		$stmt = $conn->prepare("SELECT r1.Score, r2.Score FROM ratings r1 JOIN ratings r2 ON r1.BeatmapID = r2.BeatmapID WHERE r1.UserID = ? AND r2.UserID = ?");
+    $is_friend = $is_blocked = $is_friended = 0;
 
-		// Bind the parameters for the prepared statement
-		$stmt->bind_param("ii", $userId, $profileId);
+    if ($loggedIn) {
+        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
+        $stmt_relation_to_profile_user->bind_param("ii", $userId, $profileId);
+        $stmt_relation_to_profile_user->execute();
+        $result = $stmt_relation_to_profile_user->get_result();
+        $resultRow = $result->fetch_assoc();
 
-		// Execute the prepared statement
-		$stmt->execute();
+        $is_friend = $result->num_rows > 0 && $resultRow["type"] == 1;
+        $is_blocked = $result->num_rows > 0 && $resultRow["type"] == 2;
 
-		// Bind the result variables
-		$stmt->bind_result($score1, $score2);
+        $stmt_relation_from_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
+        $stmt_relation_from_profile_user->bind_param("ii", $profileId, $userId);
+        $stmt_relation_from_profile_user->execute();
+        $result2 = $stmt_relation_from_profile_user->get_result();
+        $result2Row = $result2->fetch_assoc();
 
-		// Fetch the rows and add the scores to the arrays
-		while ($stmt->fetch()) {
-		  $userScores[] = $score1;
-		  $profileScores[] = $score2;
-		}
+        $is_friended = $result2->num_rows > 0 && $result2Row["type"] == 1;
 
-		// Close the prepared statement
-		$stmt->close();
-		
-		$correlation = CalculatePearsonCorrelation($userScores, $profileScores);
-	} 
+        $stmt_relation_to_profile_user->close();
+        $stmt_relation_from_profile_user->close();
+
+        if ($profileId != $userId){
+            $userScores = array();
+            $profileScores = array();
+
+            $stmt = $conn->prepare("SELECT r1.Score, r2.Score FROM ratings r1 JOIN ratings r2 ON r1.BeatmapID = r2.BeatmapID WHERE r1.UserID = ? AND r2.UserID = ?");
+            $stmt->bind_param("ii", $userId, $profileId);
+            $stmt->execute();
+            $stmt->bind_result($score1, $score2);
+
+            while ($stmt->fetch()) {
+                $userScores[] = $score1;
+                $profileScores[] = $score2;
+            }
+
+            $stmt->close();
+
+            $correlation = CalculatePearsonCorrelation($userScores, $profileScores);
+        }
+    }
 ?>
 
 <style>
@@ -62,7 +79,7 @@
 		display: flex;
 		height:47em;
 	}
-	
+
 	.profileCard{
 		display: inline-flex;
 		flex-direction: column;
@@ -73,7 +90,7 @@
 		margin: 0.5rem;
 		align-items: center;
 	}
-	
+
 	.ratingsCard{
 		background-color: DarkSlateGrey;
 		padding:1.5em;
@@ -82,7 +99,7 @@
 		overflow-y: scroll;
         position:relative;
 	}
-	
+
 	.profileStats{
 		text-align: left;
 		margin: 0.5em;
@@ -94,26 +111,34 @@
         min-height: 1.5em;
     }
 
-    #friendButton {
-        width: 6em;
+    button {
+        min-width: 6em;
         border: 1px solid white;
         background-color: #203838;
         color: white;
     }
 
-    #friendButton.mutual{
-        background-color: #714977;
-    }
-
-    #friendButton.mutual:hover{
-        background-color: #492450;
-    }
-
-    #friendButton:hover {
+    button:hover {
         background-color: #182828;
         cursor:pointer;
     }
-	
+
+    button.mutual {
+        background-color: #714977;
+    }
+
+    button.mutual:hover {
+        background-color: #492450;
+    }
+
+    button.blocked {
+        background-color: #774949;
+    }
+
+    button.blocked:hover {
+        background-color: #502424;
+    }
+
 	.beatmapCard{
 		margin:0.5rem;
 		display:inline-block;
@@ -126,13 +151,13 @@
 		font-weight: 900;
 		text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 	}
-	
+
 	.ratingChoices{
 		display: inline-block;
 		color: white;
 		margin-bottom:0.5rem;
 	}
-	
+
 	.ratingChoice{
 		border:1px solid white;
 		padding:0.1em 0.5em;
@@ -141,12 +166,12 @@
 		font-size:10px;
 		color: white;
 	}
-	
+
 	.active{
 		background-color: #203838;
 		font-weight: 900;
 	}
-	
+
 	.profileRankingDistribution{
 		border:1px solid DarkSlateGrey;
 		width:14em;
@@ -155,11 +180,11 @@
 		color:rgba(125, 125, 125, 0.66);
         overflow: clip;
 	}
-	
+
 	.profileRankingDistribution a{
 		color:rgba(125, 125, 125, 0.66);
 	}
-	
+
 	.profileRankingDistributionBar{
 		height: calc(100% / 11);
 		width:100%;
@@ -202,31 +227,23 @@
 		</div>
         <div class="profileActions">
             <?php
-                if ($profileId != $userId && $isUser){
-                    $stmt_check = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
-                    $stmt_check->bind_param("ii", $userId, $profileId);
-                    $stmt_check->execute();
-                    $result = $stmt_check->get_result();
+                if ($profileId != $userId && $isValidUser){
 
-                    $is_friend = $result->num_rows > 0;
-
-                    $stmt_check2 = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
-                    $stmt_check2->bind_param("ii", $profileId, $userId);
-                    $stmt_check2->execute();
-                    $result2 = $stmt_check2->get_result();
-
-                    $is_friended = $result2->num_rows > 0;
-
-                    if ($is_friend && $is_friended) {
-                        echo '<button id="friendButton" class="mutual">Mutual</button>';
-                    } elseif ($is_friend && !$is_friended) {
-                        echo '<button id="friendButton">Friend</button>';
-                    } else {
-                        echo '<button id="friendButton">Add Friend</button>';
+                    if (!$is_blocked) {
+                        if ($is_friend && $is_friended) {
+                            echo '<button id="friendButton" class="mutual">Mutual</button> ';
+                        } elseif ($is_friend && !$is_friended) {
+                            echo '<button id="friendButton">Friend</button> ';
+                        } else {
+                            echo '<button id="friendButton">Add Friend</button> ';
+                        }
                     }
 
-                    $stmt_check->close();
-                    $stmt_check2->close();
+                    if ($is_blocked) {
+                        echo '<button id="blockButton" class="blocked">Unblock</button>';
+                    } else {
+                        echo '<button id="blockButton">Block</button>';
+                    }
                 }
             ?>
         </div>
@@ -236,7 +253,7 @@
 			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
 			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
 		</div>
-		<?php if ($isUser){ ?>
+		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
                 <div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
 				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"]); } ?></a></div>
@@ -276,7 +293,7 @@
 	</div>
 	<div class="ratingsCard">
 		<?php
-			if($isUser){
+			if($isValidUser){
 		?>
 		<center><div class="ratingChoices">
 			<a id="0.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1" class="ratingChoice"><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
@@ -400,9 +417,8 @@
 
 <script>
     var coll = document.getElementsByClassName("top-map");
-    var i;
 
-    for (i = 0; i < coll.length; i++) {
+    for (let i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function() {
             var arrow = this.querySelector(".collapse-arrow");
             var content = this.nextElementSibling;
@@ -436,6 +452,22 @@
                     }
                 }
             });
+        });
+
+        $('#blockButton').click(function() {
+            if(confirm('Are you sure you want to block this user?')){
+                $.ajax({
+                    type: 'POST',
+                    url: 'DoBlockButton.php',
+                    data: {
+                        'user_id_from': <?php echo $userId; ?>,
+                        'user_id_to': <?php echo $profileId; ?>
+                    },
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            }
         });
     });
 </script>
