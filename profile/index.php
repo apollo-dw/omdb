@@ -342,8 +342,8 @@
                     ?>
                     <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;flex-direction:column;">
                         <div class="profileImage">
-                            <a href="?id=<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/></a><br>
-                            <a href="?id=<?php echo $row["ID"]; ?>"><?php echo $row["username"]; ?></a>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/></a><br>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><?php echo $row["username"]; ?></a>
                         </div>
                     </div>
             <?php
