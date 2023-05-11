@@ -18,18 +18,23 @@
 	$ratingCounts = array();
 
     if ($isValidUser) {
-        $query = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID`='{$profileId}' GROUP BY `Score`";
-        $result = $conn->query($query);
-
+        $result = $conn->query("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID`='{$profileId}' GROUP BY `Score`");
         while ($row = $result->fetch_assoc()) {
             $ratingCounts[$row['Score']] = $row['count'];
         }
-
         $maxRating = max($ratingCounts);
+
+        $mutuals = $conn->query("SELECT u.UserID as ID, u.Username as username FROM users u
+                                       JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+                                       JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+                                       WHERE ur1.UserIDFrom = {$profileId} AND ur2.UserIDTo = {$profileId}
+                                       AND ur1.type = 1 AND ur2.type = 1
+                                       ORDER BY LastAccessedSite DESC, ID;");
+
+        $mutualCount = $mutuals->num_rows;
     }
 
     $is_friend = $is_blocked = $is_friended = 0;
-
     if ($loggedIn) {
         $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
         $stmt_relation_to_profile_user->bind_param("ii", $userId, $profileId);
@@ -246,7 +251,7 @@
             ?>
         </div>
 		<div class="profileStats">
-            <b>Friends:</b> <?php echo $conn->query("SELECT Count(*) FROM `user_relations` WHERE `UserIDTo`='{$profileId}' AND `type`='1';")->fetch_row()[0]; ?><br>
+            <a href='friends/?id=<?php echo $profileId; ?>'><b>Friends:</b> <?php echo $conn->query("SELECT Count(*) FROM `user_relations` WHERE `UserIDTo`='{$profileId}' AND `type`='1';")->fetch_row()[0]; ?></a><br>
 			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
 			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
 			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
@@ -322,8 +327,41 @@
 	</div>
 </div>
 
-<hr>
+<?php
+    if($isValidUser && $mutualCount > 0) {
+?>
+        <hr>
+        Mutuals
+        <div class="flex-container" style="background-color:DarkSlateGrey;padding:0px;">
+            <br>
+            <?php
+                $counter = 0;
+                $max = 10;
 
+                while($row = $mutuals->fetch_assoc() and ($counter < $max)) {
+                    ?>
+                    <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;flex-direction:column;">
+                        <div class="profileImage">
+                            <a href="?id=<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/></a><br>
+                            <a href="?id=<?php echo $row["ID"]; ?>"><?php echo $row["username"]; ?></a>
+                        </div>
+                    </div>
+            <?php
+                    $counter++;
+                }
+            ?>
+        </div>
+
+        <?php
+         if ($mutualCount > 10){
+             echo "<br><a href='friends/?id={$profileId}'><div style='float:right;'>...view more!</div></a>";
+         }
+         echo "<br />";
+    }
+?>
+
+
+<hr>
 <style>
     .top-map {
         padding: 0.5em;
