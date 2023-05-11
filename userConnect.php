@@ -17,6 +17,10 @@
 			$userId = $row['UserID'];
 			$userName = $row['Username'];
 			$user = $row;
+
+            $stmt = $conn->prepare("UPDATE `users` SET `LastAccessedSite` = CURRENT_TIMESTAMP WHERE `AccessToken` = ?");
+            $stmt->bind_param("s", $token);
+            $stmt->execute();
 		}
 	}
 ?>
