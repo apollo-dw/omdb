@@ -18,9 +18,12 @@
 			$userName = $row['Username'];
 			$user = $row;
 
-            $stmt = $conn->prepare("UPDATE `users` SET `LastAccessedSite` = CURRENT_TIMESTAMP WHERE `AccessToken` = ?");
-            $stmt->bind_param("s", $token);
-            $stmt->execute();
+            // Update the last accessed site column in one-minute limits.
+            if((time() - strtotime($row['LastAccessedSite'])) > 60){
+                $stmt = $conn->prepare("UPDATE `users` SET `LastAccessedSite` = CURRENT_TIMESTAMP WHERE `AccessToken` = ?");
+                $stmt->bind_param("s", $token);
+                $stmt->execute();
+            }
 		}
 	}
 ?>
