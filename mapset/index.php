@@ -1,25 +1,30 @@
 <?php
-$mapset_id = $_GET['mapset_id'] ?? -1;
-require '../base.php';
+    $mapset_id = $_GET['mapset_id'] ?? -1;
+    require '../base.php';
 
-$foundSet = false;
-$result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='{$mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
-$sampleRow = $result->fetch_assoc();
-mysqli_data_seek($result, 0);
+    $foundSet = false;
+    $result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='{$mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
+    $sampleRow = $result->fetch_assoc();
+    mysqli_data_seek($result, 0);
 
-$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
-$year = date("Y", strtotime($sampleRow['DateRanked']));
-$isLoved = $sampleRow["Status"] == 4;
-require '../header.php';
+    $PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
+    $year = date("Y", strtotime($sampleRow['DateRanked']));
+    $isLoved = $sampleRow["Status"] == 4;
+    require '../header.php';
 
-if($mapset_id == -1){
-    siteRedirect();
-}
+    if($mapset_id == -1){
+        siteRedirect();
+    }
 
-$stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
-$stmt->bind_param("s", $mapset_id);
-$stmt->execute();
-$numberOfSetRatings = $stmt->get_result()->fetch_row()[0];
+    $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
+    $stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+    $numberOfSetRatings = $stmt->get_result()->fetch_row()[0];
+
+    $stmt = $conn->prepare("SELECT Count(*) FROM comments WHERE SetID = ?;");
+    $stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+    $commentCount = $stmt->get_result()->fetch_row()[0];
 ?>
 
 <style>
@@ -252,7 +257,7 @@ while($row = $result->fetch_assoc()) {
         </div>
     </div>
     <div class="flex-child" style="width:60%;">
-        Comments<br><br>
+        Comments (<?php echo $commentCount; ?>)<br><br>
         <div class="flex-container commentContainer" style="width:100%;">
 
             <?php if($loggedIn) { ?>
