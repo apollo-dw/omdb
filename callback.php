@@ -81,8 +81,8 @@
 		$stmt->execute();
 		$stmt->close();
 	} else {
-		$stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ? WHERE `UserID` = ?");
-		$stmt->bind_param("sss", $accessToken, $refreshToken, $userId);
+		$stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ?, `Username` = ? WHERE `UserID` = ?");
+		$stmt->bind_param("ssss", $accessToken, $refreshToken, $username, $userId);
 		$stmt->execute();
 		$stmt->close();
 	}
