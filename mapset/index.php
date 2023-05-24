@@ -25,6 +25,11 @@
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_row()[0];
+
+    // This will be set to true if during the display of difficulties,
+    // a blocked one appears. This is so we can display a message near
+    // the comment box.
+    $hasBlacklistedDifficulties = false;
 ?>
 
 <style>
@@ -237,6 +242,7 @@ while($row = $result->fetch_assoc()) {
             <div class="flex-child diffBox" style="padding:auto;width:91%;">
                 <b>This difficulty has been blacklisted from OMDB.</b><br>
                 Reason: <?php echo $row["BlacklistReason"]; ?>
+                <?php $hasBlacklistedDifficulties = true; ?>
             </div>
         <?php } ?>
     </div>
@@ -268,6 +274,11 @@ while($row = $result->fetch_assoc()) {
 
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                     </form>
+                    <?php if ($hasBlacklistedDifficulties) { ?>
+                        <p style="font-weight: bolder;">
+                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
+                        </p>
+                    <?php } ?>
                 </div>
 
             <?php } ?>
