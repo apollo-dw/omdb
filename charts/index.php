@@ -83,6 +83,7 @@
 				<option value="2">Lowest Rated</option>
                 <option value="3">Most Rated</option>
                 <option value="4">Most Controversial</option>
+                <option value="5">Most Underrated</option>
 			</select> maps of
 			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
                 <?php
@@ -219,6 +220,8 @@
             orderString = 'Most Rated ';
         else if (order == 4)
             orderString = 'Most Controversial ';
+        else if (order == 5)
+            orderString = 'Most Underrated ';
         var genreString = " " + genres[genre] + "   ";
         var languageString = " " + languages[language] + "   ";
         var yearString = year == "all-time" ? 'All Time' : year;
