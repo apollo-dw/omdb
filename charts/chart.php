@@ -64,7 +64,7 @@
             else if ($order == 4)
                 $columnString = "controversy";
             else if ($order == 5)
-                $columnString = "WeightedAvg";
+                $columnString = "(WeightedAvg - CAST(Rating AS FLOAT))*SQRT(RatingCount)";
 
             $yearString = "ORDER BY {$columnString}";
             if ($year != "all-time"){
