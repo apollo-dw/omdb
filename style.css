@@ -185,6 +185,14 @@ a .topBarLink {
         padding-left:10%;
         padding-right:10%;
     }
+
+    .topBarUsername{
+        display:none;
+    }
+
+    .topBarSearchBar{
+        width: 3.5em;
+    }
 }
 
 .identifier:hover ~ .starRemoveButton:not(.disabled), .starRemoveButton:hover:not(.disabled) {

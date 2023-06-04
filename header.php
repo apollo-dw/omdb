@@ -16,7 +16,7 @@
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=3" />
+        <link rel="stylesheet" type="text/css" href="/style.css?v=4" />
         <script>
 			function showResult(str) {
 			  if (str.length==0) {
@@ -42,7 +42,7 @@
 	</head>
 	<body>
 		<div class="topBar">
-			<a href="/" style="margin-right: 8px;color:white;">OMDB - osu! map database</a>
+			<a href="/" style="margin-right: 8px;color:white;">OMDB</a>
 			
 			<a href="/"><div class="topBarLink">home</div></a>
 			<a href="/charts/"><div class="topBarLink">charts</div></a>
@@ -89,7 +89,9 @@
 				<?php
 					if ($loggedIn) {
 				?>
-                        <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a> <a href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
+                        <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a>
+                        <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
+                        <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
 				<?php
 					} else {
 						include_once 'sensitiveStrings.php'; // needed for $clientID
