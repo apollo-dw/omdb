@@ -228,10 +228,22 @@ while($row = $result->fetch_assoc()) {
                 <?php
                 if($loggedIn){
                     ?>
-                    <span class="identifier" style="display: inline-block;"><ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
-		<!-- The holy grail of PHP code. If I want to make this public on github i NEED to rewrite this-->
-		<i class="icon-remove" style="opacity:0;"></i><li class="star icon-star<?php if($userMapRating==0 || !$userHasRatedThis){ echo '-empty'; } else if($userMapRating==0.5){ echo '-half-empty'; } ?>" value="1" /><li class="star icon-star<?php if($userMapRating<=1){ echo '-empty'; } else if($userMapRating==1.5){ echo '-half-empty'; } ?>" value="2" /><li class="star icon-star<?php if($userMapRating<=2){ echo '-empty'; } else if($userMapRating==2.5){ echo '-half-empty'; } ?>" value="3" /><li class="star icon-star<?php if($userMapRating<=3){ echo '-empty'; } else if($userMapRating==3.5){ echo '-half-empty'; } ?>" value="4" /><li class="star icon-star<?php if($userMapRating<=4){ echo '-empty'; } else if($userMapRating==4.5){ echo '-half-empty'; } ?>" value="5" />
-		</ol></span><span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span><span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
+                    <span class="identifier" style="display: inline-block;">
+                        <ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
+                            <li class="icon-remove" style="opacity:0;"></li>
+
+                            <?php for ($i = 1; $i <= 5; $i++){ ?>
+                                <li class="star icon-star<?php
+                                if ($userMapRating == ($i - 0.5)) {
+                                    echo '-half-empty';
+                                } else if ($userMapRating < $i) {
+                                    echo '-empty';
+                                }
+                                ?>" value="<?php echo $i; ?>"></li>
+                            <?php } ?>
+                        </ol>
+                    </span>
+                    <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span><span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
                     <?php
                 } else {
                     echo 'Log in to rate maps!';
