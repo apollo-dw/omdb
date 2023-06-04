@@ -23,7 +23,7 @@
             $ratingCounts[$row['Score']] = $row['count'];
         }
 
-        $maxRating = sizeof($arr) >= 1 ? max($ratingCounts) : 1;
+        $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 1;
 
         $mutuals = $conn->query("SELECT u.UserID as ID, u.Username as username FROM users u
                                        JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
