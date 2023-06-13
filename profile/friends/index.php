@@ -9,19 +9,27 @@
         die("Invalid page bro");
     }
 
-    $profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_row()[0];
+    $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $profile = $result->fetch_assoc();
+    $stmt->close();
     $isUser = true;
 
-    if ($profile == NULL){
+    if ($profile == NULL)
         die("Can't view this bros friends cuz they aint an OMDB user");
-    }
 
-    $friends = $conn->query("SELECT u.UserID as ID, u.Username as username FROM users u
-                                   JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
-                                   JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
-                                   WHERE ur1.UserIDFrom = {$profileId} AND ur2.UserIDTo = {$profileId}
-                                   AND ur1.type = 1 AND ur2.type = 1
-                                   ORDER BY LastAccessedSite DESC, ID;");
+    $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
+                                JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+                                JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+                                WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
+                                AND ur1.type = 1 AND ur2.type = 1
+                                ORDER BY LastAccessedSite DESC, ID;");
+    $stmt->bind_param("ii", $profileId, $profileId);
+    $stmt->execute();
+    $friends = $stmt->get_result();
+    $stmt->close();
 
     ?>
 

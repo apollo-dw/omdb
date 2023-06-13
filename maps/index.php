@@ -22,8 +22,13 @@
     $month = max($minMonth, min($maxMonth, $month));
 	
 	$limit = 20;
-	$amntOfPages = floor($conn->query("SELECT Count(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked)='{$month}' AND YEAR(DateRanked)='{$year}' AND `Mode`='0';")->fetch_row()[0] / $limit) + 1;
-    $prevPage = max($page - 1, 1);
+    $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = '0'");
+    $stmt->bind_param("ii", $month, $year);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+    $amntOfPages = floor($count / $limit) + 1;    $prevPage = max($page - 1, 1);
     $nextPage = min($page + 1, $amntOfPages);
 ?>
 
@@ -96,8 +101,11 @@
 	}
 	
 	$counter = 0;
-	$result = $conn->query("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked)='{$month}' AND YEAR(DateRanked)='{$year}' AND `Mode`='0' ORDER BY `DateRanked` DESC {$pageString};");
-		while($row = $result->fetch_assoc()) {
+    $stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = '0' ORDER BY `DateRanked` DESC {$pageString}");
+    $stmt->bind_param("ii", $month, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while($row = $result->fetch_assoc()) {
 			$counter += 1;
 			$mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
 ?>
@@ -111,9 +119,18 @@
 	<div class="flex-child" style="flex: 0 0 3%;min-width: 0;">
 		<?php echo $row["DateRanked"]; ?>
 	</div>
-	<div class="flex-child" style="flex: 0 0 32%;text-align:right;min-width:0;">
-		<b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$row["SetID"]}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$row["SetID"]}');")->fetch_row()[0]; ?> votes</span><br>
-	</div>
+    <div class="flex-child" style="flex: 0 0 32%;text-align:right;min-width:0;">
+        <?php
+            $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2), COUNT(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)");
+            $stmt->bind_param("i", $row["SetID"]);
+            $stmt->execute();
+            $stmt->bind_result($averageScore, $voteCount);
+            $stmt->fetch();
+            $stmt->close();
+        ?>
+
+        <b><?php echo $averageScore; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $voteCount; ?> votes</span><br>
+    </div>
 </div>
 <?php
 		}

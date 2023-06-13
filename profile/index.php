@@ -9,7 +9,12 @@
 		siteRedirect();
 	}
 
-	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$profileId}';")->fetch_assoc();
+    $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $profile = $result->fetch_assoc();
+    $stmt->close();
 	$isValidUser = true;
 
 	if ($profile == NULL)
@@ -18,21 +23,30 @@
 	$ratingCounts = array();
 
     if ($isValidUser) {
-        $result = $conn->query("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID`='{$profileId}' GROUP BY `Score`");
+        $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID` = ? GROUP BY `Score`");
+        $stmt->bind_param("i", $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $ratingCounts = array();
         while ($row = $result->fetch_assoc()) {
             $ratingCounts[$row['Score']] = $row['count'];
         }
+        $stmt->close();
 
         $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 1;
 
-        $mutuals = $conn->query("SELECT u.UserID as ID, u.Username as username FROM users u
-                                       JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
-                                       JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
-                                       WHERE ur1.UserIDFrom = {$profileId} AND ur2.UserIDTo = {$profileId}
-                                       AND ur1.type = 1 AND ur2.type = 1
-                                       ORDER BY LastAccessedSite DESC, ID;");
-
+        $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
+                           JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+                           JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+                           WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
+                           AND ur1.type = 1 AND ur2.type = 1
+                           ORDER BY LastAccessedSite DESC, ID");
+        $stmt->bind_param("ii", $profileId, $profileId);
+        $stmt->execute();
+        $mutuals = $stmt->get_result();
         $mutualCount = $mutuals->num_rows;
+        $stmt->close();
     }
 
     $is_friend = $is_blocked = $is_friended = 0;
@@ -251,12 +265,47 @@
                 }
             ?>
         </div>
-		<div class="profileStats">
-            <a href='friends/?id=<?php echo $profileId; ?>'><b>Friends:</b> <?php echo $conn->query("SELECT Count(*) FROM `user_relations` WHERE `UserIDTo`='{$profileId}' AND `type`='1';")->fetch_row()[0]; ?></a><br>
-			<b>Ratings:</b> <?php echo $conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?><br>
-			<a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $conn->query("SELECT Count(*) FROM `comments` WHERE `UserID`='{$profileId}';")->fetch_row()[0]; ?></a><br>
-			<b>Ranked Mapsets:</b> <?php echo $conn->query("SELECT Count(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID`='{$profileId}';")->fetch_row()[0]; ?><br>
-		</div>
+        <div class="profileStats">
+            <?php
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM `user_relations` WHERE `UserIDTo` = ? AND `type` = '1'");
+                $stmt->bind_param("i", $profileId);
+                $stmt->execute();
+                $stmt->bind_result($friendCount);
+                $stmt->fetch();
+                $stmt->close();
+            ?>
+            <a href="friends/?id=<?php echo $profileId; ?>"><b>Friends:</b> <?php echo $friendCount; ?></a><br>
+
+            <?php
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` WHERE `UserID` = ?");
+                $stmt->bind_param("i", $profileId);
+                $stmt->execute();
+                $stmt->bind_result($ratingCount);
+                $stmt->fetch();
+                $stmt->close();
+            ?>
+            <b>Ratings:</b> <?php echo $ratingCount; ?><br>
+
+            <?php
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
+                $stmt->bind_param("i", $profileId);
+                $stmt->execute();
+                $stmt->bind_result($commentCount);
+                $stmt->fetch();
+                $stmt->close();
+            ?>
+            <a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $commentCount; ?></a><br>
+
+            <?php
+                $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID` = ?");
+                $stmt->bind_param("i", $profileId);
+                $stmt->execute();
+                $stmt->bind_result($mapsetCount);
+                $stmt->fetch();
+                $stmt->close();
+            ?>
+            <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
+        </div>
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
                 <div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
@@ -391,7 +440,11 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $setsResult = $conn->query("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID='{$profileId}' AND `Mode`='0' GROUP BY `SetID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`);");
+        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? AND `Mode` = '0' GROUP BY `SetID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`)");
+        $stmt->bind_param("s", $profileId);
+        $stmt->execute();
+        $setsResult = $stmt->get_result();
+        $stmt->close();
 
         $sets = [];
         while($row = $setsResult->fetch_assoc())
@@ -400,10 +453,20 @@
         $counter = 0;
         foreach($sets as $set) {
             $counter += 1;
-            $difficultyResult = $conn->query("SELECT `BeatmapID`, `DateRanked`, `DifficultyName`, `WeightedAvg`, `RatingCount`, `SR`, `ChartRank` FROM beatmaps WHERE SetID='{$set["SetID"]}' AND `CreatorID`='{$profileId}' ORDER BY `RatingCount` DESC;");
-            $commentCount = $conn->query("SELECT Count(*) FROM comments WHERE SetID='{$set["SetID"]}';")->fetch_row()[0];
+            $stmt = $conn->prepare("SELECT `BeatmapID`, `DateRanked`, `DifficultyName`, `WeightedAvg`, `RatingCount`, `SR`, `ChartRank` FROM beatmaps WHERE SetID = ? AND CreatorID = ? ORDER BY `RatingCount` DESC");
+            $stmt->bind_param("ii", $set["SetID"], $profileId);
+            $stmt->execute();
+            $difficultyResult = $stmt->get_result();
+
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM comments WHERE SetID = ?");
+            $stmt->bind_param("i", $set["SetID"]);
+            $stmt->execute();
+            $commentCount = $stmt->get_result()->fetch_row()[0];
+
             $topMap = $difficultyResult->fetch_assoc();
-            $topMapIsBolded = $topMap["ChartRank"] <= 250 && isset($topMap["ChartRank"]);
+            $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
+
+            $stmt->close();
             ?>
             <div class="top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>" <?php if ($counter % 2 == 0) echo "style='background-color:#203838;'"; ?>>
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>

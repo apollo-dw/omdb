@@ -10,7 +10,11 @@
 			$object = GetRandomPlayedBeatmap($token);
 		
 			if (sizeof($object["beatmapsets"]) == 0){
-				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
+                $stmt = $conn->prepare("SELECT `SetID` FROM `beatmaps` WHERE `Mode` = '0' ORDER BY RAND() LIMIT 1");
+                $stmt->execute();
+                $stmt->bind_result($result);
+                $stmt->fetch();
+                $stmt->close();
 		
 				siteRedirect("/mapset/" . $result);
 			}
@@ -19,7 +23,11 @@
 			$setID = $object["beatmapsets"][rand(0,49)]["beatmaps"][0]["beatmapset_id"];
 			
 			if ($setID == NULL){
-				$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row()[0];
+                $stmt = $conn->prepare("SELECT `SetID` FROM `beatmaps` WHERE `Mode` = '0' ORDER BY RAND() LIMIT 1");
+                $stmt->execute();
+                $stmt->bind_result($result);
+                $stmt->fetch();
+                $stmt->close();
 		
 				siteRedirect("/mapset/" . $result);
 			}
@@ -28,8 +36,12 @@
 		}
 	
 	}
-	
-	$result = $conn->query("SELECT `SetID` FROM `beatmaps` WHERE `Mode`='0' ORDER BY RAND() LIMIT 1;")->fetch_row();
+
+    $stmt = $conn->prepare("SELECT `SetID` FROM `beatmaps` WHERE `Mode` = '0' ORDER BY RAND() LIMIT 1");
+    $stmt->execute();
+    $stmt->bind_result($result);
+    $stmt->fetch();
+    $stmt->close();
 
 	if (!$result || !count($result)) {
 		http_response_code(404);

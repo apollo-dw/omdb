@@ -11,10 +11,16 @@
 	if (!in_array($rating, $validRatings)){
 		die ("NO");
 	}
-	
-	if($conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$beatmapId}';")->num_rows != 1){
+
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `beatmaps` WHERE `BeatmapID`= ?;");
+    $stmt->bind_param("i", $beatmapId);
+    $stmt->execute();
+
+	if($stmt->get_result()->fetch_row()[0] != 1){
 		die ("NO");
 	}
+
+    $stmt->close();
 	
 	if ($loggedIn == false) {
 		die ("NO");

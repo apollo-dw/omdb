@@ -40,10 +40,18 @@
 	}
 	
 	$counter = 0;
-	$result = $conn->query("SELECT * FROM `ratings` WHERE `UserID`='{$profileId}' {$starString} ORDER BY `date` DESC LIMIT 50;");
-	while($row = $result->fetch_assoc()){
-		$counter += 1;			
-		$beatmap = $conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='{$row["BeatmapID"]}';")->fetch_assoc();
+    $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `UserID` = ? {$starString} ORDER BY `date` DESC LIMIT 50");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $counter = 0;
+    while ($row = $result->fetch_assoc()) {
+        $counter += 1;
+        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `BeatmapID` = ?");
+        $stmt->bind_param("i", $row["BeatmapID"]);
+        $stmt->execute();
+        $beatmap = $stmt->get_result()->fetch_assoc();
 ?>
 	<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
 		<div class="flex-child">

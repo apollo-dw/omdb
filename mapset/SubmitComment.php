@@ -14,21 +14,24 @@
 	if( strlen($comment) > 8000){
 		die("LONG");
 	}
+
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `beatmaps` WHERE `SetID`= ?;");
+    $stmt->bind_param("i", $setId);
+    $stmt->execute();
 	
-	if($conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='${setId}';")->num_rows == 0){
+	if($stmt->get_result()->fetch_row()[0] == 0){
 		die ("NO - Cant Find Map In DB");
 	}
+
+    $stmt->close();
 	
 	if ($loggedIn == false) {
 		die ("NO - Not Logged In");
 	}
 	
-	$statement = $conn->prepare("INSERT INTO `comments` (UserID, SetID, Comment) VALUES (?, ?, ?);");
-	$statement->bind_param("sss", $uID, $sID, $cmnt);
-	$uID = $userId;
-	$sID = $setId;
-	$cmnt = $comment;
+	$stmt = $conn->prepare("INSERT INTO `comments` (UserID, SetID, Comment) VALUES (?, ?, ?);");
+	$stmt->bind_param("sss", $userId, $setId, $comment);
 	
-	$statement->execute();
-	$statement->close();
+	$stmt->execute();
+	$stmt->close();
 ?>

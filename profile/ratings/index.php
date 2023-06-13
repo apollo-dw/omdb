@@ -10,18 +10,29 @@
 	if($profileid == -1 || $rating == -1){
 		die("Invalid page bro");
 	}
-	
-	$profile = $conn->query("SELECT * FROM `users` WHERE `UserID`='${profileId}';")->fetch_row()[0];
-	$isUser = true;
-	
-	if ($profile == NULL){
-		die("Can't view this bros ratings cuz they aint an OMDB user");
-	}
+
+    $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $profile = $result->fetch_assoc();
+    $stmt->close();
+    $isUser = true;
+
+    if ($profile == NULL)
+        die("Can't view this bros friends cuz they aint an OMDB user");
 
 	$limit = 25;
 	$prevPage = $page - 1;
 	$nextPage = $page + 1;
-	$amntOfPages = floor($conn->query("SELECT Count(*) FROM `ratings` WHERE `UserID`='${profileId}' AND `Score`='${rating}';")->fetch_row()[0] / $limit) + 1;
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` WHERE `UserID` = ? AND `Score` = ?");
+    $stmt->bind_param("ii", $profileId, $rating);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+
+    $amntOfPages = floor($count / $limit) + 1;
 ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s <?php echo number_format($rating, 1, '.', ''); ?> ratings</h1></center>
 

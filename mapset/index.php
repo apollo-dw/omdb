@@ -3,7 +3,10 @@
     require '../base.php';
 
     $foundSet = false;
-    $result = $conn->query("SELECT * FROM `beatmaps` WHERE `SetID`='{$mapset_id}' AND `mode`='0' ORDER BY `SR` DESC;");
+    $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `SetID`=? AND `mode`='0' ORDER BY `SR` DESC;");
+    $stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
 
@@ -98,10 +101,18 @@
         echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
         ?>
         <br>
-        Average Rating: <b><?php echo $conn->query("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID='{$mapset_id}');")->fetch_row()[0]; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
         <?php
-        if ($isLoved)
-            echo "Loved Mapset";
+        $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?)");
+        $stmt->bind_param("s", $mapset_id);
+        $stmt->execute();
+        $averageRating = $stmt->get_result()->fetch_row()[0];
+        $stmt->close();
+        ?>
+
+        Average Rating: <b><?php echo $averageRating; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
+        <?php
+            if ($isLoved)
+                echo "Loved Mapset";
         ?>
     </div>
 </div>
@@ -111,24 +122,25 @@
 <?php
 $counter = 0;
 while($row = $result->fetch_assoc()) {
-    $ratedQueryResult = $conn->query("SELECT * FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID`='{$userId}';");
+    $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `BeatmapID` = ? AND `UserID` = ?");
+    $stmt->bind_param("ii", $row["BeatmapID"], $userId);
+    $stmt->execute();
+    $ratedQueryResult = $stmt->get_result();
+
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
     $counter += 1;
 
-    $ratingCounts = array();
-
-    $ratingQuery = "SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' GROUP BY `Score`";
-    $ratingResult = $conn->query($ratingQuery);
+    $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID` = ? GROUP BY `Score`");
+    $stmt->bind_param("i", $row["BeatmapID"]);
+    $stmt->execute();
+    $ratingResult = $stmt->get_result();
 
     $blackListed = $row["Blacklisted"] == 1;
-
-    $hasCharted = true;
-    if ($ratingResult->num_rows == 0 || $row["ChartYearRank"] == null) {
-        $hasCharted = false;
-    }
+    $hasCharted = $ratingResult->num_rows > 0 && $row["ChartYearRank"] != null;
 
     // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
+    $ratingCounts = array();
     $ratingCounts['0.0'] = 0;
     $ratingCounts['0.5'] = 0;
     $ratingCounts['1.0'] = 0;
@@ -161,14 +173,16 @@ while($row = $result->fetch_assoc()) {
         $averageRating = $totalScore / $totalRatings;
     }
 
-    $friendRatingQuery = $conn->query("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`='{$row["BeatmapID"]}' AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = '{$userId}' AND `type`=1)");
-    $friendRatingResult = $friendRatingQuery->fetch_assoc();
+    $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
+    $stmt->bind_param("ii", $beatmapID, $userID);
+    $beatmapID = $row["BeatmapID"];
+    $userID = $userId;
+    $stmt->execute();
+    $friendRatingResult = $stmt->get_result()->fetch_assoc();
     $friendRatingCount = $friendRatingResult["count"];
     $friendRatingAvg = $friendRatingResult["avg"];
 
-    $hasFriendsRatings = false;
-    if($loggedIn && $friendRatingCount > 0)
-        $hasFriendsRatings = true;
+    $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
     ?>
 
     <div class="flex-container diffContainer <?php if($blackListed){ echo "faded"; }?>" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>

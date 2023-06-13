@@ -14,10 +14,17 @@
     }
     $apiKey = hash('sha256', $userId . $randomString . "omdb!");
 
-    if ($conn->query("SELECT * FROM `apikeys` WHERE `UserID`='{$userId}';")->num_rows < 5) {
+    $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows < 5) {
         $stmt = $conn->prepare("INSERT INTO `apikeys` (`Name`, `ApiKey`, `UserID`) VALUES (?, ?, ?);");
         $stmt->bind_param("ssi", $name, $apiKey, $userId);
         $stmt->execute();
     }
+
+    $stmt->close();
 
     header("Location: index.php");

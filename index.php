@@ -6,10 +6,31 @@
 
 welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
 <span style="color:grey;">
-	<?php echo $conn->query("SELECT Count(*) FROM `users`;")->fetch_row()[0]; ?> users, 
-	<?php echo $conn->query("SELECT Count(*) FROM `ratings`;")->fetch_row()[0]; ?> ratings,
-	<?php echo $conn->query("SELECT Count(*) FROM `comments`;")->fetch_row()[0]; ?> comments
-</span><hr>
+    <?php
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `users`");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $usersCount = $result->fetch_row()[0];
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $ratingsCount = $result->fetch_row()[0];
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments`");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $commentsCount = $result->fetch_row()[0];
+    $stmt->close();
+    ?>
+
+    <?php echo $usersCount; ?> users,
+    <?php echo $ratingsCount; ?> ratings,
+    <?php echo $commentsCount; ?> comments
+</span>
+    <hr>
 
 <p style="width:66%;">This website is still in development pretty much. Some things might be weird. Mobile will definitely work pretty bad rn so I recommend using ur computor for this.</p>
 

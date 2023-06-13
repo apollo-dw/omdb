@@ -146,25 +146,40 @@
 		if (!$full) $string = array_slice($string, 0, 1);
 		return $string ? implode(', ', $string) . ' ago' : 'just now';
 	}
-	
+
 	function GetUserNameFromId($id, $conn){
-		$result = $conn->query("SELECT `Username` FROM `users` WHERE `UserID`='{$id}';");
+		$stmt = $conn->prepare("SELECT `Username` FROM `users` WHERE `UserID` = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$result = $stmt->get_result();
 		if($result->num_rows >= 1){
-			return $result->fetch_row()[0];
+			$row = $result->fetch_row();
+			$stmt->close();
+			return $row[0];
 		}
-		
-		$result = $conn->query("SELECT `Username` FROM `mappernames` WHERE `UserID`='{$id}';");
+
+		$stmt = $conn->prepare("SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$result = $stmt->get_result();
 		if($result->num_rows >= 1){
-			return $result->fetch_row()[0];
+			$row = $result->fetch_row();
+			$stmt->close();
+			return $row[0];
 		}
-		
+
 		$username = GetUserDataOsuApi($id)["username"];
-		$conn->query("INSERT INTO `mappernames` VALUES ('{$id}', '{$username}');");
-		
+
+		$stmt = $conn->prepare("INSERT INTO `mappernames` VALUES (?, ?)");
+		$stmt->bind_param("is", $id, $username);
+		$stmt->execute();
+		$stmt->close();
+
 		return $username;
 	}
-	
-	function ParseOsuLinks($string) {
+
+
+function ParseOsuLinks($string) {
 	  $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
 	  $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
 	  return preg_replace($pattern, $replacement, $string);
@@ -184,7 +199,12 @@
             }
         }
 
-        $user = $conn->query("SELECT * FROM `users` WHERE `UserID`='{$ratingRow["UserID"]}';")->fetch_assoc();
+		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+		$stmt->bind_param("i", $ratingRow["UserID"]);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$user = $result->fetch_assoc();
+		$stmt->close();
 
         switch($score){
             case 0:

@@ -160,7 +160,6 @@
 
 <script>
     const cronInterval = 6 * 60 * 60 * 1000; // 6 hours
-	const numOfPages = <?php echo floor($conn->query("SELECT Count(*) FROM `beatmaps` WHERE `Rating` IS NOT NULL;")->fetch_row()[0] / 50) + 1; ?>;
 	var page = 1;
 
     var genres = {
