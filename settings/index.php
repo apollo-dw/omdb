@@ -34,14 +34,6 @@
 <hr>
 <form>
     <table>
-        <tr><!--
-            <td>
-            </td>
-            <td>
-                Update username button here.<Br>
-                <span class="subtext">Useful if you've had a namechange.</span>
-            </td>-->
-        </tr>
         <tr>
             <td>
                 <label>Random behaviour:</label><br>
@@ -93,7 +85,8 @@
     $result = $stmt->get_result();
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
-            echo "<details><summary>{$row["Name"]} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
+			$name = htmlspecialchars($row["Name"], ENT_QUOTES, 'UTF-8');
+            echo "<details><summary>{$name} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
         }
     }
 ?>
