@@ -36,7 +36,9 @@ if (!$loggedIn){
         }
 
         .difficulty-name  {
-            min-width:6em;
+            min-width:12em;
+            padding-left: 0.5em;
+            padding-right: 1em;
         }
 
         .unrated{
@@ -65,7 +67,7 @@ if (!$loggedIn){
             if (isMapDisplayed(map.id))
                 return;
 
-            if (map.status == "graveyard" || map.status == "pending")
+            if (map.status == "graveyard" || map.status == "pending" || map.status == "qualified")
                 return;
 
             const mapElement = $("<div>").attr("id", map.id).addClass("flex-container map");
