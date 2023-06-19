@@ -32,7 +32,7 @@
     $nextPage = min($page + 1, $amntOfPages);
 ?>
 
-<h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . $year; ?></h1>
+<h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . htmlspecialchars($year, ENT_QUOTES, 'UTF-8'); ?></h1>
 
 <style>
     .pagination {
