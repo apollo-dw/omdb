@@ -165,19 +165,20 @@
 		if($result->num_rows >= 1){
 			$row = $result->fetch_row();
 			$stmt->close();
-			return $row[0];
+			if (!is_null($row[0])){
+				return $row[0];
+			}
 		}
 
 		$username = GetUserDataOsuApi($id)["username"];
 
-		$stmt = $conn->prepare("INSERT INTO `mappernames` VALUES (?, ?)");
+		$stmt = $conn->prepare("REPLACE INTO `mappernames` VALUES (?, ?)");
 		$stmt->bind_param("is", $id, $username);
 		$stmt->execute();
 		$stmt->close();
 
 		return $username;
 	}
-
 
 function ParseOsuLinks($string) {
 	  $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
