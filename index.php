@@ -39,8 +39,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		<?php
 		  $counter = 0;
 
-		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID ORDER BY r.date DESC LIMIT 40;");
-		  $stmt->execute();
+		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE b.Mode = ? ORDER BY r.date DESC LIMIT 40;");
+		  $stmt->bind_param("i", $mode);
+          $stmt->execute();
 		  $result = $stmt->get_result();
 
 		  while($row = $result->fetch_assoc()) {
