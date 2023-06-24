@@ -172,7 +172,7 @@ while($row = $result->fetch_assoc()) {
                                         WHERE r.BeatmapID = ?;");
         $stmt->bind_param("i", $row["BeatmapID"]);
         $stmt->execute();
-        $averageRating = $stmt->get_result()->fetch_assoc()["avg_score"];
+        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"], 2);
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
