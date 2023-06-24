@@ -71,13 +71,22 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child" style="width:60%;height:32em;overflow-y:scroll;">
 		<?php
-		  $counter = 0;
+          $counter = 0;
 
-		  $stmt = $conn->prepare("SELECT * FROM `comments` ORDER BY date DESC LIMIT 20;");
-		  $stmt->execute();
-		  $result = $stmt->get_result();
+          $stmt = $conn->prepare("SELECT c.*
+                            FROM comments c
+                            WHERE EXISTS (
+                                SELECT 1
+                                FROM beatmaps b
+                                WHERE b.SetID = c.SetID AND b.Mode = ?
+                            )
+                            ORDER BY c.date DESC
+                            LIMIT 20;");
+          $stmt->bind_param("i", $mode);
+          $stmt->execute();
+          $result = $stmt->get_result();
 
-		  while($row = $result->fetch_assoc()) {
+          while($row = $result->fetch_assoc()) {
               $counter += 1;
 
               $is_blocked = 0;
