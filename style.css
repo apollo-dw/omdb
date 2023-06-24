@@ -23,8 +23,8 @@ body {
     box-sizing: border-box;
     font-size: 0.75rem;
     line-height: 3rem;
-    padding-left: 20%;
-    padding-right: 20%;
+    padding-left: 10%;
+    padding-right: 10%;
     z-index:999;
 }
 
@@ -182,8 +182,8 @@ a .topBarLink {
     }
 
     .topBar{
-        padding-left:10%;
-        padding-right:10%;
+        padding-left:2%;
+        padding-right:2%;
     }
 
     .topBarUsername{
