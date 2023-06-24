@@ -168,9 +168,11 @@ Most rated beatmaps in the last 7 days:<br>
                                         ) t
                                         GROUP BY SetID
                                   ) m ON b.SetID = m.SetID AND r.num_ratings = m.max_ratings
+								  WHERE b.mode = ?
                                   ORDER BY num_ratings DESC, b.BeatmapID DESC
                                   LIMIT 10;
                                   ");
+    $stmt->bind_param("i", $mode);
     $stmt->execute();
 
     $result = $stmt->get_result();
