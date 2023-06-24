@@ -1,7 +1,5 @@
 <?php
-	include_once '../connection.php';
-	include_once '../functions.php';
-	include_once '../userConnect.php';
+	include_once '../base.php';
 	
 	$page = $_GET['p'] ?? 1;
 	$year = $_GET['y'] ?? $year;
