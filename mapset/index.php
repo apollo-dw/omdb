@@ -159,18 +159,20 @@ while($row = $result->fetch_assoc()) {
 
     $maxRating = max(max($ratingCounts), 5);
 
-    $totalScore = 0;
     $totalRatings = 0;
     $averageRating = 0;
 
-    foreach ($ratingCounts as $rating => $count) {
-        $score = (float) $rating * $count;
-        $totalScore += $score;
+    foreach ($ratingCounts as $rating => $count)
         $totalRatings += $count;
-    }
 
     if ($totalRatings > 0) {
-        $averageRating = $totalScore / $totalRatings;
+        $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
+                                        FROM ratings r
+                                        JOIN users u ON r.UserID = u.UserID
+                                        WHERE r.BeatmapID = ?;");
+        $stmt->bind_param("i", $row["BeatmapID"]);
+        $stmt->execute();
+        $averageRating = $stmt->get_result()->fetch_assoc()["avg_score"];
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
@@ -219,8 +221,7 @@ while($row = $result->fetch_assoc()) {
             </div>
             <div class="flex-child diffBox" style="text-align:right;width:40%;">
                 <?php
-                $averageRating = ($hasCharted) ? number_format($row["WeightedAvg"], 2) : number_format($averageRating, 2);
-                $totalRatings = ($hasCharted) ? $row["RatingCount"] : $totalRatings;
+                $averageRating = number_format($averageRating, 2);
                 if ($totalRatings > 0) {
                     ?>
                     Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
