@@ -20,7 +20,7 @@ function setGameMode(mode) {
     var expirationDate = new Date();
     expirationDate.setFullYear(expirationDate.getFullYear() + 1);
 
-    var cookieValue = "mode=" + mode + "; expires=" + expirationDate.toUTCString() + ";";
+    var cookieValue = "mode=" + mode + "; expires=" + expirationDate.toUTCString() + ";path=/;";
     document.cookie = cookieValue;
     location.reload();
 }
