@@ -35,7 +35,7 @@
         while ($userStmt->fetch()) {
             $counter += 1;
             ?>
-            <a href="/profile/<?php echo $userID; ?>"><div style="<?php if ($counter % 2 == 0){ echo 'background-color:DarkSlateGrey;'; } else { echo 'background-color:#203838;'; } ?>padding:0.25em;display:flex;vertical-align: middle" ><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;padding-right:0.25em;" title="<?php echo $username; ?>"/> <?php echo $username; ?></div> </a>
+            <a href="/profile/<?php echo $userID; ?>"><div style="<?php if ($counter % 2 == 0){ echo 'background-color:DarkSlateGrey;'; } else { echo 'background-color:#203838;'; } ?>padding:0.25em;display:flex;vertical-align: middle;line-height:2em;" ><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;padding-right:0.5em;" title="<?php echo $username; ?>"/> <?php echo $username; ?></div> </a>
             <?php
         }
     }
