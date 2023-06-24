@@ -30,9 +30,12 @@
     $stmt->close();
     $amntOfPages = floor($count / $limit) + 1;    $prevPage = max($page - 1, 1);
     $nextPage = min($page + 1, $amntOfPages);
+	
+	$year = htmlspecialchars($year, ENT_QUOTES, 'UTF-8');
+	$month = htmlspecialchars($month, ENT_QUOTES, 'UTF-8');
 ?>
 
-<h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . htmlspecialchars($year, ENT_QUOTES, 'UTF-8'); ?></h1>
+<h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . $year; ?></h1>
 
 <style>
     .pagination {
