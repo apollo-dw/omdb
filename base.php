@@ -5,6 +5,8 @@
 
     session_start();
 
+    $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 1;
+
     if ($loggedIn && $user["banned"]) {
         die(".");
     }

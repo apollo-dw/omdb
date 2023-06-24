@@ -16,29 +16,8 @@
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=4" />
-        <script>
-			function showResult(str) {
-			  if (str.length==0) {
-				document.getElementById("topBarSearchResults").innerHTML="";
-				document.getElementById("topBarSearchResults").style.display="none";
-				return;
-			  }
-			  var xmlhttp=new XMLHttpRequest();
-			  xmlhttp.onreadystatechange=function() {
-				if (this.readyState==4 && this.status==200) {
-				  document.getElementById("topBarSearchResults").innerHTML=this.responseText;
-				  document.getElementById("topBarSearchResults").style.display="block";
-				}
-			  }
-			  xmlhttp.open("GET","/beatmapSearch.php?q="+str,true);
-			  xmlhttp.send();
-			}
-			
-			function searchFocus() {
-				document.getElementById("topBarSearchResults").style.display="block";
-			}
-		</script>
+        <link rel="stylesheet" type="text/css" href="/style.css?v=5" />
+        <script src="/script.js"></script>
 	</head>
 	<body>
 		<div class="topBar">
@@ -86,6 +65,28 @@
 			?>
 
 			<span style="float:right;">
+                <div class="topBarDropDown">
+                    <div class="topBarLink topBarDropDownButton">
+                        <?php
+                            switch($mode){
+                                case 1:
+                                    echo "osu!"; break;
+                                case 2:
+                                    echo "osu!taiko"; break;
+                                case 3:
+                                    echo "osu!catch"; break;
+                                case 4:
+                                    echo "osu!mania"; break;
+                            }
+                        ?>
+                    </div>
+                    <div class="dropdown-content">
+                        <a id="osuLink" href="">osu!</a>
+                        <a id="taikoLink" href="">osu!taiko</a>
+                        <a id="catchLink" href="">osu!catch</a>
+                        <a id="maniaLink" href="">osu!mania</a>
+                    </div>
+			    </div>
 				<?php
 					if ($loggedIn) {
 				?>
