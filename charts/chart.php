@@ -68,6 +68,9 @@
 
             $yearString = "ORDER BY {$columnString}";
             if ($year != "all-time"){
+                if (!is_numeric($year))
+                    die("NOOO!");
+
                 if ($order <= 2)
                     $columnString = "ChartYearRank";
                 $yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY {$columnString}";
@@ -81,8 +84,9 @@
             if ($language > 0)
                 $languageString = "AND `Lang`='{$language}'";
 
-			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} {$languageString} {$yearString} {$orderString}, BeatmapID {$pageString};");
-			$stmt->execute();
+			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} {$orderString}, BeatmapID {$pageString};");
+			$stmt->bind_param("i", $mode);
+            $stmt->execute();
 			$result = $stmt->get_result();
 
 			while($row = $result->fetch_assoc()) {

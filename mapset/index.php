@@ -3,7 +3,7 @@
     require '../base.php';
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `SetID`=? AND `mode`='0' ORDER BY `SR` DESC;");
+    $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `SetID`=? ORDER BY `SR` DESC;");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();

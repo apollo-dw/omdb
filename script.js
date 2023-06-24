@@ -1,18 +1,18 @@
 $(document).ready(function() {
     $('#osuLink').on('click', function() {
-        setGameMode(1)
+        setGameMode(0)
     });
 
     $('#taikoLink').on('click', function() {
-        setGameMode(2)
+        setGameMode(1)
     });
 
     $('#catchLink').on('click', function() {
-        setGameMode(3)
+        setGameMode(2)
     });
 
     $('#maniaLink').on('click', function() {
-        setGameMode(4)
+        setGameMode(3)
     });
 });
 

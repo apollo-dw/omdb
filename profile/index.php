@@ -440,7 +440,7 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? AND `Mode` = '0' GROUP BY `SetID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`)");
+        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? GROUP BY `SetID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`)");
         $stmt->bind_param("s", $profileId);
         $stmt->execute();
         $setsResult = $stmt->get_result();

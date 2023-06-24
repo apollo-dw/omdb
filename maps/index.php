@@ -22,8 +22,8 @@
     $month = max($minMonth, min($maxMonth, $month));
 	
 	$limit = 20;
-    $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = '0'");
-    $stmt->bind_param("ii", $month, $year);
+    $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = ?;");
+    $stmt->bind_param("iii", $month, $year, $mode);
     $stmt->execute();
     $stmt->bind_result($count);
     $stmt->fetch();
@@ -101,8 +101,8 @@
 	}
 	
 	$counter = 0;
-    $stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = '0' ORDER BY `DateRanked` DESC {$pageString}");
-    $stmt->bind_param("ii", $month, $year);
+    $stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = ? ORDER BY `DateRanked` DESC {$pageString}");
+    $stmt->bind_param("iii", $month, $year, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
     while($row = $result->fetch_assoc()) {

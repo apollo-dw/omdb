@@ -1,5 +1,5 @@
 <?php
-	include_once 'connection.php';
+	include_once 'base.php';
 	
 	$q=$_GET["q"];
 
@@ -40,8 +40,8 @@
         }
     }
 
-	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE MATCH (DifficultyName, Artist, Title) AGAINST(? IN NATURAL LANGUAGE MODE) AND Mode='0' LIMIT 25;");
-	$stmt->bind_param("s", $like);
+	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE MATCH (DifficultyName, Artist, Title) AGAINST(? IN NATURAL LANGUAGE MODE) AND Mode = ? LIMIT 25;");
+	$stmt->bind_param("si", $like, $mode);
 	$stmt->execute();
 	$stmt->bind_result($setId, $title, $artist, $difficultyName);
     $stmt->store_result();

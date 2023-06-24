@@ -69,13 +69,13 @@
                     <div class="topBarLink topBarDropDownButton">
                         <?php
                             switch($mode){
-                                case 1:
+                                case 0:
                                     echo "osu!"; break;
-                                case 2:
+                                case 1:
                                     echo "osu!taiko"; break;
-                                case 3:
+                                case 2:
                                     echo "osu!catch"; break;
-                                case 4:
+                                case 3:
                                     echo "osu!mania"; break;
                             }
                         ?>

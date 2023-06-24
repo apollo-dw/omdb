@@ -27,7 +27,7 @@
 
     if ($uri[2] == "set") {
         $setID = $uri[3];
-        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? AND mode = '0' ORDER BY SR DESC;");
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? ORDER BY SR DESC;");
         $stmt->bind_param("i", $setID);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -48,7 +48,7 @@
             $response = array("error" => "Mapset not found");
     } elseif ($uri[2] == "beatmap") {
         $beatmapID = $uri[3];
-        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? AND mode = '0' ORDER BY SR DESC;");
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? ORDER BY SR DESC;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();;
