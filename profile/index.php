@@ -23,8 +23,12 @@
 	$ratingCounts = array();
 
     if ($isValidUser) {
-        $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `UserID` = ? GROUP BY `Score`");
-        $stmt->bind_param("i", $profileId);
+        $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
+                        FROM `ratings` r
+                        JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                        WHERE r.`UserID` = ? AND b.`Mode` = ?
+                        GROUP BY r.`Score`");
+        $stmt->bind_param("ii", $profileId, $mode);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -34,7 +38,7 @@
         }
         $stmt->close();
 
-        $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 1;
+        $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 2;
 
         $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
                            JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
@@ -75,8 +79,12 @@
             $userScores = array();
             $profileScores = array();
 
-            $stmt = $conn->prepare("SELECT r1.Score, r2.Score FROM ratings r1 JOIN ratings r2 ON r1.BeatmapID = r2.BeatmapID WHERE r1.UserID = ? AND r2.UserID = ?");
-            $stmt->bind_param("ii", $userId, $profileId);
+            $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
+                        FROM `ratings` r1
+                        JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
+                        JOIN `beatmaps` b ON r1.`BeatmapID` = b.`BeatmapID`
+                        WHERE r1.`UserID` = ? AND r2.`UserID` = ? AND b.`Mode` = ?");
+            $stmt->bind_param("iii", $userId, $profileId, $mode);
             $stmt->execute();
             $stmt->bind_result($score1, $score2);
 
