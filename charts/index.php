@@ -101,8 +101,7 @@
                         echo '>' . $i . '</option>';
                     }
                 ?>
-			</select>
-            <br><br>
+			</select><br><br>
             <label>Genre:</label>
             <select name="genre" id="genre" autocomplete="off" onchange="updateChart();">
                 <option value="0" selected="selected">Any</option>
@@ -118,8 +117,7 @@
                 <option value="12">Classical</option>
                 <option value="13">Folk</option>
                 <option value="14">Jazz</option>
-            </select>
-            <br>
+            </select><br>
             <label>Language:</label>
             <select name="language" id="language" autocomplete="off" onchange="updateChart();">
                 <option value="0" selected="selected">Any</option>
@@ -136,9 +134,11 @@
                 <option value="12">Russian</option>
                 <option value="13">Polish</option>
                 <option value="14">Other</option>
-            </select>
+            </select><br><br>
+            <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
+            <label for="friends">Only include friend ratings<br> <span class="subText">Only the <b>Highest Rated</b> and <b>Lowest Rated</b> sort works with the friend filter right now.</span></label><br>
 
-        </form><br>
+        </form><br><br>
 		<span>Info</span>
 		<hr>
 		The chart is based on an implementation of the Bayesian average method. It updates <b>once every six hours.</b><br><br>
@@ -236,6 +236,7 @@
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
         var language = document.getElementById("language").value;
+        var onlyFriends = document.getElementById("friends").checked;
 
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
@@ -244,7 +245,7 @@
 				resetPaginationDisplay();
 			}
 		}
-		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language, true);
+		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language + "&f=" + String(onlyFriends), true);
 		xmlhttp.send();
 	}
 

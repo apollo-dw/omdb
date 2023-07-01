@@ -6,6 +6,7 @@
 	$order = $_GET['o'] ?? 1;
     $genre = $_GET['g'] ?? 0;
     $language = $_GET['l'] ?? 0;
+    $onlyFriends = $_GET['f'] ?? "false";
 
 	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language)){
 		die("NOO");
@@ -43,6 +44,8 @@
 
 <div class="flex-item" style="flex: 0 0 80%; padding:0.5em;">
 		<?php
+            $onlyFriends = $onlyFriends == "true";
+
 			$lim = 50;
 			$counter = ($page - 1) * $lim;
 
@@ -64,14 +67,12 @@
             else if ($order == 5)
                 $columnString = "(WeightedAvg - CAST(Rating AS FLOAT))*SQRT(RatingCount)";
 
-            $yearString = "ORDER BY {$columnString}";
+            $yearString = "";
             if ($year != "all-time"){
                 if (!is_numeric($year))
                     die("NOOO!");
 
-                if ($order <= 2)
-                    $columnString = "ChartYearRank";
-                $yearString = "AND YEAR(b.DateRanked) = '{$year}' ORDER BY {$columnString}";
+                $yearString = "AND YEAR(b.DateRanked) = '{$year}'";
             }
 
             $genreString = "";
@@ -82,10 +83,49 @@
             if ($language > 0)
                 $languageString = "AND `Lang`='{$language}'";
 
-			$stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} {$orderString}, BeatmapID {$pageString};");
-			$stmt->bind_param("i", $mode);
+            $stmt = null;
+            if ($onlyFriends) {
+                $stmt = $conn->prepare("SELECT
+                                                b.*,
+                                                (prior_rating * prior_count + total_score) / (prior_count + rating_count) AS BayesianAverage,
+                                                rating_count AS RatingCount,
+                                                friend_rating AS WeightedAvg
+                                            FROM
+                                                (
+                                                    SELECT
+                                                        r.BeatmapID,
+                                                        SUM(r.Score) AS total_score,
+                                                        COUNT(r.BeatmapID) AS rating_count,
+                                                        AVG(r.Score) AS friend_rating
+                                                    FROM
+                                                        users u
+                                                            JOIN user_relations ur ON u.UserID = ur.UserIDFrom
+                                                            JOIN ratings r ON r.UserID = ur.UserIDTo
+                                                            JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
+                                                    WHERE
+                                                      u.UserID = ?
+                                                      AND ur.type = 1
+                                                      AND b.Mode = ?
+                                                      {$genreString} {$languageString} {$yearString}
+                                                    GROUP BY
+                                                        r.BeatmapID
+                                                ) AS subquery
+                                                    JOIN beatmaps b ON b.BeatmapID = subquery.BeatmapID
+                                                    CROSS JOIN (
+                                                    SELECT AVG(Score) AS prior_rating, COUNT(BeatmapID) AS prior_count
+                                                    FROM ratings
+                                                ) AS prior
+                                            ORDER BY
+                                                -BayesianAverage {$orderString}
+                                            LIMIT 50;");
+                $stmt->bind_param("ii", $userId, $mode);
+            } else {
+                $stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} ORDER BY {$columnString} {$orderString}, BeatmapID {$pageString}");
+                $stmt->bind_param("i", $mode);
+            }
+
             $stmt->execute();
-			$result = $stmt->get_result();
+            $result = $stmt->get_result();
 
 			while($row = $result->fetch_assoc()) {
 				$stmt2 = $conn->prepare("SELECT `Score` FROM `ratings` WHERE `BeatmapID`=? AND `UserID`=?;");
