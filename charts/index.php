@@ -134,9 +134,13 @@
                 <option value="12">Russian</option>
                 <option value="13">Polish</option>
                 <option value="14">Other</option>
-            </select><br><br>
+            </select>
+
+            <?php if ($loggedIn) { ?>
+            <br><br>
             <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
             <label for="friends">Only include friend ratings<br> <span class="subText">Only the <b>Highest Rated</b> and <b>Lowest Rated</b> sort works with the friend filter right now.</span></label><br>
+            <?php } ?>
 
         </form><br><br>
 		<span>Info</span>
@@ -236,7 +240,9 @@
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
         var language = document.getElementById("language").value;
-        var onlyFriends = document.getElementById("friends").checked;
+        		
+        var friendsElement = document.getElementById("friends");
+		var onlyFriends = friendsElement ? friendsElement.checked : false;
 
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
