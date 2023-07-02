@@ -127,8 +127,8 @@
 		$diff->d -= $diff->w * 7;
 
 		$string = array(
-			'y' => 'Y',
-			'm' => 'M',
+			'y' => 'yr',
+			'm' => 'mo',
 			'w' => 'w',
 			'd' => 'd',
 			'h' => 'h',
