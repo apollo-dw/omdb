@@ -20,27 +20,77 @@
     if ($profile == NULL)
         die("Can't view this bros friends cuz they aint an OMDB user");
 
-    $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
-                                JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
-                                JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
-                                WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
-                                AND ur1.type = 1 AND ur2.type = 1
-                                ORDER BY LastAccessedSite DESC, ID;");
+$stmt = $conn->prepare("
+    SELECT u.UserID AS ID, u.Username AS username,
+    CASE
+        WHEN ur1.UserIDTo IS NOT NULL AND ur2.UserIDFrom IS NOT NULL THEN 1
+        WHEN ur1.UserIDTo IS NOT NULL AND ur2.UserIDFrom IS NULL THEN 0
+        ELSE 0
+    END AS isMutualFriend
+    FROM users u
+    LEFT JOIN user_relations ur1 ON u.UserID = ur1.UserIDFrom AND ur1.UserIDTo = ?
+    LEFT JOIN user_relations ur2 ON u.UserID = ur2.UserIDTo AND ur2.UserIDFrom = ?
+    WHERE (ur1.UserIDTo IS NOT NULL OR ur2.UserIDFrom IS NOT NULL)
+        AND ur1.type = 1
+    ORDER BY LastAccessedSite DESC, ID;
+");
+
     $stmt->bind_param("ii", $profileId, $profileId);
     $stmt->execute();
     $friends = $stmt->get_result();
     $stmt->close();
 
     ?>
-
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s friends</h1></center>
-<span class="subText">Better design coming soon. This is in a rushed state right now lol. Will eventually show non-mutual friends too (somehow) </span><br><br>
 
-<?php
-    while($row = $friends->fetch_assoc()){
-        echo "<a href='../?id={$row["ID"]}'>{$row["username"]}</a><br>";
-    }
-?>
+    <style>
+        .friend-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .friend-box {
+            flex: 0 0 calc(100% / 8);
+            display: flex;
+            margin: 0.5em;
+            padding: 1em;
+            text-align: center;
+            aspect-ratio: 1 / 1;
+            vertical-align: middle;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mutual-friend {
+            background-color: #6A4256;
+            color: white;
+        }
+
+        .non-mutual-friend {
+            background-color: DarkSlateGrey;
+            color: white;
+        }
+    </style>
+
+    <div class="friend-container">
+        <?php
+        while ($row = $friends->fetch_assoc()) {
+            $friendClass = $row["isMutualFriend"] ? "mutual-friend" : "non-mutual-friend";
+            ?>
+            <div class="friend-box <?php echo $friendClass; ?>">
+                <a href="/profile/<?php echo $row["ID"]; ?>">
+                    <div class="profileImage">
+                        <img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/><br>
+                        <?php echo $row["username"]; ?>
+                    </div>
+                </a>
+            </div>
+            <?php
+        }
+        ?>
+    </div>
+
 
 <?php
 require '../../footer.php';
