@@ -292,7 +292,7 @@
                 $stmt->fetch();
                 $stmt->close();
             ?>
-            <b>Ratings:</b> <?php echo $ratingCount; ?><br>
+            <a href="ratings/?id=<?php echo $profileId; ?>&p=1"><b>Ratings:</b> <?php echo $ratingCount; ?></a><br>
 
             <?php
                 $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
