@@ -278,8 +278,8 @@ while($row = $result->fetch_assoc()) {
 
 <hr style="margin-bottom:1em;margin-top:1em;">
 
-<div class="flex-container">
-    <div class="flex-child" style="width:40%;">
+<div class="flex-container column-when-mobile-container">
+    <div class="flex-child column-when-mobile" style="width:40%;">
         Latest Ratings<br><br>
         <div id="setRatingsDisplay">
             <?php
@@ -287,7 +287,7 @@ while($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
-    <div class="flex-child" style="width:60%;">
+    <div class="flex-child column-when-mobile" style="width:60%;">
         Comments (<?php echo $commentCount; ?>)<br><br>
         <div class="flex-container commentContainer" style="width:100%;">
 

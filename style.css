@@ -193,6 +193,14 @@ a .topBarLink {
     .topBarSearchBar{
         width: 3.5em;
     }
+
+    .column-when-mobile-container {
+        flex-direction: column;
+    }
+
+    .column-when-mobile {
+        width: 100% !important;
+    }
 }
 
 .identifier:hover ~ .starRemoveButton:not(.disabled), .starRemoveButton:hover:not(.disabled) {

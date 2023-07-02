@@ -32,10 +32,8 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 </span>
     <hr>
 
-<p style="width:66%;">This website is still in development pretty much. Some things might be weird. Mobile will definitely work pretty bad rn so I recommend using ur computor for this.</p>
-
-<div class="flex-container">
-	<div class="flex-child" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
+<div class="flex-container column-when-mobile-container">
+	<div class="flex-child column-when-mobile" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
 		<?php
 		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE b.Mode = ? ORDER BY r.date DESC LIMIT 40;");
 		  $stmt->bind_param("i", $mode);
@@ -66,7 +64,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  $stmt->close();
 		?>
 	</div>
-	<div class="flex-child" style="width:60%;height:32em;overflow-y:scroll;">
+	<div class="flex-child column-when-mobile" style="width:60%;height:32em;overflow-y:scroll;">
 		<?php
           $stmt = $conn->prepare("SELECT c.*
                             FROM comments c

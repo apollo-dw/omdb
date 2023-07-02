@@ -103,7 +103,7 @@
 <style>
 	.profileContainer{
 		display: flex;
-		height:47em;
+        align-items: center;
 	}
 
 	.profileCard{
@@ -122,8 +122,9 @@
 		padding:1.5em;
 		margin: 0.5rem;
 		width:100%;
-		overflow-y: scroll;
-        position:relative;
+        height: 37em;
+        overflow-y: scroll;
+        position: relative;
 	}
 
 	.profileStats{
@@ -243,7 +244,7 @@
     }
 </style>
 
-<div class="profileContainer">
+<div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
 		<div class="profileTitle">
             <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo GetUserNameFromId($profileId, $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
