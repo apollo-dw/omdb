@@ -51,9 +51,9 @@ $stmt = $conn->prepare("
         }
 
         .friend-box {
-            flex: 0 0 calc(100% / 8);
+            width: 7em;
             display: flex;
-            margin: 0.5em;
+            margin: 0.25em;
             padding: 1em;
             text-align: center;
             aspect-ratio: 1 / 1;
