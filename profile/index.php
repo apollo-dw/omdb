@@ -122,7 +122,7 @@
 		padding:1.5em;
 		margin: 0.5rem;
 		width:100%;
-        height: 37em;
+        height: 44em;
         overflow-y: scroll;
         position: relative;
 	}
