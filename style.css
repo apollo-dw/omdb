@@ -353,6 +353,14 @@ input#commentSubmit:hover {
     background-color: DarkSlateGray;
 }
 
+.alternating-bg-pink:nth-child(odd) {
+    background-color: #4F2F3F;
+}
+
+.alternating-bg-pink:nth-child(even) {
+    background-color: #6A4256;
+}
+
 .alternating-bg:nth-child(odd) .starBackground{
     color: darkslategray;
 }

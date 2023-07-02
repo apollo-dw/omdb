@@ -15,7 +15,6 @@
     $stmt->execute();
 
     $lim = 18;
-    $counter = ($page - 1) * $lim;
     $numberOfSetRatings = $stmt->get_result()->fetch_row()[0];
     $amountOfSetPages = floor($numberOfSetRatings / $lim) + 1;
 
@@ -39,29 +38,19 @@
     $result = $stmt->get_result();
 
     while($row = $result->fetch_assoc()) {
-        $counter += 1;
 ?>
-<div class="flex-container ratingContainer" <?php
-        if ($row["order_weight"] == 2) {
-            $bgColor = ($counter % 2 == 1) ? "#4F2F3F" : "#6A4256";
-        } else {
-            $bgColor = ($counter % 2 == 1) ? "#203838" : "";
-        }
-        if (!empty($bgColor)) {
-            echo "style='background-color:{$bgColor};' altcolour";
-        }
-        ?>>
+<div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
     <div class="flex-child">
         <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
         <?php
-        $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
-        $stmt2->bind_param("s", $row["BeatmapID"]);
-        $stmt2->execute();
-        $result2 = $stmt2->get_result();
-        $row2 = $result2->fetch_row();
-        echo renderRating($conn, $row) . " on " . htmlspecialchars($row2[0]);
+            $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
+            $stmt2->bind_param("s", $row["BeatmapID"]);
+            $stmt2->execute();
+            $result2 = $stmt2->get_result();
+            $row2 = $result2->fetch_row();
+            echo renderRating($conn, $row) . " on " . htmlspecialchars($row2[0]);
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
