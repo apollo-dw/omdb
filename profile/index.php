@@ -448,7 +448,7 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? GROUP BY `SetID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`) DESC;");
+        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `SetCreatorID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? GROUP BY `SetID`, `SetCreatorID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`) DESC;");
         $stmt->bind_param("s", $profileId);
         $stmt->execute();
         $setsResult = $stmt->get_result();
@@ -473,6 +473,7 @@
 
             $topMap = $difficultyResult->fetch_assoc();
             $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
+            $topMapIsGD = $set["SetCreatorID"] != $profileId;
 
             $stmt->close();
             ?>
@@ -480,7 +481,7 @@
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
-                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>*</span><br>
+                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
                 <div style="margin-left:auto;">
@@ -507,7 +508,7 @@
                 ?>
                     <div class="lesser-map" <?php if ($counter2 % 2 == 0) echo "style='background-color:#203838;'"; ?>>
                         <div style="display:inline-block;">
-                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>*</span><br>
+                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                         </div>
 
                         <?php if (isset($map["ChartRank"])) { ?>
