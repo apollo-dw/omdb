@@ -38,8 +38,7 @@
 	if ($choice != -1){
 		$starString = "AND `Score`='{$choice}'";
 	}
-	
-	$counter = 0;
+
     $stmt = $conn->prepare("SELECT r.*, b.*
                             FROM `ratings` r
                             JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
@@ -51,12 +50,10 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    $counter = 0;
     while ($row = $result->fetch_assoc()) {
-        $counter += 1;
         $beatmap = $row;
 ?>
-	<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+	<div class="flex-container ratingContainer alternating-bg">
 		<div class="flex-child">
 			<a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
 		</div>

@@ -31,11 +31,9 @@
 
     if ($userStmt->num_rows > 0){
         echo "<div style='background-color:#182828;'><b>Users</b></div>";
-        $counter = 0;
         while ($userStmt->fetch()) {
-            $counter += 1;
             ?>
-            <a href="/profile/<?php echo $userID; ?>"><div style="<?php if ($counter % 2 == 0){ echo 'background-color:DarkSlateGrey;'; } else { echo 'background-color:#203838;'; } ?>padding:0.25em;display:flex;vertical-align: middle;line-height:2em;" ><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;padding-right:0.5em;" title="<?php echo $username; ?>"/> <?php echo $username; ?></div> </a>
+            <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;" ><a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;"><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo $username; ?>"/> <?php echo $username; ?></a></div>
             <?php
         }
     }
@@ -47,12 +45,10 @@
     $stmt->store_result();
 
     if ($stmt->num_rows > 0){
-        $counter = 0;
         echo "<div style='background-color:#182828;'><b>Maps</b></div>";
         while ($stmt->fetch()) {
-            $counter += 1;
             ?>
-            <a href="/mapset/<?php echo $setId; ?>"><div style="<?php if ($counter % 2 == 0){ echo 'background-color:DarkSlateGrey;'; } else { echo 'background-color:#203838;'; } ?>margin:0;" ><?php echo $artist . " - " . $title . " [" . $difficultyName . "]"; ?></div></a>
+            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo $artist . " - " . $title . " [" . $difficultyName . "]"; ?></a></div>
             <?php
         }
     }

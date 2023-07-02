@@ -133,10 +133,10 @@
 				$userRatingResult = $stmt2->get_result();
 				$userRating = $userRatingResult->fetch_row()[0] ?? "";
 				$stmt2->close();
-				
+
 				$counter += 1;
 		?>
-			<div class="flex-container diffContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+			<div class="flex-container diffContainer alternating-bg">
 				<div class="diffBox" style="text-align:center;padding-left:1.5em;flex: 0 0 6%;">
 					<b><?php echo "#" . strval($counter); ?></b>
 				</div>

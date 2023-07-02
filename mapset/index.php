@@ -120,7 +120,6 @@
 <hr style="margin-bottom:1em;">
 
 <?php
-$counter = 0;
 while($row = $result->fetch_assoc()) {
     $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `BeatmapID` = ? AND `UserID` = ?");
     $stmt->bind_param("ii", $row["BeatmapID"], $userId);
@@ -129,7 +128,6 @@ while($row = $result->fetch_assoc()) {
 
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
-    $counter += 1;
 
     $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID` = ? GROUP BY `Score`");
     $stmt->bind_param("i", $row["BeatmapID"]);
@@ -187,7 +185,7 @@ while($row = $result->fetch_assoc()) {
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
     ?>
 
-    <div class="flex-container diffContainer <?php if($blackListed){ echo "faded"; }?>" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+    <div class="flex-container diffContainer alternating-bg <?php if($blackListed){ echo "faded"; }?>" >
         <div class="flex-child diffBox" style="text-align:center;width:60%;">
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>

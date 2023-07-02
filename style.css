@@ -334,10 +334,6 @@ input#commentSubmit:hover {
     position:absolute;
 }
 
-.ratingContainer[altcolour] .starBackground{
-    color: darkslategray;
-}
-
 .starForeground {
     color: white;
     z-index: 2;
@@ -347,4 +343,16 @@ input#commentSubmit:hover {
 
 .faded {
     opacity: 0.33;
+}
+
+.alternating-bg:nth-child(odd) {
+    background-color: #203838;
+}
+
+.alternating-bg:nth-child(even) {
+    background-color: DarkSlateGray;
+}
+
+.alternating-bg:nth-child(odd) .starBackground{
+    color: darkslategray;
 }

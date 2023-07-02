@@ -7,7 +7,7 @@
     require "../../base.php";
     require '../../header.php';
 	
-	if($profileid == -1 || $rating == -1){
+	if($profileId == -1 || $rating == -1){
 		die("Invalid page bro");
 	}
 
@@ -62,44 +62,40 @@
 
 <div style="text-align:center;">
 	<div class="pagination">
-	  <b><span><?php if($page > 1) { echo "<a href='?id=${profileId}&r=${rating}&p=${prevPage}'>&laquo; </a>"; } ?></span></b>
+	  <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
 	  <span id="page"><?php echo $page; ?></span>
-	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id=${profileId}&r=${rating}&p=${nextPage}'>&raquo; </a>"; } ?></span></b>
+	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id={$profileId}&r={$rating}&p={$nextPage}'>&raquo; </a>"; } ?></span></b>
 	</div>
 </div>
 
 <div class="flex-container">
 	<div class="flex-child" style="width:100%;">
 			<?php 
-				$pageString = "LIMIT ${limit}";
+				$pageString = "LIMIT {$limit}";
 				
 				if ($page > 1){
 					$lower = ($page - 1) * $limit;
-					$pageString = "LIMIT ${lower}, ${limit}";
+					$pageString = "LIMIT {$lower}, {$limit}";
 				}
-				
-				$counter = 0;
-				$stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `UserID`=? AND `Score`=? ORDER BY `date` DESC {$pageString};");
-				$stmt->bind_param('ss', $profileId, $rating);
-				$stmt->execute();
-				$result = $stmt->get_result();
 
-				while($row = $result->fetch_assoc()) {
-					$counter += 1;
-					
-					$stmt2 = $conn->prepare("SELECT SetID, Artist, Title, DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?;");
-					$stmt2->bind_param('s', $row['BeatmapID']);
-					$stmt2->execute();
-					$setIDResult = $stmt2->get_result();
-					$beatmap = $setIDResult->fetch_row();
-					$stmt2->close();
+                $stmt = $conn->prepare("
+                        SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName
+                        FROM `ratings` r
+                        JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+                        WHERE r.UserID = ? AND r.Score = ?
+                        ORDER BY r.date DESC {$pageString};");
+            $stmt->bind_param('ss', $profileId, $rating);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
 			?>
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+			<div class="flex-container ratingContainer alternating-bg">
 				<div class="flex-child">
-					<a href="/mapset/<?php echo $beatmap[0]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap[0]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
+					<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $beatmap[0]; ?>"><?php echo htmlspecialchars("${beatmap[1]} - ${beatmap[2]} [${beatmap[3]}]");?></a>
+					<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]");?></a>
 				</div>
 				<div class="flex-child" style="width:100%;text-align:right;">
 					<?php echo GetHumanTime($row["date"]); ?>
@@ -113,13 +109,12 @@
 </div>
 
 <div style="text-align:center;">
-	<div class="pagination">
-	  <b><span><?php if($page > 1) { echo "<a href='?id=${profileId}&r=${rating}&p=${prevPage}'>&laquo; </a>"; } ?></span></b>
-	  <span id="page"><?php echo $page; ?></span>
-	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id=${profileId}&r=${rating}&p=${nextPage}'>&raquo; </a>"; } ?></span></b>
-	</div>
+    <div class="pagination">
+        <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
+        <span id="page"><?php echo $page; ?></span>
+        <b><span><?php if($page < $amntOfPages) { echo "<a href='?id={$profileId}&r={$rating}&p={$nextPage}'>&raquo; </a>"; } ?></span></b>
+    </div>
 </div>
-
 
 <?php
 	require '../../footer.php';

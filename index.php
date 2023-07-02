@@ -37,17 +37,14 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container">
 	<div class="flex-child" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
 		<?php
-		  $counter = 0;
-
 		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE b.Mode = ? ORDER BY r.date DESC LIMIT 40;");
 		  $stmt->bind_param("i", $mode);
           $stmt->execute();
 		  $result = $stmt->get_result();
 
 		  while($row = $result->fetch_assoc()) {
-			$counter += 1;
 		  ?>
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+			<div class="flex-container ratingContainer alternating-bg">
 			  <div class="flex-child">
 				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 			  </div>
@@ -71,8 +68,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child" style="width:60%;height:32em;overflow-y:scroll;">
 		<?php
-          $counter = 0;
-
           $stmt = $conn->prepare("SELECT c.*
                             FROM comments c
                             WHERE EXISTS (
@@ -87,8 +82,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
           $result = $stmt->get_result();
 
           while($row = $result->fetch_assoc()) {
-              $counter += 1;
-
               $is_blocked = 0;
 
               if ($loggedIn) {
@@ -98,7 +91,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                   $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
               }
 		  ?>
-			<div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+			<div class="flex-container ratingContainer alternating-bg">
 			  <div class="flex-child">
 				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 			  </div>
@@ -189,7 +182,7 @@ Most rated beatmaps in the last 7 days:<br>
     while($row = $result->fetch_assoc()) {
         $counter += 1;
         ?>
-        <div class="flex-container ratingContainer" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;' altcolour"; } ?>>
+        <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child" style="min-width:2em;">
                 #<?php echo $counter; ?>
             </div>

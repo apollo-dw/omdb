@@ -102,17 +102,15 @@
 		$lower = ($page - 1) * $limit;
 		$pageString = "LIMIT {$lower}, {$limit}";
 	}
-	
-	$counter = 0;
+
     $stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = ? ORDER BY `DateRanked` DESC {$pageString}");
     $stmt->bind_param("iii", $month, $year, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
     while($row = $result->fetch_assoc()) {
-			$counter += 1;
 			$mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
 ?>
-<div class="flex-container ratingContainer mapList" <?php if($counter % 2 == 1){ echo "style='background-color:#203838;'"; } ?>>
+<div class="flex-container ratingContainer mapList alternating-bg">
 	<div class="flex-child" style="flex: 0 0 8%;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 	</div>
