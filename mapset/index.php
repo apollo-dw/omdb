@@ -339,7 +339,7 @@ while($row = $result->fetch_assoc()) {
                     <div class="flex-child comment" style="min-width:0;overflow: hidden;">
                         <?php
                             if (!$is_blocked)
-                                echo "<p>" . ParseOsuLinks(nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))) . "</p>";
+                                echo "<p>" . ParseCommentLinks($conn, nl2br(htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1"))) . "</p>";
                             else
                                 echo "<p>[blocked comment]</p>";
                         ?>

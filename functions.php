@@ -170,10 +170,42 @@
 		return $username;
 	}
 
-function ParseOsuLinks($string) {
-	  $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
-	  $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
-	  return preg_replace($pattern, $replacement, $string);
+	function ParseCommentLinks($conn, $string) {
+		$pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
+		$replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
+		$string = preg_replace($pattern, $replacement, $string);
+
+		$pattern = '/https:\/\/osu\.ppy\.sh\/(?P<endpoint>beatmapsets|beatmaps|b|s)\/(?P<id1>\d+)(?:\S+)?(?:#(osu|taiko|fruits|mania)\/(?P<id2>\d+))?/';
+
+		$string = preg_replace_callback($pattern, function ($matches) {
+			$setID = $matches['id1'];
+			$mapID = $matches['id2'] ?? '';
+
+			if ($mapID != '')
+				return '<a href="' . $matches[0] . '">/b/' . $mapID . '</a>';
+			else
+				return '<a href="' . $matches[0] . '">/s/' . $setID . '</a>';
+
+		}, $string);
+
+		$pattern = '/https:\/\/omdb\.nyahh\.net\/mapset\/(\d+)/';
+		$string = preg_replace_callback($pattern, function ($matches) use ($conn) {
+			$setID = $matches[1];
+
+			$stmt = $conn->prepare("SELECT Artist, Title, SetCreatorID FROM beatmaps WHERE SetID = ? LIMIT 1;");
+			$stmt->bind_param("i", $setID);
+			$stmt->execute();
+			$beatmap = $stmt->get_result()->fetch_assoc();
+
+			if (isset($beatmap)){
+				$mapper = GetUserNameFromId($beatmap["SetCreatorID"], $conn);
+				return "<a href='{$matches[0]}'> {$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})</a>";
+			}
+
+			return $matches[0];
+		}, $string);
+
+		return $string;
 	}
 
     function RenderRating($conn, $ratingRow) {
