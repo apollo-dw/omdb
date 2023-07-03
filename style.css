@@ -372,3 +372,12 @@ input#commentSubmit:hover {
 .alternating-bg:nth-child(odd) .starBackground{
     color: darkslategray;
 }
+
+.alternating-bg-pink:nth-child(odd) .starBackground{
+    color: #6A4256;
+}
+
+.alternating-bg-pink:nth-child(even) .starBackground{
+    color: #4F2F3F;
+}
+
