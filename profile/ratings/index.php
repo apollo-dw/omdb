@@ -97,7 +97,7 @@
                     JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                     WHERE r.UserID = ? AND r.Score = ?
                     ORDER BY r.date DESC {$pageString};");
-                $stmt->bind_param('ii', $profileId, $rating);
+                $stmt->bind_param('id', $profileId, $rating);
                 $stmt->execute();
                 $result = $stmt->get_result();
             } else {
