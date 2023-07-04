@@ -75,13 +75,11 @@
             $recommendation_scores[$beatmap_id] = $predicted_rating;
         }
 
-        $sorted_recommendations = [];
         arsort($recommendation_scores);
         $sorted_recommendations = array_slice($recommendation_scores, 0, 50, true);
 
         $beatmap_details_array = [];
         foreach ($sorted_recommendations as $beatmap_id => $score) {
-            // Prepare and execute the SQL query to retrieve beatmap details
             $sql = "SELECT artist, title, difficultyname, setid, SR, DateRanked, CreatorID FROM beatmaps WHERE BeatmapID = ?;";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $beatmap_id);
