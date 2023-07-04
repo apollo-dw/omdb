@@ -76,9 +76,6 @@
         $stmt_relation_from_profile_user->close();
 
         if ($profileId != $userId){
-            $userScores = array();
-            $profileScores = array();
-
             $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
                         FROM `ratings` r1
                         JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
@@ -86,12 +83,13 @@
                         WHERE r1.`UserID` = ? AND r2.`UserID` = ? AND b.`Mode` = ?");
             $stmt->bind_param("iii", $userId, $profileId, $mode);
             $stmt->execute();
-            $stmt->bind_result($score1, $score2);
+            $resultSet = $stmt->get_result();
 
-            while ($stmt->fetch()) {
-                $userScores[] = $score1;
-                $profileScores[] = $score2;
-            }
+            // Fetch and store the scores in arrays
+            $rows = $resultSet->fetch_all(MYSQLI_NUM);
+
+            $userScores = array_column($rows, 0);
+            $profileScores = array_column($rows, 1);
 
             $stmt->close();
 
