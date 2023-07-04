@@ -1,20 +1,29 @@
 <?php
-$PageTitle = "Dashboard";
-require "../base.php";
-require '../header.php';
+    $PageTitle = "Dashboard";
+    require "../base.php";
+    require '../header.php';
+    require 'RetrieveRecommendations.php';
 
-if (!$loggedIn){
-    die("log in to view this page lol");
-}
+    if (!$loggedIn){
+        die("log in to view this page lol");
+    }
+
+    $recommendations = RetrieveRecommendations($conn, $userId);
 ?>
 
     <style>
         #scrollable-element	{
             height:40em;
-            border:1px solid white;
             display:flex;
             flex-direction:column;
             background-color: DarkSlateGrey;
+            overflow-y: scroll;
+            width: 50%;
+            margin: 0.2em;
+            box-sizing: border-box;
+        }
+
+        .scrollable{
             overflow-y: scroll;
         }
 
@@ -22,13 +31,11 @@ if (!$loggedIn){
             width:100%;
             background-color: DarkSlateGrey;
             display:flex;
-            padding: 1em;
             align-items: center;
-            height: 82px;
             box-sizing: border-box;
             margin-top: 0.5em;
             margin-bottom: 0.5em;
-            height: 8em;
+            height: 4em;
         }
 
         .map:nth-child(even) {
@@ -44,13 +51,61 @@ if (!$loggedIn){
         .unrated{
             color: grey;
         }
+
+        .recommendation {
+            background-color: DarkSlateGrey;
+            padding: 0.5em;
+            font-size: 11px;
+        }
+
+        .diffThumb{
+            height: 5em;
+            width: 5em;
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
     </style>
 
     <h1>Dashboard</h1>
-    <span class="subText">play maps, and they will automatically appear below!</span><br><br>
+    <span class="subText">a page specifically tailored to you! this page currently features recommendations and recently played maps.</span><br><br>
 
-    <div id="scrollable-element">
+    <div class="flex-container">
+        <div class="flex-child scrollable" style="max-height:40em;width:50%;margin: 0.2em;box-sizing: border-box;">
+            <?php
+                if (isset($recommendations["error"])) {
+                    ?>
+                    Your recommendations are currently unavailable. Here's some potential reasons why:
+                    <ul>
+                        <li>You haven't rated enough beatmaps.</li>
+                        <li>You're too new, or you only just rated enough maps recently (the system refreshes weekly).</li>
+                        <li>Something's broken!</li>
+                    </ul>
 
+                    If you believe you should be seeing recommendations, and you waited longer than a week, then feel free to contact me.
+                    <?php
+                } else {
+                    foreach($recommendations as $beatmap) {
+                        ?>
+                        <div class='recommendation alternating-bg'>
+                            <div class="flex-container">
+                                <div style="margin-right: 0.5em;">
+                                    <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
+                                </div>
+                                <div>
+                                    <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><?php echo $beatmap['Artist']; ?> - <?php echo htmlspecialchars($beatmap['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $beatmap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
+                                    <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><b><?php echo htmlspecialchars($beatmap['DifficultyName']); ?></b></a> <span class="subText"><?php echo number_format((float)$beatmap['SR'], 2, '.', ''); ?>*</span><br>
+                                    <?php echo date("M jS, Y", strtotime($beatmap['DateRanked']));?><br>
+                                    <a href="/profile/<?php echo $beatmap['CreatorID']; ?>"><?php echo GetUserNameFromId($beatmap['CreatorID'], $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $beatmap['CreatorID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br>
+                                    Recommendation Score: <?php echo $beatmap['Score']; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+            ?>
+        </div>
+        <div id="scrollable-element"></div>
     </div>
 
     <script>
@@ -73,7 +128,7 @@ if (!$loggedIn){
             const mapElement = $("<div>").attr("id", map.id).addClass("flex-container map");
             const imageElement = $("<div>").addClass("flex-child");
             const imgSrc = "https://b.ppy.sh/thumb/" + set.id + "l.jpg"; // Replace with the actual image source
-            const imgElement = $("<img>").attr("src", imgSrc).addClass("diffThumb").css({ height: "82px", width: "82px" }).on("error", function () {
+            const imgElement = $("<img>").attr("src", imgSrc).addClass("diffThumb").css({ height: "42px", width: "42px" }).on("error", function () {
                 this.onerror = null;
                 this.src = "/charts/INF.png";
             });
