@@ -98,150 +98,6 @@
     }
 ?>
 
-<style>
-	.profileContainer{
-		display: flex;
-        align-items: center;
-	}
-
-	.profileCard{
-		display: inline-flex;
-		flex-direction: column;
-		border:1px solid DarkSlateGrey;
-		padding:1.5em;
-		text-align: center;
-		width: 16rem;
-		margin: 0.5rem;
-		align-items: center;
-	}
-
-	.ratingsCard{
-		background-color: DarkSlateGrey;
-		padding:1.5em;
-		margin: 0.5rem;
-		width:100%;
-        height: 44em;
-        overflow-y: scroll;
-        position: relative;
-	}
-
-	.profileStats{
-		text-align: left;
-		margin: 0.5em;
-	}
-
-    .profileActions{
-        margin-top: 0.5em;
-        display: block;
-        min-height: 1.5em;
-    }
-
-    button {
-        min-width: 6em;
-        border: 1px solid white;
-        background-color: #203838;
-        color: white;
-    }
-
-    button:hover {
-        background-color: #182828;
-        cursor:pointer;
-    }
-
-    button.mutual {
-        background-color: #714977;
-    }
-
-    button.mutual:hover {
-        background-color: #492450;
-    }
-
-    button.blocked {
-        background-color: #774949;
-    }
-
-    button.blocked:hover {
-        background-color: #502424;
-    }
-
-	.beatmapCard{
-		margin:0.5rem;
-		display:inline-block;
-		background-size: cover;
-		width:50%;
-		padding: 2em;
-		text-align:center;
-		color:white;
-		font-size: 16px;
-		font-weight: 900;
-		text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-	}
-
-	.ratingChoices{
-		display: inline-block;
-		color: white;
-		margin-bottom:0.5rem;
-	}
-
-	.ratingChoice{
-		border:1px solid white;
-		padding:0.1em 0.5em;
-		min-width:0.2em;
-		cursor:pointer;
-		font-size:10px;
-		color: white;
-	}
-
-	.active{
-		background-color: #203838;
-		font-weight: 900;
-	}
-
-	.profileRankingDistribution{
-		border:1px solid DarkSlateGrey;
-		width:14em;
-		height:14em;
-		padding:0px;
-		color:rgba(125, 125, 125, 0.66);
-        overflow: clip;
-	}
-
-	.profileRankingDistribution a{
-		color:rgba(125, 125, 125, 0.66);
-	}
-
-	.profileRankingDistributionBar{
-		height: calc(100% / 11);
-		width:100%;
-		margin:0px;
-		padding:0px;
-		text-align:left;
-		background-color:#282828;
-		padding-left:0.25em;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-	}
-
-    .verticalLine{
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border-left: 1px solid rgba(255, 255, 255, 0.25);
-        position: relative;
-        bottom: 100%;
-        display: inline-block;
-    }
-
-    .difficultyContainer {
-        background-color: darkslategray;
-        align-items: center;
-    }
-
-    .difficultyContainer:nth-child(even) {
-        background-color: #203838;
-    }
-</style>
-
 <div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
 		<div class="profileTitle">
@@ -419,31 +275,6 @@
 
 
 <hr>
-<style>
-    .top-map {
-        padding: 0.5em;
-        width: 100%;
-        background-color: darkslategray;
-        display:flex;
-        align-items: center;
-    }
-
-    .clickable {
-        cursor: pointer;
-    }
-
-    .lesser-map {
-        margin-left:50%;
-        margin-right:0;
-        background-color:darkslategray;
-        padding: 1em;
-    }
-
-    .lesser-map:nth-last-child(1){
-        margin-bottom:1em;
-    }
-</style>
-
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
@@ -476,7 +307,7 @@
 
             $stmt->close();
             ?>
-            <div class="top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>" <?php if ($counter % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+            <div class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>" <?php if ($counter % 2 == 0) echo "style='background-color:#203838;'"; ?>>
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
@@ -505,7 +336,7 @@
                         $counter2 += 1;
                         $mapIsBolded = $map["ChartRank"] <= 250 && isset($map["ChartRank"]);
                 ?>
-                    <div class="lesser-map" <?php if ($counter2 % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+                    <div class="profile-lesser-map" <?php if ($counter2 % 2 == 0) echo "style='background-color:#203838;'"; ?>>
                         <div style="display:inline-block;">
                             <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                         </div>
@@ -524,7 +355,7 @@
 </div>
 
 <script>
-    var coll = document.getElementsByClassName("top-map");
+    var coll = document.getElementsByClassName("profile-top-map");
 
     for (let i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function() {

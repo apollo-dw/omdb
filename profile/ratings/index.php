@@ -50,28 +50,6 @@
 
 <hr>
 
-<style>
-	.pagination {
-		display: inline-block;
-		color: white;
-	}
-	
-	.pagination a{
-		color: white;
-	}
-
-	.pagination span {
-		float: left;
-		padding: 8px 16px;
-		width: 1em;
-		text-decoration: none;
-	}
-	
-	.flex-child a{
-		color: white;
-	}
-</style>
-
 <div style="text-align:center;">
 	<div class="pagination">
 	  <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>

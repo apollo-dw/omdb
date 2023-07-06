@@ -8,32 +8,6 @@
 		$profileId = $_GET['p'];
 	}
 
-?>
-<style>
-	.flex-container{
-		display: flex;
-		width: 100%;
-		align-items: center;
-	}
-	
-	.flex-child{
-		margin: 0.25em;
-		vertical-align: middle;
-	}
-	
-	.profileRatingCard{
-		background-color: DarkSlateGrey;
-		width:100%;
-	}
-	
-	.diffThumb{
-		height: 32px;
-		width: 32px;
-		border: 1px solid #ddd;
-		object-fit: cover;
-	}
-</style>
-<?php
 	$starString = "";
 	if ($choice != -1){
 		$starString = "AND `Score`='{$choice}'";

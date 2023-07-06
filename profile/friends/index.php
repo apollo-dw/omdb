@@ -43,40 +43,10 @@ $stmt = $conn->prepare("
     ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s friends</h1></center>
 
-    <style>
-        .friend-container {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-
-        .friend-box {
-            width: 7em;
-            display: flex;
-            margin: 0.25em;
-            padding: 1em;
-            text-align: center;
-            aspect-ratio: 1 / 1;
-            vertical-align: middle;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mutual-friend {
-            background-color: #6A4256;
-            color: white;
-        }
-
-        .non-mutual-friend {
-            background-color: DarkSlateGrey;
-            color: white;
-        }
-    </style>
-
-    <div class="friend-container">
+    <div class="flex-row-container">
         <?php
         while ($row = $friends->fetch_assoc()) {
-            $friendClass = $row["isMutualFriend"] ? "mutual-friend" : "non-mutual-friend";
+            $friendClass = $row["isMutualFriend"] ? "pink-background" : "";
             ?>
             <div class="friend-box <?php echo $friendClass; ?>">
                 <a href="/profile/<?php echo $row["ID"]; ?>">

@@ -111,6 +111,10 @@ a .topBarLink {
     text-decoration: underline;
 }
 
+.pink-background {
+    background-color: #6A4256 !important;
+}
+
 .dropdown-content {
     display: none;
     position: absolute;
@@ -162,6 +166,19 @@ a .topBarLink {
     padding: 0;
     font-size: 18px;
     box-sizing: border-box;
+}
+
+.friend-box {
+    width: 7em;
+    display: flex;
+    margin: 0.25em;
+    padding: 1em;
+    text-align: center;
+    aspect-ratio: 1 / 1;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    background-color: DarkSlateGrey;
 }
 
 .starRemoveButton {
@@ -235,6 +252,12 @@ span.subText{
     width: 100%;
 }
 
+.flex-row-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
 .flex-child {
     margin: 0.25em;
     vertical-align: middle;
@@ -247,6 +270,42 @@ span.subText{
     object-fit: cover;
 }
 
+.chart-container{
+    background-color: DarkSlateGrey;
+    align-items: center;
+}
+
+.chart-container > div{
+    padding:0.5em;
+    flex-grow: 1;
+    height:100%;
+}
+
+.pagination {
+    display: inline-block;
+    color: DarkSlateGrey;
+}
+
+.pagination #page{
+    color: white;
+}
+
+.pagination a {
+    color: darkslategray;
+}
+
+.pagination span {
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.pagination .active {
+    font-weight: 900;
+    color: white;
+}
+
 select {
     margin: 0.2em;
     padding: 0.2em;
@@ -254,6 +313,69 @@ select {
     border-radius: 1px;
     background-color: DarkSlateGrey;
     color: white;
+}
+
+button {
+    min-width: 6em;
+    border: 1px solid white;
+    background-color: #203838;
+    color: white;
+}
+
+button:hover {
+    background-color: #182828;
+    cursor:pointer;
+}
+
+button.mutual {
+    background-color: #714977;
+}
+
+button.mutual:hover {
+    background-color: #492450;
+}
+
+button.blocked {
+    background-color: #774949;
+}
+
+button.blocked:hover {
+    background-color: #502424;
+}
+
+.difficulty-container{
+    background-color:DarkSlateGrey;
+    justify-content: space-between;
+    align-items: center;
+    height:
+}
+
+.difficulty-container > div{
+    padding:0.5em;
+    flex-grow: 1;
+    height:100%;
+}
+
+.mapsetRankingDistribution{
+    width:100%;
+    height:1.5rem;
+    margin:0px;
+    color:rgba(125, 125, 125, 0.33);
+    display: flex;
+    transform: rotate(180deg);
+}
+
+.mapsetRankingDistributionBar{
+    float:bottom;
+    width: calc(100% / 11);
+    min-height: 0px;
+    margin: 0px;
+    padding: 0px;
+    text-align: left;
+    display:inline;
+    vertical-align: bottom;
+    background-color: rgba(125, 125, 125, 0.33);
+    border-bottom: 1px solid rgba(125, 125, 125, 0.33);
 }
 
 .commentContainer {
@@ -296,16 +418,44 @@ textarea#commentForm {
     border: 1px solid white;
 }
 
-input#commentSubmit {
-    margin: 1em;
-    width: 6em;
+input {
     border: 1px solid white;
+    margin: 1em;
     background-color: #203838;
     color: white;
 }
 
+input#commentSubmit {
+    width: 6em;
+}
+
 input#commentSubmit:hover {
     background-color: #182828;
+}
+
+summary{
+    cursor:pointer;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.unrated{
+    color: grey;
+}
+
+tr label{
+    text-align:right;
+    width:100%;
+    display:inline-block;
+}
+td{
+    vertical-align:top;
+    padding: 1rem;
+}
+td input{
+    margin: 0.25rem;
 }
 
 .icon-remove {
@@ -333,6 +483,16 @@ input#commentSubmit:hover {
 
 .starRatingDisplay .icon-star{
     margin:0.05em;
+}
+
+ol.star-rating-list{
+    margin:0;
+    padding:0;
+}
+
+ol.star-rating-list > li{
+    margin:0;
+    padding:0;
 }
 
 .starBackground {
@@ -381,3 +541,110 @@ input#commentSubmit:hover {
     color: #4F2F3F;
 }
 
+/* || PROFILE PAGE */
+
+.profileContainer{
+    display: flex;
+    align-items: center;
+}
+
+.profileCard{
+    display: inline-flex;
+    flex-direction: column;
+    border:1px solid DarkSlateGrey;
+    padding:1.5em;
+    text-align: center;
+    width: 16rem;
+    margin: 0.5rem;
+    align-items: center;
+}
+
+.ratingsCard{
+    background-color: DarkSlateGrey;
+    padding:1.5em;
+    margin: 0.5rem;
+    width:100%;
+    height: 44em;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.profileStats {
+    text-align: left;
+    margin: 0.5em;
+}
+
+.profileActions {
+    margin-top: 0.5em;
+    display: block;
+    min-height: 1.5em;
+}
+
+.ratingChoices{
+    display: inline-block;
+    color: white;
+    margin-bottom:0.5rem;
+}
+
+.ratingChoice{
+    border:1px solid white;
+    padding:0.1em 0.5em;
+    min-width:0.2em;
+    cursor:pointer;
+    font-size:10px;
+    color: white;
+}
+
+.profileRankingDistribution {
+    border:1px solid DarkSlateGrey;
+    width:14em;
+    height:14em;
+    padding:0px;
+    color:rgba(125, 125, 125, 0.66);
+    overflow: clip;
+}
+
+.profileRankingDistribution a {
+    color:rgba(125, 125, 125, 0.66);
+}
+
+.profileRankingDistributionBar {
+    height: calc(100% / 11);
+    width:100%;
+    margin:0px;
+    padding:0px;
+    text-align:left;
+    background-color:#282828;
+    padding-left:0.25em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.verticalLine {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    position: relative;
+    bottom: 100%;
+    display: inline-block;
+}
+
+.profile-top-map {
+    padding: 0.5em;
+    width: 100%;
+    background-color: darkslategray;
+    display:flex;
+    align-items: center;
+}
+
+.profile-lesser-map {
+    margin-left:50%;
+    margin-right:0;
+    background-color:darkslategray;
+    padding: 1em;
+}
+
+.profile-lesser-map:nth-last-child(1){
+    margin-bottom:1em;
+}

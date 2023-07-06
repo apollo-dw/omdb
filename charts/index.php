@@ -10,52 +10,6 @@
 
 <h1 id="heading"><?php echo 'Highest Rated Maps of ' . htmlspecialchars($year, ENT_QUOTES, 'UTF-8'); ?></h1>
 
-<style>
-	.flex-container{
-		display: flex;
-		width: 100%;
-	}
-	
-	.diffContainer{
-		background-color:DarkSlateGrey;
-		align-items: center;
-	}
-	
-	.diffBox{
-		padding:0.5em;
-		flex-grow: 1;
-		height:100%;
-	}
-	
-	.diffbox a{
-		color: white;
-	}
-	
-	.diffThumb{
-		height: 80px;
-		width: 80px;
-		border: 1px solid #ddd;
-		object-fit: cover;
-	}
-	
-	.pagination {
-		display: inline-block;
-		color: DarkSlateGrey;
-	}
-
-	.pagination span {
-		float: left;
-		padding: 8px 16px;
-		text-decoration: none;
-		cursor: pointer;
-	}
-	
-	.active {
-		font-weight: 900;
-		color: white;
-	}
-</style>
-
 <div style="text-align:left;">
     <div class="pagination">
         <span onClick="changePage(<?php echo $page-1 ?>)">&laquo;</span>
@@ -68,7 +22,7 @@
 
 
 <div class="flex-container">
-	<div id="chartContainer" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
+	<div id="chart-container" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
 		<?php
 			include 'chart.php';
 		?>

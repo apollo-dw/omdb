@@ -35,57 +35,6 @@
     $hasBlacklistedDifficulties = false;
 ?>
 
-<style>
-    .diffContainer{
-        background-color:DarkSlateGrey;
-        justify-content: space-between;
-        align-items: center;
-        height:
-    }
-
-    .diffBox{
-        padding:0.5em;
-        flex-grow: 1;
-        height:100%;
-    }
-
-    .unrated{
-        color: grey;
-    }
-
-    ol{
-        margin:0;
-        padding:0;
-    }
-
-    li{
-        margin:0;
-        padding:0;
-    }
-
-    .mapsetRankingDistribution{
-        width:100%;
-        height:1.5rem;
-        margin:0px;
-        color:rgba(125, 125, 125, 0.33);
-        display: flex;
-        transform: rotate(180deg);
-    }
-
-    .mapsetRankingDistributionBar{
-        float:bottom;
-        width: calc(100% / 11);
-        min-height: 0px;
-        margin: 0px;
-        padding: 0px;
-        text-align: left;
-        display:inline;
-        vertical-align: bottom;
-        background-color: rgba(125, 125, 125, 0.33);
-        border-bottom: 1px solid rgba(125, 125, 125, 0.33);
-    }
-</style>
-
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
 
 <div class="flex-container" style="justify-content: center;">
@@ -185,7 +134,7 @@ while($row = $result->fetch_assoc()) {
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
     ?>
 
-    <div class="flex-container diffContainer alternating-bg <?php if($blackListed){ echo "faded"; }?>" >
+    <div class="flex-container difficulty-container alternating-bg <?php if($blackListed){ echo "faded"; }?>" >
         <div class="flex-child diffBox" style="text-align:center;width:60%;">
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>

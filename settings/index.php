@@ -10,26 +10,6 @@
 
     ?>
 
-<style>
-    tr label{
-        text-align:right;
-        width:100%;
-        display:inline-block;
-    }
-    td{
-        vertical-align:top;
-        padding: 1rem;
-    }
-    td input{
-        margin: 0.25rem;
-    }
-    input{
-        margin:0px;
-    }
-    summary{
-        cursor:pointer;
-    }
-</style>
 <h1>Settings</h1>
 <hr>
 <form>

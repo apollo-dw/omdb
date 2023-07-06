@@ -13,35 +13,6 @@
 	}
 ?>
 
-<style>
-	.flex-container{
-		display: flex;
-		width: 100%;
-	}
-	
-	.diffContainer{
-		background-color:DarkSlateGrey;
-		align-items: center;
-	}
-	
-	.diffBox{
-		padding:0.5em;
-		flex-grow: 1;
-		height:100%;
-	}
-	
-	.diffbox a{
-		color: white;
-	}
-	
-	.diffThumb{
-		height: 80px;
-		width: 80px;
-		border: 1px solid #ddd;
-		object-fit: cover;
-	}
-</style>
-
 <div class="flex-item" style="flex: 0 0 80%; padding:0.5em;">
 		<?php
             $onlyFriends = $onlyFriends == "true";
@@ -136,23 +107,23 @@
 
 				$counter += 1;
 		?>
-			<div class="flex-container diffContainer alternating-bg">
-				<div class="diffBox" style="text-align:center;padding-left:1.5em;flex: 0 0 6%;">
+			<div class="flex-container chart-container alternating-bg">
+				<div style="text-align:center;padding-left:1.5em;flex: 0 0 6%;">
 					<b><?php echo "#" . strval($counter); ?></b>
 				</div>
-				<div class="diffBox" style="flex: 0 0 6%;">
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='INF.png';" /></a>
+				<div style="flex: 0 0 6%;">
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:80px;width:80px;" onerror="this.onerror=null; this.src='INF.png';" /></a>
 				</div>
-				<div class="diffBox" style="flex: 0 0 42%;">
+				<div style="flex: 0 0 42%;">
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo htmlspecialchars($row['DifficultyName']); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
 					<a href="/profile/<?php echo $row['CreatorID']; ?>"><?php echo GetUserNameFromId($row['CreatorID'], $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $row['CreatorID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br>
 				</div>
-				<div class="diffBox">
+				<div>
 					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>
-				<div class="diffBox">
+				<div>
 					<b style="font-weight:900;"><?php echo $userRating; ?></b>
 				</div>
 			</div>

@@ -48,10 +48,6 @@
             padding-right: 1em;
         }
 
-        .unrated{
-            color: grey;
-        }
-
         .recommendation {
             background-color: DarkSlateGrey;
             padding: 0.5em;

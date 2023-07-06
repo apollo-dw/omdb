@@ -37,30 +37,6 @@
 
 <h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . $year; ?></h1>
 
-<style>
-    .pagination {
-        display: inline-block;
-        color: DarkSlateGrey;
-    }
-
-    .pagination span {
-        float: left;
-        padding: 8px 16px;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .pagination a {
-        color: inherit;
-        box-sizing: inherit;
-    }
-
-    .active {
-        font-weight: 900;
-        color: white;
-    }
-</style>
-
 <select name="year" onchange="location = '?m=<?php echo $month; ?>&y=' + this.value;">
     <?php
     for ($i = 2007; $i <= date('Y'); $i++) {

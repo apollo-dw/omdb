@@ -61,7 +61,6 @@
                 return floatval($r[0]) > 3.0;
             }));
 
-            // Retrieve the total number of ratings for the beatmap
             $sql = "SELECT COUNT(*) FROM ratings WHERE BeatmapID = ?;";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $beatmap_id);
@@ -96,7 +95,6 @@
                     'Artist' => $artist,
                     'Title' => $title,
                     'DifficultyName' => $difficultyname,
-                    'Score' => round($score, 2),
                     'SR' => $sr,
                     'DateRanked' => $date,
                     'CreatorID' => $creatorid,
@@ -109,7 +107,6 @@
                     'Artist' => null,
                     'Title' => null,
                     'DifficultyName' => null,
-                    'Score' => null,
                     'SR' => null,
                     'DateRanked' => null,
                     'CreatorID' => $creatorid,
