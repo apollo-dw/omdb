@@ -347,7 +347,7 @@ button.blocked:hover {
     background-color:DarkSlateGrey;
     justify-content: space-between;
     align-items: center;
-    height:
+    min-height: 5.5em;
 }
 
 .difficulty-container > div{
