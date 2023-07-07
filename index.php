@@ -51,7 +51,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			  <div class="flex-child" style="height:24px;width:24px;">
 				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
 			  </div>
-			  <div class="flex-child" style="flex:0 0 50%;">
+			  <div class="flex-child" style="flex:0 0 66%;">
 				<?php
 				  echo renderRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
 				?>
@@ -98,11 +98,11 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			  <div class="flex-child" style="height:24px;width:24px;">
 				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
 			  </div>
-			  <div class="flex-child" style="flex:0 0 60%;text-overflow:elipsis;min-width:0%;">
+			  <div class="flex-child" style="flex:0 0 auto;text-overflow:elipsis;min-width:0%;">
                     <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>">
                         <?php
                             if (!$is_blocked)
-                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 55, "..."));
+                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 75, "..."));
                             else
                                 echo "[blocked comment]";
                         ?>
