@@ -7,10 +7,12 @@
 welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
 <span style="color:grey;">
     <?php
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM `users`");
+    $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
     $stmt->execute();
     $result = $stmt->get_result();
-    $usersCount = $result->fetch_row()[0];
+    $row = $result->fetch_row();
+	$usersCount = $row[0];
+	$usersOnlineCount = $row[1];
     $stmt->close();
 
     $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
@@ -26,7 +28,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
     $stmt->close();
     ?>
 
-    <?php echo $usersCount; ?> users,
+    <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
     <?php echo $ratingsCount; ?> ratings,
     <?php echo $commentsCount; ?> comments
 </span>
