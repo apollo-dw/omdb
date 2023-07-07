@@ -98,6 +98,7 @@
                     'SR' => $sr,
                     'DateRanked' => $date,
                     'CreatorID' => $creatorid,
+					'Score' => round($score, 2),
                 ];
             } else {
                 // Handle case when beatmap details are not found
@@ -110,6 +111,7 @@
                     'SR' => null,
                     'DateRanked' => null,
                     'CreatorID' => $creatorid,
+					'Score' => null,
                 ];
             }
         }
