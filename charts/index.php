@@ -201,7 +201,7 @@
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
 			if (this.readyState==4 && this.status==200) {
-				document.getElementById("chartContainer").innerHTML=this.responseText;
+				document.getElementById("chart-container").innerHTML=this.responseText;
 				resetPaginationDisplay();
 			}
 		}
