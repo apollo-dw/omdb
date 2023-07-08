@@ -148,6 +148,10 @@
 	}
 
 	function GetUserNameFromId($id, $conn){
+		static $cache = array();
+		if (array_key_exists($id, $cache))
+			return $cache[$id];
+
 		$stmt = $conn->prepare("SELECT `Username` FROM `users` WHERE `UserID` = ? UNION SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
 		$stmt->bind_param("ii", $id, $id);
 		$stmt->execute();
@@ -156,6 +160,7 @@
 			$row = $result->fetch_row();
 			$stmt->close();
 			if (!is_null($row[0])) {
+				$cache[$id] = $row[0];
 				return $row[0];
 			}
 		}
@@ -167,6 +172,7 @@
 		$stmt->execute();
 		$stmt->close();
 
+		$cache[$id] = $username;
 		return $username;
 	}
 
