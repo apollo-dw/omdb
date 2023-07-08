@@ -48,6 +48,21 @@
 
 <hr>
 
+<label for="rating">Rating</label>
+<select name="rating" onchange="location = '?id=<?php echo $profileId; ?>&r=' + this.value;">
+    <?php
+        $selected = $rating == "" ? " selected='selected'" : "";
+        echo "<option value='' {$selected}>All</option>";
+        for ($i = 0; $i <= 5; $i+= 0.5) {
+            echo '<option value="' . $i . '"';
+            if ($rating == $i)
+                echo " selected='selected'";
+            echo '>' . $i . '</option>';
+        }
+    ?>
+
+</select>
+
 <div style="text-align:center;">
 	<div class="pagination">
 	  <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
