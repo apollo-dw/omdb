@@ -186,7 +186,7 @@
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
 			</div>
-			<?php
+        <?php
 				if ($loggedIn && $profileId != $userId){
                     $widthPercentage = abs(($correlation / 2) * 100);
                     $leftMargin = 0;
@@ -291,8 +291,12 @@
         $counter = 0;
         foreach($sets as $set) {
             $counter += 1;
-            $stmt = $conn->prepare("SELECT `BeatmapID`, `DateRanked`, `DifficultyName`, `WeightedAvg`, `RatingCount`, `SR`, `ChartRank` FROM beatmaps WHERE SetID = ? AND CreatorID = ? ORDER BY `RatingCount` DESC");
-            $stmt->bind_param("ii", $set["SetID"], $profileId);
+            $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`
+                       FROM beatmaps b
+                       LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
+                       WHERE b.`SetID` = ? AND b.`CreatorID` = ?
+                       ORDER BY b.`RatingCount` DESC");
+            $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
             $stmt->execute();
             $difficultyResult = $stmt->get_result();
 
@@ -315,7 +319,13 @@
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
                 <div style="margin-left:auto;">
-                    <span style="display: inline-block;margin-right:1em;">
+                    <span style="display: inline-block;margin-right:1em;"">
+                        <?php
+                            if (isset($topMap["Score"]))
+                                echo RenderRating($topMap["Score"]);
+                        ?>
+                    </span>
+                    <span style="display: inline-block;margin-right:1em;min-width:8em;">
                         <?php echo $commentCount; ?> <span class="subText">comment<?php if ($commentCount != 1) echo 's'; ?></span>
                     </span>
                     <span style="display: inline-block;min-width:13em;">
@@ -341,11 +351,21 @@
                             <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                         </div>
 
-                        <?php if (isset($map["ChartRank"])) { ?>
-                        <div style="float:right;display: inline-block;text-align:right;">
-                        <b><?php echo number_format($map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
+                        <div style="float:right;display: inline-block;min-width:13em;min-height:1px;text-align:right;">
+                            <?php if (isset($map["ChartRank"])) { ?>
+                                <b><?php echo number_format($map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
+                            <?php } ?>
                         </div>
+
+                        <?php if (isset($map["Score"])) { ?>
+                            <div style="float:right;display:inline-block;">
+                                <?php echo RenderRating($map["Score"]); ?>
+                            </div>
                         <?php } ?>
+
+
+
+
                     </div>
                 <?php } ?>
             </div>
