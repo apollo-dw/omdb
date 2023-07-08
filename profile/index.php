@@ -288,9 +288,7 @@
         while($row = $setsResult->fetch_assoc())
             $sets[] = $row;
 
-        $counter = 0;
         foreach($sets as $set) {
-            $counter += 1;
             $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`
                        FROM beatmaps b
                        LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
@@ -311,7 +309,7 @@
 
             $stmt->close();
             ?>
-            <div class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>" <?php if ($counter % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+            <div class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
@@ -341,12 +339,10 @@
 
             <div class="lesser-maps" style="display: none;">
                 <?php
-                    $counter2 = $counter;
                     while($map = $difficultyResult->fetch_assoc()){
-                        $counter2 += 1;
                         $mapIsBolded = $map["ChartRank"] <= 250 && isset($map["ChartRank"]);
                 ?>
-                    <div class="profile-lesser-map" <?php if ($counter2 % 2 == 0) echo "style='background-color:#203838;'"; ?>>
+                    <div class="profile-lesser-map">
                         <div style="display:inline-block;">
                             <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                         </div>
@@ -362,10 +358,6 @@
                                 <?php echo RenderRating($map["Score"]); ?>
                             </div>
                         <?php } ?>
-
-
-
-
                     </div>
                 <?php } ?>
             </div>

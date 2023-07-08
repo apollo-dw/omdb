@@ -645,6 +645,30 @@ ol.star-rating-list > li{
     padding: 1em;
 }
 
+.profile-top-map:nth-child(4n+1) {
+    background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n+1) + .lesser-maps .profile-lesser-map:nth-of-type(even){
+    background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd){
+    background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n+1) .starBackground{
+    color: darkslategray;
+}
+
+.profile-top-map:nth-child(4n+1) + .lesser-maps .profile-lesser-map:nth-of-type(even) .starBackground{
+    color: darkslategray;
+}
+
+.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd) .starBackground{
+    color: darkslategray;
+}
+
 .profile-lesser-map:nth-last-child(1){
     margin-bottom:1em;
 }
