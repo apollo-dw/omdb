@@ -50,7 +50,7 @@
             $stmt2->execute();
             $result2 = $stmt2->get_result();
             $row2 = $result2->fetch_row();
-            echo renderRating($conn, $row) . " on " . htmlspecialchars(mb_strimwidth($row2[0], 0, 40, "..."));
+            echo RenderUserRating($conn, $row) . " on " . htmlspecialchars(mb_strimwidth($row2[0], 0, 40, "..."));
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">

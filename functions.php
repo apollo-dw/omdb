@@ -208,19 +208,23 @@
 		return $string;
 	}
 
-    function RenderRating($conn, $ratingRow) {
-        $score = $ratingRow["Score"];
-        $starString = "";
+	function RenderRating($rating){
+		$starString = "";
+		for ($i = 0; $i < 5; $i++) {
+			if ($i < $rating) {
+				if ($rating - 0.5 == $i) {
+					$starString .= "<i class='star icon-star-half'></i>";
+				} else {
+					$starString .= "<i class='star icon-star'></i>";
+				}
+			}
+		}
+		$backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
+		return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
+	}
 
-        for ($i = 0; $i < 5; $i++) {
-            if ($i < $score) {
-                if ($score - 0.5 == $i) {
-                    $starString .= "<i class='star icon-star-half'></i>";
-                } else {
-                    $starString .= "<i class='star icon-star'></i>";
-                }
-            }
-        }
+    function RenderUserRating($conn, $ratingRow) {
+        $score = $ratingRow["Score"];
 
 		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
 		$stmt->bind_param("i", $ratingRow["UserID"]);
@@ -265,15 +269,11 @@
                 break;
         }
 
-        $backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
-
-        $starString = "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
-
-        if ($hint == "" || !isset($hint))
-            return $starString;
+		$starString = RenderRating($score);
+		if ($hint == "" || !isset($hint))
+			return $starString;
 
         $hint = htmlspecialchars($hint, ENT_COMPAT);
-
         echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
     }
 

@@ -2,7 +2,7 @@
 	$profileId = $_GET['id'] ?? -1;
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? "";
-    $PageTitle = "Profile";
+    $PageTitle = "Ratings";
 
     require "../../base.php";
     require '../../header.php';
@@ -41,8 +41,6 @@
         $stmt->fetch();
         $stmt->close();
     }
-
-    //  echo number_format($rating, 1, '.', '');
 
     $amntOfPages = floor($count / $limit) + 1;
 ?>
@@ -98,7 +96,7 @@
 					<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo renderRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]");?></a>
+					<?php echo RenderUserRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]");?></a>
 				</div>
 				<div class="flex-child" style="width:100%;text-align:right;">
 					<?php echo GetHumanTime($row["date"]); ?>
