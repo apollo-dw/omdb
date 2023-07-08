@@ -273,7 +273,7 @@
 		if ($hint == "" || !isset($hint))
 			return $starString;
 
-        $hint = htmlspecialchars($hint, ENT_COMPAT);
+        $hint = htmlspecialchars($hint, ENT_QUOTES);
         echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
     }
 
