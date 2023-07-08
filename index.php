@@ -45,20 +45,22 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  while($row = $result->fetch_assoc()) {
 		  ?>
 			<div class="flex-container ratingContainer alternating-bg">
-			  <div class="flex-child">
-				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
-			  </div>
-			  <div class="flex-child" style="height:24px;width:24px;">
-				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
-			  </div>
-			  <div class="flex-child" style="flex:0 0 66%;">
-				<?php
-				  echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
-				?>
-			  </div>
-			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo GetHumanTime($row["date"]); ?>
-			  </div>
+			    <div class="flex-child" style="margin-left:0.5em;">
+				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+			    </div>
+                <div class="flex-child">
+                    <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
+                    </a>
+                </div>
+                <div class="flex-child" style="flex:0 0 66%;">
+                    <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                        <?php echo GetUserNameFromId($row["UserID"], $conn); ?>
+                    </a>
+                    <?php
+                        echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
+                    ?>
+                </div>
 			</div>
 		  <?php
 		  }
@@ -92,25 +94,27 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
               }
 		  ?>
 			<div class="flex-container ratingContainer alternating-bg">
-			  <div class="flex-child">
+			  <div class="flex-child" style="margin-left:0.5em;">
 				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 			  </div>
-			  <div class="flex-child" style="height:24px;width:24px;">
-				<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
-			  </div>
-			  <div class="flex-child" style="flex:0 0 auto;text-overflow:elipsis;min-width:0%;">
-                    <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>">
-                        <?php
+                <div class="flex-child">
+                    <div>
+                        <a style="align-items:center; display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
+                            <span style="margin-left: 0.5em;"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></span>
+                        </a>
+                    </div>
+                    <div style="flex:0 0 auto;text-overflow:ellipsis;min-width:0%;">
+                        <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>">
+                            <?php
                             if (!$is_blocked)
-                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 75, "..."));
+                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
                             else
                                 echo "[blocked comment]";
-                        ?>
-                    </a>
-			  </div>
-			  <div class="flex-child" style="width:100%;text-align:right;min-width:0%;">
-				<?php echo GetHumanTime($row["date"]); ?>
-			  </div>
+                            ?>
+                        </a>
+                    </div>
+                </div>
 			</div>
 		  <?php
 		  }

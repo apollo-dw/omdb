@@ -44,6 +44,9 @@
         <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
+        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+            <?php echo GetUserNameFromId($row["UserID"], $conn); ?>
+        </a>
         <?php
             $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
             $stmt2->bind_param("s", $row["BeatmapID"]);
