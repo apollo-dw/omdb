@@ -1,9 +1,6 @@
 <?php
 	$profileId = $_GET['id'] ?? -1;
-    $PageTitle = "Profile";
-
 	require "../base.php";
-    require '../header.php';
 
 	if ($profileId == -1 || !is_numeric($profileId)) {
 		siteRedirect();
@@ -19,6 +16,9 @@
 
 	if ($profile == NULL)
 		$isValidUser = false;
+
+    $PageTitle = $profile != NULL ? GetUserNameFromId($profileId, $conn) : "Profile";
+    require '../header.php';
 
 	$ratingCounts = array();
 
