@@ -4,6 +4,7 @@
     include_once 'userConnect.php';
 
     session_start();
+    $timeAtPageLoad = microtime(true);
 
     $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 0;
 
