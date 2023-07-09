@@ -28,6 +28,13 @@ body {
     z-index:999;
 }
 
+@media (min-width:2000px) {
+    .topBar {
+        padding-left: 20%;
+        padding-right: 20%;
+    }
+}
+
 .footerBar {
     display: block;
     width: 100%;
@@ -245,6 +252,10 @@ span.subText{
 .ratingContainer {
     background-color: DarkSlateGrey;
     align-items: center;
+}
+
+img {
+    vertical-align: middle;
 }
 
 .flex-container {
@@ -513,31 +524,31 @@ ol.star-rating-list > li{
     opacity: 0.33;
 }
 
-.alternating-bg:nth-child(odd) {
+.alternating-bg:nth-of-type(odd) {
     background-color: #203838;
 }
 
-.alternating-bg:nth-child(even) {
+.alternating-bg:nth-of-type(even) {
     background-color: DarkSlateGray;
 }
 
-.alternating-bg-pink:nth-child(odd) {
+.alternating-bg-pink:nth-of-type(odd) {
     background-color: #4F2F3F;
 }
 
-.alternating-bg-pink:nth-child(even) {
+.alternating-bg-pink:nth-of-type(even) {
     background-color: #6A4256;
 }
 
-.alternating-bg:nth-child(odd) .starBackground{
+.alternating-bg:nth-of-type(odd) .starBackground{
     color: darkslategray;
 }
 
-.alternating-bg-pink:nth-child(odd) .starBackground{
+.alternating-bg-pink:nth-of-type(odd) .starBackground{
     color: #6A4256;
 }
 
-.alternating-bg-pink:nth-child(even) .starBackground{
+.alternating-bg-pink:nth-of-type(even) .starBackground{
     color: #4F2F3F;
 }
 
