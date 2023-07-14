@@ -5,13 +5,33 @@
 
     $page = $_GET['p'] ?? 1;
     $mapset_id = $_GET['id'] ?? $mapset_id;
+    $beatmap_id = $_GET['bID'] ?? -1;
 
     if(!is_numeric($page) || !is_numeric($mapset_id)){
         die("NOO");
     }
 
-    $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
-    $stmt->bind_param("s", $mapset_id);
+    if ($beatmap_id == -1) {
+        $countQuery = "SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)";
+        $selectString = "WHERE r.BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)";
+        $bindParams = "i";
+        $bindValues = [$mapset_id];
+        $bindParamsMain = "ii";
+        $bindValuesMain = [$userId, $mapset_id];
+    } else {
+        $countQuery = "SELECT Count(*) FROM `ratings` WHERE BeatmapID = ?";
+        $selectString = "WHERE r.BeatmapID = ?";
+        $bindParams = "i";
+        $bindValues = [$beatmap_id];
+        $bindParamsMain = "ii";
+        $bindValuesMain = [$userId, $beatmap_id];
+    }
+
+    $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight
+        FROM `ratings` r {$selectString} ORDER BY order_weight DESC, date DESC";
+
+    $stmt = $conn->prepare($countQuery);
+    $stmt->bind_param($bindParams, ...$bindValues);
     $stmt->execute();
 
     $lim = 18;
@@ -25,15 +45,8 @@
         $pageString = "LIMIT {$lower}, {$lim}";
     }
 
-    $stmt = $conn->prepare("SELECT r.*, 
-        CASE
-            WHEN r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1) THEN 2  -- if the rating is made by a friend, give it a high weight
-            ELSE 1  -- for all other ratings, give a default weight
-        END AS order_weight
-    FROM `ratings` r 
-    WHERE r.BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)
-    ORDER BY order_weight DESC, date DESC {$pageString}");
-    $stmt->bind_param("ii", $userId, $mapset_id);
+    $stmt = $conn->prepare($mainQuery . " " . $pageString);
+    $stmt->bind_param($bindParamsMain, ...$bindValuesMain);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -65,12 +78,31 @@
         }
     ?>
 <br>
+
+<label for="difficulties">
+    Difficulty:
+</label>
+
+<select name="difficulties" id="difficulties" onchange="updateRatings()">
+    <option value="-1">Any</option>
+    <?php
+        $stmt = $conn->prepare("SELECT DifficultyName, BeatmapID FROM beatmaps WHERE `SetID` = ? AND Blacklisted = 0;");
+        $stmt->bind_param("i", $mapset_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while($row = $result->fetch_assoc()){
+            $selectedString = $beatmap_id == $row['BeatmapID'] ? "selected" : "";
+            $difficultyName = htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 40, "..."));
+            echo "<option value='{$row['BeatmapID']}' {$selectedString}>{$difficultyName}</option>";
+        }
+    ?>
+</select>
 <div style="text-align:center;">
     <div class="pagination">
         <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
         <span id="page"><?php echo $page; ?></span>
         <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
-        <span class="subText">Page</span>
     </div>
 </div>
 <script>
@@ -91,12 +123,16 @@
 
     function updateRatings() {
         var xmlhttp = new XMLHttpRequest();
+
+        var difficulty = document.getElementById("difficulties").value;
+
         xmlhttp.onreadystatechange=function() {
             if (this.readyState==4 && this.status==200) {
                 document.getElementById("setRatingsDisplay").innerHTML=this.responseText;
             }
         }
-        xmlhttp.open("GET","ratings.php?p=" + ratingPage + "&id=" + <?php echo $mapset_id; ?>, true);
+
+        xmlhttp.open("GET","ratings.php?p=" + ratingPage + "&id=" + <?php echo $mapset_id; ?> + "&bID=" + difficulty, true);
         xmlhttp.send();
     }
 
