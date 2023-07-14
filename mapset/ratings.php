@@ -32,7 +32,7 @@
     if($order == "oldest")
         $orderString = "date ASC";
     if($order == "rating")
-        $orderString = "score ASC";
+        $orderString = "score DESC";
 
     $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight
         FROM `ratings` r {$selectString} ORDER BY order_weight DESC, {$orderString}";
@@ -111,7 +111,7 @@
 <select name="rating-order" id="rating-order" onchange="updateRatings()">
     <option value="newest" <?php if ($order === 'newest') echo 'selected'; ?>>Date (newest)</option>
     <option value="oldest" <?php if ($order === 'oldest') echo 'selected'; ?>>Date (oldest)</option>
-    <option value="rating" <?php if ($order === 'rating') echo 'selected'; ?>>Rating score</option>
+    <option value="rating" <?php if ($order === 'rating') echo 'selected'; ?>>Highest score</option>
 </select>
 
 <div style="text-align:center;">
