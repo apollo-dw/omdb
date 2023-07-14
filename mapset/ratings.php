@@ -6,6 +6,7 @@
     $page = $_GET['p'] ?? 1;
     $mapset_id = $_GET['id'] ?? $mapset_id;
     $beatmap_id = $_GET['bID'] ?? -1;
+    $order = $_GET['o'] ?? "newest";
 
     if(!is_numeric($page) || !is_numeric($mapset_id)){
         die("NOO");
@@ -27,8 +28,14 @@
         $bindValuesMain = [$userId, $beatmap_id];
     }
 
+    $orderString = "date DESC";
+    if($order == "oldest")
+        $orderString = "date ASC";
+    if($order == "rating")
+        $orderString = "score ASC";
+
     $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight
-        FROM `ratings` r {$selectString} ORDER BY order_weight DESC, date DESC";
+        FROM `ratings` r {$selectString} ORDER BY order_weight DESC, {$orderString}";
 
     $stmt = $conn->prepare($countQuery);
     $stmt->bind_param($bindParams, ...$bindValues);
@@ -77,12 +84,10 @@
     <?php
         }
     ?>
-<br>
 
 <label for="difficulties">
     Difficulty:
 </label>
-
 <select name="difficulties" id="difficulties" onchange="updateRatings()">
     <option value="-1">Any</option>
     <?php
@@ -98,6 +103,17 @@
         }
     ?>
 </select>
+<br>
+
+<label for="rating-order">
+    Order:
+</label>
+<select name="rating-order" id="rating-order" onchange="updateRatings()">
+    <option value="newest" <?php if ($order === 'newest') echo 'selected'; ?>>Date (newest)</option>
+    <option value="oldest" <?php if ($order === 'oldest') echo 'selected'; ?>>Date (oldest)</option>
+    <option value="rating" <?php if ($order === 'rating') echo 'selected'; ?>>Rating score</option>
+</select>
+
 <div style="text-align:center;">
     <div class="pagination">
         <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
@@ -105,6 +121,7 @@
         <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
     </div>
 </div>
+
 <script>
     var ratingPage = 1;
 
@@ -125,6 +142,7 @@
         var xmlhttp = new XMLHttpRequest();
 
         var difficulty = document.getElementById("difficulties").value;
+        var order = document.getElementById("rating-order").value;
 
         xmlhttp.onreadystatechange=function() {
             if (this.readyState==4 && this.status==200) {
@@ -132,7 +150,7 @@
             }
         }
 
-        xmlhttp.open("GET","ratings.php?p=" + ratingPage + "&id=" + <?php echo $mapset_id; ?> + "&bID=" + difficulty, true);
+        xmlhttp.open("GET","ratings.php?p=" + ratingPage + "&id=" + <?php echo $mapset_id; ?> + "&bID=" + difficulty + "&o=" + order, true);
         xmlhttp.send();
     }
 
