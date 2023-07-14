@@ -5,7 +5,7 @@
     require "../../base.php";
     require '../../header.php';
 
-    if($profileId == -1){
+    if($profileId == -1 || !is_numeric($profileId)){
         die("Invalid page bro");
     }
 
@@ -41,7 +41,7 @@ $stmt = $conn->prepare("
     $stmt->close();
 
     ?>
-<center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s friends</h1></center>
+<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s friends</h1></center>
 
     <div class="flex-row-container">
         <?php
