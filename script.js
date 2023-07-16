@@ -34,7 +34,7 @@ function showResult(str) {
         return;
     }
 
-    clearTimeout(debounceTimer); // Clear the previous debounce timer
+    clearTimeout(debounceTimer);
 
     debounceTimer = setTimeout(function () {
         var xmlhttp = new XMLHttpRequest();
@@ -46,7 +46,7 @@ function showResult(str) {
         };
         xmlhttp.open("GET", "/beatmapSearch.php?q=" + str, true);
         xmlhttp.send();
-    }, 1000);
+    }, 300);
 }
 
 function searchFocus() {
