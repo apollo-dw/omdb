@@ -187,7 +187,7 @@
 				Rating Distribution<br>
 			</div>
         <?php
-				if ($loggedIn && $profileId != $userId){
+				if ($loggedIn && $profileId != $userId) {
                     $widthPercentage = abs(($correlation / 2) * 100);
                     $leftMargin = 0;
 
@@ -204,7 +204,11 @@
                     <div style="margin-bottom:0.5em;"><span class="subText"><?php echo round($correlation, 3); ?></span></div>
 					Rating Similarity To You<br>
 				</div>
-			<?php }
+			<?php } elseif ($profileId == $userId) {
+                    ?>
+                    <a href="compatible/?id=<?php echo $profileId; ?>">View users similar to you!</a>
+                    <?php
+                }
 		    } ?>
 	</div>
 	<div class="ratingsCard">
