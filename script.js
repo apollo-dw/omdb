@@ -25,21 +25,28 @@ function setGameMode(mode) {
     location.reload();
 }
 
+let debounceTimer;
+
 function showResult(str) {
-    if (str.length==0) {
-        document.getElementById("topBarSearchResults").innerHTML="";
-        document.getElementById("topBarSearchResults").style.display="none";
+    if (str.length == 0) {
+        document.getElementById("topBarSearchResults").innerHTML = "";
+        document.getElementById("topBarSearchResults").style.display = "none";
         return;
     }
-    var xmlhttp=new XMLHttpRequest();
-    xmlhttp.onreadystatechange=function() {
-        if (this.readyState==4 && this.status==200) {
-            document.getElementById("topBarSearchResults").innerHTML=this.responseText;
-            document.getElementById("topBarSearchResults").style.display="block";
-        }
-    }
-    xmlhttp.open("GET","/beatmapSearch.php?q="+str,true);
-    xmlhttp.send();
+
+    clearTimeout(debounceTimer); // Clear the previous debounce timer
+
+    debounceTimer = setTimeout(function () {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("topBarSearchResults").innerHTML = this.responseText;
+                document.getElementById("topBarSearchResults").style.display = "block";
+            }
+        };
+        xmlhttp.open("GET", "/beatmapSearch.php?q=" + str, true);
+        xmlhttp.send();
+    }, 1000);
 }
 
 function searchFocus() {
