@@ -1,17 +1,7 @@
 <?php
-    function wilson_lower_bound($positive_ratings, $total_ratings) {
-        if ($total_ratings == 0) {
-            return 0;
-        }
-
-        $z = 1.6448536269514729; # Equivalent to 0.9 confidence
-        $phat = $positive_ratings / $total_ratings;
-        return ($phat + $z * $z / (2 * $total_ratings) - $z * sqrt(($phat * (1 - $phat) + $z * $z / (4 * $total_ratings)) / $total_ratings)) / (1 + $z * $z / $total_ratings);
-    }
-
     function RetrieveRecommendations($conn, $userID){
         $sql = "SELECT IF(user1_id = ?, user2_id, user1_id) AS correlated_user, correlation FROM user_correlations
-                WHERE ? IN (user1_id, user2_id) AND correlation > 0.25 ORDER BY correlation DESC;";
+                WHERE ? IN (user1_id, user2_id) AND correlation > 0.33 ORDER BY correlation DESC LIMIT 150;";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $userID, $userID);
@@ -23,18 +13,21 @@
 
         $correlated_users = [];
         while ($row = $result->fetch_assoc()) {
-            $correlated_users[] = $row;
+            $correlated_users[$row['correlated_user']] = $row['correlation'];
         }
         $stmt->close();
 
-        $correlated_ids = implode(', ', array_column($correlated_users, 'correlated_user'));
-        $sql = "SELECT r.BeatmapID FROM ratings r
-                JOIN beatmaps b ON r.BeatmapID = b.BeatmapID WHERE r.UserID IN ($correlated_ids)
+        $correlated_ids = implode(', ', array_keys($correlated_users));
+        $sql = "SELECT r.BeatmapID
+                FROM ratings r
+                JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
+                WHERE r.UserID IN ($correlated_ids)
                 AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
                 AND b.CreatorID <> ? AND b.SetCreatorID <> ?
                 GROUP BY r.BeatmapID
                 HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
-                AND AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) > 2.5;";
+                ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
+                LIMIT 50;";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('iii', $userID, $userID, $userID);
@@ -49,27 +42,30 @@
 
         $recommendation_scores = [];
         foreach ($rated_beatmaps as $beatmap_id) {
-            $sql = "SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID IN ($correlated_ids);";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param('i', $beatmap_id);
-            $stmt->execute();
+            $sum_similarities = 0;
+            $weighted_sum = 0;
 
-            $result = $stmt->get_result();
-            $ratings = $result->fetch_all(MYSQLI_NUM);
+            foreach ($correlated_users as $correlated_user_id => $correlation) {
+                $sql = "SELECT Score FROM ratings WHERE UserID = ? AND BeatmapID = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param('ii', $correlated_user_id, $beatmap_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-            $positive_ratings = count(array_filter($ratings, function ($r) {
-                return floatval($r[0]) > 3.0;
-            }));
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $rating = $row['Score'];
 
-            $sql = "SELECT COUNT(*) FROM ratings WHERE BeatmapID = ?;";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param('i', $beatmap_id);
-            $stmt->execute();
+                    $sum_similarities += $correlation;
+                    $weighted_sum += $rating * $correlation;
+                }
+            }
 
-            $result = $stmt->get_result();
-            $total_ratings = $result->fetch_row()[0];
-
-            $predicted_rating = wilson_lower_bound($positive_ratings, $total_ratings);
+            if ($sum_similarities > 0) {
+                $predicted_rating = $weighted_sum / $sum_similarities;
+            } else {
+                $predicted_rating = -1;
+            }
 
             $recommendation_scores[$beatmap_id] = $predicted_rating;
         }
