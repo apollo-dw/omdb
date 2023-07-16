@@ -314,7 +314,8 @@
 
         });
 
-        setInterval(fetchRecentScores, 1000);
+        setInterval(fetchRecentScores, 10000);
+        fetchRecentScores();
     </script>
 
 <?php
