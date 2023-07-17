@@ -213,25 +213,27 @@ while($row = $result->fetch_assoc()) {
                 ?>
             </div>
 
-            <?php
-
-            // This is to select the user's tags.
-            $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
-            $selectStmt->bind_param("ii", $userId, $beatmapID);
-            $selectStmt->execute();
-            $tags_result = $selectStmt->get_result();
-            $tags_row = $tags_result->fetch_assoc();
-            $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
-            $selectStmt->close();
-            ?>
-
             <div class="flex-child diffBox" style="overflow:hidden;text-align: center;width:10%;display: flex; align-items: center;">
+                <?php
+                    if($loggedIn){
+                        $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
+                        $selectStmt->bind_param("ii", $userId, $beatmapID);
+                        $selectStmt->execute();
+                        $tags_result = $selectStmt->get_result();
+                        $tags_row = $tags_result->fetch_assoc();
+                        $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
+                        $selectStmt->close();
+
+                ?>
                 <div style="overflow:hidden;text-overflow:ellipsis;">
                     <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
                 </div>
                 <div style="margin-left:auto;padding-left:0.5em;">
                     <span class="tag-button" style="min-width: 3em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-tags"></i></span>
                 </div>
+                <?php
+                }
+                ?>
             </div>
 
             <div style="position:relative;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
@@ -244,7 +246,8 @@ while($row = $result->fetch_assoc()) {
                 </div>
             </div>
 
-        <?php } else { ?>
+        <?php
+        } else { ?>
             <div class="flex-child diffBox" style="width:91%;">
                 <b>This difficulty has been blacklisted from OMDB.</b><br>
                 Reason: <?php echo $row["BlacklistReason"]; ?>
