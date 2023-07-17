@@ -572,10 +572,10 @@ ol.star-rating-list > li{
 
 .ratingsCard{
     background-color: DarkSlateGrey;
-    padding: 1.5em 0em 1.5em 0em;
+    padding: 0;
     margin: 0.5rem;
     width:100%;
-    height: 44em;
+    height: 47em;
     overflow-y: scroll;
     position: relative;
 }

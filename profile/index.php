@@ -215,21 +215,7 @@
 		<?php
 			if($isValidUser){
 		?>
-		<center><div class="ratingChoices">
-			<a id="0.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=0.0&p=1" class="ratingChoice"><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="0.5Rating" href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1" class="ratingChoice"><i class="icon-star-half-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="1.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=1.0&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="1.5Rating" href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star-half-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="2.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=2.0&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="2.5Rating" href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-half-empty"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="3.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=3.0&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="3.5Rating" href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-half-empty"></i><i class="icon-star-empty"></i></a>
-			<a id="4.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=4.0&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-empty"></i></a>
-			<a id="4.5Rating" href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star-half-empty"></i></a>
-			<a id="5.0Rating" href="ratings/?id=<?php echo $profileId; ?>&r=5.0&p=1" class="ratingChoice"><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i><i class="icon-star"></i></a>
-		</div></center>
 		<div id="ratingDisplay">
-			<center>Latest 50 Ratings</center>
 			<?php
 				include 'rating.php';
 			?>
