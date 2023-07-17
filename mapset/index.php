@@ -225,8 +225,8 @@ while($row = $result->fetch_assoc()) {
             $selectStmt->close();
             ?>
 
-            <div class="flex-child diffBox" style="text-align: center;width:10%;display: flex; align-items: center;">
-                <div>
+            <div class="flex-child diffBox" style="overflow:hidden;text-align: center;width:10%;display: flex; align-items: center;">
+                <div style="overflow:hidden;text-overflow:ellipsis;">
                     <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
                 </div>
                 <div style="margin-left:auto;padding-left:0.5em;">
