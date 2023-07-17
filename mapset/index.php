@@ -135,7 +135,7 @@ while($row = $result->fetch_assoc()) {
     ?>
 
     <div class="flex-container difficulty-container alternating-bg <?php if($blackListed){ echo "faded"; }?>" >
-        <div class="flex-child diffBox" style="text-align:center;width:60%;">
+        <div class="flex-child diffBox" style="text-align:center;width:40%;">
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
             </a>
@@ -144,7 +144,7 @@ while($row = $result->fetch_assoc()) {
             <?php if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } ?>
         </div>
         <?php if (!$blackListed) { ?>
-            <div class="flex-child diffBox" style="width:20%;text-align:center;">
+            <div class="flex-child diffBox" style="width:15%;text-align:center;">
                 <?php
                 if($totalRatings > 0){
                     ?>
@@ -186,7 +186,7 @@ while($row = $result->fetch_assoc()) {
                 }
                 ?>
             </div>
-            <div class="flex-child diffBox" style="padding:auto;width:30%;">
+            <div class="flex-child diffBox" style="width:20%;">
                 <?php
                 if($loggedIn){
                     ?>
@@ -212,18 +212,90 @@ while($row = $result->fetch_assoc()) {
                 }
                 ?>
             </div>
+
+            <?php
+
+            // This is to select the user's tags.
+            $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
+            $selectStmt->bind_param("ii", $userId, $beatmapID);
+            $selectStmt->execute();
+            $result = $selectStmt->get_result();
+            $tags_row = $result->fetch_assoc();
+            $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
+            $selectStmt->close();
+            ?>
+
+            <div class="flex-child diffBox" style="text-align: center;width:10%;display: flex; align-items: center;">
+                <div>
+                    <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
+                </div>
+                <div style="margin-left:auto;padding-left:0.5em;">
+                    <span class="tag-button" style="min-width: 3em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-tags"></i></span>
+                </div>
+            </div>
+
+            <div style="position:relative;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
+                <div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:12em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+                    <div>
+                        <input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:6em;" value="<?php echo $allTags;?>">
+                        <button class="tag-input-submit" style="min-width:0;">Save</button><br>
+                    </div>
+                    <span class="subText">separate your tags with commas</span>
+                </div>
+            </div>
+
         <?php } else { ?>
-            <div class="flex-child diffBox" style="padding:auto;width:91%;">
+            <div class="flex-child diffBox" style="width:91%;">
                 <b>This difficulty has been blacklisted from OMDB.</b><br>
                 Reason: <?php echo $row["BlacklistReason"]; ?>
                 <?php $hasBlacklistedDifficulties = true; ?>
             </div>
         <?php } ?>
+
     </div>
 
     <?php
 }
 ?>
+
+<script>
+    const tagButtons = document.querySelectorAll('.tag-button');
+    tagButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const beatmapID = button.getAttribute('beatmapid');
+            const tagInputDiv = document.querySelector(`div[beatmapid="${beatmapID}"]`);
+
+            tagInputDiv.style.display = (tagInputDiv.style.display === 'none') ? 'block' : 'none';
+        });
+    });
+
+    const tagInputSubmitButtons = document.querySelectorAll('.tag-input-submit');
+    tagInputSubmitButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const beatmapID = button.parentNode.parentNode.parentNode.getAttribute('beatmapid');
+            const tagInputField = document.querySelector(`div[beatmapid="${beatmapID}"] input.tag-input-field`);
+            const tagsSpan = document.querySelector(`span.tags[beatmapid="${beatmapID}"]`);
+            const tags = tagInputField.value;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'SubmitTags.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        tagsSpan.textContent = tags;
+                    } else {
+                        console.error('Error: ' + xhr.status);
+                    }
+                }
+            };
+
+            xhr.send(`tags=${encodeURIComponent(tags)}&beatmapID=${beatmapID}`);
+        });
+    });
+</script>
 
 <hr style="margin-bottom:1em;margin-top:1em;">
 
