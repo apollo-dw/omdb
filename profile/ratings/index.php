@@ -56,7 +56,7 @@
         echo "<option value='' {$selected}>All</option>";
         for ($i = 0; $i <= 5; $i+= 0.5) {
             echo '<option value="' . $i . '"';
-            if ($rating == $i)
+            if ($rating === strval($i))
                 echo " selected='selected'";
             echo '>' . $i . '</option>';
         }
