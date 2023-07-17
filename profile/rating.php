@@ -123,13 +123,16 @@
                 $averageRating = "none";
                 if (array_key_exists($year, $years)){
                     $averageRating = $years[$year];
-                    $deviation = ($averageRating - 2.5) * 50;
-                    $hue = 80 + $deviation;
-                } else{
+                    $deviation = ($averageRating) * 30;
+                    $hue = $deviation;
+
+                    $saturation = min(50, (abs($averageRating - 2.0) * 25) + 10);
+                } else {
                     $hue = null;
+                    $saturation = null;
                 }
 
-                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', 30%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
+                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
             }
         ?>
     </div>
