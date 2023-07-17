@@ -37,13 +37,22 @@
         border: 1px solid white;
         background-color: black;
     }
+
+    #tabbed-ratings .profile-rating-distribution-bar{
+        background-color: lightgray;
+        margin: 0;
+        padding: 0;
+        height: 2em;
+        text-align: left;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="tabbed-container-nav">
-    <button class="active" onclick="openTab('tabbed-ratings')">Latest</button><button onclick="openTab('tabbed-tags')">Tags</button><button onclick="openTab('tabbed-stats')">Stats</button>
+    <button class="active" onclick="openTab('tabbed-latest')">Latest</button><button onclick="openTab('tabbed-ratings')">Ratings</button><button onclick="openTab('tabbed-tags')">Tags</button><button onclick="openTab('tabbed-stats')">Stats</button>
 </div>
 
-<div id="tabbed-ratings" class="tab">
+<div id="tabbed-latest" class="tab">
     <?php
         $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags
                                 FROM (
@@ -83,6 +92,49 @@
     ?>
     <a href="ratings/?id=<?php echo $profileId; ?>&p=1"><span style="float:right;margin:1em;">... see more!</span></a>
     <br>
+</div>
+
+<style>
+    #tabbed-ratings table, #tabbed-ratings tr, #tabbed-ratings td{
+        text-align: center;
+        vertical-align: middle;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border-spacing: 0;
+    }
+
+    #tabbed-ratings tr, #tabbed-ratings td {
+        padding: 0.1em;
+        height: 4em;
+    }
+</style>
+
+<div id="tabbed-ratings" class="tab" style="display:none;">
+    <table>
+        <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5){ ?>
+            <?php
+            $formattedRating = number_format($rating, 1);
+            $ratingCount = $ratingCounts[$formattedRating] ?? 0;
+            $ratingBarWidth = ($ratingCount / $maxRating) * 90;
+            ?>
+            <tr class="alternating-bg">
+                <td style="width:25%;">
+                    <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"><?php echo $formattedRating; ?><br>
+                        <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != ""){ ?>
+                            <span class="subText"><?php echo htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"]); ?></span>
+                        <?php } ?>
+                    </a>
+                </td>
+                <td style="width:5%;">
+                    <?php echo $ratingCount; ?>
+                </td>
+                <td style="width:100%;">
+                    <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"> <div class="profile-rating-distribution-bar" style="width: <?php echo $ratingBarWidth; ?>%;">&nbsp;</div></a>
+                </td>
+            </tr>
+        <?php } ?>
+    </table>
 </div>
 
 <div id="tabbed-tags" class="tab" style="display:none;padding: 2em;">
