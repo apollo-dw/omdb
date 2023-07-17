@@ -219,8 +219,8 @@ while($row = $result->fetch_assoc()) {
             $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
             $selectStmt->bind_param("ii", $userId, $beatmapID);
             $selectStmt->execute();
-            $result = $selectStmt->get_result();
-            $tags_row = $result->fetch_assoc();
+            $tags_result = $selectStmt->get_result();
+            $tags_row = $tags_result->fetch_assoc();
             $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
             $selectStmt->close();
             ?>
