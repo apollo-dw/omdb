@@ -2,14 +2,19 @@
 	include_once '../connection.php';
 	include_once '../functions.php';
 
-$stmt = $conn->prepare("SELECT r.*, b.*, GROUP_CONCAT(t.Tag SEPARATOR ', ') AS Tags
-                        FROM `ratings` r
-                        JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
-                        LEFT JOIN `rating_tags` t ON t.`BeatmapID` = b.`BeatmapID` AND t.`UserID` = r.`UserID`
-                        WHERE r.`UserID` = ? AND b.`Mode` = ?
-                        GROUP BY b.`BeatmapID`, r.`date`
-                        ORDER BY r.`date` DESC
-                        LIMIT 50");
+    $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags
+                            FROM (
+                                SELECT r.`RatingID`, GROUP_CONCAT(t.`Tag` SEPARATOR ', ') AS Tags
+                                FROM `ratings` r
+                                JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                                LEFT JOIN `rating_tags` t ON t.`BeatmapID` = b.`BeatmapID` AND t.`UserID` = r.`UserID`
+                                WHERE r.`UserID` = ? AND b.`Mode` = ?
+                                GROUP BY r.`RatingID`
+                            ) AS t
+                            JOIN `ratings` r ON t.`RatingID` = r.`RatingID`
+                            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                            ORDER BY r.`date` DESC
+                            LIMIT 50");
     $stmt->bind_param("ii", $profileId, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
