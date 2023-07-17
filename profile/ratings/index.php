@@ -104,8 +104,12 @@
                 $result = $stmt->get_result();
             }
 
-
             while ($row = $result->fetch_assoc()) {
+                $stmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS Tags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?;");
+                $stmt->bind_param('ii', $profileId, $row["BeatmapID"]);
+                $stmt->execute();
+                $tags = $stmt->get_result()->fetch_assoc()["Tags"];
+                $tags = htmlspecialchars($tags, ENT_COMPAT, "ISO-8859-1");
         ?>
 			<div class="flex-container ratingContainer alternating-bg">
 				<div class="flex-child">
@@ -113,14 +117,15 @@
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
 					<?php echo RenderUserRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]");?></a>
-				</div>
+                    <br> <span class="subText"><?php echo $tags; ?></span>
+                </div>
 				<div class="flex-child" style="width:100%;text-align:right;">
 					<?php echo GetHumanTime($row["date"]); ?>
 				</div>
 			</div>
 			<?php
-				}
-				$stmt->close();
+			}
+			$stmt->close();
 			?>
 	</div>
 </div>
