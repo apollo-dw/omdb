@@ -3,7 +3,8 @@
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? "";
     $order = $_GET['o'] ?? "0";
-    $tagArgument = $_GET['t'] ?? "";
+    $tagArgument = urldecode($_GET['t']) ?? "";
+
     $PageTitle = "Ratings";
 
     require "../../base.php";
@@ -84,8 +85,9 @@
 
         while ($row = $result->fetch_assoc()) {
             $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
+            $encodedTag = urlencode($tag);
             $selected = $tagArgument == $row["Tag"] ? " selected='selected'" : "";
-            echo "<option value='{$tag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
+            echo "<option value='{$encodedTag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
         }
     ?>
 </select>
