@@ -139,14 +139,14 @@
 
 <div id="tabbed-tags" class="tab" style="display:none;padding: 2em;">
     <?php
-        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount;");
+        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
         $stmt->bind_param('i', $profileId);
         $stmt->execute();
         $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
             $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
-            echo "{$tag} ({$row["TagCount"]}) <br>";
+            echo "<a href='ratings/?id={$profileId}&t={$tag}'>{$tag} ({$row["TagCount"]}) <br>";
         }
     ?>
 </div>
