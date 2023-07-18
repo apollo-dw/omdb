@@ -171,20 +171,25 @@
     Year affinities:
     <div class="flex-row-container" style="width: 18em;">
         <?php
+            $minRating = min($years);
+            $maxRating = max($years);
+
             for ($year = date('Y'); $year >= 2007; $year--) {
                 $averageRating = "none";
-                if (array_key_exists($year, $years)){
+                if (array_key_exists($year, $years)) {
                     $averageRating = $years[$year];
-                    $deviation = ($averageRating) * 30;
-                    $hue = $deviation;
 
-                    $saturation = min(50, (abs($averageRating - 2.5) * 25) + 20);
+                    $hue = (($averageRating - $minRating) / ($maxRating - $minRating)) * 90;
+
+                    $midpoint = ($maxRating + $minRating) / 2;
+                    $distance = abs($averageRating - $midpoint);
+                    $saturation = min(50, ($distance / ($maxRating - $minRating)) * 100 + 40);
                 } else {
                     $hue = null;
                     $saturation = null;
                 }
 
-                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
+                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation . '%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
             }
         ?>
     </div> <br>
@@ -212,19 +217,73 @@
     Star rating affinities:
     <div class="flex-row-container" style="width: 18em;">
         <?php
-        for ($SR = 0; $SR <= 13; $SR++) {
-            $averageRating = "none";
-            if (array_key_exists($SR, $starRatings)){
-                $averageRating = $starRatings[$SR];
-                $deviation = ($averageRating) * 30;
-                $hue = $deviation;
+            $minSR = min($starRatings);
+            $maxSR = max($starRatings);
+            for ($SR = 0; $SR <= 13; $SR++) {
+                $averageRating = "none";
+                if (array_key_exists($SR, $starRatings)){
+                    $averageRating = $starRatings[$SR];
 
-                $saturation = min(50, (abs($averageRating - 2.5) * 25) + 20);
-            } else
-                continue;
+                    $hue = (($averageRating - $minSR) / ($maxRating - $minSR)) * 90;
 
-            echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . $SR . '*</span></div>';
-        }
+                    $midpoint = ($maxSR + $minSR) / 2;
+                    $distance = abs($averageRating - $midpoint);
+                    $saturation = min(50, ($distance / ($maxSR - $minSR)) * 100 + 40);
+                } else
+                    continue;
+
+                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . $SR . '*</span></div>';
+            }
+        ?>
+    </div> <br>
+
+    <?php
+        $stmt = $conn->prepare("
+                SELECT 
+                    b.`Genre`,
+                    AVG(r.`Score`) AS AverageRating
+                FROM `ratings` r
+                JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                WHERE r.`UserID` = ?
+                GROUP BY b.`Genre`
+                ORDER BY b.`Genre`;
+                ");
+        $stmt->bind_param('i', $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $genres = array();
+        while ($row = $result->fetch_assoc())
+            $genres[$row["Genre"]] = $row["AverageRating"];
+    ?>
+
+    Genre affinities:
+    <div class="flex-row-container" style="width: 18em;">
+        <?php
+            $minGenre = min($genres);
+            $maxGenre = max($genres);
+            for ($genre = 0; $genre <= 14; $genre++) {
+                $genreString = getGenre($genre);
+
+                if (is_null($genreString))
+                    continue;
+
+                $averageRating = "none";
+                if (array_key_exists($genre, $genres)){
+                    $averageRating = $genres[$genre];
+
+                    $hue = (($averageRating - $minGenre) / ($maxGenre - $minGenre)) * 90;
+
+                    $midpoint = ($maxGenre + $minGenre) / 2;
+                    $distance = abs($averageRating - $midpoint);
+                    $saturation = min(50, ($distance / ($maxGenre - $minGenre)) * 100 + 40);
+                } else {
+                    $hue = null;
+                    $saturation = null;
+                }
+
+                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;font-size: 8px;">' . $genreString . '</span></div>';
+            }
         ?>
     </div>
 </div>
