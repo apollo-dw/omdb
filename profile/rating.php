@@ -111,7 +111,7 @@
 </style>
 
 <div id="tabbed-ratings" class="tab" style="display:none;">
-    <table>
+    <table style="width:100%;">
         <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5){ ?>
             <?php
             $formattedRating = number_format($rating, 1);
@@ -119,7 +119,7 @@
             $ratingBarWidth = ($ratingCount / $maxRating) * 90;
             ?>
             <tr class="alternating-bg">
-                <td style="width:25%;">
+                <td style="width:20%;">
                     <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"><?php echo $formattedRating; ?><br>
                         <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != ""){ ?>
                             <span class="subText"><?php echo htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"]); ?></span>
@@ -178,7 +178,7 @@
                     $deviation = ($averageRating) * 30;
                     $hue = $deviation;
 
-                    $saturation = min(50, (abs($averageRating - 2.0) * 25) + 10);
+                    $saturation = min(50, (abs($averageRating - 2.5) * 25) + 20);
                 } else {
                     $hue = null;
                     $saturation = null;
@@ -186,6 +186,45 @@
 
                 echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
             }
+        ?>
+    </div> <br>
+
+    <?php
+        $stmt = $conn->prepare("
+            SELECT 
+                (b.`SR` DIV 1) AS SRRange,
+                AVG(r.`Score`) AS AverageRating
+            FROM `ratings` r
+            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+            WHERE r.`UserID` = ?
+            GROUP BY SRRange
+            ORDER BY SRRange;
+            ");
+        $stmt->bind_param('i', $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $starRatings = array();
+        while ($row = $result->fetch_assoc())
+            $starRatings[$row["SRRange"]] = $row["AverageRating"];
+    ?>
+
+    Star rating affinities:
+    <div class="flex-row-container" style="width: 18em;">
+        <?php
+        for ($SR = 0; $SR <= 13; $SR++) {
+            $averageRating = "none";
+            if (array_key_exists($SR, $starRatings)){
+                $averageRating = $starRatings[$SR];
+                $deviation = ($averageRating) * 30;
+                $hue = $deviation;
+
+                $saturation = min(50, (abs($averageRating - 2.5) * 25) + 20);
+            } else
+                continue;
+
+            echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . $SR . '*</span></div>';
+        }
         ?>
     </div>
 </div>
