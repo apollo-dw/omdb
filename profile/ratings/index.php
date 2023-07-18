@@ -2,6 +2,8 @@
 	$profileId = $_GET['id'] ?? -1;
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? "";
+    $order = $_GET['o'] ?? "0";
+    $tagArgument = $_GET['t'] ?? "";
     $PageTitle = "Ratings";
 
     require "../../base.php";
@@ -50,7 +52,7 @@
 <hr>
 
 <label for="rating">Rating</label>
-<select name="rating" onchange="location = '?id=<?php echo $profileId; ?>&r=' + this.value;">
+<select id="rating" name="rating" onchange="changePage(1)">
     <?php
         $selected = $rating == "" ? " selected='selected'" : "";
         echo "<option value='' {$selected}>All</option>";
@@ -61,15 +63,39 @@
             echo '>' . $i . '</option>';
         }
     ?>
+</select> <br>
 
+<label for="order">Order</label>
+<select id="order" name="order" onchange="changePage(1)">
+    <option value="0" <?php if ($order == 0) echo "selected='selected'"; ?>>Latest</option>
+    <option value="1" <?php if ($order == 1) echo "selected='selected'"; ?>>Oldest</option>
+    <option value="2" <?php if ($order == 2) echo "selected='selected'"; ?>>Highest rated</option>
+    <option value="3" <?php if ($order == 3) echo "selected='selected'"; ?>>Lowest rated</option>
+</select> <br>
+
+<label for="tag">Tag</label>
+<select id="tag" name="tag" onchange="changePage(1)">
+    <option value=''>Any</option>
+    <?php
+        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
+        $stmt->bind_param('i', $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
+            $selected = $tagArgument == $row["Tag"] ? " selected='selected'" : "";
+            echo "<option value='{$tag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
+        }
+    ?>
 </select>
 
 <div style="text-align:center;">
-	<div class="pagination">
-	  <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
-	  <span id="page"><?php echo $page; ?></span>
-	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id={$profileId}&r={$rating}&p={$nextPage}'>&raquo; </a>"; } ?></span></b>
-	</div>
+    <div class="pagination">
+        <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
+        <span id="page"><?php echo $page; ?></span>
+        <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
+    </div>
 </div>
 
 <div class="flex-container">
@@ -82,27 +108,51 @@
                 $pageString = "LIMIT {$lower}, {$limit}";
             }
 
-            if ($rating != ""){
-                $stmt = $conn->prepare("
-                    SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName
-                    FROM `ratings` r
-                    JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
-                    WHERE r.UserID = ? AND r.Score = ?
-                    ORDER BY r.date DESC {$pageString};");
-                $stmt->bind_param('id', $profileId, $rating);
-                $stmt->execute();
-                $result = $stmt->get_result();
-            } else {
-                $stmt = $conn->prepare("
-                    SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName
-                    FROM `ratings` r
-                    JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
-                    WHERE r.UserID = ?
-                    ORDER BY r.date DESC {$pageString};");
-                $stmt->bind_param('i', $profileId);
-                $stmt->execute();
-                $result = $stmt->get_result();
+            $queryParameterTypes = "i";
+            $queryParameterValues = array($profileId);
+
+            $ratingString = "";
+            if ($rating != "") {
+                $ratingString = "AND r.Score = ?";
+                $queryParameterTypes .= "d";
+                $queryParameterValues[] = floatval($rating);
             }
+
+            $tagJoinString = "";
+            $tagAndString = "";
+            if ($tagArgument != "") {
+                $tagJoinString = "JOIN `rating_tags` rt ON b.BeatmapID = rt.BeatmapID";
+                $tagAndString = "AND rt.Tag = ?";
+                $queryParameterTypes .= "s";
+                $queryParameterValues[] = $tagArgument;
+            }
+
+            switch($order) {
+                case "1":
+                    $orderString = "ORDER BY r.DATE ASC";
+                    break;
+                case "2":
+                    $orderString = "ORDER BY r.SCORE DESC, r.DATE ASC";
+                    break;
+                case "3":
+                    $orderString = "ORDER BY r.SCORE ASC, r.DATE ASC";
+                    break;
+                case "0":
+                default:
+                    $orderString = "ORDER BY r.DATE DESC";
+            }
+
+            $stmt = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName
+                    FROM `ratings` r
+                    JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+                    {$tagJoinString}
+                    WHERE r.UserID = ? {$ratingString} {$tagAndString}
+                    {$orderString} {$pageString};";
+
+            $stmt = $conn->prepare($stmt);
+            $stmt->bind_param($queryParameterTypes, ...$queryParameterValues);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
                 $stmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS Tags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?;");
@@ -124,19 +174,32 @@
 				</div>
 			</div>
 			<?php
-			}
-			$stmt->close();
+                }
+                $stmt->close();
 			?>
 	</div>
 </div>
 
 <div style="text-align:center;">
     <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&r={$rating}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
+        <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
         <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amntOfPages) { echo "<a href='?id={$profileId}&r={$rating}&p={$nextPage}'>&raquo; </a>"; } ?></span></b>
+        <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
     </div>
 </div>
+
+<script>
+    function changePage(page) {
+        var order = document.getElementById("order").value;
+        var rating = document.getElementById("rating").value;
+        var tag = document.getElementById("tag").value;
+
+        if (order == 2 || order == 3)
+            rating = "";
+
+        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page;
+    }
+</script>
 
 <?php
 	require '../../footer.php';
