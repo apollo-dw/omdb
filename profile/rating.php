@@ -147,7 +147,7 @@
         while ($row = $result->fetch_assoc()) {
             $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
             $encodedTag = urlencode($tag);
-            echo "<a href='ratings/?id={$profileId}&t={$encodedTag}'>{$tag} ({$row["TagCount"]}) <br>";
+            echo "<a href='ratings/?id={$profileId}&t={$encodedTag}'>{$tag} ({$row["TagCount"]})</a> <br>";
         }
     ?>
 </div>
