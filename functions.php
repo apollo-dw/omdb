@@ -341,4 +341,35 @@
 
         return true;
     }
+
+	function getGenre($number) {
+		switch ($number) {
+			case 2:
+				return "Video Game";
+			case 3:
+				return "Anime";
+			case 4:
+				return "Rock";
+			case 5:
+				return "Pop";
+			case 6:
+				return "Other Genre";
+			case 7:
+				return "Novelty";
+			case 9:
+				return "Hip Hop";
+			case 10:
+				return "Electronic";
+			case 11:
+				return "Metal";
+			case 12:
+				return "Classical";
+			case 13:
+				return "Folk";
+			case 14:
+				return "Jazz";
+			default:
+				return null;
+		}
+	}
 ?>

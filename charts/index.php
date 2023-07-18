@@ -59,18 +59,15 @@
             <label>Genre:</label>
             <select name="genre" id="genre" autocomplete="off" onchange="updateChart();">
                 <option value="0" selected="selected">Any</option>
-                <option value="2">Video Game</option>
-                <option value="3">Anime</option>
-                <option value="4">Rock</option>
-                <option value="5">Pop</option>
-                <option value="6">Other</option>
-                <option value="7">Novelty</option>
-                <option value="9">Hip Hop</option>
-                <option value="10">Electronic</option>
-                <option value="11">Metal</option>
-                <option value="12">Classical</option>
-                <option value="13">Folk</option>
-                <option value="14">Jazz</option>
+                <?php
+                    for ($i = 1; $i <= 14; $i++) {
+                        $genre = getGenre($i);
+                        if (is_null($genre))
+                            continue;
+
+                        echo "<option value='{$i}'>$genre</option>";
+                    }
+                ?>
             </select><br>
             <label>Language:</label>
             <select name="language" id="language" autocomplete="off" onchange="updateChart();">
