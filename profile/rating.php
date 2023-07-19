@@ -167,123 +167,156 @@
 <div id="tabbed-stats" class="tab" style="display:none;padding: 2em;">
     <?php
         $stmt = $conn->prepare("
-                SELECT YEAR(b.`dateranked`) AS Year, AVG(r.`Score`) AS AverageRating
-                FROM `ratings` r
-                JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
-                WHERE r.`UserID` = ?
-                GROUP BY YEAR(b.`dateranked`)
-                ORDER BY YEAR(b.`dateranked`);");
+            SELECT YEAR(b.`dateranked`) AS Year, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+            FROM `ratings` r
+            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+            WHERE r.`UserID` = ?
+            GROUP BY YEAR(b.`dateranked`)
+            ORDER BY YEAR(b.`dateranked`);");
         $stmt->bind_param('i', $profileId);
         $stmt->execute();
         $result = $stmt->get_result();
 
         $years = array();
-        while ($row = $result->fetch_assoc())
-            $years[$row["Year"]] = $row["AverageRating"];
+        while ($row = $result->fetch_assoc()) {
+            $year = $row["Year"];
+            $years[$year] = array(
+                "AverageRating" => $row["AverageRating"],
+                "RatingCount" => $row["RatingCount"]
+            );
+        }
     ?>
     Year affinities:
     <div class="flex-row-container" style="width: 18em;">
         <?php
-            $minRating = min($years);
-            $maxRating = max($years);
+            $minRating = min(array_column($years, "AverageRating"));
+            $maxRating = max(array_column($years, "AverageRating"));
 
             for ($year = date('Y'); $year >= 2007; $year--) {
                 $averageRating = "none";
+                $ratingCount = 0;
+
                 if (array_key_exists($year, $years)) {
-                    $averageRating = $years[$year];
+                    $averageRating = $years[$year]["AverageRating"];
+                    $ratingCount = $years[$year]["RatingCount"];
                     list($hue, $saturation) = calculateHueAndSaturation($minRating, $maxRating, $averageRating);
                 } else {
                     $hue = null;
                     $saturation = null;
                 }
 
-                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation . '%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . substr($year, -2) . '</span></div>';
+                echo "<div class='year-box' style='background-color: hsl({$hue}, {$saturation}%, 40%);'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted white;'>" . substr($year, -2) . "</span></div>";
             }
         ?>
     </div> <br>
 
     <?php
         $stmt = $conn->prepare("
-            SELECT 
-                (b.`SR` DIV 1) AS SRRange,
-                AVG(r.`Score`) AS AverageRating
-            FROM `ratings` r
-            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
-            WHERE r.`UserID` = ?
-            GROUP BY SRRange
-            ORDER BY SRRange;
-            ");
+        SELECT (b.`SR` DIV 1) AS SRRange, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+        FROM `ratings` r
+        JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+        WHERE r.`UserID` = ?
+        GROUP BY SRRange
+        ORDER BY SRRange;
+        ");
         $stmt->bind_param('i', $profileId);
         $stmt->execute();
         $result = $stmt->get_result();
 
         $starRatings = array();
-        while ($row = $result->fetch_assoc())
-            $starRatings[$row["SRRange"]] = $row["AverageRating"];
+        while ($row = $result->fetch_assoc()) {
+            $SRRange = $row["SRRange"];
+            $starRatings[$SRRange] = array(
+                "AverageRating" => $row["AverageRating"],
+                "RatingCount" => $row["RatingCount"]
+            );
+        }
     ?>
 
     Star rating affinities:
     <div class="flex-row-container" style="width: 18em;">
         <?php
-            $minSR = min($starRatings);
-            $maxSR = max($starRatings);
-            for ($SR = 0; $SR <= 13; $SR++) {
-                $averageRating = "none";
-                if (array_key_exists($SR, $starRatings)){
-                    $averageRating = $starRatings[$SR];
-                    list($hue, $saturation) = calculateHueAndSaturation($minSR, $maxSR, $averageRating);
-                } else
-                    continue;
+        $minSR = min(array_column($starRatings, "AverageRating"));
+        $maxSR = max(array_column($starRatings, "AverageRating"));
+        for ($SR = 0; $SR <= 13; $SR++) {
+            $averageRating = "none";
+            $ratingCount = 0;
 
-                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;">' . $SR . '*</span></div>';
+            if (array_key_exists($SR, $starRatings)) {
+                $averageRating = $starRatings[$SR]["AverageRating"];
+                $ratingCount = $starRatings[$SR]["RatingCount"];
+                list($hue, $saturation) = calculateHueAndSaturation($minSR, $maxSR, $averageRating);
+            } else {
+                continue;
             }
+
+            echo "<div class='year-box' style='background-color: hsl({$hue}, {$saturation}%, 40%);'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted white;'>" . $SR . "*</span></div>";
+        }
         ?>
     </div> <br>
 
     <?php
         $stmt = $conn->prepare("
-                SELECT 
-                    b.`Genre`,
-                    AVG(r.`Score`) AS AverageRating
-                FROM `ratings` r
-                JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
-                WHERE r.`UserID` = ?
-                GROUP BY b.`Genre`
-                ORDER BY b.`Genre`;
-                ");
+            SELECT b.`Genre`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+            FROM `ratings` r
+            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+            WHERE r.`UserID` = ?
+            GROUP BY b.`Genre`
+            ORDER BY b.`Genre`;
+            ");
         $stmt->bind_param('i', $profileId);
         $stmt->execute();
         $result = $stmt->get_result();
 
         $genres = array();
-        while ($row = $result->fetch_assoc())
-            $genres[$row["Genre"]] = $row["AverageRating"];
+        while ($row = $result->fetch_assoc()) {
+            $genre = $row["Genre"];
+            $genres[$genre] = array(
+                "AverageRating" => $row["AverageRating"],
+                "RatingCount" => $row["RatingCount"]
+            );
+        }
     ?>
 
     Genre affinities:
     <div class="flex-row-container" style="width: 18em;">
         <?php
-            $minGenre = min($genres);
-            $maxGenre = max($genres);
-            for ($genre = 0; $genre <= 14; $genre++) {
-                $genreString = getGenre($genre);
+        $minGenre = min(array_column($genres, "AverageRating"));
+        $maxGenre = max(array_column($genres, "AverageRating"));
 
-                if (is_null($genreString))
-                    continue;
+        for ($genre = 0; $genre <= 14; $genre++) {
+            $genreString = getGenre($genre);
 
-                $averageRating = "none";
-                if (array_key_exists($genre, $genres)){
-                    $averageRating = $genres[$genre];
-                    list($hue, $saturation) = calculateHueAndSaturation($minGenre, $maxGenre, $averageRating);
-                } else {
-                    $hue = null;
-                    $saturation = null;
-                }
+            if (is_null($genreString))
+                continue;
 
-                echo '<div class="year-box" style="background-color: hsl(' . $hue . ', ' . $saturation .'%, 40%);"><span title=' . $averageRating . ' style="border-bottom:1px dotted white;font-size: 8px;">' . $genreString . '</span></div>';
+            $averageRating = "none";
+            $ratingCount = 0;
+
+            if (array_key_exists($genre, $genres)) {
+                $averageRating = $genres[$genre]["AverageRating"];
+                $ratingCount = $genres[$genre]["RatingCount"];
+                list($hue, $saturation) = calculateHueAndSaturation($minGenre, $maxGenre, $averageRating);
+            } else {
+                $hue = null;
+                $saturation = null;
             }
+
+            echo "<div class='year-box' style='background-color: hsl({$hue}, {$saturation}%, 40%);'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted white;font-size: 8px;'>{$genreString}</span></div>";
+        }
         ?>
-    </div>
+    </div> <br>
+
+    Yearly completion:<br>
+    <?php
+        $stmt = $conn->prepare("SELECT Count(*) as Count, YEAR(`dateranked`) as Year FROM beatmaps GROUP BY YEAR(`dateranked`) ORDER BY YEAR(`dateranked`);");
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            echo "<span class='subText'><b>{$row["Year"]}</b>: {$years[$row["Year"]]["RatingCount"]} / {$row["Count"]}</span> <br>";
+        }
+    ?>
 </div>
 
 
