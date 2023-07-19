@@ -110,6 +110,18 @@
     }
 </style>
 
+<?php
+    function calculateHueAndSaturation($min, $max, $avg): array
+    {
+        $hue = (($avg - $min) / ($max - $min)) * 90;
+        $midpoint = ($max + $min) / 2;
+        $distance = abs($avg - $midpoint);
+        $saturation = min(50, ($distance / ($max - $min)) * 100 + 40);
+
+        return array($hue, $saturation);
+    }
+?>
+
 <div id="tabbed-ratings" class="tab" style="display:none;">
     <table style="width:100%;">
         <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5){ ?>
@@ -179,12 +191,7 @@
                 $averageRating = "none";
                 if (array_key_exists($year, $years)) {
                     $averageRating = $years[$year];
-
-                    $hue = (($averageRating - $minRating) / ($maxRating - $minRating)) * 90;
-
-                    $midpoint = ($maxRating + $minRating) / 2;
-                    $distance = abs($averageRating - $midpoint);
-                    $saturation = min(50, ($distance / ($maxRating - $minRating)) * 100 + 40);
+                    list($hue, $saturation) = calculateHueAndSaturation($minRating, $maxRating, $averageRating);
                 } else {
                     $hue = null;
                     $saturation = null;
@@ -224,12 +231,7 @@
                 $averageRating = "none";
                 if (array_key_exists($SR, $starRatings)){
                     $averageRating = $starRatings[$SR];
-
-                    $hue = (($averageRating - $minSR) / ($maxRating - $minSR)) * 90;
-
-                    $midpoint = ($maxSR + $minSR) / 2;
-                    $distance = abs($averageRating - $midpoint);
-                    $saturation = min(50, ($distance / ($maxSR - $minSR)) * 100 + 40);
+                    list($hue, $saturation) = calculateHueAndSaturation($minSR, $maxSR, $averageRating);
                 } else
                     continue;
 
@@ -272,12 +274,7 @@
                 $averageRating = "none";
                 if (array_key_exists($genre, $genres)){
                     $averageRating = $genres[$genre];
-
-                    $hue = (($averageRating - $minGenre) / ($maxGenre - $minGenre)) * 90;
-
-                    $midpoint = ($maxGenre + $minGenre) / 2;
-                    $distance = abs($averageRating - $midpoint);
-                    $saturation = min(50, ($distance / ($maxGenre - $minGenre)) * 100 + 40);
+                    list($hue, $saturation) = calculateHueAndSaturation($minGenre, $maxGenre, $averageRating);
                 } else {
                     $hue = null;
                     $saturation = null;
