@@ -113,7 +113,9 @@
 <?php
     function calculateHueAndSaturation($min, $max, $avg): array
     {
-        $hue = (($avg - $min) / ($max - $min)) * 90;
+        $max = ($max + $max + $max + $max + 5) / 5;
+        $min = ($min * 4) / 5;
+        $hue = (($avg - $min) / ($max - $min)) * 150;
         $midpoint = ($max + $min) / 2;
         $distance = abs($avg - $midpoint);
         $saturation = min(50, ($distance / ($max - $min)) * 100 + 40);
