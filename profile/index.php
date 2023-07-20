@@ -268,7 +268,12 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $stmt = $conn->prepare("SELECT DISTINCT `SetID`, `SetCreatorID`, `Artist`, `Title` FROM beatmaps WHERE CreatorID = ? GROUP BY `SetID`, `SetCreatorID`, `Artist`, `Title` ORDER BY MIN(`Timestamp`) DESC;");
+        $stmt = $conn->prepare("SELECT DISTINCT b.`SetID`, b.`SetCreatorID`, b.`Artist`, b.`Title`
+                           FROM beatmaps b
+                           INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
+                           WHERE bc.`CreatorID` = ? 
+                           GROUP BY b.`SetID`, b.`SetCreatorID`, b.`Artist`, b.`Title` 
+                           ORDER BY MIN(b.`Timestamp`) DESC;");
         $stmt->bind_param("s", $profileId);
         $stmt->execute();
         $setsResult = $stmt->get_result();
@@ -281,8 +286,9 @@
         foreach($sets as $set) {
             $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`
                        FROM beatmaps b
+                       INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
                        LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
-                       WHERE b.`SetID` = ? AND b.`CreatorID` = ?
+                       WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
                        ORDER BY b.`RatingCount` DESC");
             $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
             $stmt->execute();

@@ -35,7 +35,7 @@
     $hasBlacklistedDifficulties = false;
 ?>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
+<center xmlns="http://www.w3.org/1999/html"><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
 
 <div class="flex-container" style="justify-content: center;">
     <div class="flex-child">
@@ -141,7 +141,19 @@ while($row = $result->fetch_assoc()) {
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
-            <?php if($row['SetCreatorID'] != $row['CreatorID']) { $mapperName = GetUserNameFromId($row["CreatorID"], $conn); echo "<br><span class='subText'>mapped by <a href='/profile/{$row["CreatorID"]}'> {$mapperName} </a></span>"; } ?>
+            <br>
+            <?php
+                $creatorStmt = $conn->prepare("SELECT IF(COUNT(*) = 1 AND CreatorID = ?, 1, 0) AS IsOnlyOne FROM beatmap_creators WHERE BeatmapID = ?;");
+                $creatorStmt->bind_param('ii', $row['SetCreatorID'], $row['BeatmapID']);
+                $creatorStmt->execute();
+                $didCreatorIDMapThis = $creatorStmt->get_result()->fetch_assoc()["IsOnlyOne"];
+
+                if (!$didCreatorIDMapThis) {
+                    ?> <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span> <?php
+                }
+            ?>
+
+
         </div>
         <?php if (!$blackListed) { ?>
             <div class="flex-child diffBox" style="width:15%;text-align:center;">
@@ -223,7 +235,6 @@ while($row = $result->fetch_assoc()) {
                         $tags_row = $tags_result->fetch_assoc();
                         $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
                         $selectStmt->close();
-
                 ?>
                 <div style="overflow:hidden;text-overflow:ellipsis;">
                     <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>

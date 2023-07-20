@@ -91,7 +91,7 @@
                                     <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><?php echo $beatmap['Artist']; ?> - <?php echo htmlspecialchars($beatmap['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $beatmap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
                                     <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><b><?php echo htmlspecialchars($beatmap['DifficultyName']); ?></b></a> <span class="subText"><?php echo number_format((float)$beatmap['SR'], 2, '.', ''); ?>*</span><br>
                                     <?php echo date("M jS, Y", strtotime($beatmap['DateRanked']));?><br>
-                                    <a href="/profile/<?php echo $beatmap['CreatorID']; ?>"><?php echo GetUserNameFromId($beatmap['CreatorID'], $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $beatmap['CreatorID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br>
+                                    <?php RenderBeatmapCreators($beatmap['BeatmapID'], $conn); ?><br>
                                     Recommendation Score: <?php echo $beatmap['Score']; ?>
                                 </div>
                             </div>

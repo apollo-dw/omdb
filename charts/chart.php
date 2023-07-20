@@ -103,7 +103,6 @@
 				$stmt2->execute();
 				$userRatingResult = $stmt2->get_result();
 				$userRating = $userRatingResult->fetch_row()[0] ?? "";
-				$stmt2->close();
 
 				$counter += 1;
 		?>
@@ -118,8 +117,8 @@
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
-					<a href="/profile/<?php echo $row['CreatorID']; ?>"><?php echo GetUserNameFromId($row['CreatorID'], $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $row['CreatorID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br>
-				</div>
+                    <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?>
+                </div>
 				<div style="flex: auto auto 0;">
 					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>

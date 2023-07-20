@@ -372,4 +372,25 @@
 				return null;
 		}
 	}
+
+	function RenderBeatmapCreators($beatmapID, $conn) {
+		$stmt = $conn->prepare("SELECT `CreatorID` FROM `beatmap_creators` WHERE BeatmapID = ?");
+		$stmt->bind_param('i', $beatmapID);
+		$stmt->execute();
+		$creators = $stmt->get_result();
+
+		$creatorCount = $creators->num_rows;
+		$index = 0;
+
+		while ($creator = $creators->fetch_assoc()){
+			$creatorName = GetUserNameFromId($creator['CreatorID'], $conn);
+			echo "<a href='/profile/{$creator['CreatorID']}'>{$creatorName}</a><a href='https://osu.ppy.sh/u/{$creator['CreatorID']}' target='_blank' rel='noopener noreferrer'><i class='icon-external-link' style='font-size:10px;'></i></a>";
+
+			$index++;
+			if ($index < $creatorCount - 1)
+				echo ", ";
+			elseif ($index == $creatorCount - 1)
+				echo " and ";
+		}
+	}
 ?>

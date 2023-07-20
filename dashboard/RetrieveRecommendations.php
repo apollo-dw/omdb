@@ -19,15 +19,16 @@
 
         $correlated_ids = implode(', ', array_keys($correlated_users));
         $sql = "SELECT r.BeatmapID
-                FROM ratings r
-                JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
-                WHERE r.UserID IN ($correlated_ids)
-                AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
-                AND b.CreatorID <> ? AND b.SetCreatorID <> ?
-                GROUP BY r.BeatmapID
-                HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
-                ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
-                LIMIT 50;";
+            FROM ratings r
+            JOIN beatmap_creators bc ON r.BeatmapID = bc.BeatmapID
+            JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+            WHERE r.UserID IN ($correlated_ids)
+            AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
+            AND bc.CreatorID <> ? AND b.SetCreatorID <> ?
+            GROUP BY r.BeatmapID
+            HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
+            ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
+            LIMIT 50;";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('iii', $userID, $userID, $userID);
@@ -75,7 +76,7 @@
 
         $beatmap_details_array = [];
         foreach ($sorted_recommendations as $beatmap_id => $score) {
-            $sql = "SELECT artist, title, difficultyname, setid, SR, DateRanked, CreatorID FROM beatmaps WHERE BeatmapID = ?;";
+            $sql = "SELECT artist, title, difficultyname, setid, SR, DateRanked FROM beatmaps WHERE BeatmapID = ?;";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $beatmap_id);
             $stmt->execute();
@@ -84,7 +85,7 @@
             $beatmap_details = $result->fetch_row();
 
             if ($beatmap_details) {
-                list($artist, $title, $difficultyname, $setid, $sr, $date, $creatorid) = $beatmap_details;
+                list($artist, $title, $difficultyname, $setid, $sr, $date) = $beatmap_details;
                 $beatmap_details_array[] = [
                     'BeatmapID' => $beatmap_id,
                     'SetID' => $setid,
@@ -93,7 +94,6 @@
                     'DifficultyName' => $difficultyname,
                     'SR' => $sr,
                     'DateRanked' => $date,
-                    'CreatorID' => $creatorid,
 					'Score' => round($score, 2),
                 ];
             } else {
@@ -106,7 +106,6 @@
                     'DifficultyName' => null,
                     'SR' => null,
                     'DateRanked' => null,
-                    'CreatorID' => $creatorid,
 					'Score' => null,
                 ];
             }
