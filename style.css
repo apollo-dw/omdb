@@ -683,3 +683,23 @@ ol.star-rating-list > li{
 .profile-lesser-map:nth-last-child(1){
     margin-bottom:1em;
 }
+
+.tabbed-container-nav{
+    width:100%;
+    border-bottom: 1px solid white;
+}
+
+.tabbed-container-nav button {
+    height:3em;
+    border: 0;
+    margin: 0;
+    background-color: darkslategray;
+}
+
+.tabbed-container-nav button:hover {
+    background-color: #182828;
+}
+
+.tabbed-container-nav button.active{
+    background-color: #0C1515;
+}

@@ -52,3 +52,16 @@ function showResult(str) {
 function searchFocus() {
     document.getElementById("topBarSearchResults").style.display="block";
 }
+
+function openTab(name) {
+    let x = document.getElementsByClassName("tab");
+    for (let i = 0; i < x.length; i++)
+        x[i].style.display = "none";
+
+    let buttons = document.getElementsByClassName("tabbed-container-nav")[0].getElementsByTagName("button");
+    for (let i = 0; i < buttons.length; i++)
+        buttons[i].classList.remove("active");
+
+    document.getElementById(name).style.display = "block";
+    event.target.classList.add("active");
+}

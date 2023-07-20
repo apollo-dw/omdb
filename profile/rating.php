@@ -4,26 +4,6 @@ include_once '../functions.php';
 ?>
 
 <style>
-    .tabbed-container-nav{
-        width:100%;
-        border-bottom: 1px solid white;
-    }
-
-    .tabbed-container-nav button {
-        height:3em;
-        border: 0;
-        margin: 0;
-        background-color: darkslategray;
-    }
-
-    .tabbed-container-nav button:hover {
-        background-color: #182828;
-    }
-
-    .tabbed-container-nav button.active{
-        background-color: #0C1515;
-    }
-
     #tabbed-stats .year-box{
         width: 3.5em;
         display: flex;
@@ -316,19 +296,6 @@ include_once '../functions.php';
 
 
 <script>
-    function openTab(name) {
-        let x = document.getElementsByClassName("tab");
-        for (let i = 0; i < x.length; i++)
-            x[i].style.display = "none";
-
-        let buttons = document.getElementsByClassName("tabbed-container-nav")[0].getElementsByTagName("button");
-        for (let i = 0; i < buttons.length; i++)
-            buttons[i].classList.remove("active");
-
-        document.getElementById(name).style.display = "block";
-        event.target.classList.add("active");
-    }
-
     function setBackgroundColors() {
         const colors = [
             '#742d2d',
