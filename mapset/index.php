@@ -35,7 +35,7 @@
     $hasBlacklistedDifficulties = false;
 ?>
 
-<center xmlns="http://www.w3.org/1999/html"><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
 
 <div class="flex-container" style="justify-content: center;">
     <div class="flex-child">
@@ -143,7 +143,7 @@ while($row = $result->fetch_assoc()) {
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
             <br>
             <?php
-                $creatorStmt = $conn->prepare("SELECT IF(COUNT(*) = 1 AND CreatorID = ?, 1, 0) AS IsOnlyOne FROM beatmap_creators WHERE BeatmapID = ?;");
+                $creatorStmt = $conn->prepare("SELECT IF(COUNT(*) = 1 AND CreatorID = ?, 1, 0) AS IsOnlyOne FROM beatmap_creators WHERE BeatmapID = ? GROUP BY CreatorID;");
                 $creatorStmt->bind_param('ii', $row['SetCreatorID'], $row['BeatmapID']);
                 $creatorStmt->execute();
                 $didCreatorIDMapThis = $creatorStmt->get_result()->fetch_assoc()["IsOnlyOne"];
@@ -152,8 +152,6 @@ while($row = $result->fetch_assoc()) {
                     ?> <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span> <?php
                 }
             ?>
-
-
         </div>
         <?php if (!$blackListed) { ?>
             <div class="flex-child diffBox" style="width:15%;text-align:center;">
