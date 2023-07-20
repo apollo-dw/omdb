@@ -263,9 +263,7 @@ while($row = $result->fetch_assoc()) {
                 <?php $hasBlacklistedDifficulties = true; ?>
             </div>
         <?php } ?>
-
     </div>
-
     <?php
 }
 ?>
@@ -309,7 +307,12 @@ while($row = $result->fetch_assoc()) {
     });
 </script>
 
-<hr style="margin-bottom:1em;margin-top:1em;">
+<div style="margin-top: 2em;">
+    <?php if ($loggedIn) { ?>
+        <a href="edit/?id=<?php echo $mapset_id; ?>"><span class="subText"><i class="icon-edit"></i> Propose edit</span></a>
+    <?php } ?>
+</div>
+<hr style="margin-bottom:1em;margin-top: 0">
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
