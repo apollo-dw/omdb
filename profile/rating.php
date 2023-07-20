@@ -188,10 +188,11 @@ include_once '../functions.php';
             if (array_key_exists($year, $years)) {
                 $averageRating = $years[$year]["AverageRating"];
                 $ratingCount = $years[$year]["RatingCount"];
-                $value = $averageRating / 5.0;
-            } else {
-                $hue = null;
-                $saturation = null;
+
+                if ($ratingCount > 5)
+                    $value = $averageRating / 5.0;
+                else
+                    $value = null;
             }
 
             echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;'>" . substr($year, -2) . "</span></div>";
@@ -234,7 +235,11 @@ include_once '../functions.php';
             if (array_key_exists($SR, $starRatings)) {
                 $averageRating = $starRatings[$SR]["AverageRating"];
                 $ratingCount = $starRatings[$SR]["RatingCount"];
-                $value = $averageRating / 5.0;
+
+                if ($ratingCount > 5)
+                    $value = $averageRating / 5.0;
+                else
+                    continue;
             } else {
                 continue;
             }
@@ -285,10 +290,11 @@ include_once '../functions.php';
             if (array_key_exists($genre, $genres)) {
                 $averageRating = $genres[$genre]["AverageRating"];
                 $ratingCount = $genres[$genre]["RatingCount"];
-                $value = $averageRating / 5.0;
-            } else {
-                $hue = null;
-                $saturation = null;
+
+                if ($ratingCount > 5)
+                    $value = $averageRating / 5.0;
+                else
+                    $value = null;
             }
 
             echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$genreString}</span></div>";
@@ -345,7 +351,7 @@ include_once '../functions.php';
 
         yearBoxes.forEach((box) => {
             let proportion = parseFloat(box.getAttribute('value'));
-            let color = chroma.scale(colors)(proportion).hex();
+            color = chroma.scale(colors)(proportion).hex();
             box.style.backgroundColor = color;
         });
     }
