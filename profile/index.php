@@ -168,6 +168,16 @@
                 $stmt->close();
             ?>
             <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
+
+            <?php
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM `beatmap_edit_requests` WHERE `UserID` = ? AND Status = 'Approved';");
+            $stmt->bind_param("i", $profileId);
+            $stmt->execute();
+            $stmt->bind_result($approvedEditCount);
+            $stmt->fetch();
+            $stmt->close();
+            ?>
+            <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
         </div>
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
