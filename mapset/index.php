@@ -143,13 +143,19 @@ while($row = $result->fetch_assoc()) {
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
             <br>
             <?php
-                $creatorStmt = $conn->prepare("SELECT IF(COUNT(*) = 1 AND CreatorID = ?, 1, 0) AS IsOnlyOne FROM beatmap_creators WHERE BeatmapID = ? GROUP BY CreatorID;");
-                $creatorStmt->bind_param('ii', $row['SetCreatorID'], $row['BeatmapID']);
+                $creatorStmt = $conn->prepare("SELECT CreatorID FROM beatmap_creators WHERE BeatmapID = ?");
+                $creatorStmt->bind_param('i', $row['BeatmapID']);
                 $creatorStmt->execute();
-                $didCreatorIDMapThis = $creatorStmt->get_result()->fetch_assoc()["IsOnlyOne"];
+                $creatorsResult = $creatorStmt->get_result();
+                $creators = [];
 
-                if (!$didCreatorIDMapThis) {
-                    ?> <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span> <?php
+                while ($creator = $creatorsResult->fetch_assoc())
+                    $creators[] = $creator['CreatorID'];
+
+                if (!(in_array($row['SetCreatorID'], $creators) && count($creators) == 1)) {
+                    ?>
+                    <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span>
+                    <?php
                 }
             ?>
         </div>
