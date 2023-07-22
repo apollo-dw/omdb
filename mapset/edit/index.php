@@ -185,7 +185,7 @@
         $result = $stmt->get_result();
 
         if ($result->num_rows == 0) {
-            echo '<span class="subText">unedited difficulty</span>';
+            echo '<span class="subText">no edits</span>';
         } else {
             while($row = $result->fetch_assoc()) {
                 $editDataArray = json_decode($row['EditData'], true);
@@ -200,6 +200,7 @@
 
                 echo "<details>
                         <summary><span class='subText'>{$submitterName} on {$row["Timestamp"]} {$status}</span></summary>
+                        <span class='subText'>{$row['EditData']}</span>
                       </details>";
             }
         }
