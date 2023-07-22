@@ -94,7 +94,7 @@
 
             $requesterUsername = GetUserNameFromId($request['UserID'], $conn);
             $data = json_decode($request['EditData'], true);
-            $meta = htmlspecialchars($data["Meta"]) ?? "<i>No comment for request</i>";
+            $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"]) : "<i>No comment for request</i>";
             $newMappers = $data["Mappers"];
 
             echo "<b>{$requesterUsername}</b> submitted this request on {$request["Timestamp"]}<br><hr>";
@@ -123,7 +123,7 @@
             <hr>
             <b>Meta comment:</b>
             <div style="background-color:#182828;border: 1px solid white;padding: 0.5em;width: 33%;min-height:10em;">
-                <?php echo $meta; ?>
+                <?php echo nl2br($meta); ?>
             </div>
             <hr>
             <?php
@@ -178,6 +178,32 @@
             </form>
 <?php
         }
+        echo '<hr> <b>Edit history:</b> <br>';
+        $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE BeatmapID = ? ORDER BY Timestamp DESC");
+        $stmt->bind_param("i", $beatmapID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows == 0) {
+            echo '<span class="subText">unedited difficulty</span>';
+        } else {
+            while($row = $result->fetch_assoc()) {
+                $editDataArray = json_decode($row['EditData'], true);
+
+                $status = "Pending";
+                if ($row["Status"] != "Pending"){
+                    $editorName = GetUserNameFromId($row["EditorID"], $conn);
+                    $status = "{$row["Status"]} by {$editorName}";
+                }
+
+                $submitterName = GetUserNameFromId($row["UserID"], $conn);
+
+                echo "<details>
+                        <summary><span class='subText'>{$submitterName} on {$row["Timestamp"]} {$status}</span></summary>
+                      </details>";
+            }
+        }
+
         echo '</div>';
     }
 ?>
