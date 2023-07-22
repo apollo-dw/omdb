@@ -1,6 +1,7 @@
 <?php
-include '../header.php';
+    $PageTitle = "Edit Queue";
 
+    include '../header.php';
     $stmt = $conn->prepare("SELECT e.*, b.SetID, b.Title, b.DifficultyName FROM beatmap_edit_requests e JOIN beatmaps b on e.BeatmapID = b.BeatmapID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
     $stmt->execute();
     $result = $stmt->get_result();
@@ -38,7 +39,7 @@ include '../header.php';
             while ($row = $result->fetch_assoc()) {
                 $name = GetUserNameFromId($row["UserID"], $conn);
                 $mapsetLink = "../mapset/?mapset_id={$row["SetID"]}";
-                echo "<tr class='alternating-bg' onclick=\"window.location='{$mapsetLink}';\" style=\"cursor: pointer;\">";
+                echo "<tr class='alternating-bg' onclick=\"window.open('{$mapsetLink}', '_blank');\" style=\"cursor: pointer;\">";
                 echo "<td>{$name}</td>";
                 echo "<td>{$row["Title"]}</td>";
                 echo "<td>{$row["DifficultyName"]}</td>";
