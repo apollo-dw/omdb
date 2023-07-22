@@ -97,7 +97,9 @@
             $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"]) : "<i>No comment for request</i>";
             $newMappers = $data["Mappers"];
 
-            echo "<b>{$requesterUsername}</b> submitted this request on {$request["Timestamp"]}<br><hr>";
+            echo "<b>{$requesterUsername}</b> submitted this request on {$request["Timestamp"]}<br><br>
+                  <a href='http://osu.ppy.sh/b/{$beatmapID}' target='_blank'>Link to set on osu! website</a>
+                  <hr>";
 
             $deletedMappers = array_diff($currentMappers, $newMappers);
             $newlyAddedMappers = array_diff($newMappers, $currentMappers);
