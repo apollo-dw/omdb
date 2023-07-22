@@ -129,7 +129,7 @@
             </div>
             <hr>
             <?php
-                if ($userName == "moonpoint" && $loggedIn) {
+                if (($userName == "moonpoint" || $userId == 12704035 ) && $loggedIn) {
             ?>
                 <button style="background-color:#477769;" type="button" onclick="window.location.href = `AcceptRequest.php?BeatmapID=<?php echo $beatmapID; ?>`;">ACCEPT</button>
                 <button style="background-color:firebrick;" type="button" onclick="window.location.href = `DenyRequest.php?BeatmapID=<?php echo $beatmapID; ?>`;">DENY</button>
