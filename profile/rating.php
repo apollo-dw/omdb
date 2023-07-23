@@ -335,14 +335,19 @@ include_once '../functions.php';
         ?>
     </div> <br>
 
-    Yearly completion:<br>
+    Yearly completion (sets):<br>
     <?php
-    $stmt = $conn->prepare("SELECT Count(*) as Count, YEAR(`dateranked`) as Year FROM beatmaps GROUP BY YEAR(`dateranked`) ORDER BY YEAR(`dateranked`);");
+    $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year, 
+                                  COUNT(DISTINCT SetID) as SetCount,
+                                  COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings) THEN SetID END) as RatedSetCount 
+                                  FROM beatmaps 
+                                  GROUP BY YEAR(`dateranked`) 
+                                  ORDER BY YEAR(`dateranked`);");
     $stmt->execute();
     $result = $stmt->get_result();
 
     while ($row = $result->fetch_assoc()) {
-        echo "<span class='subText'><b>{$row["Year"]}</b>: {$years[$row["Year"]]["RatingCount"]} / {$row["Count"]}</span> <br>";
+        echo "<span class='subText'><b>{$row["Year"]}</b>: {$row["RatedSetCount"]} / {$row["SetCount"]}</span> <br>";
     }
     ?>
 </div>
