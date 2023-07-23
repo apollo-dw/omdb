@@ -70,36 +70,37 @@
     } elseif ($uri[2] == "user") {
         $userID = $uri[3];
         if ($uri[4] == "ratings") {
-            // monkas
-            $base_query = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName FROM ratings r";
-            $join_query = "INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID";
-            $where_query = "WHERE r.UserID = ?";
+            $query = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID WHERE r.UserID = ?";
 
             $year = $_GET["year"] ?? -1;
             $score = $_GET["score"] ?? -1;
-            if ($year != -1) {
-                $year_query = "AND YEAR(b.DateRanked) = ?";
-                $query = $base_query . " " . $join_query . " " . $where_query . " " . $year_query;
-            } else {
-                $query = $base_query . " " . $join_query . " " . $where_query;
-            }
-            if ($score != -1) {
-                $score_query = "AND `Score`=?";
-                $query .= " " . $score_query;
-            }
-            $query .= " ORDER BY r.RatingID;";
+            $mode = $_GET["mode"] ?? -1;
 
-            $stmt = $conn->prepare($query);
             $types = "i";
             $params = [$userID];
+
             if ($year != -1) {
+                $query .= " AND YEAR(b.DateRanked) = ?";
                 $types .= "i";
                 $params[] = $year;
             }
+
             if ($score != -1) {
+                $query .= " AND `Score`=?";
                 $types .= "d";
                 $params[] = $score;
             }
+
+            if ($mode != -1) {
+                $query .= " AND `Mode`=?";
+                $types .= "i";
+                $params[] = $mode;
+            }
+
+            $query .= " ORDER BY r.RatingID;";
+
+            $stmt = $conn->prepare($query);
+
             $stmt->bind_param($types, ...$params);
             $stmt->execute();
             $result = $stmt->get_result();
