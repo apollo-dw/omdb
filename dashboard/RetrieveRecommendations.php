@@ -1,9 +1,7 @@
 <?php
     function RetrieveRecommendations($conn, $userID){
-        $sql = "SELECT IF(user1_id = ?, user2_id, user1_id) AS correlated_user, correlation FROM user_correlations
-                WHERE ? IN (user1_id, user2_id) AND correlation > 0.33 ORDER BY correlation DESC LIMIT 150;";
-
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn->prepare("SELECT IF(user1_id = ?, user2_id, user1_id) AS correlated_user, correlation FROM user_correlations
+                                WHERE ? IN (user1_id, user2_id) AND correlation > 0.33 ORDER BY correlation DESC LIMIT 150;");
         $stmt->bind_param("ii", $userID, $userID);
         $stmt->execute();
 
@@ -18,19 +16,18 @@
         $stmt->close();
 
         $correlated_ids = implode(', ', array_keys($correlated_users));
-        $sql = "SELECT r.BeatmapID
-            FROM ratings r
-            JOIN beatmap_creators bc ON r.BeatmapID = bc.BeatmapID
-            JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-            WHERE r.UserID IN ($correlated_ids)
-            AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
-            AND bc.CreatorID <> ? AND b.SetCreatorID <> ?
-            GROUP BY r.BeatmapID
-            HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
-            ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
-            LIMIT 50;";
 
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn->prepare("SELECT r.BeatmapID
+                                FROM ratings r
+                                JOIN beatmap_creators bc ON r.BeatmapID = bc.BeatmapID
+                                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                                WHERE r.UserID IN ($correlated_ids)
+                                AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
+                                AND bc.CreatorID <> ? AND b.SetCreatorID <> ?
+                                GROUP BY r.BeatmapID
+                                HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
+                                ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
+                                LIMIT 50;");
         $stmt->bind_param('iii', $userID, $userID, $userID);
         $stmt->execute();
 
@@ -41,8 +38,7 @@
         }
         $stmt->close();
 
-        $sql_correlated_ratings = "SELECT UserID, BeatmapID, Score FROM ratings WHERE UserID IN ($correlated_ids) AND BeatmapID IN (" . implode(',', $rated_beatmaps) . ")";
-        $result_correlated_ratings = $conn->query($sql_correlated_ratings);
+        $result_correlated_ratings = $conn->query("SELECT UserID, BeatmapID, Score FROM ratings WHERE UserID IN ($correlated_ids) AND BeatmapID IN (" . implode(',', $rated_beatmaps) . ")");
 
         $recommendation_scores = [];
         $correlated_ratings = [];
@@ -76,8 +72,7 @@
 
         $beatmap_details_array = [];
         foreach ($sorted_recommendations as $beatmap_id => $score) {
-            $sql = "SELECT artist, title, difficultyname, setid, SR, DateRanked FROM beatmaps WHERE BeatmapID = ?;";
-            $stmt = $conn->prepare($sql);
+            $stmt = $conn->prepare("SELECT artist, title, difficultyname, setid, SR, DateRanked FROM beatmaps WHERE BeatmapID = ?;");
             $stmt->bind_param('i', $beatmap_id);
             $stmt->execute();
 
@@ -95,18 +90,6 @@
                     'SR' => $sr,
                     'DateRanked' => $date,
 					'Score' => round($score, 2),
-                ];
-            } else {
-                // Handle case when beatmap details are not found
-                $beatmap_details_array[] = [
-                    'BeatmapID' => null,
-                    'SetID' => null,
-                    'Artist' => null,
-                    'Title' => null,
-                    'DifficultyName' => null,
-                    'SR' => null,
-                    'DateRanked' => null,
-					'Score' => null,
                 ];
             }
         }
