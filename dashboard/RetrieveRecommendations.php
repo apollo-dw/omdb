@@ -41,29 +41,29 @@
         }
         $stmt->close();
 
+        $sql_correlated_ratings = "SELECT UserID, BeatmapID, Score FROM ratings WHERE UserID IN ($correlated_ids) AND BeatmapID IN (" . implode(',', $rated_beatmaps) . ")";
+        $result_correlated_ratings = $conn->query($sql_correlated_ratings);
+
         $recommendation_scores = [];
-        foreach ($rated_beatmaps as $beatmap_id) {
-            $sum_similarities = 0;
-            $weighted_sum = 0;
+        $correlated_ratings = [];
 
-            foreach ($correlated_users as $correlated_user_id => $correlation) {
-                $sql = "SELECT Score FROM ratings WHERE UserID = ? AND BeatmapID = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param('ii', $correlated_user_id, $beatmap_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
+        while ($row = $result_correlated_ratings->fetch_assoc()) {
+            $user_id = $row['UserID'];
+            $beatmap_id = $row['BeatmapID'];
+            $rating = $row['Score'];
 
-                if ($result->num_rows > 0) {
-                    $row = $result->fetch_assoc();
-                    $rating = $row['Score'];
-
-                    $sum_similarities += $correlation;
-                    $weighted_sum += $rating * $correlation;
-                }
+            if (!isset($correlated_ratings[$beatmap_id])) {
+                $correlated_ratings[$beatmap_id] = ['sum_similarities' => 0, 'weighted_sum' => 0];
             }
 
-            if ($sum_similarities > 0) {
-                $predicted_rating = $weighted_sum / $sum_similarities;
+            $correlation = $correlated_users[$user_id];
+            $correlated_ratings[$beatmap_id]['sum_similarities'] += $correlation;
+            $correlated_ratings[$beatmap_id]['weighted_sum'] += $rating * $correlation;
+        }
+
+        foreach ($rated_beatmaps as $beatmap_id) {
+            if (isset($correlated_ratings[$beatmap_id]) && $correlated_ratings[$beatmap_id]['sum_similarities'] > 0) {
+                $predicted_rating = $correlated_ratings[$beatmap_id]['weighted_sum'] / $correlated_ratings[$beatmap_id]['sum_similarities'];
             } else {
                 $predicted_rating = -1;
             }
