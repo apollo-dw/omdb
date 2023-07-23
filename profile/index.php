@@ -294,12 +294,14 @@
             $sets[] = $row;
 
         foreach($sets as $set) {
-            $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`
+            $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
+                       (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
                        FROM beatmaps b
                        INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
                        LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
                        WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
                        ORDER BY b.`RatingCount` DESC");
+
             $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
             $stmt->execute();
             $difficultyResult = $stmt->get_result();
@@ -312,6 +314,7 @@
             $topMap = $difficultyResult->fetch_assoc();
             $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
             $topMapIsGD = $set["SetCreatorID"] != $profileId;
+            $topMapIsCollab = $topMap["NumCreators"] > 1;
 
             $stmt->close();
             ?>
@@ -319,7 +322,7 @@
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
-                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
+                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?></span><br>
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
                 <div style="margin-left:auto;">
