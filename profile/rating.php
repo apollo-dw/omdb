@@ -305,7 +305,7 @@ include_once '../functions.php';
     }
     ?>
 
-    Genre affinities:
+    Language affinities:
     <div class="flex-row-container" style="width: 22em;">
         <?php
         $minGenre = min(array_column($languages, "AverageRating"));
@@ -328,6 +328,8 @@ include_once '../functions.php';
                     $value = $averageRating / 5.0;
                 else
                     continue;
+            } else {
+                continue;
             }
 
             echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$languageString}</span></div>";
