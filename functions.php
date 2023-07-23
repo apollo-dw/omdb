@@ -373,6 +373,37 @@
 		}
 	}
 
+	function getLanguage($number) {
+		switch ($number) {
+			case 2:
+				return "English";
+			case 3:
+				return "Japanese";
+			case 4:
+				return "Chinese";
+			case 5:
+				return "Instrumental";
+			case 6:
+				return "Korean";
+			case 7:
+				return "French";
+			case 8:
+				return "German";
+			case 9:
+				return "Swedish";
+			case 10:
+				return "Spanish";
+			case 11:
+				return "Italian";
+			case 12:
+				return "Russian";
+			case 13:
+				return "Polish";
+			case 14:
+				return "Other Language";
+		}
+	}
+
 	function RenderBeatmapCreators($beatmapID, $conn) {
 		$stmt = $conn->prepare("SELECT `CreatorID` FROM `beatmap_creators` WHERE BeatmapID = ?");
 		$stmt->bind_param('i', $beatmapID);

@@ -72,19 +72,15 @@
             <label>Language:</label>
             <select name="language" id="language" autocomplete="off" onchange="updateChart();">
                 <option value="0" selected="selected">Any</option>
-                <option value="2">English</option>
-                <option value="3">Japanese</option>
-                <option value="4">Chinese</option>
-                <option value="5">Instrumental</option>
-                <option value="6">Korean</option>
-                <option value="7">French</option>
-                <option value="8">German</option>
-                <option value="9">Swedish</option>
-                <option value="10">Spanish</option>
-                <option value="11">Italian</option>
-                <option value="12">Russian</option>
-                <option value="13">Polish</option>
-                <option value="14">Other</option>
+                <?php
+                for ($i = 1; $i <= 14; $i++) {
+                    $language = getLanguage($i);
+                    if (is_null($language))
+                        continue;
+
+                    echo "<option value='{$i}'>$language</option>";
+                }
+                ?>
             </select>
 
             <?php if ($loggedIn) { ?>
