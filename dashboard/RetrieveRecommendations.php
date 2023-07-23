@@ -1,5 +1,7 @@
 <?php
     function RetrieveRecommendations($conn, $userID){
+        $number_of_recommendations = 100;
+
         $stmt = $conn->prepare("SELECT IF(user1_id = ?, user2_id, user1_id) AS correlated_user, correlation FROM user_correlations
                                 WHERE ? IN (user1_id, user2_id) AND correlation > 0.33 ORDER BY correlation DESC LIMIT 150;");
         $stmt->bind_param("ii", $userID, $userID);
@@ -27,8 +29,8 @@
                                 GROUP BY r.BeatmapID
                                 HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
                                 ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
-                                LIMIT 50;");
-        $stmt->bind_param('iii', $userID, $userID, $userID);
+                                LIMIT ?;");
+        $stmt->bind_param('iiii', $userID, $userID, $userID, $number_of_recommendations);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -68,7 +70,7 @@
         }
 
         arsort($recommendation_scores);
-        $sorted_recommendations = array_slice($recommendation_scores, 0, 50, true);
+        $sorted_recommendations = array_slice($recommendation_scores, 0, $number_of_recommendations, true);
 
         $beatmap_details_array = [];
         foreach ($sorted_recommendations as $beatmap_id => $score) {
