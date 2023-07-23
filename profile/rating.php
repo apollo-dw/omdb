@@ -282,6 +282,59 @@ include_once '../functions.php';
         ?>
     </div> <br>
 
+    <?php
+    $stmt = $conn->prepare("
+            SELECT b.`Lang`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+            FROM `ratings` r
+            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+            WHERE r.`UserID` = ?
+            GROUP BY b.`Lang`
+            ORDER BY b.`Lang`;
+            ");
+    $stmt->bind_param('i', $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $languages = array();
+    while ($row = $result->fetch_assoc()) {
+        $language = $row["Lang"];
+        $languages[$language] = array(
+            "AverageRating" => $row["AverageRating"],
+            "RatingCount" => $row["RatingCount"]
+        );
+    }
+    ?>
+
+    Genre affinities:
+    <div class="flex-row-container" style="width: 22em;">
+        <?php
+        $minGenre = min(array_column($languages, "AverageRating"));
+        $maxGenre = max(array_column($languages, "AverageRating"));
+
+        for ($language = 0; $language <= 14; $language++) {
+            $languageString = getLanguage($language);
+
+            if (is_null($languageString))
+                continue;
+
+            $averageRating = "none";
+            $ratingCount = 0;
+
+            if (array_key_exists($language, $languages)) {
+                $averageRating = $languages[$language]["AverageRating"];
+                $ratingCount = $languages[$language]["RatingCount"];
+
+                if ($ratingCount > 5)
+                    $value = $averageRating / 5.0;
+                else
+                    continue;
+            }
+
+            echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$languageString}</span></div>";
+        }
+        ?>
+    </div> <br>
+
     Yearly completion:<br>
     <?php
     $stmt = $conn->prepare("SELECT Count(*) as Count, YEAR(`dateranked`) as Year FROM beatmaps GROUP BY YEAR(`dateranked`) ORDER BY YEAR(`dateranked`);");
