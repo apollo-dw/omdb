@@ -341,10 +341,11 @@ include_once '../functions.php';
     <?php
     $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year, 
                                   COUNT(DISTINCT SetID) as SetCount,
-                                  COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings) THEN SetID END) as RatedSetCount 
+                                  COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN SetID END) as RatedSetCount 
                                   FROM beatmaps 
                                   GROUP BY YEAR(`dateranked`) 
                                   ORDER BY YEAR(`dateranked`);");
+    $stmt->bind_param('i', $profileId);
     $stmt->execute();
     $result = $stmt->get_result();
 
