@@ -78,7 +78,8 @@ while($row = $result->fetch_assoc()) {
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 
-    $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID` = ? GROUP BY `Score`");
+    //$stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID` = ? GROUP BY `Score`");
+    $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count, SUM(u.Weight) as WeightedCount FROM `ratings` JOIN users u on ratings.UserID = u.UserID WHERE `BeatmapID` = ? GROUP BY `Score`");
     $stmt->bind_param("i", $row["BeatmapID"]);
     $stmt->execute();
     $ratingResult = $stmt->get_result();
@@ -100,17 +101,15 @@ while($row = $result->fetch_assoc()) {
     $ratingCounts['4.5'] = 0;
     $ratingCounts['5.0'] = 0;
 
-    while ($ratingRow = $ratingResult->fetch_assoc()) {
-        $ratingCounts[$ratingRow['Score']] = $ratingRow['count'];
-    }
-
-    $maxRating = max(max($ratingCounts), 5);
-
     $totalRatings = 0;
     $averageRating = 0;
 
-    foreach ($ratingCounts as $rating => $count)
-        $totalRatings += $count;
+    while ($ratingRow = $ratingResult->fetch_assoc()) {
+        $ratingCounts[$ratingRow['Score']] = $ratingRow['WeightedCount'];
+        $totalRatings += $ratingRow['count'];
+    }
+
+    $maxRating = max(max($ratingCounts), 5);
 
     if ($totalRatings > 0) {
         $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
