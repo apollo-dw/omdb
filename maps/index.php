@@ -79,12 +79,7 @@
 		$pageString = "LIMIT {$lower}, {$limit}";
 	}
 
-    $stmt = $conn->prepare("SELECT DISTINCT b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked,
-                                  CASE
-                                    WHEN r.BeatmapID IS NULL THEN 0
-                                    WHEN COUNT(DISTINCT r.BeatmapID) < COUNT(DISTINCT b.BeatmapID) THEN 1
-                                    ELSE 2
-                                  END AS HasUserRated
+    $stmt = $conn->prepare("SELECT DISTINCT b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked, COUNT(DISTINCT r.BeatmapID) as RatedMapCount, COUNT(DISTINCT b.BeatmapID) as MapCount
                                   FROM `beatmaps` b
                                   LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
                                   WHERE MONTH(b.DateRanked) = ? AND YEAR(b.DateRanked) = ? AND `Mode` = ? 
@@ -97,6 +92,12 @@
     $result = $stmt->get_result();
     while($row = $result->fetch_assoc()) {
 			$mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
+
+            $userRatedState = 0;
+            if ($row["RatedMapCount"] == $row["MapCount"])
+                $userRatedState = 2;
+            elseif ($row["RatedMapCount"] > 0)
+                $userRatedState = 1;
 ?>
 <div class="flex-container ratingContainer mapList alternating-bg">
 	<div class="flex-child" style="flex: 0 0 8%;">
@@ -105,7 +106,7 @@
 	<div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}</a> by <a href='/profile/{$row["SetCreatorID"]}'>{$mapperName}</a>"; ?> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a><br>
         <?php
-            switch ($row["HasUserRated"]) {
+            switch ($userRatedState) {
                 case 1:
                     echo "<span class='subText' style='color:#ffefa1;'>rated</span>";
                     break;
