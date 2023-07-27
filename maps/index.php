@@ -79,8 +79,20 @@
 		$pageString = "LIMIT {$lower}, {$limit}";
 	}
 
-    $stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = ? ORDER BY `DateRanked` DESC {$pageString}");
-    $stmt->bind_param("iii", $month, $year, $mode);
+    $stmt = $conn->prepare("SELECT DISTINCT b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked,
+                                  CASE
+                                    WHEN r.BeatmapID IS NULL THEN 0
+                                    WHEN COUNT(DISTINCT r.BeatmapID) < COUNT(DISTINCT b.BeatmapID) THEN 1
+                                    ELSE 2
+                                  END AS HasUserRated
+                                  FROM `beatmaps` b
+                                  LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
+                                  WHERE MONTH(b.DateRanked) = ? AND YEAR(b.DateRanked) = ? AND `Mode` = ? 
+                                  GROUP BY b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked
+                                  ORDER BY b.DateRanked DESC 
+                                  {$pageString};");
+
+    $stmt->bind_param("iiii", $userId, $month, $year, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
     while($row = $result->fetch_assoc()) {
@@ -91,8 +103,18 @@
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 	</div>
 	<div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}</a> by <a href='/profile/{$row["SetCreatorID"]}'>{$mapperName}</a>"; ?> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
-	</div>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}</a> by <a href='/profile/{$row["SetCreatorID"]}'>{$mapperName}</a>"; ?> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a><br>
+        <?php
+            switch ($row["HasUserRated"]) {
+                case 1:
+                    echo "<span class='subText' style='color:#ffefa1;'>rated</span>";
+                    break;
+                case 2:
+                    echo "<span class='subText' style='color:#ffb7dc;'>fully rated</span>";
+                    break;
+            }
+        ?>
+    </div>
 	<div class="flex-child" style="flex: 0 0 3%;min-width: 0;">
 		<?php echo $row["DateRanked"]; ?>
 	</div>
