@@ -108,7 +108,7 @@
 		</div>
         <div class="profileActions">
             <?php
-                if ($profileId != $userId && $isValidUser){
+                if ($profileId != $userId && $isValidUser && $loggedIn){
 
                     if (!$is_blocked) {
                         if ($is_friend && $is_friended) {
