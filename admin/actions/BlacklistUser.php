@@ -32,3 +32,6 @@
                                     )
                                   );");
     $stmt->execute();
+
+    header("Location: ../blacklist.php");
+    die();
