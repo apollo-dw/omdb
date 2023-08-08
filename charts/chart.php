@@ -104,6 +104,18 @@
 				$userRatingResult = $stmt2->get_result();
 				$userRating = $userRatingResult->fetch_row()[0] ?? "";
 
+                $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name
+                                          FROM descriptor_votes 
+                                          JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
+                                          WHERE BeatmapID = ?
+                                          GROUP BY DescriptorID
+                                          HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > (SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) + 0)
+                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC
+                                          LIMIT 10;");
+                $stmt->bind_param("i", $row["BeatmapID"]);
+                $stmt->execute();
+                $descriptorResult = $stmt->get_result();
+
 				$counter += 1;
 		?>
 			<div class="flex-container chart-container alternating-bg">
@@ -117,7 +129,18 @@
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
-                    <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?>
+                    <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
+                    <span class="subText">
+                        <?php
+                            $descriptorLinks = array();
+                            while($descriptor = $descriptorResult->fetch_assoc()){
+                                $descriptorLink = '<a href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
+                                $descriptorLinks[] = $descriptorLink;
+                            }
+
+                            echo implode(', ', $descriptorLinks);
+                            ?>
+                        </span>
                 </div>
 				<div style="flex: auto auto 0;">
 					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
