@@ -30,15 +30,15 @@
 	$nextPage = $page + 1;
 
     if ($rating != ""){
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` WHERE `UserID` = ? AND `Score` = ?");
-        $stmt->bind_param("ii", $profileId, $rating);
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` r JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE r.`UserID` = ? AND r.`Score` = ? AND b.Mode = ?");
+        $stmt->bind_param("iii", $profileId, $rating, $mode);
         $stmt->execute();
         $stmt->bind_result($count);
         $stmt->fetch();
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` WHERE `UserID` = ?;");
-        $stmt->bind_param("i", $profileId);
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` r JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE r.`UserID` = ? AND b.Mode = ?;");
+        $stmt->bind_param("ii", $profileId, $mode);
         $stmt->execute();
         $stmt->bind_result($count);
         $stmt->fetch();
@@ -110,8 +110,8 @@
                 $pageString = "LIMIT {$lower}, {$limit}";
             }
 
-            $queryParameterTypes = "i";
-            $queryParameterValues = array($profileId);
+            $queryParameterTypes = "ii";
+            $queryParameterValues = array($profileId, $mode);
 
             $ratingString = "";
             if ($rating != "") {
@@ -148,7 +148,7 @@
                     FROM `ratings` r
                     JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                     {$tagJoinString}
-                    WHERE r.UserID = ? {$ratingString} {$tagAndString}
+                    WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString}
                     {$orderString} {$pageString};";
 
             $stmt = $conn->prepare($stmt);
