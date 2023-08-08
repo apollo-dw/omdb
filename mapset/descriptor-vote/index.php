@@ -15,6 +15,9 @@
     if (is_null($beatmap))
         die("Beatmap not found");
 
+    if (!$loggedIn)
+        die("You need to be logged in to view this page.");
+
     function generateTreeHTML($tree) {
         $html = '<ul>';
         foreach ($tree as $node) {
