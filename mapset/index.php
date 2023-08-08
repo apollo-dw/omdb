@@ -78,7 +78,6 @@ while($row = $result->fetch_assoc()) {
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 
-    //$stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count FROM `ratings` WHERE `BeatmapID` = ? GROUP BY `Score`");
     $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count, SUM(u.Weight) as WeightedCount FROM `ratings` JOIN users u on ratings.UserID = u.UserID WHERE `BeatmapID` = ? GROUP BY `Score`");
     $stmt->bind_param("i", $row["BeatmapID"]);
     $stmt->execute();
@@ -131,10 +130,22 @@ while($row = $result->fetch_assoc()) {
     $friendRatingAvg = $friendRatingResult["avg"];
 
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
-    ?>
 
-    <div class="flex-container difficulty-container alternating-bg <?php if($blackListed){ echo "faded"; }?>" >
-        <div class="flex-child diffBox" style="text-align:center;width:40%;">
+    $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name
+                                          FROM descriptor_votes 
+                                          JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
+                                          WHERE BeatmapID = ?
+                                          GROUP BY DescriptorID
+                                          HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)
+                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC
+                                          LIMIT 10;");
+    $stmt->bind_param("i", $beatmapID);
+    $stmt->execute();
+    $descriptorResult = $stmt->get_result();
+?>
+
+    <div class="flex-container difficulty-container alternating-bg <?php if($blackListed) echo "faded"; ?>" >
+        <div class="flex-child diffBox" style="text-align:center;width:20%;">
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
             </a>
@@ -159,7 +170,7 @@ while($row = $result->fetch_assoc()) {
             ?>
         </div>
         <?php if (!$blackListed) { ?>
-            <div class="flex-child diffBox" style="width:15%;text-align:center;">
+            <div class="flex-child diffBox" style="width:0;text-align:center;">
                 <?php
                 if($totalRatings > 0){
                     ?>
@@ -181,7 +192,7 @@ while($row = $result->fetch_assoc()) {
                 }
                 ?>
             </div>
-            <div class="flex-child diffBox" style="text-align:right;width:40%;">
+            <div class="flex-child diffBox" style="text-align:right;width:25%;">
                 <?php
                 $averageRating = number_format($averageRating, 2);
                 if ($totalRatings > 0) {
@@ -196,14 +207,31 @@ while($row = $result->fetch_assoc()) {
                 }
                 if($hasCharted) {
                     ?>
-                    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a>
+                    Ranking: <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a><br>
                     <?php
                 }
                 ?>
+                <span class="subText">
+                    <?php
+                        $descriptorLinks = array();
+                        while($descriptor = $descriptorResult->fetch_assoc()){
+                            $descriptorLink = '<a href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
+                            $descriptorLinks[] = $descriptorLink;
+                        }
+                        echo implode(', ', $descriptorLinks);
+                    ?>
+                </span>
             </div>
-            <div class="flex-child diffBox" style="width:20%;">
+            <div class="flex-child diffBox" style="width:5%;text-align:left;">
                 <?php
                 if($loggedIn){
+                    $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
+                    $selectStmt->bind_param("ii", $userId, $beatmapID);
+                    $selectStmt->execute();
+                    $tags_result = $selectStmt->get_result();
+                    $tags_row = $tags_result->fetch_assoc();
+                    $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
+                    $selectStmt->close();
                     ?>
                     <span class="identifier" style="display: inline-block;">
                         <ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
@@ -221,6 +249,9 @@ while($row = $result->fetch_assoc()) {
                         </ol>
                     </span>
                     <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span><span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
+                    <div style="overflow:hidden;text-overflow:ellipsis;">
+                        <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
+                    </div>
                     <?php
                 } else {
                     echo 'Log in to rate maps!';
@@ -228,41 +259,28 @@ while($row = $result->fetch_assoc()) {
                 ?>
             </div>
 
-            <div class="flex-child diffBox" style="overflow:hidden;text-align: center;width:10%;display: flex; align-items: center;">
+            <div class="flex-child diffBox" style="text-align: right;width:0%;display: contents;">
                 <?php
-                    if($loggedIn){
-                        $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
-                        $selectStmt->bind_param("ii", $userId, $beatmapID);
-                        $selectStmt->execute();
-                        $tags_result = $selectStmt->get_result();
-                        $tags_row = $tags_result->fetch_assoc();
-                        $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
-                        $selectStmt->close();
-                ?>
-                <div style="overflow:hidden;text-overflow:ellipsis;">
-                    <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
-                </div>
-                <div style="margin-left:auto;padding-left:0.5em;">
-                    <span class="tag-button" style="min-width: 3em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-tags"></i></span>
-                </div>
-                <?php
-                }
-                ?>
+                    if($loggedIn) { ?>
+                <span class="tag-button" style="min-width: 1em;padding-right:1em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-ellipsis-vertical"></i></span>
+                <?php } ?>
             </div>
 
-            <div style="position:relative;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-                <div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:12em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+            <div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
+                <div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
                     <div>
-                        <input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:6em;" value="<?php echo $allTags;?>">
+                        <input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
                         <button class="tag-input-submit" style="min-width:0;">Save</button><br>
                     </div>
                     <span class="subText">separate your tags with commas</span>
+                    <br>
+                    <a href="descriptor-vote/?id=<?php echo $row["BeatmapID"]; ?>">vote descriptors <i class="icon-wrench"></i></a>
                 </div>
             </div>
 
         <?php
         } else { ?>
-            <div class="flex-child diffBox" style="width:91%;">
+            <div class="flex-child diffBox" style="width:50%;">
                 <b>This difficulty has been blacklisted from OMDB.</b><br>
                 Reason: <?php echo $row["BlacklistReason"]; ?>
                 <?php $hasBlacklistedDifficulties = true; ?>
