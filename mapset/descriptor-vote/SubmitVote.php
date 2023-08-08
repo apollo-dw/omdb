@@ -56,7 +56,7 @@
     $result = $stmt->get_result();
     $voteData = $result->fetch_assoc();
 
-    $stmt = $conn->prepare( "SELECT Users.Username FROM descriptor_votes INNER JOIN Users ON descriptor_votes.UserID = Users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 1;");
+    $stmt = $conn->prepare( "SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 1;");
     $stmt->bind_param('ii', $beatmapID, $descriptorID);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -65,7 +65,7 @@
     while ($row = $result->fetch_assoc())
         $upvoteUsernames[] = $row['Username'];
 
-    $stmt = $conn->prepare("SELECT Users.Username FROM descriptor_votes INNER JOIN Users ON descriptor_votes.UserID = Users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 0;");
+    $stmt = $conn->prepare("SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 0;");
     $stmt->bind_param('ii', $beatmapID, $descriptorID);
     $stmt->execute();
     $result = $stmt->get_result();

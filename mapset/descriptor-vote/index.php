@@ -168,8 +168,8 @@
                             IF(dv.Vote = 1, GROUP_CONCAT(u1.Username SEPARATOR ', '), '') AS upvoteUsernames,
                             IF(dv.Vote = 0, GROUP_CONCAT(u2.Username SEPARATOR ', '), '') AS downvoteUsernames
                         FROM descriptor_votes dv
-                        INNER JOIN Users u1 ON dv.UserID = u1.UserID
-                        LEFT JOIN Users u2 ON dv.UserID = u2.UserID
+                        INNER JOIN users u1 ON dv.UserID = u1.UserID
+                        LEFT JOIN users u2 ON dv.UserID = u2.UserID
                         WHERE dv.BeatmapID = ? AND dv.DescriptorID = ?
                         GROUP BY dv.Vote");
                 $stmt->bind_param('ii', $map_id, $row["DescriptorID"]);
@@ -214,6 +214,7 @@
             }
             var descriptorID = $(this).data('descriptor-id');
             handleDescriptorClick(descriptorID);
+            event.stopPropagation();
         });
 
         $('.descriptor-box').each(function() {

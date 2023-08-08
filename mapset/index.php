@@ -137,7 +137,7 @@ while($row = $result->fetch_assoc()) {
                                           WHERE BeatmapID = ?
                                           GROUP BY DescriptorID
                                           HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)
-                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC
+                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
                                           LIMIT 10;");
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
@@ -215,7 +215,7 @@ while($row = $result->fetch_assoc()) {
                     <?php
                         $descriptorLinks = array();
                         while($descriptor = $descriptorResult->fetch_assoc()){
-                            $descriptorLink = '<a href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
+                            $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
                             $descriptorLinks[] = $descriptorLink;
                         }
                         echo implode(', ', $descriptorLinks);
