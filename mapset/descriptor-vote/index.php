@@ -175,7 +175,7 @@
                     <h2><?php echo $row["Name"]?></h2>
                     <span class="subText"><?php echo $row["ShortDescription"]?></span> <br>
                     <div class="actions">
-                        <i class="icon-thumbs-up"></i><i class="icon-thumbs-down"></i><i class="icon-remove"></i>
+                        <i class="icon-thumbs-up"></i><i class="icon-thumbs-down"></i>
                     </div>
                     <hr>
                     <b class="upvotes">upvotes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo $upvoteUsernames; ?></span>
