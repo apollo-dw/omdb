@@ -361,8 +361,7 @@ button.blocked:hover {
     min-height: 5.5em;
 }
 
-.difficulty-container > div{
-    padding:0.5em;
+.difficulty-container > div {
     flex-grow: 1;
     height:100%;
 }
