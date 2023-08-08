@@ -47,6 +47,17 @@
         }
         return $branch;
     }
+
+    $stmt = $conn->prepare("SELECT DescriptorID, Vote FROM descriptor_votes WHERE UserID = ? AND BeatmapID = ?");
+    $stmt->bind_param('ii', $userId, $map_id);
+    $stmt->execute();
+    $voteResult = $stmt->get_result();
+
+    $userVotes = array();
+    while ($voteRow = $voteResult->fetch_assoc())
+        $userVotes[$voteRow['DescriptorID']] = $voteRow['Vote'];
+
+
     ?>
 
 <style>
@@ -88,7 +99,7 @@
         padding: 1em;
     }
 
-    .descriptor-box h2{
+    .descriptor-box h2 {
         margin: 0;
     }
 
@@ -99,10 +110,15 @@
     .descriptor-box .actions i {
         margin-left: 0.25em;
         cursor:pointer;
+        color: grey;
     }
 
-    .decsriptor-box .user {
-        margin-left: 1em;
+    i.voted {
+        color: white !important;
+    }
+
+    .descriptor-box .user {
+        margin-left: 0.1em;
     }
 </style>
 
@@ -144,7 +160,6 @@
             $result = $stmt->get_result();
 
             while($row = $result->fetch_assoc()) {
-
                 $stmt = $conn->prepare("
                         SELECT
                             IF(dv.Vote = 1, GROUP_CONCAT(u1.Username SEPARATOR ', '), '') AS upvoteUsernames,
@@ -162,20 +177,17 @@
                 $downvoteUsernames = '';
 
                 while ($voteRow = $voteResult->fetch_assoc()) {
-                    if ($voteRow['upvoteUsernames'] !== '') {
-                        $upvoteUsernames = $voteRow['upvoteUsernames'];
-                    }
-                    if ($voteRow['downvoteUsernames'] !== '') {
-                        $downvoteUsernames = $voteRow['downvoteUsernames'];
-                    }
+                    $upvoteUsernames = $voteRow['upvoteUsernames'];
+                    $downvoteUsernames = $voteRow['downvoteUsernames'];
                 }
 
                 ?>
-                <div class="descriptor-box" data-descriptor-id="<?php echo $row["DescriptorID"]?>">
+                <div class="descriptor-box" data-descriptor-id="<?php echo $row["DescriptorID"]; ?>">
                     <h2><?php echo $row["Name"]?></h2>
                     <span class="subText"><?php echo $row["ShortDescription"]?></span> <br>
                     <div class="actions">
-                        <i class="icon-thumbs-up"></i><i class="icon-thumbs-down"></i>
+                        <i class="icon-thumbs-up<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 1) ? ' voted' : ''; ?>"></i>
+                        <i class="icon-thumbs-down<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 0) ? ' voted' : ''; ?>"></i>
                     </div>
                     <hr>
                     <b class="upvotes">upvotes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo $upvoteUsernames; ?></span>
@@ -207,10 +219,20 @@
             const downvoteIcon = $(this).find('.icon-thumbs-down');
 
             upvoteIcon.click(function() {
+                if (upvoteIcon.hasClass('voted'))
+                    return;
+
+                downvoteIcon.removeClass('voted');
+                upvoteIcon.addClass('voted');
                 submitVote(descriptorID, 1);
             });
 
             downvoteIcon.click(function() {
+                if (downvoteIcon.hasClass('voted'))
+                    return;
+
+                upvoteIcon.removeClass('voted');
+                downvoteIcon.addClass('voted');
                 submitVote(descriptorID, 0);
             });
         });
@@ -252,8 +274,7 @@
         $('<span>', { class: 'subText', text: descriptorData.ShortDescription }).appendTo(descriptorBox);
         $('<div>', { class: 'actions' }).append(
             $('<i>', { class: 'icon-thumbs-up' }),
-            $('<i>', { class: 'icon-thumbs-down' }),
-            $('<i>', { class: 'icon-remove' })
+            $('<i>', { class: 'icon-thumbs-down' })
         ).appendTo(descriptorBox);
         $('<hr>').appendTo(descriptorBox);
         $('<b>', { class: 'upvotes' }).text(`upvotes (0): `).appendTo(descriptorBox);
@@ -268,10 +289,20 @@
         const downvoteIcon = descriptorBox.find('.icon-thumbs-down');
 
         upvoteIcon.click(function() {
+            if (upvoteIcon.hasClass('voted'))
+                return;
+
+            downvoteIcon.removeClass('voted');
+            upvoteIcon.addClass('voted');
             submitVote(descriptorData.DescriptorID, 1);
         });
 
         downvoteIcon.click(function() {
+            if (downvoteIcon.hasClass('voted'))
+                return;
+
+            upvoteIcon.removeClass('voted');
+            downvoteIcon.addClass('voted');
             submitVote(descriptorData.DescriptorID, 0);
         });
     }
