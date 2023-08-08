@@ -211,7 +211,7 @@ while($row = $result->fetch_assoc()) {
                     <?php
                 }
                 ?>
-                <span class="subText">
+                <span class="subText map-descriptors">
                     <?php
                         $descriptorLinks = array();
                         while($descriptor = $descriptorResult->fetch_assoc()){
