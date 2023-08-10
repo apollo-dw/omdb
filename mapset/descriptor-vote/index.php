@@ -25,9 +25,9 @@
             $isUsable = $node['Usable']; // Assuming 'Usable' is the column name
 
             // Check if the descriptor is usable, and apply appropriate class
-            $class = $isUsable ? 'class="descriptor"' : 'class="descriptor unusable"';
+            $class = $isUsable ? '' : 'class="unusable"';
 
-            $html .= '<li ' . $class . ' data-descriptor-id="' . $descriptorID . '">' . $node['name'];
+            $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . $node['name'] . '</span>';
             if (isset($node['children'])) {
                 $html .= generateTreeHTML($node['children']);
             }
@@ -71,7 +71,7 @@
         border: 1px solid #ccc;
         padding: 10px;
         z-index: 1000;
-        font-size: 10px;
+        font-size: 12px;
         overflow-y: scroll;
         height: 30em;
         margin: 0.5em;
@@ -83,18 +83,26 @@
     }
 
     ul li {
-        margin-left: 2em;
+        margin-left: 1em;
     }
 
-    .descriptor {
+    .descriptor span{
         cursor: pointer;
         color: white;
     }
+	
+	.descriptor span:hover{
+		text-decoration: underline;
+	}
 
     .unusable {
-        color: grey;
-        cursor: revert;
+        color: grey !important;
+        cursor: revert !important;
     }
+	
+	.unusable:hover {
+		text-decoration: none !important;
+	}
 
     .descriptor-box {
         border:1px solid white;
