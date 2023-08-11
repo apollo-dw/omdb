@@ -34,6 +34,40 @@
     echo "<span class='subText'>$parentTree</span>";
 ?>
 
+<br><br>
+
+<h2 style="margin-bottom: 0px;">Highest ranked <?php echo $descriptor["Name"]; ?> difficulties</h2><br>
+<div class="flex-container" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
+    <br>
+    <?php
+    $stmt = $conn->prepare("SELECT b.*
+                                    FROM beatmaps b
+                                    JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
+                                    WHERE dv.DescriptorID = ? AND b.Mode = ?
+                                    GROUP BY b.BeatmapID, b.ChartRank
+                                    HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
+                                    ORDER BY b.ChartRank
+                                    LIMIT 8;");
+    $stmt->bind_param("ii", $descriptor_id, $mode);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while($row = $result->fetch_assoc()) {
+        $difficultyName = mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "...");
+        ?>
+        <div class="flex-child" style="text-align:center;width:14.28%;padding:0.5em;display: inline-block;">
+            <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
+            <span class="subtext">
+			    <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Title"]} [$difficultyName]"; ?></a><br>
+		    </span>
+        </div>
+        <?php
+    }
+
+    $stmt->close();
+    ?>
+</div>
+
 <?php
     require '../footer.php';
 ?>
