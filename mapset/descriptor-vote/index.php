@@ -147,7 +147,7 @@ while ($voteRow = $voteResult->fetch_assoc())
         <p>
             Misuse of the descriptor feature will result in you being banned. Do not abuse this feature by assigning obviously incorrect descriptors.
         </p>
-        <button id="proposeDescriptorButton">Propose Descriptor</button>
+        <button id="proposeDescriptorButton">Propose Descriptor</button> <a href="../../descriptors/">View all descriptors</a>
         <div id="descriptorTreePopover" class="popover">
             <?php
                 $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
