@@ -40,14 +40,24 @@
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
     <br>
     <?php
-    $stmt = $conn->prepare("SELECT b.*
-                                    FROM beatmaps b
-                                    JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
-                                    WHERE dv.DescriptorID = ? AND b.Mode = ? AND b.ChartRank IS NOT NULL
-                                    GROUP BY b.BeatmapID, b.ChartRank
-                                    HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
-                                    ORDER BY b.ChartRank
-                                    LIMIT 9;");
+    $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
+                                    SELECT DescriptorID, ParentID
+                                    FROM descriptors
+                                    WHERE DescriptorID = ?  -- Specify the starting DescriptorID
+                                    UNION ALL
+                                    SELECT d.DescriptorID, d.ParentID
+                                    FROM descriptors d
+                                    JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
+                                )
+                                SELECT b.*
+                                FROM beatmaps b
+                                JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
+                                JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
+                                WHERE b.Mode = ? AND b.ChartRank IS NOT NULL
+                                GROUP BY b.BeatmapID, b.ChartRank
+                                HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
+                                ORDER BY b.ChartRank
+                                LIMIT 9;");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
