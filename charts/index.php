@@ -7,7 +7,7 @@
     $page = $_GET['p'] ?? 1;
     $yearString = $year == "all-time" ? 'All Time' : $year;
 
-    $result = $conn->query("SELECT * FROM Descriptors WHERE Usable = 1");
+    $result = $conn->query("SELECT * FROM descriptors WHERE Usable = 1");
     $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
@@ -238,6 +238,7 @@
 	}
 
 	function resetPaginationDisplay() {
+        $("#chart-container").removeClass("faded");
 		$(".pageLink").removeClass("active");
 
         console.log(selectedDescriptors)
@@ -271,6 +272,7 @@
 	}
 
 	function updateChart() {
+        $("#chart-container").addClass("faded");
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
