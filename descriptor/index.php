@@ -33,7 +33,8 @@
     echo $descriptor["ShortDescription"] . "<br>";
     echo "<span class='subText'>$parentTree</span>";
 ?>
-
+<br><br>
+<a href="../descriptors/">View all descriptors</a>
 <br><br>
 
 <h2 style="margin-bottom: 0px;">Highest ranked <?php echo $descriptor["Name"]; ?> maps</h2><br>
