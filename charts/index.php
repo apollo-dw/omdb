@@ -6,6 +6,9 @@
     $year = $_GET["y"] ?? 2023;
     $page = $_GET['p'] ?? 1;
     $yearString = $year == "all-time" ? 'All Time' : $year;
+
+    $result = $conn->query("SELECT * FROM Descriptors WHERE Usable = 1");
+    $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <h1 id="heading"><?php echo 'Highest Rated Maps of ' . htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
@@ -31,7 +34,7 @@
 	<div style="padding-top:0.5em;" class="flex-item">
 		<span>Filters</span>
 		<hr>
-		<form>
+		<form onsubmit="return false">
 			<select name="order" id="order" autocomplete="off" onchange="updateChart();">
 				<option value="1" selected="selected">Highest Rated</option>
 				<option value="2">Lowest Rated</option>
@@ -81,7 +84,43 @@
                     echo "<option value='{$i}'>$language</option>";
                 }
                 ?>
-            </select>
+            </select><br><br>
+
+            <style>
+                #descriptor-suggestions {
+                    position: absolute;
+                    z-index: 1;
+                    line-height: 1.5em;
+                    overflow-y: auto;
+                    max-height: 19em;
+                    width: 13em;
+                }
+
+                .descriptor-suggestion {
+                    cursor: pointer;
+                }
+
+                .descriptor-suggestion:hover {
+                    text-decoration: underline;
+                }
+
+                .descriptor-item {
+                    padding: 0.5em;
+                    margin: 0.25em;
+                    box-sizing: border-box;
+                    background-color: DarkSlateGrey;
+                    cursor: pointer;
+                }
+
+                .descriptor-item:hover {
+                    background-color: #203838;
+                }
+            </style>
+
+            <label for="descriptor-input">Descriptors:</label><br>
+            <input type="text" id="descriptor-input" style="margin:0;" autocomplete="off">
+            <div id="descriptor-suggestions"></div>
+            <div id="current-descriptors" class="flex-row-container"></div>
 
             <?php if ($loggedIn) { ?>
             <br><br>
@@ -112,6 +151,7 @@
 <script>
     const cronInterval = 6 * 60 * 60 * 1000; // 6 hours
 	var page = 1;
+    var selectedDescriptors = [];
 
     var genres = {
         0 : "",
@@ -145,19 +185,67 @@
         13: "Polish",
         14: "Other Language"
     };
-	 
+
+    $(document).ready(function() {
+        var matchingDescriptors = <?php echo json_encode($descriptors); ?>;
+
+        $("#descriptor-input").on("input", function() {
+            var input = $(this).val();
+            $("#descriptor-suggestions").empty();
+
+            if (input.length > 1) {
+                matchingDescriptors.forEach(function(descriptor) {
+                    if (descriptor.Name.toLowerCase().includes(input.toLowerCase())) {
+                        $("#descriptor-suggestions").append(
+                            $("<div>")
+                                .addClass("descriptor-suggestion alternating-bg").text(descriptor.Name).attr("data-descriptor-id", descriptor.DescriptorID)
+                        );
+                    }
+                });
+            }
+        });
+
+        $(document).on("click", ".descriptor-suggestion", function() {
+            var descriptor = $(this).text();
+            var descriptorID = $(this).attr("data-descriptor-id");
+            selectedDescriptors.push({ id: descriptorID, name: descriptor });
+            updateCurrentDescriptors();
+            $("#descriptor-input").val("");
+            $("#descriptor-suggestions").empty();
+            updateChart()
+        });
+
+        $(document).on("click", ".descriptor-item", function() {
+            var index = $(this).data("index");
+            selectedDescriptors.splice(index, 1);
+            updateCurrentDescriptors();
+            updateChart()
+        });
+
+        function updateCurrentDescriptors() {
+            $("#current-descriptors").empty();
+            selectedDescriptors.forEach(function(descriptor, index) {
+                $("#current-descriptors").append(
+                    $("<span>").addClass("descriptor-item").text(descriptor.name)
+                );
+            });
+        }
+    });
+
 	function changePage(newPage) {
 		page = Math.min(Math.max(newPage, 1), 9);
 		updateChart();
 	}
-	
+
 	function resetPaginationDisplay() {
 		$(".pageLink").removeClass("active");
-		
+
+        console.log(selectedDescriptors)
+
 		var pageLink = '.page' + page;
-		
+
 		$(pageLink).addClass("active");
-		
+
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
@@ -181,15 +269,17 @@
         $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
 	    window.scrollTo({top: 0, behavior: 'smooth'});
 	}
-	 
+
 	function updateChart() {
 		var year = document.getElementById("year").value;
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
         var language = document.getElementById("language").value;
-        		
+
         var friendsElement = document.getElementById("friends");
 		var onlyFriends = friendsElement ? friendsElement.checked : false;
+
+        var descriptorsJSON = JSON.stringify(selectedDescriptors);
 
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
@@ -198,8 +288,8 @@
 				resetPaginationDisplay();
 			}
 		}
-		xmlhttp.open("GET","chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language + "&f=" + String(onlyFriends), true);
-		xmlhttp.send();
+        xmlhttp.open("GET", "chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language + "&f=" + String(onlyFriends) + "&descriptors=" + encodeURIComponent(descriptorsJSON), true);
+        xmlhttp.send();
 	}
 
     function displayTimeRemaining() {

@@ -8,6 +8,9 @@
     $language = $_GET['l'] ?? 0;
     $onlyFriends = $_GET['f'] ?? "false";
 
+    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
+    $selectedDescriptors = json_decode($descriptorsJSON, true);
+
 	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language)){
 		die("NOO");
 	}
@@ -54,6 +57,22 @@
             if ($language > 0)
                 $languageString = "AND `Lang`='{$language}'";
 
+            $descriptorString = "";
+            if (!empty($selectedDescriptors)) {
+                $subqueries = [];
+
+                foreach ($selectedDescriptors as $descriptor) {
+                    $descriptorID = $descriptor['id'];
+
+                    if (!is_numeric($descriptorID))
+                        die("NOOO");
+                    $subquery = "(SELECT COUNT(*) FROM descriptor_votes dv WHERE b.BeatmapID = dv.BeatmapID AND dv.DescriptorID = '{$descriptorID}' AND dv.Vote = 1)";
+                    $subqueries[] = "{$subquery} > (SELECT COALESCE(COUNT(*), 0) FROM descriptor_votes dv WHERE b.BeatmapID = dv.BeatmapID AND dv.DescriptorID = '{$descriptorID}' AND dv.Vote = 0)";
+                }
+
+                $descriptorString = "AND (" . implode(" AND ", $subqueries) . ")";
+            }
+
             $stmt = null;
             if ($onlyFriends) {
                 $stmt = $conn->prepare("SELECT
@@ -90,7 +109,7 @@
                                                 -BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
                 $stmt->bind_param("ii", $userId, $mode);
             } else {
-                $stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} ORDER BY {$columnString} {$orderString}, BeatmapID {$pageString}");
+                $stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} {$descriptorString} ORDER BY {$columnString} {$orderString}, BeatmapID {$pageString}");
                 $stmt->bind_param("i", $mode);
             }
 
