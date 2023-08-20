@@ -34,7 +34,7 @@
 				</div>
 			</div>
 			
-			<form class="topBarSearch">
+			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
 				<div id="topBarSearchResults"></div>
 			</form>
