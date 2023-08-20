@@ -211,15 +211,28 @@ while($row = $result->fetch_assoc()) {
                     <?php
                 }
                 ?>
-                <span class="subText map-descriptors">
-                    <?php
-                        $descriptorLinks = array();
-                        while($descriptor = $descriptorResult->fetch_assoc()){
-                            $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
-                            $descriptorLinks[] = $descriptorLink;
-                        }
-                        echo implode(', ', $descriptorLinks);
-                    ?>
+                <span class="map-descriptors">
+					<table style="margin-left: auto;">
+						<tr>
+							<th style="padding:0;">
+								<span class="subText" style="font-weight:normal;">
+									<?php
+                                    $descriptorLinks = array();
+                                    while($descriptor = $descriptorResult->fetch_assoc()){
+                                        $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
+                                        $descriptorLinks[] = $descriptorLink;
+                                    }
+                                    echo implode(', ', $descriptorLinks);
+                                    ?>
+								</span>
+							</th>
+                            <?php if ($loggedIn) { ?>
+							<th style="padding:0;padding-left:0.5em;">
+								<a href="descriptor-vote/?id=<?php echo $row["BeatmapID"]; ?>"><i class="icon-plus"></i></a>
+							</th>
+                            <?php } ?>
+						</tr>
+					</table>
                 </span>
             </div>
             <div class="flex-child diffBox" style="width:5%;text-align:left;">
@@ -273,8 +286,6 @@ while($row = $result->fetch_assoc()) {
                         <button class="tag-input-submit" style="min-width:0;">Save</button><br>
                     </div>
                     <span class="subText">separate your tags with commas</span>
-                    <br>
-                    <a href="descriptor-vote/?id=<?php echo $row["BeatmapID"]; ?>">vote descriptors <i class="icon-wrench"></i></a>
                 </div>
             </div>
 
