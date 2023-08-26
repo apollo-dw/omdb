@@ -225,20 +225,24 @@ while ($voteRow = $voteResult->fetch_assoc())
                 const downvoteIcon = $(this).find('.icon-thumbs-down');
 
                 upvoteIcon.click(function() {
-                    if (upvoteIcon.hasClass('voted'))
-                        return;
+                    if (upvoteIcon.hasClass('voted')) {
+                        upvoteIcon.removeClass('voted');
+                    } else {
+                        downvoteIcon.removeClass('voted');
+                        upvoteIcon.addClass('voted');
+                    }
 
-                    downvoteIcon.removeClass('voted');
-                    upvoteIcon.addClass('voted');
                     submitVote(descriptorID, 1);
                 });
 
                 downvoteIcon.click(function() {
-                    if (downvoteIcon.hasClass('voted'))
-                        return;
+                    if (downvoteIcon.hasClass('voted')) {
+                        downvoteIcon.removeClass('voted');
+                    } else {
+                        upvoteIcon.removeClass('voted');
+                        downvoteIcon.addClass('voted');
+                    }
 
-                    upvoteIcon.removeClass('voted');
-                    downvoteIcon.addClass('voted');
                     submitVote(descriptorID, 0);
                 });
             });
@@ -279,7 +283,7 @@ while ($voteRow = $voteResult->fetch_assoc())
             $('<h2>', { text: descriptorData.Name }).appendTo(descriptorBox);
             $('<span>', { class: 'subText', text: descriptorData.ShortDescription }).appendTo(descriptorBox);
             $('<div>', { class: 'actions' }).append(
-                $('<i>', { class: 'icon-thumbs-up' }),
+                $('<i>', { class: 'icon-thumbs-up voted' }),
                 $('<i>', { class: 'icon-thumbs-down' })
             ).appendTo(descriptorBox);
             $('<hr>').appendTo(descriptorBox);
@@ -295,20 +299,24 @@ while ($voteRow = $voteResult->fetch_assoc())
             const downvoteIcon = descriptorBox.find('.icon-thumbs-down');
 
             upvoteIcon.click(function() {
-                if (upvoteIcon.hasClass('voted'))
-                    return;
+                if (upvoteIcon.hasClass('voted')) {
+                    upvoteIcon.removeClass('voted');
+                } else {
+                    downvoteIcon.removeClass('voted');
+                    upvoteIcon.addClass('voted');
+                }
 
-                downvoteIcon.removeClass('voted');
-                upvoteIcon.addClass('voted');
                 submitVote(descriptorData.DescriptorID, 1);
             });
 
             downvoteIcon.click(function() {
-                if (downvoteIcon.hasClass('voted'))
-                    return;
+                if (downvoteIcon.hasClass('voted')) {
+                    downvoteIcon.removeClass('voted');
+                } else {
+                    upvoteIcon.removeClass('voted');
+                    downvoteIcon.addClass('voted');
+                }
 
-                upvoteIcon.removeClass('voted');
-                downvoteIcon.addClass('voted');
                 submitVote(descriptorData.DescriptorID, 0);
             });
         }
@@ -319,6 +327,9 @@ while ($voteRow = $voteResult->fetch_assoc())
             const downvotesElem = descriptorBox.find('.downvotes');
             const upvoteUsernamesElem = upvotesElem.next('.user');
             const downvoteUsernamesElem = downvotesElem.next('.user');
+
+            if (voteData.upvotes == null && voteData.downvotes == null)
+                 descriptorBox.remove();
 
             upvotesElem.html(`upvotes (${voteData.upvotes}):`);
             upvoteUsernamesElem.text(voteData.upvoteUsernames.join(', '));

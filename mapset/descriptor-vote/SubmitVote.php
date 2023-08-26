@@ -1,9 +1,10 @@
 <?php
     require '../../base.php';
 
-    if (!$loggedIn) {
+    if (!$loggedIn)
         die("NO");
-    }
+
+    header('Content-Type: application/json');
 
     $beatmapID = $_POST["beatmapID"];
     $descriptorID = $_POST["descriptorID"];
@@ -15,7 +16,7 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0)
-        die("NO BEATMAP FOUND");
+        die(array("error" => "NO BEATMAP FOUND"));
 
     $stmt = $conn->prepare("SELECT * FROM descriptors WHERE DescriptorID = ?;");
     $stmt->bind_param('i', $descriptorID);
@@ -23,30 +24,29 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0)
-        die("NO DESCRIPTOR FOUND");
+        die(array("error" => "NO DESCRIPTOR FOUND"));
 
-    header('Content-Type: application/json');
+    $checkVoteStmt = $conn->prepare("SELECT VoteID, Vote FROM descriptor_votes WHERE BeatmapID = ? AND UserID = ? AND DescriptorID = ?");
+    $checkVoteStmt->bind_param("iii", $beatmapID, $userId, $descriptorID);
+    $checkVoteStmt->execute();
+    $checkVoteResult = $checkVoteStmt->get_result();
 
-    if ($vote === "-1") {
-        $removeStmt = $conn->prepare("DELETE FROM descriptor_votes WHERE BeatmapID = ? AND UserID = ? AND DescriptorID = ?");
-        $removeStmt->bind_param("iii", $beatmapID, $userId, $descriptorID);
-        $removeStmt->execute();
+    if ($checkVoteResult->num_rows === 0) {
+        $insertStmt = $conn->prepare("INSERT INTO descriptor_votes (BeatmapID, UserID, Vote, DescriptorID) VALUES (?, ?, ?, ?)");
+        $insertStmt->bind_param("iiii", $beatmapID, $userId, $vote, $descriptorID);
+        $insertStmt->execute();
     } else {
-        $checkVoteStmt = $conn->prepare("SELECT VoteID FROM descriptor_votes WHERE BeatmapID = ? AND UserID = ? AND DescriptorID = ?");
-        $checkVoteStmt->bind_param("iii", $beatmapID, $userId, $descriptorID);
-        $checkVoteStmt->execute();
-        $checkVoteResult = $checkVoteStmt->get_result();
+        $voteIDRow = $checkVoteResult->fetch_assoc();
+        $voteID = $voteIDRow["VoteID"];
 
-        if ($checkVoteResult->num_rows === 0) {
-            $insertStmt = $conn->prepare("INSERT INTO descriptor_votes (BeatmapID, UserID, Vote, DescriptorID) VALUES (?, ?, ?, ?)");
-            $insertStmt->bind_param("iiii", $beatmapID, $userId, $vote, $descriptorID);
-            $insertStmt->execute();
-        } else {
-            $voteIDRow = $checkVoteResult->fetch_assoc();
-            $voteID = $voteIDRow["VoteID"];
+        if ($voteIDRow["Vote"] != $vote) {
             $updateStmt = $conn->prepare("UPDATE descriptor_votes SET Vote = ? WHERE VoteID = ?");
             $updateStmt->bind_param("ii", $vote, $voteID);
             $updateStmt->execute();
+        } else {
+            $removeStmt = $conn->prepare("DELETE FROM descriptor_votes WHERE VoteID = ?");
+            $removeStmt->bind_param("i", $voteID);
+            $removeStmt->execute();
         }
     }
 
