@@ -456,6 +456,11 @@ while($row = $result->fetch_assoc()) {
             submitComment();
     });
 
+    $('.tag-input-field').keydown(function (event) {
+        if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
+            $(this).parent().find('.tag-input-submit').click();
+    });
+
     $(".removeComment").click(function(event){
         var $this = $(this);
 
