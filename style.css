@@ -191,15 +191,14 @@ a .topBarLink {
 .starRemoveButton {
     opacity: 0;
     font-size: 16px;
-    padding-left: 0.25em;
     box-sizing: border-box;
 }
 
-@media only screen and (max-width: 1050px) {
-    .starRemoveButton {
-        opacity: 1;
-    }
+.star-rating-list-mobile {
+    display: none;
+}
 
+@media only screen and (max-width: 1050px) {
     .content{
         padding-left:10%;
         padding-right:10%;
@@ -208,10 +207,6 @@ a .topBarLink {
     .topBar{
         padding-left:2%;
         padding-right:2%;
-    }
-
-    .topBarUsername{
-        display:none;
     }
 
     .topBarSearchBar{
@@ -224,6 +219,14 @@ a .topBarLink {
 
     .column-when-mobile {
         width: 100% !important;
+    }
+
+    .topBarUsername, .star-rating-list, .starRemoveButton, .star-value {
+        display: none !important;
+    }
+
+    .star-rating-list-mobile {
+        display: initial;
     }
 }
 
@@ -238,6 +241,7 @@ a .topBarLink {
 
 .star-value {
     font-size: 18px;
+    display: inline-block;
 }
 
 .star {
@@ -549,6 +553,10 @@ ol.star-rating-list > li{
 
 .alternating-bg-pink:nth-of-type(even) .starBackground{
     color: #4F2F3F;
+}
+
+.alternating-bg:nth-of-type(even) select{
+    background-color: #203838;
 }
 
 /* || PROFILE PAGE */

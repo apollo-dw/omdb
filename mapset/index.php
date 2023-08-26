@@ -261,7 +261,15 @@ while($row = $result->fetch_assoc()) {
                             <?php } ?>
                         </ol>
                     </span>
-                    <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span><span style="display: inline-block; padding-left:0.25em;" class="star-value <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>"><?php if($userHasRatedThis){ echo $userMapRating; } else { echo '&ZeroWidthSpace;'; } ?></span>
+                    <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span>
+                    <span class="star-value<?php if(!$userHasRatedThis) echo ' unrated';  ?>"><?php if($userHasRatedThis) echo $userMapRating; else echo '&ZeroWidthSpace;';  ?></span>
+                    <select class="star-rating-list-mobile" beatmapid="<?php echo $row["BeatmapID"]; ?>">
+                        <option value="-2" <?php if ($userMapRating == -1) echo "selected"; ?>>...</option>
+                        <?php for ($i = 0; $i <= 5; $i += 0.5) {
+                            $selected = $userMapRating == $i ? "selected" : "";
+                            echo "<option value='{$i}' {$selected}>{$i}</option>";
+                        } ?>
+                    </select>
                     <div style="overflow:hidden;text-overflow:ellipsis;">
                         <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
                     </div>
@@ -366,7 +374,6 @@ while($row = $result->fetch_assoc()) {
                 <div class="flex-child commentComposer">
                     <form>
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                     </form>
                     <?php if ($hasBlacklistedDifficulties) { ?>
@@ -466,73 +473,91 @@ while($row = $result->fetch_assoc()) {
 
     });
 
-    $(".star-rating-list").mousemove(function(event){
-        var $this = $(this);
-        var sel = event.target.value;
+    function setStarRatingDisplay(element, value) {
+        var $this = $(element);
         var $options = $this.find(".star");
-        var rating = 0;
 
         for (var i = 0; i < 5; i++) {
-            if (i < sel) {
-                if (event.pageX - event.target.getBoundingClientRect().left<= 6 && sel-1 == i) {
+            if (i < value) {
+                if (value-0.5 === i) {
                     $options.eq(i).attr('class', 'star icon-star-half-empty');
-                    rating += 0.5;
                 } else {
                     $options.eq(i).attr('class', 'star icon-star');
-                    rating += 1;
                 }
             } else {
                 $options.eq(i).attr('class', 'star icon-star-empty');
             }
         }
+    }
+
+    $(".star-rating-list").mousemove(function(event){
+        var $this = $(this);
+        var sel = event.target.value;
+        var rating = 0;
+
+        for (var i = 0; i < 5; i++) {
+            if (i < sel) {
+                if (event.pageX - event.target.getBoundingClientRect().left<= 6 && sel-1 === i) {
+                    rating += 0.5;
+                } else {
+                    rating += 1;
+                }
+            }
+        }
+
+        setStarRatingDisplay(this, rating);
         $this.parent().parent().find('.star-value').html(rating.toFixed(1));
     });
 
     $(".star-rating-list").mouseleave(function(event){
         var $this = $(this);
         var sel = $this.attr("rating");
-        var $options = $this.find(".star");
 
-        for (var i = 0; i < 5; i++) {
-            if (i < sel) {
-                if (sel-0.5 == i) {
-                    $options.eq(i).attr('class', 'star icon-star-half-empty');
-                } else {
-                    $options.eq(i).attr('class', 'star icon-star');
-                }
-            } else {
-                $options.eq(i).attr('class', 'star icon-star-empty');
-            }
-        }
+        setStarRatingDisplay(this, sel);
 
-        if (sel == -1){
+        if (sel == -1)
             $this.parent().parent().find('.star-value').html("&ZeroWidthSpace;");
-        }else{
+        else
             $this.parent().parent().find('.star-value').html(sel);
-        }
+
     });
+
+    function submitRating(bID, rating, callback) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    callback(null, this.responseText);
+                } else {
+                    callback(new Error('Request failed'));
+                }
+            }
+        };
+
+        xhttp.open("POST", "SubmitRating.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("bID=" + bID + "&rating=" + rating);
+    }
 
     $(".starRemoveButton").click(function(event){
         var $this = $(this);
         var bID = $(this).attr("beatmapid");
 
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
 
+        $this.parent().find('.identifier').addClass("faded");
+        submitRating(bID, -2, function(error, response) {
+            if (!error) {
                 $this.addClass("disabled");
                 $this.parent().find('.star-value').html("&ZeroWidthSpace;");
                 $this.parent().find('.star-value').addClass("unrated");
+                $this.parent().find('.star-rating-list').attr("rating", "");
                 $this.parent().find('.identifier').find('.star-rating-list').addClass("unrated");
+                $this.parent().find('.identifier').removeClass("faded");
+                setStarRatingDisplay($this.parent().find('.star-rating-list'), -2);
+            } else {
+                console.error(error);
             }
-        };
-
-        $this.attr("rating", "");
-        xhttp.open("POST", "SubmitRating.php", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send("bID=" + bID + "&rating=" + -2);
-        $this.parent().find('.star-value').html("removing...");
+        });
 
     });
 
@@ -544,7 +569,7 @@ while($row = $result->fetch_assoc()) {
 
         for (var i = 0; i < 5; i++) {
             if (i < sel) {
-                if (event.pageX - event.target.getBoundingClientRect().left <= 6 && sel-1 == i) {
+                if (event.pageX - event.target.getBoundingClientRect().left <= 6 && sel-1 === i) {
                     rating += 0.5;
                 } else {
                     rating += 1;
@@ -552,24 +577,33 @@ while($row = $result->fetch_assoc()) {
             }
         }
 
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
-
+        $this.attr("rating", rating.toFixed(1));
+        $this.parent().find('.identifier').addClass("faded");
+        submitRating(bID, rating, function(error, response) {
+            if (!error) {
                 $this.removeClass("unrated");
+                $this.parent().find('.identifier').removeClass("faded");
                 $this.parent().parent().find('.star-value').removeClass("unrated");
                 $this.parent().parent().find('.star-value').html(rating.toFixed(1));
                 $this.parent().parent().find('.starRemoveButton').removeClass("disabled");
+            } else {
+                console.error(error);
             }
-        };
+        });
+    });
 
-        $this.attr("rating", rating.toFixed(1));
-        xhttp.open("POST", "SubmitRating.php", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send("bID=" + bID + "&rating=" + rating);
-        $this.parent().parent().find('.star-value').html("rating...");
+    $(".star-rating-list-mobile").change(function(event) {
+        var $this = $(this);
+        var bID = $this.attr("beatmapid");
+        var rating = parseFloat($this.val());
 
+        submitRating(bID, rating, function(error, response) {
+            if (!error) {
+                console.log(response);
+            } else {
+                console.error(error);
+            }
+        });
     });
 </script>
 
