@@ -17,7 +17,7 @@
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=17" />
+        <link rel="stylesheet" type="text/css" href="/style.css?v=20" />
         <script src="/script.js?v=3"></script>
 	</head>
 	<body>
@@ -105,11 +105,10 @@
 				?>
 			</span>
 		</div>
-
-		<!--
-		<div class="warningBar">
-			<i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
-		</div>
-		-->
 		
 		<div class="content" style="margin-top:6em;">
+            <!--
+            <div class="warningBar">
+                <i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
+            </div>
+            -->
