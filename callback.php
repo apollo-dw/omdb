@@ -87,6 +87,6 @@
 		$stmt->close();
 	}
 	
-	setcookie("AccessToken", $accessToken, time() + $expiresIn);
+	setcookie("AccessToken", $accessToken, time() + ($expiresIn * 5));
 	siteRedirect($redirect_url);
 ?>
