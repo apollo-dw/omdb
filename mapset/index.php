@@ -249,7 +249,6 @@ while($row = $result->fetch_assoc()) {
                     <span class="identifier" style="display: inline-block;">
                         <ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
                             <li class="icon-remove" style="opacity:0;"></li>
-
                             <?php for ($i = 1; $i <= 5; $i++){ ?>
                                 <li class="star icon-star<?php
                                 if ($userMapRating == ($i - 0.5)) {
@@ -374,6 +373,7 @@ while($row = $result->fetch_assoc()) {
                 <div class="flex-child commentComposer">
                     <form>
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
+                        <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                     </form>
                     <?php if ($hasBlacklistedDifficulties) { ?>
