@@ -549,15 +549,15 @@ while($row = $result->fetch_assoc()) {
         var bID = $(this).attr("beatmapid");
 
 
-        $this.parent().find('.identifier').addClass("faded");
+        $this.parent().addClass("faded");
         submitRating(bID, -2, function(error, response) {
             if (!error) {
                 $this.addClass("disabled");
+                $this.parent().removeClass("faded");
                 $this.parent().find('.star-value').html("&ZeroWidthSpace;");
                 $this.parent().find('.star-value').addClass("unrated");
                 $this.parent().find('.star-rating-list').attr("rating", "");
                 $this.parent().find('.identifier').find('.star-rating-list').addClass("unrated");
-                $this.parent().find('.identifier').removeClass("faded");
                 setStarRatingDisplay($this.parent().find('.star-rating-list'), -2);
             } else {
                 console.error(error);
@@ -583,11 +583,11 @@ while($row = $result->fetch_assoc()) {
         }
 
         $this.attr("rating", rating.toFixed(1));
-        $this.parent().find('.identifier').addClass("faded");
+        $this.parent().addClass("faded");
         submitRating(bID, rating, function(error, response) {
             if (!error) {
                 $this.removeClass("unrated");
-                $this.parent().find('.identifier').removeClass("faded");
+                $this.parent().removeClass("faded");
                 $this.parent().parent().find('.star-value').removeClass("unrated");
                 $this.parent().parent().find('.star-value').html(rating.toFixed(1));
                 $this.parent().parent().find('.starRemoveButton').removeClass("disabled");
