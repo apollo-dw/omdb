@@ -52,7 +52,7 @@
             <a class="nav-link" href="index.php">home</a>
             <a class="nav-link" href="#">actions</a>
             <a class="nav-link" href="blacklist.php">blacklist</a>
-            <a class="nav-link" href="#">logs</a>
+            <a class="nav-link" href="logs.php">logs</a>
             <a class="nav-link" href="#">ban</a>
 
             <br><br>
