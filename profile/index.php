@@ -178,6 +178,16 @@
             $stmt->close();
             ?>
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
+
+            <?php
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM `descriptor_votes` WHERE `UserID` = ?;");
+            $stmt->bind_param("i", $profileId);
+            $stmt->execute();
+            $stmt->bind_result($descriptorVoteCount);
+            $stmt->fetch();
+            $stmt->close();
+            ?>
+            <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
         </div>
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
