@@ -410,7 +410,14 @@ while($row = $result->fetch_assoc()) {
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
-                            <?php if ($row["UserID"] == $userId) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
+                            <?php
+                            if ($loggedIn && $userName == "moonpoint") { ?>
+                                <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
+                            <?php }
+                            if ($row["UserID"] == $userId) { ?>
+                                <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
+                            <?php }
+                            echo GetHumanTime($row["date"]); ?>
                         </div>
                     </div>
                     <div class="flex-child comment" style="min-width:0;overflow: hidden;">
@@ -477,6 +484,26 @@ while($row = $result->fetch_assoc()) {
         };
 
         xhttp.open("POST", "RemoveComment.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
+    });
+
+    $(".scrubComment").click(function(event){
+        var $this = $(this);
+
+        if (!confirm("Are you sure you want to scrub this comment?")) {
+            return;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                location.reload();
+            }
+        };
+
+        xhttp.open("POST", "ScrubComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
     });
