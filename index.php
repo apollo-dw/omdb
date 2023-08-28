@@ -162,10 +162,12 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                                    LIMIT 1;");
                 $stmt->bind_param("i", $mode);
                 $stmt->execute();
-                $result = $stmt->get_result()->fetch_assoc();
-                $year = date("Y", strtotime($result['DateRanked']));
 
-                $stmt = $conn->prepare("
+                if ($stmt->num_rows >= 1) {
+                    $result = $stmt->get_result()->fetch_assoc();
+                    $year = date("Y", strtotime($result['DateRanked']));
+
+                    $stmt = $conn->prepare("
                                 SELECT d.DescriptorID, d.Name
                                 FROM descriptor_votes 
                                 JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
@@ -174,10 +176,16 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                                 HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > (SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) + 0)
                                 ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
                                 LIMIT 5;");
-                $stmt->bind_param("i", $result["BeatmapID"]);
-                $stmt->execute();
-                $descriptorResult = $stmt->get_result();
+                    $stmt->bind_param("i", $result["BeatmapID"]);
+                    $stmt->execute();
+                    $descriptorResult = $stmt->get_result();
+                } else {
+                    $result = null;
+                }
+
+                $stmt->close();
             ?>
+            <?php if ($result != null) { ?>
             <div style="width:100%;text-align:center;">
                 <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
                 <br><br>
@@ -199,6 +207,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 <b><?php echo number_format($result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
                 <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><br>
             </div>
+            <?php } else { echo "no maps for this week :("; } ?>
         </div>
         <div class="flex-child column-when-mobile" style="width:50%;height:40em;">
             <?php
@@ -229,7 +238,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                               ");
             $stmt->bind_param("i", $mode);
             $stmt->execute();
-
             $result = $stmt->get_result();
 
             while($row = $result->fetch_assoc()) {
