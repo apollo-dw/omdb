@@ -152,13 +152,15 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <h2 style="margin-top:0;">Map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
-                        "SELECT * FROM beatmaps
-                               WHERE
-                                    DateRanked between date_sub(now(),INTERVAL 1 WEEK) and now()
-                                    AND Rating IS NOT NULL
-                               ORDER BY
-                                    Rating DESC
-                               LIMIT 1;");
+                    "SELECT * FROM beatmaps
+                                   WHERE
+                                        DateRanked between date_sub(now(),INTERVAL 1 WEEK) and now()
+                                        AND Rating IS NOT NULL
+                                        AND Mode = ?
+                                   ORDER BY
+                                        ChartRank ASC
+                                   LIMIT 1;");
+                $stmt->bind_param("i", $mode);
                 $stmt->execute();
                 $result = $stmt->get_result()->fetch_assoc();
                 $year = date("Y", strtotime($result['DateRanked']));
