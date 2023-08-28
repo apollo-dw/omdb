@@ -464,6 +464,10 @@ while($row = $result->fetch_assoc()) {
     $(".removeComment").click(function(event){
         var $this = $(this);
 
+        if (!confirm("Are you sure you want to remove this comment?")) {
+            return;
+        }
+
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
@@ -475,7 +479,6 @@ while($row = $result->fetch_assoc()) {
         xhttp.open("POST", "RemoveComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
-
     });
 
     function setStarRatingDisplay(element, value) {
