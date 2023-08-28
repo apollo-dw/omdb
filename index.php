@@ -240,7 +240,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     <div class="flex-child">
                         <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
                     </div>
-                    <div class="flex-child">
+                    <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
                         <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Title"]} [{$row["DifficultyName"]}]";?></a>
                     </div>
                     <div class="flex-child" style="margin-left: auto;text-align:right;min-width:6em;">
