@@ -35,13 +35,38 @@
     $hasBlacklistedDifficulties = false;
 ?>
 
+<style>
+    table, th, td, tr {
+        border-collapse: collapse;
+        padding: 0.25em;
+        margin: 0;
+    }
+
+    th {
+        height: 1em;
+        text-align:left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .dark-bg {
+        background-color: #203838;
+    }
+
+    .light-bg {
+        background-color: DarkSlateGray;
+    }
+</style>
+
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
 
-<div class="flex-container" style="justify-content: center;">
+<div class="flex-container">
     <div class="flex-child">
-        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="height:6rem;width:21.6rem;border-radius:16px;" onerror="this.onerror=null; this.src='INF.png';" />
+        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="width:25rem;height:8.5em;" onerror="this.onerror=null; this.src='INF.png';" />
     </div>
-    <div class="flex-child">
+    <div class="flex-child" style="margin-left:1em;">
         <?php
         if ($isLoved)
             echo "Submitted: ";
@@ -51,17 +76,65 @@
         ?>
         <br>
         <?php
-        $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?)");
-        $stmt->bind_param("s", $mapset_id);
-        $stmt->execute();
-        $averageRating = $stmt->get_result()->fetch_row()[0];
-        $stmt->close();
+            $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?)");
+            $stmt->bind_param("s", $mapset_id);
+            $stmt->execute();
+            $averageRating = $stmt->get_result()->fetch_row()[0];
+            $stmt->close();
         ?>
 
         Average Rating: <b><?php echo $averageRating; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
+        <?php echo getLanguage($sampleRow["Lang"]) . " " .  getGenre($sampleRow["Genre"]); ?> <br>
+
         <?php
             if ($isLoved)
                 echo "Loved Mapset";
+        ?>
+    </div>
+    <div class="flex-child" style="margin-left:1em;flex-grow: 1;">
+        <?php
+            $stmt = $conn->prepare("SELECT * FROM beatmapset_nominators WHERE SetID = ?");
+            $stmt->bind_param("i", $mapset_id);
+            $stmt->execute();
+            $nominatorResult = $stmt->get_result();
+
+            $nominators = array();
+            while ($row = $nominatorResult->fetch_assoc()) {
+                $nominatorID = $row["NominatorID"];
+                $nominatorName = GetUserNameFromId($nominatorID, $conn);
+                $mode = $row["Mode"];
+
+                if (!isset($nominators[$mode])) {
+                    $nominators[$mode] = array();
+                }
+                $nominators[$mode][$nominatorID] = $nominatorName;
+            }
+
+            if (!empty($nominators)) {
+                echo "<table style='height:8.5em;'>";
+                echo "<tr class='dark-bg'><th></th><th>Nominators</th></tr>";
+                foreach ($nominators as $mode => $modeNominators) {
+                    $modeString = "";
+//                    if ($mode == 0)
+//                        $modeString = "osu";
+//                    else if ($mode == 1)
+//                        $modeString = "taiko";
+//                    else if ($mode == 2)
+//                        $modeString = "catch";
+//                    else if ($mode == 3)
+//                        $modeString = "mania";
+
+                    echo "<tr><td class='light-bg text-center'>$modeString</td><td class='light-bg' style='width:100%;'>";
+                    $nominatorLinks = array();
+                    foreach ($modeNominators as $nominatorID => $nominatorName) {
+                        $nominatorLinks[] = "<a href='profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$nominatorName'></a>
+                                     <a href='profile/$nominatorID'>$nominatorName</a>";
+                    }
+                    echo implode(" ", $nominatorLinks);
+                    echo "</td></tr>";
+                }
+                echo "</table>";
+            }
         ?>
     </div>
 </div>
