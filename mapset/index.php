@@ -127,8 +127,8 @@
                     echo "<tr><td class='light-bg text-center'>$modeString</td><td class='light-bg' style='width:100%;'>";
                     $nominatorLinks = array();
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
-                        $nominatorLinks[] = "<a href='profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$nominatorName'></a>
-                                     <a href='profile/$nominatorID'>$nominatorName</a>";
+                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$nominatorName'></a>
+                                     <a href='/profile/$nominatorID'>$nominatorName</a>";
                     }
                     echo implode(" ", $nominatorLinks);
                     echo "</td></tr>";
