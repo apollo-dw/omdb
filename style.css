@@ -136,7 +136,6 @@ a .topBarLink {
     padding: 0.01rem 1rem;
     text-decoration: none;
     display: block;
-    text-align: left;
 }
 
 .dropdown-content a:hover {
@@ -474,6 +473,31 @@ td input{
 
 .icon-remove {
     cursor: pointer;
+}
+
+.ruleset-icon {
+    filter: invert(100%);
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 1em;
+    width: 1em;
+    display: inline-block;
+}
+
+.ruleset-icon.osu {
+    background-image: url("omdb/assets/icon-osu.svg");
+}
+
+.ruleset-icon.taiko {
+    background-image: url("omdb/assets/icon-taiko.svg");
+}
+
+.ruleset-icon.catch {
+    background-image: url("omdb/assets/icon-catch.svg");
+}
+
+.ruleset-icon.mania {
+    background-image: url("omdb/assets/icon-mania.svg");
 }
 
 .osuTimestamp {

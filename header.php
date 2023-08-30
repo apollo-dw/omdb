@@ -10,7 +10,7 @@
         <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
         <meta property="og:site_name" content="OMDB">
         <meta name="theme-color" content="#2F4F4F">
-		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="/omdb/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -23,7 +23,6 @@
 	<body>
 		<div class="topBar">
 			<a href="/" style="margin-right: 8px;color:white;">OMDB</a>
-			
 			<a href="/"><div class="topBarLink">home</div></a>
 			<a href="/charts/"><div class="topBarLink">charts</div></a>
 			<div class="topBarDropDown">
@@ -71,21 +70,21 @@
                         <?php
                             switch($mode){
                                 case 0:
-                                    echo "osu!"; break;
+                                    echo "<div class='ruleset-icon osu'></div>"; break;
                                 case 1:
-                                    echo "osu!taiko"; break;
+                                    echo "<div class='ruleset-icon taiko'></div>"; break;
                                 case 2:
-                                    echo "osu!catch"; break;
+                                    echo "<div class='ruleset-icon catch'></div>"; break;
                                 case 3:
-                                    echo "osu!mania"; break;
+                                    echo "<div class='ruleset-icon mania'></div>"; break;
                             }
                         ?>
                     </div>
-                    <div class="dropdown-content">
-                        <a id="osuLink" href="">osu!</a>
-                        <a id="taikoLink" href="">osu!taiko</a>
-                        <a id="catchLink" href="">osu!catch</a>
-                        <a id="maniaLink" href="">osu!mania</a>
+                    <div class="dropdown-content" style="font-size: 0.75rem;min-width: 3.5rem;text-align:center;">
+                        <a id="osuLink" href=""><div class="ruleset-icon osu"></div></a>
+                        <a id="taikoLink" href=""><div class="ruleset-icon taiko"></div></a>
+                        <a id="catchLink" href=""><div class="ruleset-icon catch"></div></a>
+                        <a id="maniaLink" href=""><div class="ruleset-icon mania"></div></a>
                     </div>
 			    </div>
 				<?php
