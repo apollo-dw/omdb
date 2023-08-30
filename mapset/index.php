@@ -66,33 +66,38 @@
     <div class="flex-child">
         <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="width:25rem;height:8.5em;" onerror="this.onerror=null; this.src='INF.png';" />
     </div>
-    <div class="flex-child" style="margin-left:1em;">
-        <?php
-        if ($isLoved)
-            echo "Submitted: ";
-        else
-            echo "Ranked: ";
-        echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
-        ?>
-        <br>
-        <?php
-            $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?)");
-            $stmt->bind_param("s", $mapset_id);
-            $stmt->execute();
-            $averageRating = $stmt->get_result()->fetch_row()[0];
-            $stmt->close();
-        ?>
+    <div class="flex-container flex-child light-bg" style="margin-left:1em;flex-grow: 1;height:8.5em;">
+        <div class="flex-child" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
+            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset info</div>
+            <div style="padding:0.25em;">
+                <?php
+                if ($isLoved)
+                    echo "Submitted: ";
+                else
+                    echo "Ranked: ";
+                echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
+                ?>
+                <br>
+                <?php
+                    $stmt = $conn->prepare("SELECT ROUND(AVG(Score), 2) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?)");
+                    $stmt->bind_param("s", $mapset_id);
+                    $stmt->execute();
+                    $averageRating = $stmt->get_result()->fetch_row()[0];
+                    $stmt->close();
+                ?>
 
-        Average Rating: <b><?php echo $averageRating; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
-        <?php echo getLanguage($sampleRow["Lang"]) . " " .  getGenre($sampleRow["Genre"]); ?> <br>
+                Average Rating: <b><?php echo $averageRating; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
+                <?php echo getLanguage($sampleRow["Lang"]) . " " .  getGenre($sampleRow["Genre"]); ?> <br>
 
-        <?php
-            if ($isLoved)
-                echo "Loved Mapset";
-        ?>
-    </div>
-    <div class="flex-child" style="margin-left:1em;flex-grow: 1;">
-        <?php
+                <?php
+                    if ($isLoved)
+                        echo "Loved Mapset";
+                ?>
+            </div>
+        </div>
+        <div class="flex-child" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
+            <?php
             $stmt = $conn->prepare("SELECT * FROM beatmapset_nominators WHERE SetID = ?");
             $stmt->bind_param("i", $mapset_id);
             $stmt->execute();
@@ -111,20 +116,11 @@
             }
 
             if (!empty($nominators)) {
-                echo "<table style='height:8.5em;'>";
-                echo "<tr class='dark-bg'><th></th><th>Nominators</th></tr>";
+                echo "<table>";
                 foreach ($nominators as $mode => $modeNominators) {
-                    $modeString = "";
-//                    if ($mode == 0)
-//                        $modeString = "osu";
-//                    else if ($mode == 1)
-//                        $modeString = "taiko";
-//                    else if ($mode == 2)
-//                        $modeString = "catch";
-//                    else if ($mode == 3)
-//                        $modeString = "mania";
+                    $modeString = getModeIcon($mode);
 
-                    echo "<tr><td class='light-bg text-center'>$modeString</td><td class='light-bg' style='width:100%;'>";
+                    echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
                     $nominatorLinks = array();
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
                         $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$nominatorName'></a>
@@ -135,7 +131,8 @@
                 }
                 echo "</table>";
             }
-        ?>
+            ?>
+        </div>
     </div>
 </div>
 <br>
@@ -219,6 +216,9 @@ while($row = $result->fetch_assoc()) {
 
     <div class="flex-container difficulty-container alternating-bg <?php if($blackListed) echo "faded"; ?>" >
         <div class="flex-child diffBox" style="text-align:center;width:20%;">
+            <span style="position:relative;top:2px;">
+                <?php echo getModeIcon($row['Mode']); ?>
+            </span>
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
             </a>

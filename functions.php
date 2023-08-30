@@ -404,6 +404,21 @@
 		}
 	}
 
+	function getModeIcon($mode) {
+		switch ($mode) {
+			case 0:
+				return "<div class='ruleset-icon osu'></div>";
+			case 1:
+				return "<div class='ruleset-icon taiko'></div>";
+			case 2:
+				return "<div class='ruleset-icon catch'></div>";
+			case 3:
+				return "<div class='ruleset-icon mania'></div>";
+			default:
+				return "";
+		}
+	}
+
 	function RenderBeatmapCreators($beatmapID, $conn) {
 		$stmt = $conn->prepare("SELECT `CreatorID` FROM `beatmap_creators` WHERE BeatmapID = ?");
 		$stmt->bind_param('i', $beatmapID);
