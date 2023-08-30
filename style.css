@@ -485,19 +485,19 @@ td input{
 }
 
 .ruleset-icon.osu {
-    background-image: url("omdb/assets/icon-osu.svg");
+    background-image: url("assets/icon-osu.svg");
 }
 
 .ruleset-icon.taiko {
-    background-image: url("omdb/assets/icon-taiko.svg");
+    background-image: url("assets/icon-taiko.svg");
 }
 
 .ruleset-icon.catch {
-    background-image: url("omdb/assets/icon-catch.svg");
+    background-image: url("assets/icon-catch.svg");
 }
 
 .ruleset-icon.mania {
-    background-image: url("omdb/assets/icon-mania.svg");
+    background-image: url("assets/icon-mania.svg");
 }
 
 .osuTimestamp {
