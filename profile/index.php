@@ -299,11 +299,7 @@
         $setsResult = $stmt->get_result();
         $stmt->close();
 
-        $sets = [];
-        while($row = $setsResult->fetch_assoc())
-            $sets[] = $row;
-
-        foreach($sets as $set) {
+        while($set = $setsResult->fetch_assoc()) {
             $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
                        (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
                        FROM beatmaps b
