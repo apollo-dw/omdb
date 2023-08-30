@@ -6,6 +6,14 @@
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
     $tagCount = $stmt->get_result()->fetch_assoc()["count"];
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT Count(*) as count FROM beatmapset_nominators WHERE NominatorID = ?;");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $nominationCount = $stmt->get_result()->fetch_assoc()["count"];
+    $stmt->close();
+
 ?>
 
 <style>
@@ -35,7 +43,11 @@
 </style>
 
 <div class="tabbed-container-nav">
-    <button class="active" onclick="openTab('tabbed-latest')">Latest</button><button onclick="openTab('tabbed-ratings')">Ratings</button><button onclick="openTab('tabbed-tags')">Tags (<?php echo $tagCount; ?>)</button><button onclick="openTab('tabbed-stats')">Stats</button>
+    <button class="active" onclick="openTab('tabbed-latest')">Latest</button>
+    <button onclick="openTab('tabbed-ratings')">Ratings</button>
+    <button onclick="openTab('tabbed-stats')">Stats</button>
+    <?php if ($tagCount > 0 ) { ?> <button onclick="openTab('tabbed-tags')">Tags (<?php echo $tagCount; ?>)</button> <?php } ?>
+    <?php if ($nominationCount > 0 ) { ?> <button onclick="openTab('tabbed-nominations')">Nominations (<?php echo $nominationCount; ?>)</button> <?php } ?>
 </div>
 
 <div id="tabbed-latest" class="tab">
@@ -123,20 +135,63 @@
     </table>
 </div>
 
-<div id="tabbed-tags" class="tab" style="display:none;padding: 2em;">
-    <?php
-    $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
-    $stmt->bind_param('i', $profileId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+<?php if ($tagCount > 0 ) { ?>
+    <div id="tabbed-tags" class="tab" style="display:none;padding: 2em;">
+        <?php
+        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
+        $stmt->bind_param('i', $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    while ($row = $result->fetch_assoc()) {
-        $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
-        $encodedTag = urlencode($tag);
-        echo "<a href='ratings/?id={$profileId}&t={$encodedTag}'>{$tag} ({$row["TagCount"]})</a> <br>";
-    }
-    ?>
-</div>
+        while ($row = $result->fetch_assoc()) {
+            $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
+            $encodedTag = urlencode($tag);
+            echo "<a href='ratings/?id={$profileId}&t={$encodedTag}'>{$tag} ({$row["TagCount"]})</a> <br>";
+        }
+        ?>
+    </div>
+<?php } ?>
+
+<?php if ($nominationCount > 0 ) { ?>
+    <div id="tabbed-nominations" class="tab" style="padding-top:0.5em;display:none;">
+        <span class="subText">this display will be way more epic later. for now i'll just show highest charting nominated maps</span> <hr>
+        <?php
+            $usedSets = array();
+
+            $stmt = $conn->prepare("SELECT bm.* FROM Beatmaps bm JOIN Beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.NominatorID = ? AND ChartRank IS NOT NULL ORDER BY ChartRank;");
+            $stmt->bind_param("i", $profileId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while($row = $result->fetch_assoc()){
+                if (in_array($row["SetID"], $usedSets))
+                    continue;
+
+                $artist = htmlspecialchars($row["Artist"]);
+                $title = htmlspecialchars($row["Title"]);
+                $diffname = htmlspecialchars($row["DifficultyName"]);
+                $avgRating = number_format($row["Rating"], 2);
+
+                ?>
+                <div style='padding-left:0.25em;height:5em;display:flex;align-items: center;' class='alternating-bg'>
+                    <div>
+                        <a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:4em;width:4em;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
+                    </div>
+                    <div>
+                        <a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo "{$artist} - {$title} [$diffname]"; ?></a> <br>
+                        <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span>,
+                        <b>#<?php echo $row["ChartRank"]; ?></b> <span class="subText">overall</span>
+                    </div>
+                </div>
+                <?php
+
+
+
+                $usedSets[] = $row["SetID"];
+            }
+        ?>
+    </div>
+<?php } ?>
 
 <div id="tabbed-stats" class="tab" style="display:none;padding: 2em;">
     <div class="flex-container">
