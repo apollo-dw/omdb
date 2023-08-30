@@ -232,21 +232,11 @@
 		    } ?>
 	</div>
 	<div class="ratingsCard">
-		<?php
-			if($isValidUser){
-		?>
 		<div id="ratingDisplay">
 			<?php
 				include 'rating.php';
 			?>
 		</div>
-		<?php
-			} else {
-		?>
-			This person is not an OMDB user :(
-		<?php
-			}
-		?>
 	</div>
 </div>
 
