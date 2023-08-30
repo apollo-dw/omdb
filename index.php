@@ -149,12 +149,13 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <br>
     <div class="flex-container column-when-mobile-container">
         <div class="flex-child column-when-mobile" style="width:50%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
-            <h2 style="margin-top:0;">Map of the week</h2>
+            <h2 style="margin-top:0;">Highest charting map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
                     "SELECT * FROM beatmaps
                                        WHERE
-                                            DateRanked between date_sub(now(),INTERVAL 1 WEEK) and now()
+                                            DateRanked >= DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) + 7 DAY) 
+                                            AND DateRanked < DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY)
                                             AND Rating IS NOT NULL
                                             AND Mode = ?
                                        ORDER BY
@@ -207,7 +208,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 <br><br>
                 Ranked <?php echo date("M jS, Y", strtotime($result['DateRanked'])); ?> <br>
                 <b><?php echo number_format($result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
-                <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><br>
+                <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $result["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($result["ChartRank"] / 50); ?>">overall</a><br>
             </div>
             <?php } else { echo "no maps for this week :("; } ?>
         </div>
@@ -215,34 +216,24 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <?php
             $counter = 0;
 
-            $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.DifficultyName, num_ratings
-                              FROM beatmaps b
-                              INNER JOIN (
-                                    SELECT BeatmapID, COUNT(*) as num_ratings
-                                    FROM ratings
-                                    WHERE date >= now() - interval 1 week
-                                    GROUP BY BeatmapID
-                              ) r ON b.BeatmapID = r.BeatmapID
-                              INNER JOIN (
-                                    SELECT SetID, MAX(num_ratings) as max_ratings
-                                    FROM (
-                                        SELECT b.SetID, b.BeatmapID, COUNT(*) as num_ratings
-                                        FROM beatmaps b
-                                        INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
-                                        WHERE r.date >= now() - interval 1 week
-                                        GROUP BY b.SetID, b.BeatmapID
-                                    ) t
-                                    GROUP BY SetID
-                              ) m ON b.SetID = m.SetID AND r.num_ratings = m.max_ratings
-                              WHERE b.mode = ?
-                              ORDER BY num_ratings DESC, b.BeatmapID DESC
-                              LIMIT 10;
-                              ");
+            $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
+                                          FROM beatmaps b
+                                          INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
+                                          WHERE r.date >= NOW() - INTERVAL 1 WEEK
+                                          AND b.Mode = ?
+                                          GROUP BY b.BeatmapID
+                                          ORDER BY num_ratings DESC
+                                          LIMIT 25;");
             $stmt->bind_param("i", $mode);
             $stmt->execute();
             $result = $stmt->get_result();
 
+            $usedSets = array();
+
             while($row = $result->fetch_assoc()) {
+                if (in_array($row["SetID"], $usedSets))
+                    continue;
+
                 $counter += 1;
                 ?>
                 <div class="flex-container ratingContainer alternating-bg" style="height:4em;">
@@ -260,8 +251,11 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     </div>
                 </div>
                 <?php
-            }
+                if ($counter == 10)
+                    break;
 
+                $usedSets[] = $row["SetID"];
+            }
             $stmt->close();
             ?>
         </div>
