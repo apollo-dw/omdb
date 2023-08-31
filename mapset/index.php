@@ -130,6 +130,8 @@
                     echo "</td></tr>";
                 }
                 echo "</table>";
+            } else if (!$isLoved) {
+                echo "No nominators found! This is likely because this is a old set, ranked during moddingv1.<br><a href='edit/?id={$mapset_id}'><span class='subText'><i class='icon-edit'></i> Feel free to help by deducing nominators.</span></a> ";
             }
             ?>
         </div>

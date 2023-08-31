@@ -2,7 +2,7 @@
     $PageTitle = "Edit Queue";
 
     include '../header.php';
-    $stmt = $conn->prepare("SELECT e.*, b.SetID, b.Title, b.DifficultyName FROM beatmap_edit_requests e JOIN beatmaps b on e.BeatmapID = b.BeatmapID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
+    $stmt = $conn->prepare("SELECT e.*, b.SetID as SetID, e.SetID as EditSetID, b.Title, b.DifficultyName FROM beatmap_edit_requests e LEFT JOIN beatmaps b on e.BeatmapID = b.BeatmapID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -25,7 +25,7 @@
 
     <h1>Edit queue</h1>
 
-    <table>
+    <table style="width:100%;">
         <thead>
         <tr>
             <th>Name</th>
@@ -37,12 +37,18 @@
         <tbody>
         <?php
             while ($row = $result->fetch_assoc()) {
+                $isEditingSet = !is_null($row["EditSetID"]);
+
                 $name = GetUserNameFromId($row["UserID"], $conn);
                 $mapsetLink = "../mapset/?mapset_id={$row["SetID"]}";
                 echo "<tr class='alternating-bg' onclick=\"window.open('{$mapsetLink}', '_blank');\" style=\"cursor: pointer;\">";
                 echo "<td>{$name}</td>";
                 echo "<td>{$row["Title"]}</td>";
-                echo "<td>{$row["DifficultyName"]}</td>";
+                if ($isEditingSet) {
+                    echo "<td>Mapset (general edit)</td>";
+                } else {
+                    echo "<td>{$row["DifficultyName"]}</td>";
+                }
                 echo "<td>{$row["Timestamp"]}</td>";
                 echo "</tr>";
             }

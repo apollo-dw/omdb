@@ -8,49 +8,77 @@
     }
 
     $beatmapID = $_GET["BeatmapID"];
+    $setID = $_GET["SetID"] ?? null;
+    $isEditingSet = !is_null($setID);
 
-    $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `BeatmapID` = ? AND Status = 'Pending';");
-    $stmt->bind_param('i', $beatmapID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $request = $result->fetch_assoc();
+    if ($isEditingSet) {
+        $stmt = $conn->prepare("SELECT Count(*) FROM beatmaps WHERE SetID = ?;");
+        $stmt->bind_param('i', $setID);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $stmt = $conn->prepare("SELECT SetID FROM beatmaps WHERE BeatmapID = ?;");
-    $stmt->bind_param('i', $beatmapID);
-    $stmt->execute();
-    $result = $stmt->get_result();
+        if ($result->num_rows == 0)
+            die("NO");
 
-    if ($result->num_rows == 0)
-        die("NO");
+        $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `SetID` = ? AND Status = 'Pending';");
+        $stmt->bind_param('i', $setID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $request = $result->fetch_assoc();
 
-    $setID = $result->fetch_assoc()["SetID"];
+        if ($request) {
+            $editDataArray = json_decode($request['EditData'], true);
+            $newNominators = $editDataArray["Mappers"];
 
-    if ($request) {
-        $editDataArray = json_decode($request['EditData'], true);
-        $newMappers = $editDataArray["Mappers"];
+            $stmt = $conn->prepare("DELETE FROM beatmapset_nominators WHERE `SetID` = ?;");
+            $stmt->bind_param('i', $setID);
+            $stmt->execute();
 
-        $stmt = $conn->prepare("SELECT * FROM beatmap_creators WHERE `BeatmapID` = ?;");
+            $stmt = $conn->prepare("INSERT INTO beatmapset_nominators (`SetID`, `NominatorID`) VALUES (?, ?);");
+            $stmt->bind_param('ii', $setID, $nominatorID);
+            foreach ($newNominators as $nominatorID) {
+                $stmt->execute();
+            }
+
+            $stmt = $conn->prepare("UPDATE beatmap_edit_requests SET Status = 'Approved', EditorID = ? WHERE `EditID` = ?;");
+            $stmt->bind_param('ii', $userId, $request['EditID']);
+            $stmt->execute();
+        }
+    } else {
+        $stmt = $conn->prepare("SELECT SetID FROM beatmaps WHERE BeatmapID = ?;");
         $stmt->bind_param('i', $beatmapID);
         $stmt->execute();
         $result = $stmt->get_result();
 
-        $currentMappers = array();
-        while ($row = $result->fetch_assoc())
-            $currentMappers[] = $row['CreatorID'];
+        if ($result->num_rows == 0)
+            die("NO");
 
-        $stmt = $conn->prepare("DELETE FROM beatmap_creators WHERE `BeatmapID` = ?;");
+        $setID = $result->fetch_assoc()["SetID"];
+
+        $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `BeatmapID` = ? AND Status = 'Pending';");
         $stmt->bind_param('i', $beatmapID);
         $stmt->execute();
+        $result = $stmt->get_result();
+        $request = $result->fetch_assoc();
 
-        $stmt = $conn->prepare("INSERT INTO beatmap_creators (`BeatmapID`, `CreatorID`) VALUES (?, ?);");
-        $stmt->bind_param('ii', $beatmapID, $creatorID);
-        foreach ($newMappers as $creatorID) {
+        if ($request) {
+            $editDataArray = json_decode($request['EditData'], true);
+            $newMappers = $editDataArray["Mappers"];
+
+            $stmt = $conn->prepare("DELETE FROM beatmap_creators WHERE `BeatmapID` = ?;");
+            $stmt->bind_param('i', $beatmapID);
+            $stmt->execute();
+
+            $stmt = $conn->prepare("INSERT INTO beatmap_creators (`BeatmapID`, `CreatorID`) VALUES (?, ?);");
+            $stmt->bind_param('ii', $beatmapID, $creatorID);
+            foreach ($newMappers as $creatorID) {
+                $stmt->execute();
+            }
+
+            $stmt = $conn->prepare("UPDATE beatmap_edit_requests SET Status = 'Approved', EditorID = ? WHERE `EditID` = ?;");
+            $stmt->bind_param('ii', $userId, $request['EditID']);
             $stmt->execute();
         }
-
-        $stmt = $conn->prepare("UPDATE beatmap_edit_requests SET Status = 'Approved', EditorID = ? WHERE `EditID` = ?;");
-        $stmt->bind_param('ii', $userId, $request['EditID']);
-        $stmt->execute();
-
-        header('Location: ../edit/?id=' . $setID);
     }
+
+header('Location: ../edit/?id=' . $setID);
