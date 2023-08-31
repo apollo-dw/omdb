@@ -19,9 +19,6 @@ $difficultyName = htmlspecialchars($beatmap['DifficultyName']);
 if (is_null($beatmap))
     die("Beatmap not found");
 
-if (!$loggedIn)
-    die("You need to be logged in to view this page.");
-
 function generateTreeHTML($tree) {
     $html = '<ul>';
     foreach ($tree as $node) {
@@ -147,18 +144,22 @@ while ($voteRow = $voteResult->fetch_assoc())
         <p>
             Misuse of the descriptor feature will result in you being banned. Do not abuse this feature by assigning obviously incorrect descriptors.
         </p>
-        <button id="proposeDescriptorButton">Propose Descriptor</button> <a href="../../descriptors/">View all descriptors</a>
-        <div id="descriptorTreePopover" class="popover">
-            <?php
-                $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $descriptors = $result->fetch_all(MYSQLI_ASSOC);
+        <?php if($loggedIn) { ?>
+            <button id="proposeDescriptorButton">Propose Descriptor</button>
+            <div id="descriptorTreePopover" class="popover">
+                <?php
+                    $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 
-                $tree = buildTree($descriptors);
-                echo generateTreeHTML($tree);
-            ?>
-        </div>
+                    $tree = buildTree($descriptors);
+                    echo generateTreeHTML($tree);
+                ?>
+            </div>
+        <?php } ?>
+
+        <a href="../../descriptors/">View all descriptors</a>
 
         <div id="descriptor-box-container">
             <?php
@@ -190,10 +191,12 @@ while ($voteRow = $voteResult->fetch_assoc())
                 <div class="descriptor-box" data-descriptor-id="<?php echo $row["DescriptorID"]; ?>">
                     <h2><?php echo $row["Name"]?></h2>
                     <span class="subText"><?php echo $row["ShortDescription"]?></span> <br>
-                    <div class="actions">
-                        <i class="icon-thumbs-up<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 1) ? ' voted' : ''; ?>"></i>
-                        <i class="icon-thumbs-down<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 0) ? ' voted' : ''; ?>"></i>
-                    </div>
+                    <?php if ($loggedIn) { ?>
+                        <div class="actions">
+                            <i class="icon-thumbs-up<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 1) ? ' voted' : ''; ?>"></i>
+                            <i class="icon-thumbs-down<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 0) ? ' voted' : ''; ?>"></i>
+                        </div>
+                    <?php } ?>
                     <hr>
                     <b class="upvotes">upvotes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo $voteRow['upvoteUsernames']; ?></span>
                     <hr>
