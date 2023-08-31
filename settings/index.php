@@ -46,6 +46,18 @@
         </tr>
         <tr>
             <td>
+                <label>Hide ratings:</label><br>
+            </td>
+            <td>
+                <select name="HideRatings" id="HideRatings" autocomplete="off">
+                    <option value="0">No</option>
+                    <option value="1" <?php if ($user["HideRatings"]==1) { echo 'selected="selected"'; }?>>Yes</option>
+                </select><br>
+                <span class="subText">Disallows your ratings from appearing on the front page feed.</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
             </td>
             <td>
                 <button type='button' onclick="saveChanges()">Save changes</button> <span id="statusText"></span>
@@ -108,11 +120,12 @@
         ];
 
         const randomBehaviour = document.getElementById("RandomBehaviour").value;
+        const hideRatings = document.getElementById("HideRatings").value;
 
         fetch("save.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ randomBehaviour, ratingNames }),
+            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings }),
         }).then(response => {
             if (response.status == 200) {
                 document.getElementById("statusText").textContent = "Saved!";

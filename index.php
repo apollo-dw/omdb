@@ -36,7 +36,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
 		<?php
-		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID WHERE b.Mode = ? ORDER BY r.date DESC LIMIT 40;");
+		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
 		  $stmt->bind_param("i", $mode);
           $stmt->execute();
 		  $result = $stmt->get_result();
