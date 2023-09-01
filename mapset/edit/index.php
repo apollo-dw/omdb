@@ -100,7 +100,7 @@
 
         $currentNominators = array();
         while ($row = $result->fetch_assoc())
-            $currentMappers[] = $row['NominatorID'];
+            $currentNominators[] = $row['NominatorID'];
 
         $requesterUsername = GetUserNameFromId($setRequest['UserID'], $conn);
         $data = json_decode($setRequest['EditData'], true);
@@ -111,9 +111,9 @@
         <a href='http://osu.ppy.sh/b/{$beatmapID}' target='_blank'>Link to set on osu! website</a>
         <hr>";
 
-        $deletedMappers = array_diff($currentMappers, $newMappers);
-        $newlyAddedMappers = array_diff($newMappers, $currentMappers);
-        $unchangedMappers = array_intersect($currentMappers, $newMappers);
+        $deletedMappers = array_diff($currentNominators, $newMappers);
+        $newlyAddedMappers = array_diff($newMappers, $currentNominators);
+        $unchangedMappers = array_intersect($currentNominators, $newMappers);
 
         echo "Changes to Nominators:<div style='background-color:#182828;font-family: monospace;border: 1px solid white;padding: 0.5em;width: 33%;min-height:10em;'>";
         foreach ($deletedMappers as $deletedID) {
@@ -191,8 +191,8 @@
         }
 
         echo '<hr> <b>Edit history:</b> <br>';
-        $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE BeatmapID = ? ORDER BY Timestamp DESC");
-        $stmt->bind_param("i", $beatmapID);
+        $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE SetID = ? ORDER BY Timestamp DESC");
+        $stmt->bind_param("i", $mapset_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
