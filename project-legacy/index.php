@@ -1,13 +1,21 @@
 <?php
-    $PageTitle = "Project Legacy";
-    require("../header.php");
+$PageTitle = "Project Legacy";
+require("../header.php");
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+$stmt = $conn->prepare("SELECT COUNT(DISTINCT bm.SetID) as count FROM beatmaps bm LEFT JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.SetID IS NULL AND bm.Mode = ?;");
+$stmt->bind_param("i", $mode);
+$stmt->execute();
+$setsLeft = $stmt->get_result()->fetch_assoc()["count"];
+$stmt->close();
 
-    $stmt = $conn->query("SELECT COUNT(DISTINCT bm.SetID) as count FROM beatmaps bm LEFT JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.SetID IS NULL;");
-    $setsLeft = $stmt->fetch_assoc()["count"];
+$edits = $conn->query("SELECT UserID, COUNT(*) as count FROM beatmap_edit_requests WHERE setid IS NOT NULL AND status = 'approved' GROUP BY UserID ORDER BY count DESC LIMIT 10;");
 
-    $edits = $conn->query("SELECT UserID, COUNT(*) as count FROM beatmap_edit_requests WHERE setid IS NOT NULL AND status = 'approved' GROUP BY UserID ORDER BY count DESC LIMIT 10;");
-
-    $stmt = $conn->query("SELECT * FROM beatmaps WHERE SetID NOT IN (SELECT SetID FROM beatmapset_nominators) AND ChartRank IS NOT NULL AND Mode = 0 AND Status != 4 ORDER BY ChartRank LIMIT 18;");
+$stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID NOT IN (SELECT SetID FROM beatmapset_nominators) AND ChartRank IS NOT NULL AND Mode = ? AND Status != 4 ORDER BY ChartRank LIMIT 18;");
+$stmt->bind_param("i", $mode);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
     <div style="width:100%;text-align:center;padding-top:2em;padding-bottom:5em;background-color:darkslategrey;">
@@ -37,9 +45,9 @@
         <div class="flex-child" style="width:50%">
             Highest charting maps without nominator data
             <?php
-            while($row = $stmt->fetch_assoc()){
+            while($row = $result->fetch_assoc()){
                 echo "<div class='alternating-bg' style='box-sizing:content-box;height:1.5em;'>
-						#{$row["ChartRank"]}: {$row["Artist"]} - {$row["Title"]}
+						<a href='/mapset/{$row["SetID"]}'>#{$row["ChartRank"]}: {$row["Artist"]} - {$row["Title"]}</a>
 					  </div>";
             }
             ?>
