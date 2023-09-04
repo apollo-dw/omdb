@@ -10,9 +10,9 @@ $stmt->execute();
 $setsLeft = $stmt->get_result()->fetch_assoc()["count"];
 $stmt->close();
 
-$edits = $conn->query("SELECT UserID, COUNT(*) as count FROM beatmap_edit_requests WHERE setid IS NOT NULL AND status = 'approved' GROUP BY UserID ORDER BY count DESC LIMIT 10;");
+$edits = $conn->query("SELECT UserID, COUNT(*) as count FROM beatmap_edit_requests WHERE setid IS NOT NULL AND status = 'approved' GROUP BY UserID ORDER BY count DESC LIMIT 25;");
 
-$stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID NOT IN (SELECT SetID FROM beatmapset_nominators) AND ChartRank IS NOT NULL AND Mode = ? AND Status != 4 ORDER BY ChartRank LIMIT 18;");
+$stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID NOT IN (SELECT SetID FROM beatmapset_nominators) AND ChartRank IS NOT NULL AND Mode = ? AND Status != 4 ORDER BY ChartRank LIMIT 42;");
 $stmt->bind_param("i", $mode);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -21,6 +21,7 @@ $result = $stmt->get_result();
     <div style="width:100%;text-align:center;padding-top:2em;padding-bottom:5em;background-color:darkslategrey;">
         <h2><?php echo $setsLeft; ?> sets left.</h2>
         There are <?php echo $setsLeft; ?> sets from modding v1 that have missing nominator data, and this project tracks progress on backfilling it. <br>
+        <span class="subText">(you might get something cool in the future if you get at least 50 nominator edits!!)</span>
     </div>
 
     <div class="flex-container">
@@ -46,7 +47,7 @@ $result = $stmt->get_result();
             Highest charting maps without nominator data
             <?php
             while($row = $result->fetch_assoc()){
-                echo "<div class='alternating-bg' style='box-sizing:content-box;height:1.5em;'>
+                echo "<div class='alternating-bg' style='box-sizing:content-box;min-height:1.5em;'>
 						<a href='/mapset/{$row["SetID"]}'>#{$row["ChartRank"]}: {$row["Artist"]} - {$row["Title"]}</a>
 					  </div>";
             }
