@@ -68,28 +68,22 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child column-when-mobile" style="width:60%;height:32em;overflow-y:scroll;">
 		<?php
-          $stmt = $conn->prepare("SELECT c.*
-                            FROM comments c
-                            WHERE EXISTS (
-                                SELECT 1
-                                FROM beatmaps b
-                                WHERE b.SetID = c.SetID AND b.Mode = ?
-                            )
-                            ORDER BY c.date DESC
-                            LIMIT 20;");
-          $stmt->bind_param("i", $mode);
-          $stmt->execute();
-          $result = $stmt->get_result();
+            $stmt = $conn->prepare("SELECT c.*, r.UserIDTo AS blocked
+                    FROM comments c
+                    LEFT JOIN user_relations r ON c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    WHERE EXISTS (
+                        SELECT 1
+                        FROM beatmaps b
+                        WHERE b.SetID = c.SetID AND b.Mode = ?
+                    )
+                    ORDER BY c.date DESC
+                    LIMIT 20;");
+            $stmt->bind_param("ii", $userId, $mode);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-          while($row = $result->fetch_assoc()) {
-              $is_blocked = 0;
-
-              if ($loggedIn) {
-                  $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
-                  $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
-                  $stmt_relation_to_profile_user->execute();
-                  $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
-              }
+            while ($row = $result->fetch_assoc()) {
+                $is_blocked = $row['blocked'] ? 1 : 0;
 		  ?>
 			<div class="flex-container ratingContainer alternating-bg">
 			  <div class="flex-child" style="margin-left:0.5em;">
