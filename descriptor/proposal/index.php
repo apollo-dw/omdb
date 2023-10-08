@@ -12,9 +12,10 @@
     if (is_null($proposal))
         die("Proposal not found");
 
-    $stmt = $conn->prepare("SELECT * FROM descriptors;");
+    $stmt = $conn->prepare("SELECT * FROM descriptors WHERE DescriptorID = ?;");
+    $stmt->bind_param("i", $proposal["ParentID"]);
     $stmt->execute();
-    $descriptors = $stmt->get_result()->fetch_all();
+    $parentDescriptor = $stmt->get_result()->fetch_assoc();
 
     $stmt = $conn->prepare("SELECT Vote FROM descriptor_proposal_votes WHERE UserID = ? AND ProposalID = ?");
     $stmt->bind_param('ii', $userId, $proposal_id);
@@ -90,7 +91,7 @@
             </tr>
             <tr>
                 <td class="right">Parent descriptor</td>
-                <td><?php echo $descriptors[array_search($proposal["ParentID"], $descriptors)][1]; ?></td>
+                <td><?php echo $parentDescriptor["Name"]; ?></td>
             </tr>
             <tr>
                 <td class="right">Proposer</td>

@@ -68,36 +68,56 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child column-when-mobile" style="width:60%;height:32em;overflow-y:scroll;">
 		<?php
-            $stmt = $conn->prepare("SELECT c.*, r.UserIDTo AS blocked
-                    FROM comments c
-                    LEFT JOIN user_relations r ON c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                    WHERE EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = c.SetID AND b.Mode = ?
-                    )
-                    ORDER BY c.date DESC
-                    LIMIT 20;");
-            $stmt->bind_param("ii", $userId, $mode);
-            $stmt->execute();
-            $result = $stmt->get_result();
+                $stmt = $conn->prepare("(SELECT c.*, r.UserIDTo AS blocked, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+                                                FROM comments c
+                                                LEFT JOIN user_relations r ON c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                                                WHERE EXISTS (
+                                                    SELECT 1
+                                                    FROM beatmaps b
+                                                    WHERE b.SetID = c.SetID AND b.Mode = ?
+                                                )
+                                            )
+                                            UNION ALL
+                                            (
+                                                SELECT dpc.*, NULL AS blocked, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+                                                FROM descriptor_proposal_comments dpc
+                                                LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                                                WHERE 1
+                                            )
+                                            ORDER BY date DESC
+                                            LIMIT 20;");
+                $stmt->bind_param("ii", $userId, $mode);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-            while ($row = $result->fetch_assoc()) {
-                $is_blocked = $row['blocked'] ? 1 : 0;
-		  ?>
-			<div class="flex-container ratingContainer alternating-bg">
-			  <div class="flex-child" style="margin-left:0.5em;">
-				<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
-			  </div>
+        while ($row = $result->fetch_assoc()) {
+            $is_blocked = $row['blocked'] ? 1 : 0;
+            $linkID = $row['comment_type'] === 'beatmap' ? "/mapset/{$row["SetID"]}" : "/descriptor/proposal/?id={$row["ProposalID"]}";
+            ?>
+            <div class="flex-container ratingContainer alternating-bg">
+                <div class="flex-child" style="margin-left:0.5em;">
+                    <?php if ($row["comment_type"] == 'beatmap') { ?>
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                    <?php } else { ?>
+                        <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
+                            <i class="icon-pencil"></i>
+                        </div>
+                    <?php } ?>
+                </div>
                 <div class="flex-child">
                     <div>
-                        <a style="align-items:center; display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                        <a href="/profile/<?php echo $row["UserID"]; ?>">
                             <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
-                            <span style="margin-left: 0.5em;"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></span>
+                            <span><?php echo GetUserNameFromId($row["UserID"], $conn); ?></span>
                         </a>
+                        <span>
+                            <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
+                                on <a href="<?php echo $linkID; ?>"><?php echo $row["Name"]; ?> descriptor</a>
+                            <?php } ?>
+                        </span>
                     </div>
                     <div style="flex:0 0 auto;text-overflow:ellipsis;min-width:0%;">
-                        <a style="color:white;" href="/mapset/<?php echo $row["SetID"]; ?>">
+                        <a style="color:white;" href="<?php echo $linkID; ?>">
                             <?php
                             if (!$is_blocked)
                                 echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
@@ -107,10 +127,10 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                         </a>
                     </div>
                 </div>
-			</div>
-		  <?php
-		  }
-		  $stmt->close();
+            </div>
+        <?php
+        }
+        $stmt->close();
 		?>
 	</div>
 </div>
