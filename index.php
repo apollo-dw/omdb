@@ -124,12 +124,18 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
 	<br>
 	<?php
-		$stmt = $conn->prepare("SELECT DISTINCT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`= ? ORDER BY `Timestamp` DESC LIMIT 8;");
+        $usedSets = array();
+		$stmt = $conn->prepare("SELECT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`= ? ORDER BY `Timestamp` DESC LIMIT 200;");
         $stmt->bind_param("i", $mode);
         $stmt->execute();
 		$result = $stmt->get_result();
 
 		while($row = $result->fetch_assoc()) {
+            if (in_array($row["SetID"], $usedSets))
+                continue;
+            if (sizeof($usedSets) >= 8)
+                break;
+
 			$artist = GetUserNameFromId($row["SetCreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
@@ -141,6 +147,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		</span>
 	</div>
 	<?php
+            $usedSets[] = $row["SetID"];
 		}
 
 		$stmt->close();
@@ -214,8 +221,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         </div>
         <div class="flex-child column-when-mobile" style="width:50%;height:40em;">
             <?php
-            $counter = 0;
-
             $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
                                           FROM beatmaps b
                                           INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
@@ -233,12 +238,10 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             while($row = $result->fetch_assoc()) {
                 if (in_array($row["SetID"], $usedSets))
                     continue;
-
-                $counter += 1;
                 ?>
                 <div class="flex-container ratingContainer alternating-bg" style="height:4em;">
                     <div class="flex-child" style="min-width:2em;text-align:center;">
-                        #<?php echo $counter; ?>
+                        #<?php echo sizeof($usedSets) + 1; ?>
                     </div>
                     <div class="flex-child">
                         <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
@@ -251,7 +254,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     </div>
                 </div>
                 <?php
-                if ($counter == 10)
+                if (sizeof($usedSets) == 9)
                     break;
 
                 $usedSets[] = $row["SetID"];
