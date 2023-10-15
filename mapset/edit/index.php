@@ -142,6 +142,11 @@ if ($setHasEditRequest) {
             if (($userName == "moonpoint" || $userId == 12704035 || $userId === 1721120) && $loggedIn) {
                 ?>
                 <button style="background-color:#477769;" type="button" onclick="window.location.href = `AcceptRequest.php?SetID=<?php echo $mapset_id; ?>`;">ACCEPT</button>
+                <?php
+            }
+
+            if (($userName == "moonpoint" || $userId == 12704035 || $userId === 1721120 || $userId == $setRequest['UserID'] ) && $loggedIn) {
+                ?>
                 <button style="background-color:firebrick;" type="button" onclick="window.location.href = `DenyRequest.php?SetID=<?php echo $mapset_id; ?>`;">DENY</button>
                 <?php
             }
@@ -170,7 +175,7 @@ if ($setHasEditRequest) {
                     <div style="margin-right: 1em;">
                         <label>
                             Add nominator ID:
-                            <input id="add-mapper-input-set" type="text" pattern="[0-9]+" placeholder="Add ID here"/> <br>
+                            <input id="add-mapper-input-set" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" > <br>
                             <button type="button" id="add-mapper-btn-set" onclick="addItem(this)" style="float:right;margin-right:1em;">Add</button>
                         </label>
                     </div>
@@ -288,11 +293,14 @@ foreach($difficulties as $beatmapID => $difficulty) {
         if (($userName == "moonpoint" || $userId == 12704035 || $userId === 1721120) && $loggedIn) {
             ?>
             <button style="background-color:#477769;" type="button" onclick="window.location.href = `AcceptRequest.php?BeatmapID=<?php echo $beatmapID; ?>`;">ACCEPT</button>
+            <?php
+        }
+
+        if (($userName == "moonpoint" || $userId == 12704035 || $userId === 1721120 || $userId == $request['UserID'] ) && $loggedIn) {
+            ?>
             <button style="background-color:firebrick;" type="button" onclick="window.location.href = `DenyRequest.php?BeatmapID=<?php echo $beatmapID; ?>`;">DENY</button>
             <?php
         }
-        ?>
-        <?php
     } else {
         ?>
         You are submitting an edit request for <b><?php echo $difficulty['DifficultyName']; ?></b>.<br>
@@ -306,7 +314,7 @@ foreach($difficulties as $beatmapID => $difficulty) {
                 <div style="margin-right: 1em;">
                     <label>
                         Add mapper ID:
-                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" pattern="[0-9]+" placeholder="Add ID here"/> <br>
+                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" /> <br>
                         <button type="button" id="add-mapper-btn-<?php echo $beatmapID; ?>" onclick="addItem(this)" style="float:right;margin-right:1em;">Add</button>
                     </label>
                 </div>
@@ -381,6 +389,11 @@ foreach($difficulties as $beatmapID => $difficulty) {
                 .attr("name", "mapperListData")
                 .val(JSON.stringify(mapperListData));
             form.append(mapperListInput);
+
+            if (mapperListData.length === 0) {
+                alert("Mapper list is empty. Please add at least one mapper.");
+                return;
+            }
 
             const beatmapID = $(this).attr('difficultyID');
             if (beatmapID){

@@ -1,12 +1,6 @@
 <?php
 require '../../base.php';
 
-if (!($userName === "moonpoint" || $userId === 12704035 || $userId === 1721120) || !$loggedIn) {
-    header('HTTP/1.0 403 Forbidden');
-    http_response_code(403);
-    die("Forbidden");
-}
-
 $beatmapID = $_GET["BeatmapID"] ?? null;
 $setID = $_GET["SetID"] ?? null;
 $isEditingSet = !is_null($setID);
@@ -24,7 +18,9 @@ if ($isEditingSet) {
     $stmt->bind_param('i', $setID);
     $stmt->execute();
     $result = $stmt->get_result();
-    $request = $result->fetch_assoc();
+
+    if ($result->num_rows == 0)
+        die("NO SET");
 
 } else {
     $stmt = $conn->prepare("SELECT SetID FROM beatmaps WHERE BeatmapID = ?;");
@@ -41,7 +37,20 @@ if ($isEditingSet) {
     $stmt->bind_param('i', $beatmapID);
     $stmt->execute();
     $result = $stmt->get_result();
-    $request = $result->fetch_assoc();
+
+    if ($result->num_rows == 0)
+        die("NO MAP");
+}
+
+$request = $result->fetch_assoc();
+if (!($userName === "moonpoint" ||
+        $userId === 12704035 ||
+        $userId === 1721120 ||
+        $userId == $request['UserID'])
+    || !$loggedIn) {
+    header('HTTP/1.0 403 Forbidden');
+    http_response_code(403);
+    die("Forbidden");
 }
 
 if ($request) {
