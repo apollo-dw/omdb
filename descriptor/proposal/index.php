@@ -37,7 +37,7 @@
         background-color: DarkSlateGrey;
         text-align: center;
         width: 100%;
-        padding: 0.5em;
+        padding: 2em;
         box-sizing: border-box;
     }
 
@@ -73,7 +73,8 @@
 </style>
 
 <div class="header">
-    <h1><?php echo $proposal["Name"]; ?></h1>
+    <h1 style="margin:0;"><?php echo $proposal["Name"]; ?></h1>
+    <span class="subText"><?php echo $proposal["Status"]; ?></span>
 </div>
 
 <br>
@@ -105,7 +106,27 @@
                 <td class="right">Creation date</td>
                 <td><?php echo $proposal["Timestamp"]; ?></td>
             </tr>
+            <?php if(!is_null($proposal["EditorID"]) && $proposal["Status"] !== "pending") {
+                $editorName = GetUserNameFromId($proposal["EditorID"], $conn);
+                ?>
+                <tr>
+                    <td class="right">
+                        Status
+                    </td>
+                    <td>
+                        <?php echo "{$proposal["Status"]} by {$editorName}"; ?>
+                    </td>
+                </tr>
+            <?php } ?>
         </table>
+        <?php if ($loggedIn && $userName === "moonpoint") { ?>
+            <label for="changeStatus">Status:</label>
+            <select id="changeStatus">
+                <option value="pending" <?php if ($proposal["Status"] === "pending") echo 'selected="selected"'; ?>>Pending</option>
+                <option value="approved" <?php if ($proposal["Status"] === "approved") echo 'selected="selected"'; ?>>Approved</option>
+                <option value="denied" <?php if ($proposal["Status"] === "denied") echo 'selected="selected"'; ?>>Denied</option>
+            </select>
+        <?php } ?>
     </div>
     <div class="column-when-mobile" style="width:40%;">
         <div id="proposal-box-container">
@@ -158,10 +179,11 @@
 <hr>
 <br>
 <div class="flex-child column-when-mobile">
-    Comments (<?php echo $commentCount; ?>)<br><br>
+    Comments (<?php echo $commentCount; ?>)<br>
+    <?php if ($proposal["Status"] !== "pending") echo "<span class='subText'>Comments are disabled for proposals with an outcome.</span><br>"; ?><br>
     <div class="flex-container commentContainer" style="width:100%;">
 
-        <?php if($loggedIn) { ?>
+        <?php if($loggedIn && ($proposal["Status"] === "pending" || $userName === "moonpoint")) { ?>
             <div class="flex-child commentComposer">
                 <form>
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -269,6 +291,26 @@
             },
             error: function(xhr, status, error) {
                 console.error('Error submitting vote:', error);
+            }
+        });
+    });
+
+    $("#changeStatus").change(function() {
+        var status = $(this).val();
+
+        $.ajax({
+            type: "POST",
+            url: "ChangeStatus.php",
+            data: {
+                proposalID: <?php echo $proposal_id; ?>,
+                newStatus: status
+            },
+            dataType: "json",
+            success: function() {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error submitting status:', error);
             }
         });
     });

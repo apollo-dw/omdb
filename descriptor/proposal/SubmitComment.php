@@ -15,7 +15,7 @@
 		die("LONG");
 	}
 
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM `descriptor_proposals` WHERE `ProposalID`= ?;");
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `descriptor_proposals` WHERE `ProposalID`= ? AND `Status` = 'pending';");
     $stmt->bind_param("i", $proposalID);
     $stmt->execute();
 	

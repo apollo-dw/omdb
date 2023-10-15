@@ -9,7 +9,7 @@
     $proposalID = $_POST["proposalID"];
     $vote = $_POST["vote"];
 
-    $stmt = $conn->prepare("SELECT * FROM descriptor_proposals WHERE ProposalID = ?;");
+    $stmt = $conn->prepare("SELECT * FROM descriptor_proposals WHERE ProposalID = ? AND `Status` = 'pending';");
     $stmt->bind_param('i', $proposalID);
     $stmt->execute();
     $result = $stmt->get_result();
