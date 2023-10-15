@@ -153,10 +153,14 @@
             $voteResult = $stmt->get_result();
             $voteRow = $voteResult->fetch_assoc();
 
+            $votePercentage = ($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100;
+
             ?>
             <div class="proposal-box">
-                <h2>Vote</h2>
-                <?php if ($loggedIn) { ?>
+                <h2 style="margin-bottom: 0;">Vote</h2>
+                <span class="subText"><?php echo $votePercentage; ?>% voted positively</span><br><br>
+                <?php if ($loggedIn && $proposal["Status"] === "pending") { ?>
+                    <label for="vote">Your vote:</label>
                     <select id="vote">
                         <option value="unvoted" <?php if ($userVote === "unvoted") echo 'selected="selected"'; ?>>Select a vote</option>
                         <option value="yes" <?php if ($userVote === "yes") echo 'selected="selected"'; ?>>Yes</option>
