@@ -48,5 +48,4 @@
     $stmt->execute();
     $stmt->close();
 
-    echo "Hello";
 ?>

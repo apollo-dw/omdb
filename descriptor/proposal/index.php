@@ -198,7 +198,10 @@
         <?php } ?>
 
         <?php
-        $stmt = $conn->prepare("SELECT CommentID, dpc.UserID, Comment, Vote, dpc.Timestamp FROM descriptor_proposal_comments dpc LEFT JOIN descriptor_proposal_votes dpv on dpc.UserID = dpv.UserID WHERE dpc.ProposalID = ? ORDER BY dpc.Timestamp DESC");
+        $stmt = $conn->prepare("SELECT CommentID, dpc.UserID, Comment, Vote, dpc.Timestamp FROM descriptor_proposal_comments dpc 
+								LEFT JOIN descriptor_proposal_votes dpv on dpc.UserID = dpv.UserID AND dpv.ProposalID = dpc.ProposalID 
+								WHERE dpc.ProposalID = ? 
+								ORDER BY dpc.Timestamp DESC");
         $stmt->bind_param("i", $proposal_id);
         $stmt->execute();
         $result = $stmt->get_result();
