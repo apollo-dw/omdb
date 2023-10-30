@@ -444,7 +444,6 @@ while($row = $result->fetch_assoc()) {
         <div class="flex-container commentContainer" style="width:100%;">
 
             <?php if($loggedIn) { ?>
-
                 <div class="flex-child commentComposer">
                     <form>
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -457,7 +456,6 @@ while($row = $result->fetch_assoc()) {
                         </p>
                     <?php } ?>
                 </div>
-
             <?php } ?>
 
             <?php

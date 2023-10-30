@@ -34,8 +34,12 @@
     if($order == "rating")
         $orderString = "score DESC";
 
-    $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight
-        FROM `ratings` r {$selectString} ORDER BY order_weight DESC, {$orderString}";
+$mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
+    (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
+     WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
+    FROM `ratings` r
+    {$selectString} 
+    ORDER BY order_weight DESC, {$orderString}";
 
     $stmt = $conn->prepare($countQuery);
     $stmt->bind_param($bindParams, ...$bindValues);
@@ -77,13 +81,16 @@
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
+        <?php if (strlen($row["Tags"]) > 0) { ?>
+            <i title='<?php echo $row["Tags"] ?>' style='border-bottom:1px dotted white;' class="icon-tags"></i>
+        <?php } ?>
         <?php echo GetHumanTime($row["date"]); ?>
     </div>
 </div>
 
-    <?php
-        }
-    ?>
+<?php
+    }
+?>
 
 <label for="difficulties">
     Difficulty:
