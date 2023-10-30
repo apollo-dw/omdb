@@ -66,6 +66,14 @@
 
 			<span style="float:right;">
                 <div class="topBarDropDown">
+                    <div class="topBarLink topBarDropDownButton"><i class="icon-pencil"></i></div>
+                    <div class="dropdown-content">
+                        <a href="/descriptor/proposal/list">descriptor proposals</a>
+                        <a href="/edit-queue/">edit queue</a>
+                        <a href="/project-legacy/">project legacy</a>
+                    </div>
+			    </div>
+                <div class="topBarDropDown">
                     <div class="topBarLink topBarDropDownButton">
                         <?php
                             switch($mode){
