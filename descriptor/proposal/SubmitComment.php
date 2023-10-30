@@ -25,13 +25,12 @@
 
     $stmt->close();
 	
-	if ($loggedIn == false) {
+	if ($loggedIn === false) {
 		die ("NO - Not Logged In");
 	}
 	
 	$stmt = $conn->prepare("INSERT INTO `descriptor_proposal_comments` (UserID, ProposalID, Comment) VALUES (?, ?, ?);");
 	$stmt->bind_param("sss", $userId, $proposalID, $comment);
-	
 	$stmt->execute();
 	$stmt->close();
 ?>

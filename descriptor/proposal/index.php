@@ -90,10 +90,12 @@
                 <td class="right">Description</td>
                 <td><?php echo $proposal["ShortDescription"]; ?></td>
             </tr>
+            <?php if ($parentDescriptor !== null) { ?>
             <tr>
                 <td class="right">Parent descriptor</td>
                 <td><?php echo $parentDescriptor["Name"]; ?></td>
             </tr>
+            <?php } ?>
             <tr>
                 <td class="right">Proposer</td>
                 <td><a href="/profile/<?php echo $proposal["ProposerID"]; ?>"><?php echo GetUserNameFromId($proposal["ProposerID"], $conn); ?></a></td>
@@ -153,7 +155,9 @@
             $voteResult = $stmt->get_result();
             $voteRow = $voteResult->fetch_assoc();
 
-            $votePercentage = ($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100;
+            $votePercentage = 0.0;
+            if ($row["upvotes"] > 0 && $row["downvotes"] > 0)
+                $votePercentage = ($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100;
 
             ?>
             <div class="proposal-box">
@@ -179,7 +183,13 @@
         </div>
     </div>
 </div>
-<br>
+
+    <div style="margin-top: 2em;">
+        <?php if ($loggedIn && $userId == $proposal["ProposerID"]) { ?>
+            <a href="edit/?id=<?php echo $proposal_id; ?>"><span class="subText"><i class="icon-edit"></i> Edit proposal</span></a>
+        <?php } ?>
+
+    </div>
 <hr>
 <br>
 <div class="flex-child column-when-mobile">
