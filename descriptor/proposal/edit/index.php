@@ -93,15 +93,14 @@
                 <td>
                 </td>
                 <td>
-                    <button>Save changes</button> <span id="statusText"></span>
+
+                    <button>Save changes</button><br>
+                    <span class="subText">It is recommended to leave a comment detailing your edits after you've made some changes.</span>
                 </td>
             </tr>
         </table>
     </form>
 </div>
-
-<script>
-</script>
 
 <?php
 require '../../../footer.php';

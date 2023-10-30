@@ -34,7 +34,6 @@ $stmt = $conn->prepare("
         AND ur1.type = 1
     ORDER BY LastAccessedSite DESC, ID;
 ");
-
     $stmt->bind_param("ii", $profileId, $profileId);
     $stmt->execute();
     $friends = $stmt->get_result();
