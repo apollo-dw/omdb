@@ -44,7 +44,7 @@
     ?>
         <div class="proposal-box">
             <div class="proposal-content">
-                <a href="../?id=1">
+                <a href="../?id=<?php echo $proposal["ProposalID"]; ?>">
                     <h2 style="margin-bottom: 0em;"><?php echo $proposal["Name"]; ?></h2>
                     <span class="subText"><?php echo $proposal["ShortDescription"]; ?></span>
                 </a>

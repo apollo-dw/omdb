@@ -156,8 +156,8 @@
             $voteRow = $voteResult->fetch_assoc();
 
             $votePercentage = 0.0;
-            if ($row["upvotes"] > 0 && $row["downvotes"] > 0)
-                $votePercentage = ($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100;
+            if ($row["upvotes"] + $row["downvotes"] + $row["holds"] > 0)
+                $votePercentage = round(($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100, 2);
 
             ?>
             <div class="proposal-box">
