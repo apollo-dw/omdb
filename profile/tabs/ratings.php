@@ -9,6 +9,35 @@
     $result = $stmt->get_result();
     $profile = $result->fetch_assoc();
     $stmt->close();
+
+    $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
+                        FROM `ratings` r
+                        JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                        WHERE r.`UserID` = ? AND b.`Mode` = ?
+                        GROUP BY r.`Score`");
+    $stmt->bind_param("ii", $profileId, $mode);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $ratingCounts = array();
+    while ($row = $result->fetch_assoc()) {
+        $ratingCounts[$row['Score']] = $row['count'];
+    }
+    $stmt->close();
+
+    $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 2;
+
+    $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
+                           JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+                           JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+                           WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
+                           AND ur1.type = 1 AND ur2.type = 1
+                           ORDER BY LastAccessedSite DESC, ID");
+    $stmt->bind_param("ii", $profileId, $profileId);
+    $stmt->execute();
+    $mutuals = $stmt->get_result();
+    $mutualCount = $mutuals->num_rows;
+    $stmt->close();
 ?>
 
 <style>
