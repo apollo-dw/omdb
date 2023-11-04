@@ -108,6 +108,21 @@
                 <td class="right">Creation date</td>
                 <td><?php echo $proposal["Timestamp"]; ?></td>
             </tr>
+            <?php if ($proposal["Timestamp"] !== $proposal["UpdatedTimestamp"]) { ?>
+            <tr>
+                <td class="right">Last updated</td>
+                <td><?php echo $proposal["UpdatedTimestamp"]; ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+                <td></td>
+                <td>
+                    <span class="subText">
+                        Proposals can be approved when it receives <b>20 votes and has >=65% positive votes.</b>
+                        Approvals can only happen after a minimum of 5 days.
+                    </span>
+                </td>
+            </tr>
             <?php if(!is_null($proposal["EditorID"]) && $proposal["Status"] !== "pending") {
                 $editorName = GetUserNameFromId($proposal["EditorID"], $conn);
                 ?>
@@ -184,12 +199,12 @@
     </div>
 </div>
 
-    <div style="margin-top: 2em;">
-        <?php if ($loggedIn && $userId == $proposal["ProposerID"]) { ?>
-            <a href="edit/?id=<?php echo $proposal_id; ?>"><span class="subText"><i class="icon-edit"></i> Edit proposal</span></a>
-        <?php } ?>
+<div style="margin-top: 2em;">
+    <?php if ($loggedIn && $userId == $proposal["ProposerID"]) { ?>
+        <a href="edit/?id=<?php echo $proposal_id; ?>"><span class="subText"><i class="icon-edit"></i> Edit proposal</span></a>
+    <?php } ?>
 
-    </div>
+</div>
 <hr>
 <br>
 <div class="flex-child column-when-mobile">
