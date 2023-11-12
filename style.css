@@ -329,14 +329,14 @@ select {
     color: white;
 }
 
-button {
+button, input[type=button]{
     min-width: 6em;
     border: 1px solid white;
     background-color: #203838;
     color: white;
 }
 
-button:hover {
+button:hover, input[type=button]:hover{
     background-color: #182828;
     cursor:pointer;
 }
@@ -421,6 +421,10 @@ button.blocked:hover {
     margin: 1em;
 }
 
+textarea {
+    margin: 0;
+}
+
 textarea#commentForm {
     width: 100%;
     text-align: left;
@@ -431,9 +435,21 @@ textarea#commentForm {
     border: 1px solid white;
 }
 
+[contenteditable] {
+    background-color: #203838;
+    color: white;
+    border: 1px solid white;
+    height: 6em;
+    padding: 1em;
+    box-sizing: content-box;
+}
+
+[contenteditable]:hover {
+    cursor: text;
+}
+
 input {
     border: 1px solid white;
-    margin: 1em;
     background-color: #203838;
     color: white;
 }

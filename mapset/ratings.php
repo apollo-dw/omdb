@@ -38,7 +38,9 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
     (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
      WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
     FROM `ratings` r
-    {$selectString} 
+    LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
+    {$selectString}
+    AND beatmaps.Blacklisted = 0
     ORDER BY order_weight DESC, {$orderString}";
 
     $stmt = $conn->prepare($countQuery);
