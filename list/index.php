@@ -25,7 +25,7 @@
     }
 
     .container h1 {
-        margin-bottom: 0em;
+        margin: 0;
     }
 
     .list-container {

@@ -138,11 +138,15 @@
             </select> <br><br>
             <label>ID:</label> <br>
             <input id="newId" name="newId"/> <br><br>
-            <input type="button" id="addNewButton" value="Add new item" />
+            <input type="button" id="addNewButton" value="Add new item" /> <br><br>
+            <span class="subText">Only ranked and loved difficulties work on lists for the time being.</span>
         </div>
     </div>
 
     <div class="container" style="margin-top: 0.5em;">
+        <div>
+            Lists are subject to the <a href="/rules/">OMDB rules and code of conduct.</a> Do not misuse this feature in bad faith.
+        </div> <br>
         <input type="submit" id="submitButton" value="Submit" />
     </div>
 </form>
