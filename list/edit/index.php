@@ -204,6 +204,7 @@
                 newContainer.querySelector(".icon-remove").addEventListener("click", () => {
                     if(confirm("Are you want to delete this list item?")){
                         container.removeChild(newContainer);
+                        updateIndices();
                     }
                 });
 
@@ -243,6 +244,17 @@
         draggingElement.classList.remove("dragging");
         draggingElement = null;
         updateIndices();
+    });
+
+    document.querySelectorAll('.draggable').forEach((existingContainer) => {
+        const removeButton = existingContainer.querySelector('.icon-remove');
+
+        removeButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this list item?')) {
+                existingContainer.remove();
+                updateIndices();
+            }
+        });
     });
 
     $('form').submit(function(e) {
