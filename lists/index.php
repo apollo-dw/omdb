@@ -36,7 +36,7 @@
         $stmt->execute();
         $item = $stmt->get_result()->fetch_assoc();
 
-        list($imageUrl, $title) = getListItemDisplayInformation($item, $conn);
+        list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
         ?>
         <div class="flex-container alternating-bg list-container">
             <div class="flex-child">

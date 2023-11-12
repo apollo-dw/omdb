@@ -104,7 +104,7 @@
                 <?php
                 if (!$isNewList) {
                     foreach ($listItems as $index => $listItem) {
-                        list($imageUrl, $title) = getListItemDisplayInformation($listItem, $conn);
+                        list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($listItem, $conn);
                         ?>
                         <div class="draggable alternating-bg" draggable="true" data-type="<?php echo $listItem["Type"]; ?>" data-id="<?php echo $listItem["SubjectID"]; ?>" >
                             <div>

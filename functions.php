@@ -444,6 +444,8 @@
 	{
 		$imageUrl = "";
 		$title = "";
+		$linkUrl = "";
+
 		switch ($listItem["Type"]) {
 			case "person":
 				$username = GetUserNameFromId($listItem["SubjectID"], $conn);
@@ -452,6 +454,8 @@
 
 				$imageUrl = "https://s.ppy.sh/a/" . $listItem["SubjectID"];
 				$title = $username;
+				$linkUrl = "/profile/?id=" . $listItem["SubjectID"];
+
 				break;
 			case "beatmap":
 				$stmt = $conn->prepare("SELECT SetID, Artist, Title, DifficultyName FROM `beatmaps` WHERE `BeatmapID` = ?;");
@@ -464,6 +468,7 @@
 
 				$imageUrl = "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg";
 				$title = "{$map["Artist"]} - {$map["Title"]} [{$map["DifficultyName"]}]";
+				$linkUrl = "/mapset/" . $map["SetID"];
 
 				break;
 			case "beatmapset":
@@ -477,9 +482,11 @@
 				$set = $result->fetch_assoc();
 				$imageUrl = "https://b.ppy.sh/thumb/" . $listItem["SubjectID"] . "l.jpg";
 				$title = "{$set["Artist"]} - {$set["Title"]}";
+				$linkUrl = "/mapset/" . $listItem["SubjectID"];
+
 				break;
 		}
 
-		return [$imageUrl, $title];
+		return [$imageUrl, $title, $linkUrl];
 	}
 ?>
