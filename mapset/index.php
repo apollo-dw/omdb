@@ -470,7 +470,7 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container ratingContainer alternating-bg">
                         <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;"</a>
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
                         </div>
                         <div class="flex-child">
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>

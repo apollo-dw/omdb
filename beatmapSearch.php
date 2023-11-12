@@ -70,7 +70,7 @@
             $stmt->execute();
             $item = $stmt->get_result()->fetch_assoc();
 
-            list($imageUrl, $title) = getListItemDisplayInformation($item, $conn);
+            list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
             ?>
             <div class="alternating-bg" style="margin:0;">
                 <div>
