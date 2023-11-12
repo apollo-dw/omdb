@@ -108,7 +108,7 @@
     ?>
 </div>
 
-<h2 style="margin-bottom: 0px;">Years active</h2><br>
+<h2 style="margin-bottom: 0px;">Usage over time</h2><br>
 <div class="alternating-bg" style="width:100%;padding:0px;">
     <div class="ratingDistributionContainer">
         <?php
