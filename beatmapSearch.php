@@ -22,21 +22,23 @@
 		die();
 	}
 
-    $userStmt = $conn->prepare("(SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ?) UNION (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ?) LIMIT 5;");
+    $stmt = $conn->prepare("(SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ?) UNION (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ?) LIMIT 5;");
     $like = "%$q%";
-    $userStmt->bind_param("ss", $like, $like);
-    $userStmt->execute();
-    $userStmt->bind_result($userID, $username);
-    $userStmt->store_result();
+    $stmt->bind_param("ss", $like, $like);
+    $stmt->execute();
+    $stmt->bind_result($userID, $username);
+    $stmt->store_result();
 
-    if ($userStmt->num_rows > 0){
+    if ($stmt->num_rows > 0){
         echo "<div style='background-color:#182828;'><b>Users</b></div>";
-        while ($userStmt->fetch()) {
+        while ($stmt->fetch()) {
             ?>
             <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;" ><a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;"><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo $username; ?>"/> <?php echo $username; ?></a></div>
             <?php
         }
     }
+
+    $stmt->close();
 
 	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE MATCH (DifficultyName, Artist, Title) AGAINST(? IN NATURAL LANGUAGE MODE) AND Mode = ? LIMIT 25;");
 	$stmt->bind_param("si", $like, $mode);
@@ -52,5 +54,33 @@
             <?php
         }
     }
+
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) LIMIT 5;");
+    $stmt->bind_param("s", $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0){
+        echo "<div style='background-color:#182828;'><b>Lists</b></div>";
+        while ($row = $result->fetch_assoc()) {
+            $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
+            $stmt->bind_param("i", $row["ListID"]);
+            $stmt->execute();
+            $item = $stmt->get_result()->fetch_assoc();
+
+            list($imageUrl, $title) = getListItemDisplayInformation($item, $conn);
+            ?>
+            <div class="alternating-bg" style="margin:0;">
+                <div>
+                    <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?> <span class="subText">by <?php echo GetUserNameFromId($row["UserID"], $conn); ?></span></a>
+                </div>
+            </div>
+            <?php
+        }
+    }
+
+    $stmt->close();
 
 
