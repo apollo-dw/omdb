@@ -25,7 +25,10 @@
 
 <div>
     <?php
-    $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.Description, l.UserID, (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount FROM lists l ORDER BY UpdatedAt LIMIT 25;");
+    $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.Description, l.UserID,
+                                  (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount,
+                                  (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount 
+                                  FROM lists l ORDER BY UpdatedAt LIMIT 25;");
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
@@ -44,7 +47,9 @@
             </div>
             <div class="flex-child" style="align-self:baseline;">
                 <b><a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a></b> <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
-                <span class="subText">(<?php echo $row["ItemCount"]; ?> items)</span> <br><br>
+                <span class="subText">(<?php echo $row["ItemCount"]; ?> items)</span> <br>
+                <span class="subText"><?php echo $row["HeartCount"]; ?> <i class="icon-heart"></i></span> <br><br>
+
                 <?php echo explode("\n", ParseCommentLinks($conn, nl2br(htmlspecialchars($row["Description"]))))[0]; ?>
             </div>
         </div>
