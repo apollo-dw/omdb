@@ -13,9 +13,9 @@
         $listTitle = $decodedData["listTitle"];
         $listDescription = $decodedData["listDescription"];
         $items = $decodedData["items"];
-        $listId = $decodedData["listId"];
+        $listId = $decodedData["listId"] ?? "";
 
-        if (is_null($listId)) {
+        if ($listId === "") {
             $stmt = $conn->prepare("INSERT INTO lists (Title, Description, UserID) VALUES (?, ?, ?);");
             $stmt->bind_param("ssi", $listTitle, $listDescription, $userId);
             $stmt->execute();
