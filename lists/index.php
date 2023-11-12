@@ -18,7 +18,7 @@
     }
 </style>
 <h1>Lists</h1>
-<span class="subText">This listing shows the 25 latest lists.</span> <br><br>
+<span class="subText">This listing shows the 25 latest updated lists.</span> <br><br>
 
 <a href="../list/edit/">Create new list</a>
 <hr>
