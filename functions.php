@@ -439,4 +439,47 @@
 				echo " and ";
 		}
 	}
+
+	function getListItemDisplayInformation($listItem, $conn)
+	{
+		$imageUrl = "";
+		$title = "";
+		switch ($listItem["Type"]) {
+			case "person":
+				$username = GetUserNameFromId($listItem["SubjectID"], $conn);
+				if ($username == "")
+					die(json_encode(array("error" => "user not found")));
+
+				$imageUrl = "https://s.ppy.sh/a/" . $listItem["SubjectID"];
+				$title = $username;
+				break;
+			case "beatmap":
+				$stmt = $conn->prepare("SELECT SetID, Artist, Title, DifficultyName FROM `beatmaps` WHERE `BeatmapID` = ?;");
+				$stmt->bind_param("i", $listItem["SubjectID"]);
+				$stmt->execute();
+				$result = $stmt->get_result();
+				if ($result->num_rows != 1)
+					die(json_encode(array("error" => "beatmap not found")));
+				$map = $result->fetch_assoc();
+
+				$imageUrl = "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg";
+				$title = "{$map["Artist"]} - {$map["Title"]} [{$map["DifficultyName"]}]";
+
+				break;
+			case "beatmapset":
+				$stmt = $conn->prepare("SELECT Artist, Title, DifficultyName FROM `beatmaps` WHERE `SetID` = ? LIMIT 1;");
+				$stmt->bind_param("i", $listItem["SubjectID"]);
+				$stmt->execute();
+				$result = $stmt->get_result();
+				if ($result->num_rows != 1)
+					die(json_encode(array("error" => "set not found")));
+
+				$set = $result->fetch_assoc();
+				$imageUrl = "https://b.ppy.sh/thumb/" . $listItem["SubjectID"] . "l.jpg";
+				$title = "{$set["Artist"]} - {$set["Title"]}";
+				break;
+		}
+
+		return [$imageUrl, $title];
+	}
 ?>
