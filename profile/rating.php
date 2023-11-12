@@ -13,6 +13,12 @@
     $stmt->execute();
     $nominationCount = $stmt->get_result()->fetch_assoc()["count"];
     $stmt->close();
+
+    $stmt = $conn->prepare("SELECT Count(*) as count FROM lists WHERE UserID = ?;");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $listCount = $stmt->get_result()->fetch_assoc()["count"];
+    $stmt->close();
 ?>
 
 <style>
@@ -40,6 +46,9 @@
             <button data-tab="tags">Tags (<?php echo $tagCount; ?>)</button>
         <?php } ?>
         <button data-tab="stats">Stats</button>
+        <?php if ($listCount > 0) { ?>
+            <button data-tab="lists">Lists (<?php echo $listCount; ?>)</button>
+        <?php } ?>
     <?php } ?>
     <?php if ($nominationCount > 0) { ?>
         <button data-tab="nominations" <?php if (!$isValidUser) { echo "class='active'"; } ?>>Nominations (<?php echo $nominationCount; ?>)</button>

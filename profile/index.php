@@ -32,7 +32,6 @@
         $stmt->execute();
         $result = $stmt->get_result();
 
-        $ratingCounts = array();
         while ($row = $result->fetch_assoc()) {
             $ratingCounts[$row['Score']] = $row['count'];
         }
