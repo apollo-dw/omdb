@@ -432,17 +432,61 @@ while($row = $result->fetch_assoc()) {
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
-        Latest Ratings<br><br>
+        <div style="background-color:#182828;padding: 0.25em;">
+            Latest Ratings
+        </div>
         <div id="setRatingsDisplay">
             <?php
             require 'ratings.php';
             ?>
         </div>
+        <?php
+            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
+                                          FROM lists l
+                                          LEFT JOIN list_items li ON l.ListID = li.ListID
+                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
+                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
+                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
+                                          LIMIT 10;");
+
+            $stmt->bind_param("ii", $mapset_id, $mapset_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            if ($result->num_rows > 0) {
+                ?>
+                <div style="background-color:#182828;padding: 0.25em;">
+                    Featured on lists
+                </div>
+                <?php
+                while ($row = $result->fetch_assoc()) {
+                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
+                    $stmt->bind_param("i", $row["ListID"]);
+                    $stmt->execute();
+                    $item = $stmt->get_result()->fetch_assoc();
+
+                    list($imageUrl, $title) = getListItemDisplayInformation($item, $conn);
+                    ?>
+                    <div class="flex-container ratingContainer alternating-bg">
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                        </div>
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
+                        </div>
+                    </div>
+                    <?php
+                }
+            }
+        ?>
     </div>
     <div class="flex-child column-when-mobile" style="width:60%;">
-        Comments (<?php echo $commentCount; ?>)<br><br>
+        <div style="background-color:#182828;padding: 0.25em;">
+            Comments (<?php echo $commentCount; ?>)
+        </div>
         <div class="flex-container commentContainer" style="width:100%;">
-
             <?php if($loggedIn) { ?>
                 <div class="flex-child commentComposer">
                     <form>
@@ -456,9 +500,8 @@ while($row = $result->fetch_assoc()) {
                         </p>
                     <?php } ?>
                 </div>
-            <?php } ?>
+            <?php }
 
-            <?php
             $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
