@@ -17,7 +17,7 @@
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=20" />
+        <link rel="stylesheet" type="text/css" href="/style.css?v=30" />
         <script src="/script.js?v=3"></script>
 	</head>
 	<body>
@@ -32,6 +32,7 @@
 					<a href="/random/">random</a>
 				</div>
 			</div>
+            <a href="/lists/"><div class="topBarLink">lists</div></a>
 			
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
