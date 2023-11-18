@@ -32,7 +32,7 @@
 
             $stmt->close();
 
-            $stmt = $conn->prepare("UPDATE lists SET Title = ?, Description = ? WHERE ListID = ? AND UserID = ?;");
+            $stmt = $conn->prepare("UPDATE lists SET Title = ?, Description = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE ListID = ? AND UserID = ?;");
             $stmt->bind_param("ssii", $listTitle, $listDescription, $listId, $userId);
             $stmt->execute();
             $stmt->close();

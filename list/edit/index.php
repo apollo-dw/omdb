@@ -262,6 +262,7 @@
     });
 
     $('form').submit(function(e) {
+        $('#submitButton').attr('disabled', 'disabled');
         e.preventDefault();
         const draggableElements = container.querySelectorAll(".draggable");
         const data = [];
