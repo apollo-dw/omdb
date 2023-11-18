@@ -149,7 +149,7 @@
     </div>
 
 <script>
-    const cronInterval = 6 * 60 * 60 * 1000; // 6 hours
+    const cronInterval = 24 * 60 * 60 * 1000; // 1 day
 	var page = 1;
     var selectedDescriptors = [];
 

@@ -28,12 +28,12 @@
 				$lower = ($page - 1) * $lim;
 				$pageString = "LIMIT {$lower}, {$lim}";
 			}
-			
-			$orderString = "ASC";
-			if ($order == 2 || $order == 3 || $order == 4 || $order == 5)
-				$orderString = "DESC";
 
-            $columnString = "ChartRank";
+            $orderString = "DESC";
+            if ($order == 2)
+                $orderString = "ASC";
+
+            $columnString = "Rating";
             if ($order == 3)
                 $columnString = "RatingCount";
             else if ($order == 4)

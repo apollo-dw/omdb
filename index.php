@@ -180,7 +180,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                                             AND Rating IS NOT NULL
                                             AND Mode = ?
                                        ORDER BY
-                                            ChartRank ASC
+                                            Rating DESC
                                        LIMIT 1;");
                 $stmt->bind_param("i", $mode);
                 $stmt->execute();
