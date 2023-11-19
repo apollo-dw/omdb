@@ -30,6 +30,7 @@
         background-color: darkslategray;
         padding: 1.5em;
         box-sizing: border-box;
+        overflow: hidden;
     }
 
     .container td {
@@ -77,11 +78,20 @@
     }
 
     .draggable .icon-remove {
-        color: red;
+        color: firebrick;
     }
 
     .dragging {
         opacity: 0.5;
+    }
+
+    #DeleteListButton {
+        background-color: firebrick;
+        float: right;
+    }
+
+    #DeleteListButton:hover {
+        background-color: #722020;
     }
 </style>
 
@@ -97,6 +107,10 @@
         <input autocomplete="off" name="ListTitle" id="ListTitle" value="<?php echo $list["Title"] ?? ""; ?>" required/><br><br>
         <label>Description:</label>
         <textarea name="ListDescription" id="ListDescription"><?php echo $list["Description"] ?? ""; ?></textarea> <br><br>
+
+        <?php if(!$isNewList) { ?>
+            <h1><input type="button" value="Delete list" id="DeleteListButton"></h1>
+        <?php } ?>
     </div>
 
     <div class="flex-container">
@@ -259,6 +273,23 @@
                 updateIndices();
             }
         });
+    });
+
+    $('#DeleteListButton').click(function (e) {
+        if (confirm('Are you sure you want to delete this list?')) {
+            fetch("DeleteList.php?id=<?php echo $id; ?>", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(() => {
+                    window.location.href = "../../lists";
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        }
     });
 
     $('form').submit(function(e) {
