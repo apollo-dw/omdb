@@ -131,7 +131,7 @@
         </form><br><br>
 		<span>Info</span>
 		<hr>
-		The chart is based on an implementation of the Bayesian average method. It updates <b>once every six hours.</b><br><br>
+		The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
 		The next update will happen in <span id="updateText">---</span><br><br>
         Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
