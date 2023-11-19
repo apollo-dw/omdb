@@ -173,9 +173,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <h2 style="margin-top:0;">Highest charting map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
-                    "SELECT * FROM beatmaps
+                    "SELECT BeatmapID, SetID, DateRanked, DifficultyName, WeightedAvg, RatingCount, ChartRank, ChartYearRank, Title FROM beatmaps
                                        WHERE
-                                            DateRanked >= DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) + 7 DAY) 
+                                            DateRanked >= DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) + 32 DAY) 
                                             AND DateRanked < DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY)
                                             AND Rating IS NOT NULL
                                             AND Mode = ?
