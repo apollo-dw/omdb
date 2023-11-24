@@ -1,5 +1,5 @@
 <?php
-    include 'base.php';
+    include '../../base.php';
 
     if (!$loggedIn) {
         echo 'Goodbye';
@@ -39,6 +39,10 @@
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $creatorID);
 
+    if (count($array) == 0) {
+        die("");
+    }
+
     foreach($array as $diff){
         if($diff["approved"] != -2){
             continue;
@@ -50,9 +54,9 @@
         }
 
         $currentTimestamp = time();
-        $sixMonthsAgo = strtotime("-1 year", $currentTimestamp);
+        $sixMonthsAgo = strtotime("-6 months", $currentTimestamp);
         if (strtotime($diff["last_update"]) > $sixMonthsAgo) {
-            die("No");
+            die("No - not old enough");
         }
 
         $dateRanked = date("Y-m-d", strtotime($diff["last_update"]));
@@ -71,14 +75,13 @@
         $blacklisted = 0;
         $blacklist_reason = null;
         if($conn->query("SELECT * FROM blacklist WHERE UserID = ${creatorID}")->num_rows > 0){
-            return;
+            die("No - Dude is Blacklisted");
         }
 
         $beatmap_stmt->execute();
         $creators_stmt->execute();
     }
 
-    echo "done";
-
-    //var_dump($array);
+    header("Location: ../../mapset/" . $requestedSetId);
+    die();
 ?>
