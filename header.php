@@ -72,6 +72,7 @@
                         <a href="/descriptor/proposal/list">descriptor proposals</a>
                         <a href="/edit-queue/">edit queue</a>
                         <a href="/project-legacy/">project legacy</a>
+                        <a href="/maps/add/">add grave sets</a>
                     </div>
 			    </div>
                 <div class="topBarDropDown">
