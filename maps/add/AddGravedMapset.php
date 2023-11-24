@@ -2,7 +2,7 @@
     include '../../base.php';
 
     if (!$loggedIn) {
-        echo 'Goodbye';
+        die('Goodbye');
     }
 
     $requestedSetId = $_GET["id"] ?? "";
@@ -12,9 +12,6 @@
     }
 
     $curl = curl_init();
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-
     curl_setopt_array($curl, array(
         CURLOPT_URL => "https://osu.ppy.sh/api/get_beatmaps?k=${apiV1Key}&s=${requestedSetId}",
         CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json'],
@@ -39,18 +36,20 @@
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $creatorID);
 
-    if (count($array) == 0) {
-        die("");
-    }
-
     foreach($array as $diff){
         if($diff["approved"] != -2){
             continue;
         }
 
-        if($conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='${diff["beatmap_id"]}';")->num_rows > 0){
+        $query1 = $conn->prepare("SELECT * FROM `beatmaps` WHERE `BeatmapID` = ?");
+        $query1->bind_param("i", $diff["beatmap_id"]);
+        $query1->execute();
+        $query1->store_result();
+        if ($query1->num_rows > 0) {
+            $query1->close();
             continue;
         }
+        $query1->close();
 
         $currentTimestamp = time();
         $sixMonthsAgo = strtotime("-6 months", $currentTimestamp);
@@ -71,11 +70,15 @@
         $mode = $diff["mode"];
         $status = $diff["approved"];
 
-        $blacklisted = 0;
-        $blacklist_reason = null;
-        if($conn->query("SELECT * FROM blacklist WHERE UserID = ${creatorID}")->num_rows > 0){
+        $query2 = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
+        $query2->bind_param("i", $creatorID);
+        $query2->execute();
+        $query2->store_result();
+        if ($query2->num_rows > 0) {
+            $query2->close();
             die("No");
         }
+        $query2->close();
 
         $beatmap_stmt->execute();
         $creators_stmt->execute();
