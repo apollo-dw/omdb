@@ -13,6 +13,7 @@
     $PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
     $year = date("Y", strtotime($sampleRow['DateRanked']));
     $isLoved = $sampleRow["Status"] == 4;
+    $isGraveyarded = $sampleRow["Status"] == -2;
     require '../header.php';
 
     if($mapset_id == -1){
@@ -73,6 +74,8 @@
                 <?php
                 if ($isLoved)
                     echo "Submitted: ";
+                else if ($isGraveyarded)
+                    echo "Last updated: ";
                 else
                     echo "Ranked: ";
                 echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
@@ -92,6 +95,8 @@
                 <?php
                     if ($isLoved)
                         echo "Loved Mapset";
+                    if ($isGraveyarded)
+                        echo "Graved Mapset";
                 ?>
             </div>
         </div>
@@ -130,7 +135,7 @@
                     echo "</td></tr>";
                 }
                 echo "</table>";
-            } else if (!$isLoved) {
+            } else if (!$isLoved && !$isGraveyarded) {
                 echo "No nominators found! This is likely because this is a old set, ranked during moddingv1.<br><a href='edit/?id={$mapset_id}'><span class='subText'><i class='icon-edit'></i> Feel free to help by deducing nominators.</span></a> ";
             }
             ?>
