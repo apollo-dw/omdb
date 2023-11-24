@@ -29,9 +29,9 @@
 
     $array = json_decode($response, true);
 
-    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (DateRanked, Artist, BeatmapID, SetID, SR, Genre, Lang, Title, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, SetCreatorID)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-    $beatmap_stmt->bind_param("ssiidiissiiisi", $dateRanked, $artist, $beatmapID, $setID, $SR, $genre, $lang, $title, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $creatorID);
+    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (DateRanked, Artist, BeatmapID, SetID, SR, Genre, Lang, Title, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, SetCreatorID, Timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    $beatmap_stmt->bind_param("ssiidiissiiisis", $dateRanked, $artist, $beatmapID, $setID, $SR, $genre, $lang, $title, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $creatorID, $dateRanked);
 
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $creatorID);
@@ -69,6 +69,7 @@
         $difficultyName = $diff["version"];
         $mode = $diff["mode"];
         $status = $diff["approved"];
+        $blacklisted = 0;
 
         $query2 = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
         $query2->bind_param("i", $creatorID);
