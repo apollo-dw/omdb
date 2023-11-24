@@ -36,6 +36,10 @@
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $creatorID);
 
+    if (sizeof($array) == 0) {
+        die("there are no maps found from this id (did u paste in beatmap id)");
+    }
+
     foreach($array as $diff){
         if($diff["approved"] != -2){
             continue;

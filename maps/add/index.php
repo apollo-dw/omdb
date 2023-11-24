@@ -25,11 +25,15 @@
     </ul>
     For the time being, graveyarded maps will not be included on charts.
     <hr>
-    <form action="AddGravedMapset.php">
-        <label for="id">Set ID:</label><br>
-        <input type="text" name="id" id="id" required />
-        <input type="submit" value="Submit" />
-    </form>
+    <?php if ($loggedIn) { ?>
+        <form action="AddGravedMapset.php">
+            <label for="id">Set ID:</label><br>
+            <input type="text" name="id" id="id" required />
+            <input type="submit" value="Submit" />
+        </form>
+    <?php } else { ?>
+        You need to be logged in to add maps!
+    <?php } ?>
 </div>
 
 <?php
