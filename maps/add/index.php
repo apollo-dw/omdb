@@ -23,6 +23,7 @@
         <li><b>Ratings and comments are removed if their difficulty gets deleted.</b></li>
         <li><b>You cannot add blacklisted mappers' graveyarded sets.</b></li>
     </ul>
+    For the time being, graveyarded maps will not be included on charts.
     <hr>
     <form action="AddGravedMapset.php">
         <label for="id">Set ID:</label><br>

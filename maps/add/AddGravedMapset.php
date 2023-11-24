@@ -49,7 +49,6 @@
         }
 
         if($conn->query("SELECT * FROM `beatmaps` WHERE `BeatmapID`='${diff["beatmap_id"]}';")->num_rows > 0){
-            echo "skipping";
             continue;
         }
 
@@ -75,7 +74,7 @@
         $blacklisted = 0;
         $blacklist_reason = null;
         if($conn->query("SELECT * FROM blacklist WHERE UserID = ${creatorID}")->num_rows > 0){
-            die("No - Dude is Blacklisted");
+            die("No");
         }
 
         $beatmap_stmt->execute();
