@@ -34,7 +34,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 </span>
 <hr>
 <div class="flex-container column-when-mobile-container">
-	<div class="flex-child column-when-mobile" style="width:40%;height:32em;overflow-y:scroll;position:relative;">
+	<div class="flex-child column-when-mobile" style="width:40%;height:42em;overflow-y:scroll;position:relative;">
 		<?php
 		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
 		  $stmt->bind_param("i", $mode);
@@ -66,7 +66,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  $stmt->close();
 		?>
 	</div>
-	<div class="flex-child column-when-mobile" style="width:60%;height:32em;overflow-y:scroll;">
+	<div class="flex-child column-when-mobile" style="width:60%;height:42em;overflow-y:scroll;">
 		<?php
                 $stmt = $conn->prepare("(SELECT c.*, r.UserIDTo AS blocked, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
                                                 FROM comments c
@@ -139,7 +139,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	<br>
 	<?php
         $usedSets = array();
-		$stmt = $conn->prepare("SELECT SetID, Artist, Title, SetCreatorID, Timestamp, DateRanked FROM `beatmaps` WHERE `Mode`= ? ORDER BY `Timestamp` DESC LIMIT 200;");
+		$stmt = $conn->prepare("SELECT * FROM cache_home_recent_maps WHERE Mode = ? ORDER BY Timestamp DESC;");
         $stmt->bind_param("i", $mode);
         $stmt->execute();
 		$result = $stmt->get_result();
@@ -150,13 +150,13 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             if (sizeof($usedSets) >= 8)
                 break;
 
-			$artist = GetUserNameFromId($row["SetCreatorID"], $conn);
+			$artist = GetUserNameFromId($row["CreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
 		<span class="subtext">
-			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Artist"]} - {$row["Title"]}"; ?></a><br>
-            by <a href="/profile/<?php echo $row["SetCreatorID"]; ?>"><?php echo $artist; ?></a> <br>
+			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Metadata"]}"; ?></a><br>
+            by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo $artist; ?></a> <br>
 			<?php echo GetHumanTime($row["Timestamp"]); ?>
 		</span>
 	</div>
@@ -173,15 +173,13 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <h2 style="margin-top:0;">Highest charting map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
-                    "SELECT BeatmapID, SetID, DateRanked, DifficultyName, WeightedAvg, RatingCount, ChartRank, ChartYearRank, Title FROM beatmaps
-                                       WHERE
-                                            DateRanked >= DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) + 32 DAY) 
-                                            AND DateRanked < DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY)
-                                            AND Rating IS NOT NULL
-                                            AND Mode = ?
-                                       ORDER BY
-                                            Rating DESC
-                                       LIMIT 1;");
+                    "SELECT b.BeatmapID, b.SetID, b.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, b.Title
+                            FROM beatmaps b
+                            JOIN cache_home_best_map c ON b.BeatmapID = c.BeatmapID
+                            WHERE
+                                b.Rating IS NOT NULL
+                                AND b.Mode = ?
+                            LIMIT 1;");
                 $stmt->bind_param("i", $mode);
                 $stmt->execute();
                 $result = $stmt->get_result();
