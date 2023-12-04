@@ -118,12 +118,19 @@
                                 GROUP BY b.BeatmapID, b.ChartRank
                                 HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
                                 ORDER BY b.ChartRank
-                                LIMIT 9;");
+                                LIMIT 10;");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
+    $chartingMapCount = $result->num_rows;
 
+    $counter = 0;
     while($row = $result->fetch_assoc()) {
+        $counter += 1;
+
+        if ($counter > 9)
+            break;
+
         $difficultyName = mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "...");
         ?>
         <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;">
@@ -138,6 +145,15 @@
     $stmt->close();
     ?>
 </div>
+
+<?php if ($counter === 10) { ?>
+<a href="../charts/?y=all-time&descriptors=<?php echo $descriptor["Name"]; ?>">
+    <div style="float:right;">
+        ... view more!
+    </div>
+</a>
+<br><br>
+<?php } ?>
 
 <h2 style="margin-bottom: 0px;">Usage over time</h2><br>
 <div class="alternating-bg" style="width:100%;padding:0px;">
