@@ -7,8 +7,15 @@
     $page = $_GET['p'] ?? 1;
     $yearString = $year == "all-time" ? 'All Time' : $year;
 
-    $result = $conn->query("SELECT * FROM descriptors WHERE Usable = 1");
+    $result = $conn->query("SELECT DescriptorID, Name FROM descriptors WHERE Usable = 1");
     $descriptors = $result->fetch_all(MYSQLI_ASSOC);
+
+    $requestedDescriptors = isset($_GET['descriptors']) ? explode(',', $_GET['descriptors']) : [];
+    foreach ($descriptors as $descriptor) {
+        if (in_array($descriptor['Name'], $requestedDescriptors)) {
+            $selectedDescriptors[] = ['id' => $descriptor['DescriptorID'], 'name' => $descriptor['Name']];
+        }
+    }
 ?>
 
 <h1 id="heading"><?php echo 'Highest Rated Maps of ' . htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
@@ -151,7 +158,11 @@
 <script>
     const cronInterval = 24 * 60 * 60 * 1000; // 1 day
 	var page = 1;
+
     var selectedDescriptors = [];
+    <?php foreach ($selectedDescriptors as $descriptor): ?>
+    selectedDescriptors.push({ id: <?php echo $descriptor['id']; ?>, name: '<?php echo $descriptor['name']; ?>' });
+    <?php endforeach; ?>
 
     var genres = {
         0 : "",
@@ -187,6 +198,7 @@
     };
 
     $(document).ready(function() {
+        updateCurrentDescriptors();
         var matchingDescriptors = <?php echo json_encode($descriptors); ?>;
 
         $("#descriptor-input").on("input", function() {
@@ -222,7 +234,7 @@
             updateChart()
         });
 
-        function updateCurrentDescriptors() {
+        function  updateCurrentDescriptors() {
             $("#current-descriptors").empty();
             selectedDescriptors.forEach(function(descriptor, index) {
                 $("#current-descriptors").append(
@@ -265,7 +277,14 @@
         var languageString = " " + languages[language] + "   ";
         var yearString = year == "all-time" ? 'All Time' : year;
 
-        window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page);
+        var descriptorUrlArg = "";
+        if (selectedDescriptors.length > 0) {
+            descriptorUrlArg = "&descriptors=" + selectedDescriptors.map((descriptor) => {
+                return descriptor.name;
+            }).join(',');
+        }
+
+        window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page + descriptorUrlArg);
 
         $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
 	    window.scrollTo({top: 0, behavior: 'smooth'});

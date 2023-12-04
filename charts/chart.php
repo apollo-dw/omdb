@@ -9,7 +9,10 @@
     $onlyFriends = $_GET['f'] ?? "false";
 
     $descriptorsJSON = $_GET['descriptors'] ?? "[]";
-    $selectedDescriptors = json_decode($descriptorsJSON, true);
+
+    if (!isset($selectedDescriptors)) {
+        $selectedDescriptors = json_decode($descriptorsJSON, true);
+    }
 
 	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language)){
 		die("NOO");
