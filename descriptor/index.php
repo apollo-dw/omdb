@@ -6,6 +6,7 @@
     $stmt->bind_param("i", $descriptor_id);
     $stmt->execute();
     $descriptor = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
     $PageTitle = "Descriptor - " . $descriptor["Name"];
     require '../header.php';
@@ -21,20 +22,50 @@
             $parentStmt->bind_param("i", $descriptor['ParentID']);
             $parentStmt->execute();
             $parentDescriptor = $parentStmt->get_result()->fetch_assoc();
+            $parentStmt->close();
 
             $parentTree = getParentTree($parentDescriptor, $conn);
             return $parentTree . ' >> ' . $descriptor['Name'];
         }
     }
 
+    $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
+                                        SELECT DescriptorID, ParentID
+                                        FROM descriptors
+                                        WHERE DescriptorID = ?
+                                        UNION ALL
+                                        SELECT d.DescriptorID, d.ParentID
+                                        FROM descriptors d
+                                        JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
+                                    )
+                                    SELECT COUNT(*) as count
+                                    FROM beatmaps b
+                                    JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
+                                    JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
+                                    WHERE b.Mode = ?
+                                    HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END);");
+    $stmt->bind_param("ii", $descriptor_id, $mode);
+    $stmt->execute();
+    $beatmapCount = $stmt->get_result()->fetch_assoc()["count"];
+    $stmt->close();
+
     $parentTree = getParentTree($descriptor, $conn);
 
     echo "<h1>Descriptor - {$descriptor["Name"]}</h1>";
+    echo "<h3 style='color:#a8a8a8;'>{$beatmapCount} beatmaps</h3>";
     echo $descriptor["ShortDescription"] . "<br>";
     echo "<span class='subText'>$parentTree</span>";
 ?>
 
 <style>
+    h1 {
+        margin-bottom: 0;
+    }
+
+    h3, h2 {
+        margin-top: 0;
+    }
+
     .ratingDistributionContainer {
         width: calc(100% / 17);
         height: 6em;
