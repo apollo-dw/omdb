@@ -14,6 +14,8 @@
 
     if (is_null($list))
         die("List not found");
+    if (!is_numeric($listId))
+        die("How dare you");
 
     $stmt = $conn->prepare("SELECT Count(*) as count from `list_hearts` WHERE UserID = ? AND ListID = ?;");
     $stmt->bind_param("ii", $userId, $listId);
