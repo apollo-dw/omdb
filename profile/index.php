@@ -159,7 +159,7 @@
             <a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $commentCount; ?></a><br>
 
             <?php
-                $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID) FROM `beatmaps` WHERE `SetCreatorID` = ?");
+                $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID) FROM beatmaps b1 WHERE SetCreatorID = ? AND NOT EXISTS (SELECT 1 FROM beatmaps b2 WHERE b2.SetID = b1.SetID AND b2.Mode <> 1);");
                 $stmt->bind_param("i", $profileId);
                 $stmt->execute();
                 $stmt->bind_result($mapsetCount);

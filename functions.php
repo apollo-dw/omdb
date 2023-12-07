@@ -1,5 +1,6 @@
 <?php
     include_once 'sensitiveStrings.php';
+	include_once 'functions/bbcode.php';
 
 	/**
 	 * Sends a redirect header pointed to the given relative location (using the
@@ -177,6 +178,8 @@
 	}
 
 	function ParseCommentLinks($conn, $string) {
+		$string = bbcode_to_html($string);
+
 		$pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
 		$replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
 		$string = preg_replace($pattern, $replacement, $string);
