@@ -79,7 +79,7 @@
     </span>
     <hr>
     <div>
-        <?php echo ParseCommentLinks($conn, htmlspecialchars($list['Description'], ENT_COMPAT, "ISO-8859-1")); ?>
+        <?php echo ParseCommentLinks($conn, $list['Description']); ?>
     </div>
 </div>
 
@@ -110,7 +110,7 @@
                 <span class="subText"><?php echo $title; ?></span>
             </div>
             <div style="flex-grow: 1; box-sizing: border-box;">
-                <?php echo ParseCommentLinks($conn, htmlspecialchars($listItem['Description'], ENT_COMPAT, "ISO-8859-1")); ?>
+                <?php echo ParseCommentLinks($conn, $listItem['Description']); ?>
             </div>
         </div>
         <?php

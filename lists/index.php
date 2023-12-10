@@ -50,7 +50,7 @@
                 <span class="subText">(<?php echo $row["ItemCount"]; ?> items)</span> <br>
                 <span class="subText"><?php echo $row["HeartCount"]; ?> <i class="icon-heart"></i></span> <br><br>
 
-                <?php echo explode("\n", ParseCommentLinks($conn, htmlspecialchars($row["Description"])))[0]; ?>
+                <?php echo explode("\n", ParseCommentLinks($conn, $row["Description"]))[0]; ?>
             </div>
         </div>
         <?php

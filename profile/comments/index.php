@@ -81,7 +81,7 @@
 					<div>
 						<a href="../../mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';" style="height:64px;width:64px;float:left;margin:0.5rem;"></a>
 					</div>
-					<p><?php echo ParseCommentLinks($conn, htmlspecialchars($row["Comment"], ENT_COMPAT, "ISO-8859-1")); ?></p>
+					<p><?php echo ParseCommentLinks($conn, $row["Comment"]); ?></p>
 				</div>
 				<?php
 			}
