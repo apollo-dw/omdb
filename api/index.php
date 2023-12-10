@@ -12,8 +12,6 @@
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $uri = explode( '/', $uri );
 
-die(json_encode($uri));
-
     if (sizeof($args) == 0)
         die(json_encode(array("error" => "Invalid request")));
     if ($apiKey == -1)
@@ -51,6 +49,17 @@ die(json_encode($uri));
             if ($ratingResult != null)
                 $rating = $ratingResult["Score"];
 
+            $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
+            $stmt->bind_param("i", $beatmapID);
+            $stmt->execute();
+            $ratingsResult = $stmt->get_result();
+            $stmt->close();
+
+            $ratingsCounts = array();
+            while ($ratingRow = $ratingsResult->fetch_assoc()) {
+                $ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
+            }
+
             $response[] = array(
                 "BeatmapID" => $row["BeatmapID"],
                 "Artist" => $row["Artist"],
@@ -61,6 +70,7 @@ die(json_encode($uri));
                 "RatingCount" => $row["RatingCount"],
                 "WeightedAvg" => $row["WeightedAvg"],
                 "Rating" => $rating,
+                "Ratings" => $ratingsCounts,
             );
         }
 
@@ -92,8 +102,20 @@ die(json_encode($uri));
             $result = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            if ($result != null)
-                $response["Rating"] = $result["Score"];
+            $response["Rating"] = $result["Score"] ?? null;
+
+            $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
+            $stmt->bind_param("i", $beatmapID);
+            $stmt->execute();
+            $ratingsResult = $stmt->get_result();
+            $stmt->close();
+
+            $ratingsCounts = array();
+            while ($ratingRow = $ratingsResult->fetch_assoc()) {
+                $ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
+            }
+
+            $response["Ratings"] = $ratingsCounts;
         }
 
         if (sizeof($response) == 0)
