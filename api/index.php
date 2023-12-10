@@ -12,6 +12,8 @@
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $uri = explode( '/', $uri );
 
+die(json_encode($uri));
+
     if (sizeof($args) == 0)
         die(json_encode(array("error" => "Invalid request")));
     if ($apiKey == -1)
@@ -38,6 +40,17 @@
         $stmt->close();
 
         while ($row = $result->fetch_assoc()) {
+            $beatmapID = $row["BeatmapID"];
+            $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+            $ratingResult = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            $rating = null;
+            if ($ratingResult != null)
+                $rating = $ratingResult["Score"];
+
             $response[] = array(
                 "BeatmapID" => $row["BeatmapID"],
                 "Artist" => $row["Artist"],
@@ -47,6 +60,7 @@
                 "ChartYearRank" => $row["ChartYearRank"],
                 "RatingCount" => $row["RatingCount"],
                 "WeightedAvg" => $row["WeightedAvg"],
+                "Rating" => $rating,
             );
         }
 
@@ -71,6 +85,15 @@
                 "RatingCount" => $result["RatingCount"],
                 "WeightedAvg" => $result["WeightedAvg"],
             );
+
+            $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if ($result != null)
+                $response["Rating"] = $result["Score"];
         }
 
         if (sizeof($response) == 0)
