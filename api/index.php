@@ -21,6 +21,7 @@
     $stmt->bind_param("s", $apiKey);
     $stmt->execute();
     $result = $stmt->get_result();
+    $stmt->close();
 
     if($result->num_rows === 0)
         die(json_encode(array("error" => "Invalid api key")));
@@ -34,6 +35,8 @@
         $stmt->bind_param("i", $setID);
         $stmt->execute();
         $result = $stmt->get_result();
+        $stmt->close();
+
         while ($row = $result->fetch_assoc()) {
             $response[] = array(
                 "BeatmapID" => $row["BeatmapID"],
@@ -54,7 +57,9 @@
         $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? ORDER BY SR DESC;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();;
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         if ($result != null) {
             $response = array(
                 "SetID" => $result["SetID"],
@@ -107,6 +112,7 @@
             $stmt->bind_param($types, ...$params);
             $stmt->execute();
             $result = $stmt->get_result();
+            $stmt->close();
 
             while ($row = $result->fetch_assoc()) {
                 $response[] = array(
