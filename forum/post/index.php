@@ -36,14 +36,15 @@
     .forum-post-body {
         width: 100%;
         box-sizing: border-box;
-        min-height: 15em;
+        min-height: 12em;
     }
 
     .forum-post-info {
         background-color: DarkSlateGrey;
         box-sizing: border-box;
         min-height: inherit;
-        width: 20%;
+        width: 17%;
+        min-width: 100px;
         align-items: center;
         justify-content: center;
         display: flex;
@@ -53,7 +54,7 @@
         background-color: DarkSlateGrey;
         box-sizing: border-box;
         min-height: inherit;
-        width: 80%;
+        width: 83%;
         padding: 1em;
     }
 
