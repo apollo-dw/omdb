@@ -109,7 +109,7 @@
                                                     FROM ratings
                                                 ) AS prior
                                             ORDER BY
-                                                -BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
+                                                BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
                 $stmt->bind_param("ii", $userId, $mode);
             } else {
                 $stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} {$descriptorString} ORDER BY {$columnString} {$orderString}, BeatmapID {$pageString}");
