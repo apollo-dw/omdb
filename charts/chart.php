@@ -1,14 +1,15 @@
 <?php
 	include_once '../base.php';
-	
-	$page = $_GET['p'] ?? 1;
-	$year = $_GET['y'] ?? $year;
-	$order = $_GET['o'] ?? 1;
-    $genre = $_GET['g'] ?? 0;
-    $language = $_GET['l'] ?? 0;
-    $onlyFriends = $_GET['f'] ?? "false";
 
-    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
+	$page = $_POST['p'] ?? 1;
+	$year = $_POST['y'] ?? $year;
+	$order = $_POST['o'] ?? 1;
+    $genre = $_POST['g'] ?? 0;
+    $language = $_POST['l'] ?? 0;
+    $onlyFriends = $_POST['f'] ?? "false";
+    $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
+
+    $descriptorsJSON = $_POST['descriptors'] ?? "[]";
 
     if (!isset($selectedDescriptors)) {
         $selectedDescriptors = json_decode($descriptorsJSON, true);
@@ -22,6 +23,7 @@
 <div class="flex-item" style="padding:0.5em;">
 		<?php
             $onlyFriends = $onlyFriends == "true";
+            $hideAlreadyRated = $hideAlreadyRated == "true";
 
 			$lim = 50;
 			$counter = ($page - 1) * $lim;
@@ -76,13 +78,18 @@
                 $descriptorString = "AND (" . implode(" AND ", $subqueries) . ")";
             }
 
+            $hideAlreadyRatedString = "";
+            if ($hideAlreadyRated)
+                $hideAlreadyRatedString = "AND Score IS NULL";
+
             $stmt = null;
             if ($onlyFriends) {
                 $stmt = $conn->prepare("SELECT
                                                 b.*,
                                                 (prior_rating * prior_count + total_score) / (prior_count + rating_count) AS BayesianAverage,
                                                 rating_count AS RatingCount,
-                                                friend_rating AS WeightedAvg
+                                                friend_rating AS WeightedAvg,
+                                                r_user.`Score` AS Score
                                             FROM
                                                 (
                                                     SELECT
@@ -99,7 +106,7 @@
                                                       u.UserID = ?
                                                       AND ur.type = 1
                                                       AND b.Mode = ?
-                                                      {$genreString} {$languageString} {$yearString}
+                                                      {$genreString} {$languageString} {$yearString} {$descriptorString}
                                                     GROUP BY
                                                         r.BeatmapID
                                                 ) AS subquery
@@ -108,24 +115,25 @@
                                                     SELECT AVG(Score) AS prior_rating, COUNT(BeatmapID) AS prior_count
                                                     FROM ratings
                                                 ) AS prior
+                                            LEFT JOIN ratings r_user ON b.BeatmapID = r_user.BeatmapID AND r_user.UserID = ?
                                             ORDER BY
                                                 BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
-                $stmt->bind_param("ii", $userId, $mode);
+                $stmt->bind_param("iii", $userId, $mode, $userId);
             } else {
-                $stmt = $conn->prepare("SELECT b.* FROM beatmaps b WHERE b.Rating IS NOT NULL {$genreString} AND `Mode` = ? {$languageString} {$yearString} {$descriptorString} ORDER BY {$columnString} {$orderString}, BeatmapID {$pageString}");
-                $stmt->bind_param("i", $mode);
+                $stmt = $conn->prepare("SELECT b.*, r.Score FROM beatmaps b 
+                                              LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
+                                              WHERE b.Rating IS NOT NULL 
+                                              {$genreString} AND `Mode` = ? 
+                                              {$languageString} {$yearString} {$descriptorString} {$hideAlreadyRatedString}
+                                              ORDER BY {$columnString} {$orderString}, BeatmapID 
+                                              {$pageString}");
+                $stmt->bind_param("ii", $userId, $mode);
             }
 
             $stmt->execute();
             $result = $stmt->get_result();
 
 			while($row = $result->fetch_assoc()) {
-				$stmt2 = $conn->prepare("SELECT `Score` FROM `ratings` WHERE `BeatmapID`=? AND `UserID`=?;");
-				$stmt2->bind_param('ss', $row['BeatmapID'], $userId);
-				$stmt2->execute();
-				$userRatingResult = $stmt2->get_result();
-				$userRating = $userRatingResult->fetch_row()[0] ?? "";
-
                 $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name
                                           FROM descriptor_votes 
                                           JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
@@ -168,7 +176,7 @@
 					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>
 				<div style="flex: 0 auto 0;">
-					<b style="font-weight:900;"><?php echo $userRating; ?></b>
+					<b style="font-weight:900;"><?php echo $row["Score"]; ?></b>
 				</div>
 			</div>
 		<?php

@@ -128,12 +128,22 @@
             <input type="text" id="descriptor-input" style="margin:0;" autocomplete="off">
             <div id="descriptor-suggestions"></div>
             <div id="current-descriptors" class="flex-row-container"></div>
+            <br>
 
+            <input type="checkbox" id="hideRated" name="hideRated" onchange="updateChart();">
+            <label for="hideRated">Hide already rated maps</label>
             <?php if ($loggedIn) { ?>
-            <br><br>
+            <br>
             <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
             <label for="friends">Only include friend ratings<br> <span class="subText">Only the <b>Highest Rated</b> and <b>Lowest Rated</b> sort works with the friend filter right now.</span></label><br>
-            <?php } ?>
+            <?php } ?> <br>
+
+            Exclude: <br>
+            <input type="checkbox" id="excludeLoved" name="excludeLoved" onchange="updateChart();">
+            <label for="excludeLoved">Loved maps</label> <br>
+            <input type="checkbox" id="excludeGraveyard" name="excludeGraveyard" onchange="updateChart();">
+            <label for="excludeGraveyard">Graveyard maps</label>
+
 
         </form><br><br>
 		<span>Info</span>
@@ -300,6 +310,9 @@
         var friendsElement = document.getElementById("friends");
 		var onlyFriends = friendsElement ? friendsElement.checked : false;
 
+        var hideRatedElement = document.getElementById("hideRated");
+        var hideRated = hideRatedElement ? hideRatedElement.checked : false;
+
         var descriptorsJSON = JSON.stringify(selectedDescriptors);
 
 		var xmlhttp = new XMLHttpRequest();
@@ -309,8 +322,18 @@
 				resetPaginationDisplay();
 			}
 		}
-        xmlhttp.open("GET", "chart.php?y=" + year + "&p=" + page + "&o=" + order + "&g=" + genre + "&l=" + language + "&f=" + String(onlyFriends) + "&descriptors=" + encodeURIComponent(descriptorsJSON), true);
-        xmlhttp.send();
+
+        xmlhttp.open("POST", "chart.php", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = "y=" + year +
+            "&p=" + page +
+            "&o=" + order +
+            "&g=" + genre +
+            "&l=" + language +
+            "&f=" + String(onlyFriends) +
+            "&descriptors=" + encodeURIComponent(descriptorsJSON) +
+            "&alreadyRated=" + String(hideRated);
+        xmlhttp.send(params);
 	}
 
     function displayTimeRemaining() {
