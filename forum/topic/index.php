@@ -25,23 +25,17 @@
     (SELECT fp.UserID FROM forum_posts fp WHERE ft.ThreadID = fp.ThreadID ORDER BY fp.CreatedAt DESC LIMIT 1) AS LatestPostUserID,
     (SELECT MAX(fp.PostID) FROM forum_posts fp WHERE ft.ThreadID = fp.ThreadID) AS LatestPostID,
     (SELECT MAX(fp.CreatedAt) FROM forum_posts fp WHERE ft.ThreadID = fp.ThreadID) AS LatestPostCreatedAt
-FROM
-    forum_threads ft
-LEFT JOIN
-    forum_posts fp ON ft.ThreadID = fp.ThreadID
-WHERE
-    ft.TopicID = ?
-GROUP BY
-    ft.ThreadID
-ORDER BY
-    LatestPostCreatedAt DESC;");
+    FROM forum_threads ft
+    LEFT JOIN forum_posts fp ON ft.ThreadID = fp.ThreadID
+    WHERE ft.TopicID = ?
+    GROUP BY ft.ThreadID
+    ORDER BY LatestPostCreatedAt DESC;");
 
     $stmt->bind_param("i", $topicId);
     $stmt->execute();
     $threads = $stmt->get_result();
     $stmt->close();
 ?>
-
     <style>
         h2 {
             margin: 0;
