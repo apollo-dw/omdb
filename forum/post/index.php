@@ -1,5 +1,6 @@
 <?php
     $threadId = $_GET['id'] ?? -1;
+    $page = $_GET['p'] ?? 1;
     require_once "../../base.php";
 
     $stmt = $conn->prepare("SELECT * FROM forum_threads LEFT JOIN forum_topics ft on forum_threads.TopicID = ft.TopicID WHERE ThreadID = ?;");
@@ -8,13 +9,30 @@
     $thread = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($thread) || !is_numeric($threadId))
+    if (is_null($thread) || !is_numeric($threadId) || !is_numeric($page))
         die("ahhh");
 
     $PageTitle = $thread["Title"];
     require_once '../../header.php';
 
-    $stmt = $conn->prepare("SELECT * FROM forum_posts WHERE ThreadID = ? ORDER BY CreatedAt;");
+    $limit = 15;
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM forum_posts WHERE ThreadID = ?;");
+    $stmt->bind_param("i", $threadId);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+    $pageCount = floor($count / $limit) + 1;
+    $prevPage = max($page - 1, 1);
+    $nextPage = min($page + 1, $pageCount);
+    $pageString = "LIMIT {$limit}";
+
+    if ($page > 1) {
+        $lower = ($page - 1) * $limit;
+        $pageString = "LIMIT {$lower}, {$limit}";
+    }
+
+    $stmt = $conn->prepare("SELECT * FROM forum_posts WHERE ThreadID = ? ORDER BY CreatedAt {$pageString};");
     $stmt->bind_param("i", $threadId);
     $stmt->execute();
     $posts = $stmt->get_result();
@@ -83,11 +101,24 @@
     .removePost {
         font-size: 1.5em;
     }
+
+    .pagination span {
+        padding: 0px 16px;
+    }
 </style>
 
 <h2><?php echo $thread["Title"]; ?></h2>
 <span class="subText"><?php echo $thread["Name"]; ?></span>
 
+<div style="float:right;">
+    <div class="pagination">
+        <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
+        <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
+            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+        <?php } ?>
+        <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
+    </div>
+</div>
 <hr>
 
 <?php
@@ -151,6 +182,16 @@
         </div>
     </form>
 <?php } ?>
+
+<div style="float:right;">
+    <div class="pagination">
+        <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
+        <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
+            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+        <?php } ?>
+        <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
+    </div>
+</div>
 
 <script>
     function insertTag(tag, param = '') {
