@@ -313,6 +313,12 @@
         var hideRatedElement = document.getElementById("hideRated");
         var hideRated = hideRatedElement ? hideRatedElement.checked : false;
 
+        var excludeGraveyardElement = document.getElementById("excludeGraveyard");
+        var excludeGraveyard = excludeGraveyardElement ? excludeGraveyardElement.checked : false;
+
+        var excludeLovedElement = document.getElementById("excludeLoved");
+        var excludeLoved = excludeLovedElement ? excludeLovedElement.checked : false;
+
         var descriptorsJSON = JSON.stringify(selectedDescriptors);
 
 		var xmlhttp = new XMLHttpRequest();
@@ -332,7 +338,9 @@
             "&l=" + language +
             "&f=" + String(onlyFriends) +
             "&descriptors=" + encodeURIComponent(descriptorsJSON) +
-            "&alreadyRated=" + String(hideRated);
+            "&alreadyRated=" + String(hideRated) +
+            "&excludeLoved=" + String(excludeLoved) +
+            "&excludeGraveyard=" + String(excludeGraveyard);
         xmlhttp.send(params);
 	}
 

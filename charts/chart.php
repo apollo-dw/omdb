@@ -8,6 +8,8 @@
     $language = $_POST['l'] ?? 0;
     $onlyFriends = $_POST['f'] ?? "false";
     $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
+    $excludeGraveyard = $_POST['excludeGraveyard'] ?? "false";
+    $excludeLoved = $_POST['excludeLoved'] ?? "false";
 
     $descriptorsJSON = $_POST['descriptors'] ?? "[]";
 
@@ -24,6 +26,8 @@
 		<?php
             $onlyFriends = $onlyFriends == "true";
             $hideAlreadyRated = $hideAlreadyRated == "true";
+            $excludeGraveyard = $excludeGraveyard == "true";
+            $excludeLoved = $excludeLoved == "true";
 
 			$lim = 50;
 			$counter = ($page - 1) * $lim;
@@ -82,6 +86,14 @@
             if ($hideAlreadyRated)
                 $hideAlreadyRatedString = "AND Score IS NULL";
 
+            $excludeLovedString = "";
+            if ($excludeLoved)
+                $excludeLovedString = "AND Status != 4";
+
+            $excludeGraveyardString = "";
+            if ($excludeGraveyard)
+                $excludeGraveyardString = "AND Status != -2";
+
             $stmt = null;
             if ($onlyFriends) {
                 $stmt = $conn->prepare("SELECT
@@ -106,7 +118,7 @@
                                                       u.UserID = ?
                                                       AND ur.type = 1
                                                       AND b.Mode = ?
-                                                      {$genreString} {$languageString} {$yearString} {$descriptorString}
+                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$excludeLovedString} {$excludeGraveyardString}
                                                     GROUP BY
                                                         r.BeatmapID
                                                 ) AS subquery
@@ -124,7 +136,8 @@
                                               LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
                                               WHERE b.Rating IS NOT NULL 
                                               {$genreString} AND `Mode` = ? 
-                                              {$languageString} {$yearString} {$descriptorString} {$hideAlreadyRatedString}
+                                              {$languageString} {$yearString} {$descriptorString} 
+                                              {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString}
                                               ORDER BY {$columnString} {$orderString}, BeatmapID 
                                               {$pageString}");
                 $stmt->bind_param("ii", $userId, $mode);
