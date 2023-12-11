@@ -492,4 +492,11 @@
 
 		return [$imageUrl, $title, $linkUrl];
 	}
+
+	function RenderLocalTime($time) { ?>
+		<script type="text/javascript">
+			var myDate = new Date('<?php echo $time; ?>')
+			document.write(myDate.toLocaleString())
+		</script>
+	<?php }
 ?>
