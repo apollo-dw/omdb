@@ -11,6 +11,9 @@
 
     if (is_null($topic) || !is_numeric($topicId))
         die("AHHH");
+
+    if (!$loggedIn)
+        die("Please log in");
 ?>
 
 <style>

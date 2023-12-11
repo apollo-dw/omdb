@@ -132,23 +132,25 @@
     }
 ?>
 
-<form action="Reply.php" method="post">
-    <div class="forum-post-reply">
-        Write a reply:<br><br>
-        <input type="hidden" name="PostThread" value="<?php echo $threadId; ?>" />
+<?php if ($loggedIn) { ?>
+    <form action="Reply.php" method="post">
+        <div class="forum-post-reply">
+            Write a reply:<br><br>
+            <input type="hidden" name="PostThread" value="<?php echo $threadId; ?>" />
 
-        <textarea name="PostReply" id="PostReply"></textarea> <br><br>
-        <button type="button" onclick="insertTag('img')" class="small-button">img</button>
-        <button type="button" onclick="insertTag('a')" class="small-button">link</button>
-        <button type="button" onclick="insertTag('code')" class="small-button">code</button>
-        <button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
-        <button type="button" onclick="insertTag('b')" class="small-button">bold</button>
-        <button type="button" onclick="insertTag('i')" class="small-button">italics</button>
-        <button type="button" onclick="insertTag('u')" class="small-button">underline</button> <br><br>
+            <textarea name="PostReply" id="PostReply"></textarea> <br><br>
+            <button type="button" onclick="insertTag('img')" class="small-button">img</button>
+            <button type="button" onclick="insertTag('a')" class="small-button">link</button>
+            <button type="button" onclick="insertTag('code')" class="small-button">code</button>
+            <button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
+            <button type="button" onclick="insertTag('b')" class="small-button">bold</button>
+            <button type="button" onclick="insertTag('i')" class="small-button">italics</button>
+            <button type="button" onclick="insertTag('u')" class="small-button">underline</button> <br><br>
 
-        <input type="submit" id="submitButton" value="Submit" />
-    </div>
-</form>
+            <input type="submit" id="submitButton" value="Submit" />
+        </div>
+    </form>
+<?php } ?>
 
 <script>
     function insertTag(tag, param = '') {

@@ -60,7 +60,9 @@ ORDER BY
     <h2><?php echo $topic["Name"]; ?></h2>
     <div>
         <span class="subText"><?php echo $topic["Description"]; ?></span>
-        <div style="float:right;"><a href="../new/?id=<?php echo $topicId; ?>">Create new post</a></div>
+        <?php if ($loggedIn) { ?>
+            <div style="float:right;"><a href="../new/?id=<?php echo $topicId; ?>">Create new post</a></div>
+        <?php } ?>
     </div>
 
     <hr>
