@@ -78,6 +78,10 @@
     .small-button {
         min-width: revert;
     }
+
+    .removePost {
+        font-size: 1.5em;
+    }
 </style>
 
 <h2><?php echo $thread["Title"]; ?></h2>
@@ -99,13 +103,22 @@
                         <img src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">
                     </div>
                     <div style="text-align: center;">
-                        <span class="subText">0 posts</span>
                     </div>
                 </div>
             </div>
             <div class="forum-post-content">
                 <div style="margin-bottom:1em;">
-                    <span class="subText"><?php RenderLocalTime($post["CreatedAt"]); ?></span>
+                    <span class="subText">
+                        <a href="#post-<?php echo $post["PostID"]; ?>">
+                            <?php RenderLocalTime($post["CreatedAt"]); ?>
+                        </a>
+                    </span>
+                    <span style="float:right;">
+                        <?php
+                        if ($post["UserID"] == $userId || $userId === 9558549) { ?>
+                            <i class="icon-remove removePost" style="color:#f94141;" value="<?php echo $post["PostID"]; ?>"></i>
+                        <?php } ?>
+                    </span>
                 </div>
                 <div>
                     <?php echo ParseCommentLinks($conn, $post["Content"]); ?>
@@ -158,6 +171,26 @@
         textarea.setSelectionRange(cursorPos, cursorPos + tagText.length);
         textarea.focus();
     }
+
+    $(".removePost").click(function(event){
+        var $this = $(this);
+
+        if (!confirm("Are you sure you want to remove this post?")) {
+            return;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                location.reload();
+            }
+        };
+
+        xhttp.open("POST", "RemovePost.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("tID=" + <?php echo $thread["ThreadID"]; ?> + "&pID=" + $this.attr('value'));
+    });
 </script>
 
 <?php
