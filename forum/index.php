@@ -9,6 +9,7 @@
 <style>
     h1, h2 {
         margin: 0;
+        display: inline;
     }
 
     .forum-topic {
@@ -25,7 +26,7 @@
     while ($row = $stmt->fetch_assoc()) {
         ?>
         <div class="alternating-bg forum-topic">
-            <h2><?php echo $row["Name"]; ?></h2>
+            <a href="topic/?id=<?php echo $row["TopicID"]; ?>"><h2><?php echo $row["Name"]; ?></h2></a> <br>
             <span class="subText"><?php echo $row["Description"]; ?></span>
         </div>
         <?php
