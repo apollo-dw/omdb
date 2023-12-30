@@ -130,9 +130,9 @@
             <div id="current-descriptors" class="flex-row-container"></div>
             <br>
 
+            <?php if ($loggedIn) { ?>
             <input type="checkbox" id="hideRated" name="hideRated" onchange="updateChart();">
             <label for="hideRated">Hide already rated maps</label>
-            <?php if ($loggedIn) { ?>
             <br>
             <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
             <label for="friends">Only include friend ratings<br> <span class="subText">Only the <b>Highest Rated</b> and <b>Lowest Rated</b> sort works with the friend filter right now.</span></label><br>
