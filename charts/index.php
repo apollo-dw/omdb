@@ -16,6 +16,38 @@
             $selectedDescriptors[] = ['id' => $descriptor['DescriptorID'], 'name' => $descriptor['Name']];
         }
     }
+
+    function generateTreeHTML($tree) {
+        $html = '<ul>';
+        foreach ($tree as $node) {
+            $descriptorID = $node['descriptorID'];
+            $isUsable = $node['Usable'];
+
+            $class = $isUsable ? '' : 'class="unusable"';
+
+            $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . $node['name'] . '</span>';
+            if (isset($node['children'])) {
+                $html .= generateTreeHTML($node['children']);
+            }
+            $html .= '</li>';
+        }
+        $html .= '</ul>';
+        return $html;
+    }
+
+    function buildTree(array &$elements, $parentID = null) {
+        $branch = array();
+        foreach ($elements as $element) {
+            if ($element['parentID'] === $parentID) {
+                $children = buildTree($elements, $element['descriptorID']);
+                if ($children) {
+                    $element['children'] = $children;
+                }
+                $branch[] = $element;
+            }
+        }
+        return $branch;
+    }
 ?>
 
 <h1 id="heading"><?php echo 'Highest Rated Maps of ' . htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
@@ -94,21 +126,44 @@
             </select><br><br>
 
             <style>
-                #descriptor-suggestions {
+                .popover {
+                    display: none;
                     position: absolute;
-                    z-index: 1;
-                    line-height: 1.5em;
+                    background-color: darkslategray;
+                    border: 1px solid #ccc;
+                    padding: 10px;
+                    z-index: 1000;
+                    font-size: 12px;
                     overflow-y: auto;
-                    max-height: 19em;
-                    width: 13em;
+                    max-height: 30em;
+                    margin: 0.5em;
                 }
 
-                .descriptor-suggestion {
+                .descriptor ul {
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .descriptor ul li {
+                    margin-left: 1em;
+                }
+
+                .descriptor span{
                     cursor: pointer;
+                    color: white;
                 }
 
-                .descriptor-suggestion:hover {
+                .descriptor span:hover{
                     text-decoration: underline;
+                }
+
+                .unusable {
+                    color: grey !important;
+                    cursor: revert !important;
+                }
+
+                .unusable:hover {
+                    text-decoration: none !important;
                 }
 
                 .descriptor-item {
@@ -125,8 +180,18 @@
             </style>
 
             <label for="descriptor-input">Descriptors:</label><br>
-            <input type="text" id="descriptor-input" style="margin:0;" autocomplete="off">
-            <div id="descriptor-suggestions"></div>
+            <input type="text" id="searchInput" placeholder="Search...">
+            <div id="descriptorTreePopover" class="popover">
+                <?php
+                $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $descriptors = $result->fetch_all(MYSQLI_ASSOC);
+
+                $tree = buildTree($descriptors);
+                echo generateTreeHTML($tree);
+                ?>
+            </div>
             <div id="current-descriptors" class="flex-row-container"></div>
             <br>
 
@@ -209,32 +274,44 @@
 
     $(document).ready(function() {
         updateCurrentDescriptors();
-        var matchingDescriptors = <?php echo json_encode($descriptors); ?>;
 
-        $("#descriptor-input").on("input", function() {
-            var input = $(this).val();
-            $("#descriptor-suggestions").empty();
+        $('#searchInput').on('focus', function () {
+            $('#descriptorTreePopover').show();
+        });
 
-            if (input.length > 1) {
-                matchingDescriptors.forEach(function(descriptor) {
-                    if (descriptor.Name.toLowerCase().includes(input.toLowerCase())) {
-                        $("#descriptor-suggestions").append(
-                            $("<div>")
-                                .addClass("descriptor-suggestion alternating-bg").text(descriptor.Name).attr("data-descriptor-id", descriptor.DescriptorID)
-                        );
-                    }
-                });
+        $(document).on('click', function (event) {
+            if (!$(event.target).closest('#descriptorTreePopover').length && !$(event.target).is('#searchInput')) {
+                $('#descriptorTreePopover').hide();
             }
         });
 
-        $(document).on("click", ".descriptor-suggestion", function() {
-            var descriptor = $(this).text();
-            var descriptorID = $(this).attr("data-descriptor-id");
+        $('#searchInput').on('input', function () {
+            const searchKeyword = $(this).val().toLowerCase();
+            console.log(searchKeyword);
+            $('#descriptorTreePopover li').each(function () {
+                const text = $(this).text().toLowerCase();
+                if (text.includes(searchKeyword)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        $(document).on("click", ".descriptor", function(event) {
+            if ($(this).find('.unusable').length > 0) {
+                event.stopPropagation();
+                return;
+            }
+
+            var descriptor = $($(this).contents()[0]).text();
+            var descriptorID = $(this).data('descriptor-id');
             selectedDescriptors.push({ id: descriptorID, name: descriptor });
             updateCurrentDescriptors();
             $("#descriptor-input").val("");
             $("#descriptor-suggestions").empty();
             updateChart()
+            event.stopPropagation();
         });
 
         $(document).on("click", ".descriptor-item", function() {
@@ -244,7 +321,7 @@
             updateChart()
         });
 
-        function  updateCurrentDescriptors() {
+        function updateCurrentDescriptors() {
             $("#current-descriptors").empty();
             selectedDescriptors.forEach(function(descriptor, index) {
                 $("#current-descriptors").append(
