@@ -139,12 +139,12 @@
                     margin: 0.5em;
                 }
 
-                .descriptor ul {
+                .popover ul {
                     padding: 0;
                     margin: 0;
                 }
 
-                .descriptor ul li {
+                .popover ul li {
                     margin-left: 1em;
                 }
 
