@@ -59,8 +59,6 @@ $voteResult = $stmt->get_result();
 $userVotes = array();
 while ($voteRow = $voteResult->fetch_assoc())
     $userVotes[$voteRow['DescriptorID']] = $voteRow['Vote'];
-
-
 ?>
 
     <style>
@@ -72,8 +70,8 @@ while ($voteRow = $voteResult->fetch_assoc())
             padding: 10px;
             z-index: 1000;
             font-size: 12px;
-            overflow-y: scroll;
-            height: 30em;
+            overflow-y: auto;
+            max-height: 30em;
             margin: 0.5em;
         }
 
@@ -145,7 +143,7 @@ while ($voteRow = $voteResult->fetch_assoc())
             Misuse of the descriptor feature will result in you being banned. Do not abuse this feature by assigning obviously incorrect descriptors.
         </p>
         <?php if($loggedIn) { ?>
-            <button id="proposeDescriptorButton">Propose Descriptor</button>
+            <input type="text" id="searchInput" placeholder="Search...">
             <div id="descriptorTreePopover" class="popover">
                 <?php
                     $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
@@ -208,8 +206,27 @@ while ($voteRow = $voteResult->fetch_assoc())
 
     <script>
         $(document).ready(function() {
-            $('#proposeDescriptorButton').click(function() {
-                $('#descriptorTreePopover').toggle();
+            $('#searchInput').on('focus', function () {
+                $('#descriptorTreePopover').show();
+            });
+
+            $(document).on('click', function (event) {
+                if (!$(event.target).closest('#descriptorTreePopover').length && !$(event.target).is('#searchInput')) {
+                    $('#descriptorTreePopover').hide();
+                }
+            });
+
+            $('#searchInput').on('input', function () {
+                const searchKeyword = $(this).val().toLowerCase();
+                console.log(searchKeyword);
+                $('#descriptorTreePopover li').each(function () {
+                    const text = $(this).text().toLowerCase();
+                    if (text.includes(searchKeyword)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
             });
 
             $(document).on('click', '.descriptor', function(event) {
@@ -219,6 +236,8 @@ while ($voteRow = $voteResult->fetch_assoc())
                 }
                 var descriptorID = $(this).data('descriptor-id');
                 handleDescriptorClick(descriptorID);
+                $('#searchInput').val('');
+                $('#searchInput').trigger('input');
                 event.stopPropagation();
             });
 
