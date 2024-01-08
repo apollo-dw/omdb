@@ -67,7 +67,7 @@
     }
 
     .ratingDistributionContainer {
-        width: calc(100% / 17);
+        width: calc(100% / 18);
         height: 6em;
         margin: 0;
         color: rgba(125, 125, 125, 0.66);
