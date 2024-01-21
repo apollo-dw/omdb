@@ -23,9 +23,10 @@
                                 FROM ratings r
                                 JOIN beatmap_creators bc ON r.BeatmapID = bc.BeatmapID
                                 JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                                JOIN beatmapsets s ON b.SetID = s.SetID
                                 WHERE r.UserID IN ($correlated_ids)
                                 AND r.BeatmapID NOT IN (SELECT BeatmapID FROM ratings WHERE UserID = ?)
-                                AND bc.CreatorID <> ? AND b.SetCreatorID <> ?
+                                AND bc.CreatorID <> ? AND s.CreatorID <> ?
                                 GROUP BY r.BeatmapID
                                 HAVING COUNT(DISTINCT CASE WHEN r.UserID IN ($correlated_ids) THEN r.UserID END) > 5
                                 ORDER BY AVG(CASE WHEN r.UserID IN ($correlated_ids) THEN r.Score END) DESC
@@ -74,7 +75,7 @@
 
         $beatmap_details_array = [];
         foreach ($sorted_recommendations as $beatmap_id => $score) {
-            $stmt = $conn->prepare("SELECT artist, title, difficultyname, setid, SR, DateRanked FROM beatmaps WHERE BeatmapID = ?;");
+            $stmt = $conn->prepare("SELECT artist, title, difficultyname, s.setid, SR, DateRanked FROM beatmaps b JOIN beatmapsets s ON b.SetID = s.SetID WHERE BeatmapID = ?;");
             $stmt->bind_param('i', $beatmap_id);
             $stmt->execute();
 

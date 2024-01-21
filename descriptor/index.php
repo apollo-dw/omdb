@@ -110,8 +110,9 @@
                                     FROM descriptors d
                                     JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
                                 )
-                                SELECT b.*
+                                SELECT b.*, s.Title
                                 FROM beatmaps b
+                                JOIN beatmapsets s ON b.SetID = s.SetID
                                 JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
                                 JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
                                 WHERE b.Mode = ? AND b.ChartRank IS NOT NULL
@@ -168,8 +169,9 @@
                                         FROM descriptors d
                                         JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
                                     )
-                                    SELECT YEAR(b.DateRanked) AS Year, COUNT(b.BeatmapID) AS BeatmapCount
+                                    SELECT YEAR(s.DateRanked) AS Year, COUNT(b.BeatmapID) AS BeatmapCount
                                     FROM beatmaps b
+                                    JOIN beatmapsets s ON b.SetID = s.SetID
                                     JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
                                     JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
                                     WHERE b.Mode = ?

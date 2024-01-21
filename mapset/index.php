@@ -3,14 +3,14 @@
     require '../base.php';
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `SetID`=? ORDER BY `Mode`, `SR` DESC;");
+    $stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
 
-    $PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
+    $PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
     $year = date("Y", strtotime($sampleRow['DateRanked']));
     $isLoved = $sampleRow["Status"] == 4;
     $isGraveyarded = $sampleRow["Status"] == -2;
@@ -61,7 +61,7 @@
     }
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['SetCreatorID']}'>" .  GetUserNameFromId($sampleRow['SetCreatorID'], $conn); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
 
 <div class="flex-container">
     <div class="flex-child">
@@ -242,7 +242,7 @@ while($row = $result->fetch_assoc()) {
                 while ($creator = $creatorsResult->fetch_assoc())
                     $creators[] = $creator['CreatorID'];
 
-                if (!(in_array($row['SetCreatorID'], $creators) && count($creators) == 1)) {
+                if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1)) {
                     ?>
                     <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span>
                     <?php

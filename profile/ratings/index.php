@@ -144,9 +144,10 @@
                     $orderString = "ORDER BY r.DATE DESC";
             }
 
-            $stmt = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName
+            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName
                     FROM `ratings` r
                     JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+                    JOIN beatmapsets s ON b.SetID = s.SetID
                     {$tagJoinString}
                     WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString}
                     {$orderString} {$pageString};";

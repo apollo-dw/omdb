@@ -9,12 +9,13 @@
         <div class="flex-child" style="width:50%;">
             <?php
             $stmt = $conn->prepare("
-                    SELECT YEAR(b.`dateranked`) AS Year, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+                    SELECT YEAR(s.`dateranked`) AS Year, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
                     FROM `ratings` r
                     JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                    LEFT JOIN `beatmapsets` s on b.SetID = s.SetID
                     WHERE r.`UserID` = ?
-                    GROUP BY YEAR(b.`dateranked`)
-                    ORDER BY YEAR(b.`dateranked`);");
+                    GROUP BY YEAR(s.`dateranked`)
+                    ORDER BY YEAR(s.`dateranked`);");
             $stmt->bind_param('i', $profileId);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -37,6 +38,7 @@
                 for ($year = date('Y'); $year >= 2007; $year--) {
                     $averageRating = "none";
                     $ratingCount = 0;
+
 
                     if (array_key_exists($year, $years)) {
                         $averageRating = $years[$year]["AverageRating"];
@@ -104,12 +106,13 @@
 
             <?php
             $stmt = $conn->prepare("
-                    SELECT b.`Genre`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+                    SELECT s.`Genre`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
                     FROM `ratings` r
                     JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                    JOIN `beatmapsets` s on b.SetID = s.SetID
                     WHERE r.`UserID` = ?
-                    GROUP BY b.`Genre`
-                    ORDER BY b.`Genre`;
+                    GROUP BY s.`Genre`
+                    ORDER BY s.`Genre`;
                     ");
             $stmt->bind_param('i', $profileId);
             $stmt->execute();
@@ -140,14 +143,13 @@
                     $averageRating = "none";
                     $ratingCount = 0;
 
+                    $value = null;
                     if (array_key_exists($genre, $genres)) {
                         $averageRating = $genres[$genre]["AverageRating"];
                         $ratingCount = $genres[$genre]["RatingCount"];
 
                         if ($ratingCount > 5)
                             $value = $averageRating / 5.0;
-                        else
-                            $value = null;
                     }
 
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$genreString}</span></div>";
@@ -157,12 +159,13 @@
 
             <?php
             $stmt = $conn->prepare("
-                    SELECT b.`Lang`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+                    SELECT s.`Lang`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
                     FROM `ratings` r
                     JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                    JOIN `beatmapsets` s on b.SetID = s.SetID
                     WHERE r.`UserID` = ?
-                    GROUP BY b.`Lang`
-                    ORDER BY b.`Lang`;
+                    GROUP BY s.`Lang`
+                    ORDER BY s.`Lang`;
                     ");
             $stmt->bind_param('i', $profileId);
             $stmt->execute();
@@ -232,9 +235,10 @@
             Set completion: <br>
             <?php
             $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year, 
-                                      COUNT(DISTINCT SetID) as SetCount,
-                                      COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN SetID END) as RatedSetCount 
-                                      FROM beatmaps 
+                                      COUNT(s.SetID) as SetCount,
+                                      COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN s.SetID END) as RatedSetCount 
+                                      FROM beatmaps b
+                                      JOIN `beatmapsets` s on b.SetID = s.SetID
                                       GROUP BY YEAR(`dateranked`) 
                                       ORDER BY YEAR(`dateranked`);");
             $stmt->bind_param('i', $profileId);

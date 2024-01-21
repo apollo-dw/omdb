@@ -8,7 +8,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `BeatmapID` = ?;");
+$stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE `BeatmapID` = ?;");
 $stmt->bind_param("i", $map_id);
 $stmt->execute();
 $beatmap = $stmt->get_result()->fetch_assoc();

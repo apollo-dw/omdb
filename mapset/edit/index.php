@@ -6,8 +6,9 @@ if (!$loggedIn) {
     die("You need to be logged in to view this page.");
 }
 
-$stmt = $conn->prepare("SELECT b.*, ber.`BeatmapID` AS `HasEditRequest`
+$stmt = $conn->prepare("SELECT b.*, ber.`BeatmapID` AS `HasEditRequest`, s.`Title`, s.`CreatorID`
                            FROM `beatmaps` b
+                           JOIN beatmapsets s on b.SetID = s.SetID
                            LEFT JOIN `beatmap_edit_requests` ber ON b.`BeatmapID` = ber.`BeatmapID` AND ber.`Status` = 'Pending'
                            WHERE b.`SetID` = ? 
                            ORDER BY b.`Mode`, b.`SR` DESC;");
@@ -17,7 +18,7 @@ $result = $stmt->get_result();
 $sampleRow = $result->fetch_assoc();
 mysqli_data_seek($result, 0);
 
-$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn);
+$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
 require '../../header.php';
 
 if($mapset_id == -1){
@@ -41,7 +42,7 @@ if ($setHasEditRequest) {
 }
 ?>
 
-    <h1>Edit request for <?php echo htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['SetCreatorID'], $conn) ?></h1>
+    <h1>Edit request for <?php echo htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
     <a href="../<?php echo $mapset_id; ?>">Return to mapset</a><br><br><br><br>
 
     <style>

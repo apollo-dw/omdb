@@ -10,7 +10,7 @@
         <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
         <meta property="og:site_name" content="OMDB">
         <meta name="theme-color" content="#2F4F4F">
-		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="/omdb/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -33,6 +33,7 @@
 				</div>
 			</div>
             <a href="/lists/"><div class="topBarLink">lists</div></a>
+            <a href="/forum/"><div class="topBarLink">forum</div></a>
 			
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">

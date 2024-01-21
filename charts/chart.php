@@ -55,7 +55,7 @@
                 if (!is_numeric($year))
                     die("NOOO!");
 
-                $yearString = "AND YEAR(b.DateRanked) = '{$year}'";
+                $yearString = "AND YEAR(s.DateRanked) = '{$year}'";
             }
 
             $genreString = "";
@@ -98,6 +98,7 @@
             if ($onlyFriends) {
                 $stmt = $conn->prepare("SELECT
                                                 b.*,
+                                                s.*,
                                                 (prior_rating * prior_count + total_score) / (prior_count + rating_count) AS BayesianAverage,
                                                 rating_count AS RatingCount,
                                                 friend_rating AS WeightedAvg,
@@ -127,12 +128,14 @@
                                                     SELECT AVG(Score) AS prior_rating, COUNT(BeatmapID) AS prior_count
                                                     FROM ratings
                                                 ) AS prior
+                                            LEFT JOIN beatmapsets s on b.SetID = s.SetID
                                             LEFT JOIN ratings r_user ON b.BeatmapID = r_user.BeatmapID AND r_user.UserID = ?
                                             ORDER BY
                                                 BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
                 $stmt->bind_param("iii", $userId, $mode, $userId);
             } else {
-                $stmt = $conn->prepare("SELECT b.*, r.Score FROM beatmaps b 
+                $stmt = $conn->prepare("SELECT b.*, s.*, r.Score FROM beatmaps b 
+                                              LEFT JOIN beatmapsets s on b.SetID = s.SetID
                                               LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
                                               WHERE b.Rating IS NOT NULL 
                                               {$genreString} AND `Mode` = ? 

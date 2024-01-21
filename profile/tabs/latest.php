@@ -7,7 +7,7 @@
 
 <div id="tabbed-latest" class="tab">
     <?php
-    $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags
+    $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags, s.*
                                 FROM (
                                     SELECT r.`RatingID`, GROUP_CONCAT(t.`Tag` SEPARATOR ', ') AS Tags
                                     FROM `ratings` r
@@ -18,6 +18,7 @@
                                 ) AS t
                                 JOIN `ratings` r ON t.`RatingID` = r.`RatingID`
                                 JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+                                JOIN `beatmapsets` s on b.SetID = s.SetID
                                 ORDER BY r.`date` DESC
                                 LIMIT 50");
     $stmt->bind_param("ii", $profileId, $mode);

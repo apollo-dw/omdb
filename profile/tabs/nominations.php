@@ -10,7 +10,7 @@
     <?php
     $usedSets = array();
 
-    $stmt = $conn->prepare("SELECT bm.* FROM beatmaps bm JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.NominatorID = ? AND ChartRank IS NOT NULL AND bm.Mode = ? ORDER BY ChartRank;");
+    $stmt = $conn->prepare("SELECT bm.*, s.* FROM beatmaps bm JOIN beatmapsets s ON bm.SetID = s.SetID JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.NominatorID = ? AND ChartRank IS NOT NULL AND bm.Mode = ? ORDER BY ChartRank;");
     $stmt->bind_param("ii", $profileId, $mode);
     $stmt->execute();
     $result = $stmt->get_result();

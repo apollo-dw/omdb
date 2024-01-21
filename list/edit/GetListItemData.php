@@ -26,7 +26,10 @@
 
             break;
         case "beatmap":
-            $stmt = $conn->prepare("SELECT SetID, Artist, Title, DifficultyName FROM `beatmaps` WHERE `BeatmapID` = ?;");
+            $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
+                        FROM `beatmapsets` s
+                        INNER JOIN `beatmaps` b ON s.SetID = b.SetID
+                        WHERE b.BeatmapID = ?;");
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -42,7 +45,7 @@
 
             break;
         case "beatmapset":
-            $stmt = $conn->prepare("SELECT Artist, Title, DifficultyName FROM `beatmaps` WHERE `SetID` = ? LIMIT 1;");
+            $stmt = $conn->prepare("SELECT Artist, Title FROM `beatmapsets` WHERE `SetID` = ? LIMIT 1;");
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();

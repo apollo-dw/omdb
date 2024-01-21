@@ -159,7 +159,8 @@
             <a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $commentCount; ?></a><br>
 
             <?php
-                $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID) FROM beatmaps b1 WHERE SetCreatorID = ? AND NOT EXISTS (SELECT 1 FROM beatmaps b2 WHERE b2.SetID = b1.SetID AND b2.Mode <> 1);");
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM beatmapsets s WHERE CreatorID = ? 
+                                     AND EXISTS ( SELECT 1 FROM `beatmaps` bm WHERE bm.SetID = s.SetID AND bm.Status IN (1, 2));");
                 $stmt->bind_param("i", $profileId);
                 $stmt->execute();
                 $stmt->bind_result($mapsetCount);
@@ -277,21 +278,23 @@
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
     <?php
-        $stmt = $conn->prepare("SELECT DISTINCT b.`SetID`, b.`SetCreatorID`, b.`Artist`, b.`Title`
-                           FROM beatmaps b
-                           INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
-                           WHERE bc.`CreatorID` = ? 
-                           GROUP BY b.`SetID`, b.`SetCreatorID`, b.`Artist`, b.`Title` 
-                           ORDER BY MIN(b.`Timestamp`) DESC;");
+        $stmt = $conn->prepare("SELECT s.SetID, s.CreatorID, s.Artist, s.Title
+                           FROM beatmap_creators c
+                           LEFT JOIN beatmaps b ON b.BeatmapID = c.BeatmapID
+                           LEFT JOIN beatmapsets s on b.SetID = s.SetID
+                           WHERE c.`CreatorID` = ? 
+                           GROUP BY s.SetID
+                           ORDER BY s.`Timestamp` DESC;");
         $stmt->bind_param("s", $profileId);
         $stmt->execute();
         $setsResult = $stmt->get_result();
         $stmt->close();
 
         while($set = $setsResult->fetch_assoc()) {
-            $stmt = $conn->prepare("SELECT b.`BeatmapID`, b.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
+            $stmt = $conn->prepare("SELECT b.`BeatmapID`, s.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
                        (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
                        FROM beatmaps b
+                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                        INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
                        LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
                        WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
@@ -308,7 +311,7 @@
 
             $topMap = $difficultyResult->fetch_assoc();
             $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
-            $topMapIsGD = $set["SetCreatorID"] != $profileId;
+            $topMapIsGD = $set["CreatorID"] != $profileId;
             $topMapIsCollab = $topMap["NumCreators"] > 1;
 
             $stmt->close();

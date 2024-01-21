@@ -1,6 +1,7 @@
 <?php
     include '../../base.php';
 
+
     if (!$loggedIn) {
         die('Goodbye');
     }
@@ -29,9 +30,12 @@
 
     $array = json_decode($response, true);
 
-    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (DateRanked, Artist, BeatmapID, SetID, SR, Genre, Lang, Title, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, SetCreatorID, Timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-    $beatmap_stmt->bind_param("ssiidiissiiisis", $dateRanked, $artist, $beatmapID, $setID, $SR, $genre, $lang, $title, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $creatorID, $dateRanked);
+    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (BeatmapID, SetID, SR, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, Timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    $beatmap_stmt->bind_param("iidsiiiss", $beatmapID, $setID, $SR, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $dateRanked);
+
+    $beatmapset_stmt = $conn->prepare("INSERT INTO beatmapsets (DateRanked, Artist, SetID, CreatorID, Genre, Lang, Title, Status, HasStoryboard, HasVideo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    $beatmapset_stmt->bind_param("ssiiiisiii", $dateRanked, $artist, $setID, $creatorID, $genre, $lang, $title, $status, $hasStoryboard, $hasVideo);
 
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $creatorID);
@@ -74,6 +78,8 @@
         $mode = $diff["mode"];
         $status = $diff["approved"];
         $blacklisted = 0;
+        $hasStoryboard = $diff["storyboard"];
+        $hasVideo = $diff["video"];
 
         $query2 = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
         $query2->bind_param("i", $creatorID);
@@ -84,6 +90,14 @@
             die("No");
         }
         $query2->close();
+
+        $query3 = $conn->prepare("SELECT * FROM beatmapsets WHERE SetID = ?");
+        $query3->bind_param("i", $setID);
+        $query3->execute();
+        $query3->store_result();
+        if ($query3->num_rows == 0) {
+            $beatmapset_stmt->execute();
+        }
 
         $beatmap_stmt->execute();
         $creators_stmt->execute();

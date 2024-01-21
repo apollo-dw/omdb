@@ -6,7 +6,7 @@
     require "../../base.php";
     require '../../header.php';
 	
-	if($profileid == -1 || $rating == -1){
+	if($profileId == -1){
 		die("Invalid page bro");
 	}
 
@@ -61,7 +61,7 @@
 		$result = $stmt->get_result();
 		if ($result->num_rows != 0) {
 			while ($row = $result->fetch_assoc()) {
-                $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `SetID` = ?");
+                $stmt = $conn->prepare("SELECT * FROM `beatmapsets` WHERE `SetID` = ?");
                 $stmt->bind_param("i", $row["SetID"]);
                 $stmt->execute();
                 $beatmap = $stmt->get_result()->fetch_assoc();

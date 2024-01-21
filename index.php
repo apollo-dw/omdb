@@ -34,7 +34,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 </span>
 <hr>
 <div class="flex-container column-when-mobile-container">
-	<div class="flex-child column-when-mobile" style="width:40%;height:42em;overflow-y:scroll;position:relative;">
+	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
 		<?php
 		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
 		  $stmt->bind_param("i", $mode);
@@ -66,7 +66,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  $stmt->close();
 		?>
 	</div>
-	<div class="flex-child column-when-mobile" style="width:60%;height:42em;overflow-y:scroll;">
+	<div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
 		<?php
                 $stmt = $conn->prepare("(SELECT c.*, r.UserIDTo AS blocked, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
                                                 FROM comments c
@@ -173,9 +173,10 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <h2 style="margin-top:0;">Highest charting map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
-                    "SELECT b.BeatmapID, b.SetID, b.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, b.Title
+                    "SELECT b.BeatmapID, b.SetID, s.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, s.Title
                             FROM beatmaps b
                             JOIN cache_home_best_map c ON b.BeatmapID = c.BeatmapID
+                            JOIN beatmapsets s on B.SetID = s.SetID
                             WHERE
                                 b.Rating IS NOT NULL
                                 AND b.Mode = ?
@@ -233,8 +234,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         </div>
         <div class="flex-child column-when-mobile" style="width:50%;height:40em;">
             <?php
-            $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
+            $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
                                           FROM beatmaps b
+                                          JOIN beatmapsets s on B.SetID = s.SetID
                                           INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
                                           WHERE r.date >= NOW() - INTERVAL 1 WEEK
                                           AND b.Mode = ?

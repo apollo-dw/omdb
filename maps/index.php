@@ -22,7 +22,11 @@
     $month = max($minMonth, min($maxMonth, $month));
 	
 	$limit = 20;
-    $stmt = $conn->prepare("SELECT COUNT(DISTINCT SetID, Artist, Title, SetCreatorID, DateRanked) FROM `beatmaps` WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND `Mode` = ?;");
+    $stmt = $conn->prepare("SELECT COUNT(DISTINCT s.SetID) FROM `beatmapsets` s LEFT JOIN beatmaps b ON s.SetID = b.SetID WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND EXISTS (
+                                    SELECT 1
+                                    FROM `beatmaps` bm
+                                    WHERE bm.SetID = s.SetID AND bm.Mode = ?
+                                );");
     $stmt->bind_param("iii", $month, $year, $mode);
     $stmt->execute();
     $stmt->bind_result($count);
@@ -79,13 +83,21 @@
 		$pageString = "LIMIT {$lower}, {$limit}";
 	}
 
-    $stmt = $conn->prepare("SELECT DISTINCT b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked, COUNT(DISTINCT r.BeatmapID) as RatedMapCount, COUNT(DISTINCT b.BeatmapID) as MapCount
-                                  FROM `beatmaps` b
-                                  LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
-                                  WHERE MONTH(b.DateRanked) = ? AND YEAR(b.DateRanked) = ? AND `Mode` = ? 
-                                  GROUP BY b.SetID, b.Artist, b.Title, b.SetCreatorID, b.DateRanked
-                                  ORDER BY b.DateRanked DESC 
-                                  {$pageString};");
+    $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, s.CreatorID as SetCreatorID, s.DateRanked,
+                                    COUNT(DISTINCT r.BeatmapID) as RatedMapCount,
+                                    COUNT(DISTINCT b.BeatmapID) as MapCount
+                            FROM `beatmapsets` s
+                            LEFT JOIN `beatmaps` b ON s.SetID = b.SetID
+                            LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
+                            WHERE MONTH(s.DateRanked) = ? AND YEAR(s.DateRanked) = ? 
+                                AND EXISTS (
+                                    SELECT 1
+                                    FROM `beatmaps` bm
+                                    WHERE bm.SetID = s.SetID AND bm.Mode = ?
+                                )
+                            GROUP BY s.SetID
+                            ORDER BY s.DateRanked DESC 
+                            {$pageString};");
 
     $stmt->bind_param("iiii", $userId, $month, $year, $mode);
     $stmt->execute();
