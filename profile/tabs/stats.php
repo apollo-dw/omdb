@@ -2,6 +2,8 @@
     include "../../base.php";
 
     $profileId = $_GET["id"];
+    if (!is_numeric($profileId))
+        die("What are you trying to do man.");
 ?>
 
 <div id="tabbed-stats" class="tab" style="padding: 2em;">
@@ -50,7 +52,9 @@
                             $value = null;
                     }
 
+                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y={$year}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;'>" . substr($year, -2) . "</span></div>";
+                    echo "</a>";
                 }
                 ?>
             </div> <br>
