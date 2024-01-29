@@ -239,10 +239,11 @@
             Set completion: <br>
             <?php
             $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year, 
-                                      COUNT(s.SetID) as SetCount,
+                                      COUNT(DISTINCT s.SetID) as SetCount,
                                       COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN s.SetID END) as RatedSetCount 
-                                      FROM beatmaps b
-                                      JOIN `beatmapsets` s on b.SetID = s.SetID
+                                      FROM beatmapsets s
+                                      JOIN `beatmaps` b on b.SetID = s.SetID
+                                      WHERE s.Status IN (1, 2)
                                       GROUP BY YEAR(`dateranked`) 
                                       ORDER BY YEAR(`dateranked`);");
             $stmt->bind_param('i', $profileId);
