@@ -215,8 +215,59 @@
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$languageString}</span></div>";
                 }
                 ?>
+            </div> <br>
+
+            <?php
+            $stmt = $conn->prepare("
+            SELECT mn.`Country`, AVG(r.`Score`) AS AverageRating, COUNT(*) AS RatingCount
+            FROM `ratings` r
+            JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
+            JOIN `beatmap_creators` bc ON b.`BeatmapID` = bc.`BeatmapID`
+            JOIN `mappernames` mn ON bc.`CreatorID` = mn.`UserID`
+            WHERE r.`UserID` = ? AND mn.Country IS NOT NULL
+            GROUP BY mn.`Country`
+            ORDER BY mn.`Country`;
+        ");
+            $stmt->bind_param('i', $profileId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $countries = array();
+            while ($row = $result->fetch_assoc()) {
+                $country = $row["Country"];
+                $name = getFullCountryName($row["Country"]);
+                if ($name == "")
+                    continue;
+
+                $countries[$country] = array(
+                    "Name" => getFullCountryName($row["Country"]),
+                    "AverageRating" => $row["AverageRating"],
+                    "RatingCount" => $row["RatingCount"]
+                );
+            }
+            ?>
+
+            Country affinities:
+            <div class="flex-row-container" style="width: 22em;">
+                <?php
+                $minCountry = min(array_column($countries, "AverageRating"));
+                $maxCountry = max(array_column($countries, "AverageRating"));
+
+                foreach ($countries as $country) {
+                    $averageRating = $country["AverageRating"];
+                    $ratingCount = $country["RatingCount"];
+
+                    if ($ratingCount > 5)
+                        $value = $averageRating / 5.0;
+                    else
+                        continue;
+
+                    echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$country["Name"]}</span></div>";
+                }
+                ?>
             </div>
         </div>
+
         <div class="flex-child" style="width:50%;">
             <?php
             $stmt = $conn->prepare("SELECT AVG(r.`Score`) AS AverageScore, 
