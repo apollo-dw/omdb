@@ -3,6 +3,7 @@
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? "";
     $order = $_GET['o'] ?? "0";
+    $year = $_GET['y'] ?? "-1";
     $tagArgument = urldecode($_GET['t']) ?? "";
 
     $PageTitle = "Ratings";
@@ -90,6 +91,25 @@
             echo "<option value='{$encodedTag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
         }
     ?>
+</select><br>
+
+<label for="year">Year</label>
+<select name="year" id="year" autocomplete="off" onchange="changePage(1);">
+    <?php
+    echo '<option value="all-time"';
+    if ($year == -1) {
+        echo ' selected="selected"';
+    }
+    echo '>All Time</option>';
+
+    for ($i = 2007; $i <= date('Y'); $i++) {
+        echo '<option value="' . $i . '"';
+        if ($year == $i) {
+            echo ' selected="selected"';
+        }
+        echo '>' . $i . '</option>';
+    }
+    ?>
 </select>
 
 <div style="text-align:center;">
@@ -123,10 +143,16 @@
             $tagJoinString = "";
             $tagAndString = "";
             if ($tagArgument != "") {
-                $tagJoinString = "JOIN `rating_tags` rt ON b.BeatmapID = rt.BeatmapID";
                 $tagAndString = "AND rt.Tag = ?";
                 $queryParameterTypes .= "s";
                 $queryParameterValues[] = $tagArgument;
+            }
+
+            $yearString = "";
+            if ($year != "-1") {
+                $yearString = "AND YEAR(s.DateRanked) = ?";
+                $queryParameterTypes .= "i";
+                $queryParameterValues[] = intval($year);
             }
 
             switch($order) {
@@ -149,7 +175,7 @@
                     JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
                     {$tagJoinString}
-                    WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString}
+                    WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString} {$yearString}
                     {$orderString} {$pageString};";
 
             $stmt = $conn->prepare($stmt);
@@ -196,11 +222,12 @@
         var order = document.getElementById("order").value;
         var rating = document.getElementById("rating").value;
         var tag = document.getElementById("tag").value;
+        var year = document.getElementById("year").value;
 
         if (order == 2 || order == 3)
             rating = "";
 
-        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page;
+        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page + "&y=" + year;
     }
 </script>
 
