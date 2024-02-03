@@ -105,11 +105,11 @@
 
             $excludeLovedString = "";
             if ($excludeLoved)
-                $excludeLovedString = "AND Status != 4";
+                $excludeLovedString = "AND b.Status != 4";
 
             $excludeGraveyardString = "";
             if ($excludeGraveyard)
-                $excludeGraveyardString = "AND Status != -2";
+                $excludeGraveyardString = "AND b.Status != -2";
 
             $stmt = null;
             if ($onlyFriends) {
