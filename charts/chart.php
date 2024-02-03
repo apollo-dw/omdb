@@ -6,6 +6,7 @@
 	$order = $_POST['o'] ?? 1;
     $genre = $_POST['g'] ?? 0;
     $language = $_POST['l'] ?? 0;
+    $country = $_POST['c'] ?? 0;
     $onlyFriends = $_POST['f'] ?? "false";
     $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
     $excludeGraveyard = $_POST['excludeGraveyard'] ?? "false";
@@ -24,6 +25,9 @@
 
 <div class="flex-item" style="padding:0.5em;">
 		<?php
+            $types = "ii";
+            $params = [$userId, $mode];
+
             $onlyFriends = $onlyFriends == "true";
             $hideAlreadyRated = $hideAlreadyRated == "true";
             $excludeGraveyard = $excludeGraveyard == "true";
@@ -65,6 +69,19 @@
             $languageString = "";
             if ($language > 0)
                 $languageString = "AND `Lang`='{$language}'";
+
+            $countryString = "";
+            if ($country != 0) {
+                $countryString = "AND b.BeatmapID IN (
+                                        SELECT bc.BeatmapID
+                                        FROM beatmap_creators bc
+                                        JOIN mappernames mn ON bc.CreatorID = mn.UserID
+                                        GROUP BY bc.BeatmapID
+                                        HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country = ?) = 1
+                                    )";
+                $types .= "s";
+                $params[] = $country;
+            }
 
             $descriptorString = "";
             if (!empty($selectedDescriptors)) {
@@ -119,7 +136,7 @@
                                                       u.UserID = ?
                                                       AND ur.type = 1
                                                       AND b.Mode = ?
-                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$excludeLovedString} {$excludeGraveyardString}
+                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$countryString} {$excludeLovedString} {$excludeGraveyardString}
                                                     GROUP BY
                                                         r.BeatmapID
                                                 ) AS subquery
@@ -132,18 +149,18 @@
                                             LEFT JOIN ratings r_user ON b.BeatmapID = r_user.BeatmapID AND r_user.UserID = ?
                                             ORDER BY
                                                 BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
-                $stmt->bind_param("iii", $userId, $mode, $userId);
+                $stmt->bind_param($types, ...$params);
             } else {
                 $stmt = $conn->prepare("SELECT b.*, s.*, r.Score FROM beatmaps b 
                                               LEFT JOIN beatmapsets s on b.SetID = s.SetID
                                               LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
                                               WHERE b.Rating IS NOT NULL 
                                               {$genreString} AND `Mode` = ? 
-                                              {$languageString} {$yearString} {$descriptorString} 
+                                              {$languageString} {$yearString} {$descriptorString} {$countryString}
                                               {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString}
                                               ORDER BY {$columnString} {$orderString}, BeatmapID 
                                               {$pageString}");
-                $stmt->bind_param("ii", $userId, $mode);
+                $stmt->bind_param($types, ...$params);
             }
 
             $stmt->execute();

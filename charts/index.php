@@ -3,7 +3,7 @@
 	require "../base.php";
     require '../header.php';
 
-    $year = $_GET["y"] ?? 2023;
+    $year = $_GET["y"] ?? 2024;
     $page = $_GET['p'] ?? 1;
     $yearString = $year == "all-time" ? 'All Time' : $year;
 
@@ -123,7 +123,32 @@
                     echo "<option value='{$i}'>$language</option>";
                 }
                 ?>
-            </select><br><br>
+            </select><br>
+
+            <label>Country:</label>
+            <select name="country" id="country" autocomplete="off" onchange="updateChart();">
+                <option value="0" selected="selected">Any</option>
+                <?php
+                $result = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Country IS NOT NULL AND Country != 'XX';");
+
+                while ($row = $result->fetch_assoc()) {
+                    $countryCode = $row["Country"];
+                    $fullName = getFullCountryName($countryCode);
+                    $options[] = array('code' => $countryCode, 'name' => $fullName);
+                }
+
+                // Sort the options array by full country name
+                usort($options, function($a, $b) {
+                    return strcmp($a['name'], $b['name']);
+                });
+
+                // Output the sorted options
+                foreach ($options as $option) {
+                    echo "<option value=\"{$option['code']}\">{$option['name']}</option>";
+                }
+                ?>
+            </select>
+            <br><br>
 
             <style>
                 .popover {
@@ -383,6 +408,7 @@
 		var order = document.getElementById("order").value;
         var genre = document.getElementById("genre").value;
         var language = document.getElementById("language").value;
+        var country = document.getElementById("country").value;
 
         var friendsElement = document.getElementById("friends");
 		var onlyFriends = friendsElement ? friendsElement.checked : false;
@@ -413,6 +439,7 @@
             "&o=" + order +
             "&g=" + genre +
             "&l=" + language +
+            "&c=" + country +
             "&f=" + String(onlyFriends) +
             "&descriptors=" + encodeURIComponent(descriptorsJSON) +
             "&alreadyRated=" + String(hideRated) +
