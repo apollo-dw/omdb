@@ -153,7 +153,7 @@
 		if (array_key_exists($id, $cache))
 			return $cache[$id];
 
-		$stmt = $conn->prepare("SELECT `Username` FROM `users` WHERE `UserID` = ? UNION SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
+		$stmt = $conn->prepare("SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
 		$stmt->bind_param("ii", $id, $id);
 		$stmt->execute();
 		$result = $stmt->get_result();
