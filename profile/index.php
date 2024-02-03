@@ -291,6 +291,9 @@
         $stmt->close();
 
         while($set = $setsResult->fetch_assoc()) {
+            if ($set['SetID'] == null)
+                continue;
+            
             $stmt = $conn->prepare("SELECT b.`BeatmapID`, s.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
                        (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
                        FROM beatmaps b
