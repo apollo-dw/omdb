@@ -115,10 +115,10 @@
                                 JOIN beatmapsets s ON b.SetID = s.SetID
                                 JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
                                 JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
-                                WHERE b.Mode = ? AND b.ChartRank IS NOT NULL
+                                WHERE b.Mode = ? AND b.WeightedAvg IS NOT NULL
                                 GROUP BY b.BeatmapID, b.ChartRank
                                 HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
-                                ORDER BY b.ChartRank
+                                ORDER BY -b.ChartRank DESC, b.WeightedAvg DESC
                                 LIMIT 10;");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();

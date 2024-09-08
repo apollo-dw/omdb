@@ -10,7 +10,7 @@
     <?php
     $usedSets = array();
 
-    $stmt = $conn->prepare("SELECT bm.*, s.* FROM beatmaps bm JOIN beatmapsets s ON bm.SetID = s.SetID JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.NominatorID = ? AND ChartRank IS NOT NULL AND bm.Mode = ? ORDER BY ChartRank;");
+    $stmt = $conn->prepare("SELECT bm.*, s.* FROM beatmaps bm JOIN beatmapsets s ON bm.SetID = s.SetID JOIN beatmapset_nominators bn ON bm.SetID = bn.SetID WHERE bn.NominatorID = ? AND bm.Mode = ? ORDER BY -ChartRank DESC, RatingCount DESC;");
     $stmt->bind_param("ii", $profileId, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -31,8 +31,9 @@
             </div>
             <div>
                 <a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo "{$artist} - {$title} [$diffname]"; ?></a> <br>
-                <b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span>,
-                <b>#<?php echo $row["ChartRank"]; ?></b> <span class="subText">overall</span>
+                <?php if (!is_null($row["RatingCount"])) { ?><b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span> <?php } ?>
+				<?php if (!is_null($row["ChartRank"])) { ?>,
+                <b>#<?php echo $row["ChartRank"]; ?></b> <span class="subText">overall</span> <?php } ?>
             </div>
         </div>
         <?php

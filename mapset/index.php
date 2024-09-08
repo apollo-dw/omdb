@@ -29,6 +29,30 @@
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_row()[0];
+	
+	$stmt = $conn->prepare("SELECT 
+    mn.Username,
+	mn.UserID,
+    GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
+FROM 
+    beatmapset_credits bc
+LEFT JOIN 
+    beatmap_roles br ON br.RoleID = bc.RoleID
+LEFT JOIN 
+    mappernames mn ON mn.UserID = bc.UserID
+WHERE 
+    bc.SetID = ?
+GROUP BY 
+    mn.Username, mn.UserID;
+");
+	$stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+	$roleResult = $stmt->get_result();
+	
+	$credits = [];
+	while ($row = $roleResult->fetch_assoc()) {
+		$credits[] = $row;
+	}
 
     // This will be set to true if during the display of difficulties,
     // a blocked one appears. This is so we can display a message near
@@ -59,6 +83,17 @@
     .light-bg {
         background-color: DarkSlateGray;
     }
+	
+	.credits-list ul {
+		margin: 0.25em;
+		padding: 0;
+	}
+	
+	.credits-list li {
+		display: block;
+		margin-left: 0;
+		margin-bottom: 0.5em;
+	}
 </style>
 
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
@@ -221,7 +256,7 @@ while($row = $result->fetch_assoc()) {
     $descriptorResult = $stmt->get_result();
 ?>
 
-    <div class="flex-container difficulty-container alternating-bg <?php if($blackListed) echo "faded"; ?>" >
+    <div class="flex-container difficulty-container alternating-bg" >
         <div class="flex-child diffBox" style="text-align:center;width:20%;">
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
@@ -249,143 +284,139 @@ while($row = $result->fetch_assoc()) {
                 }
             ?>
         </div>
-        <?php if (!$blackListed) { ?>
-            <div class="flex-child diffBox" style="width:0;text-align:center;">
-                <?php
-                if($totalRatings > 0){
-                    ?>
-                    <div class="mapsetRankingDistribution">
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
-                        <div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
-                    </div>
-                    <span class="subText" style="width:100%;">Rating Distribution</span>
-                    <?php
-                }
-                ?>
-            </div>
-            <div class="flex-child diffBox" style="text-align:right;width:25%;">
-                <?php
-                $averageRating = number_format($averageRating, 2);
-                if ($totalRatings > 0) {
-                    ?>
-                    Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
-                    <?php
-                }
-                if ($hasFriendsRatings) {
-                    ?>
-                    Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
-                    <?php
-                }
-                if($hasCharted) {
-                    ?>
-                    Ranking:
-                    <b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><?php if (!is_null($row["ChartRank"])){ ?>,
-                    <b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a><?php } ?><br>
-                    <?php
-                }
-                ?>
-                <span class="map-descriptors">
-					<table style="margin-left: auto;">
-						<tr>
-							<th style="padding:0;">
-								<span class="subText" style="font-weight:normal;">
-									<?php
-                                    $descriptorLinks = array();
-                                    while($descriptor = $descriptorResult->fetch_assoc()){
-                                        $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
-                                        $descriptorLinks[] = $descriptorLink;
-                                    }
-                                    echo implode(', ', $descriptorLinks);
-                                    ?>
-								</span>
-							</th>
-                            <?php if ($loggedIn) { ?>
-							<th style="padding:0;padding-left:0.5em;">
-								<a href="descriptor-vote/?id=<?php echo $row["BeatmapID"]; ?>"><i class="icon-plus"></i></a>
-							</th>
-                            <?php } ?>
-						</tr>
-					</table>
-                </span>
-            </div>
-            <div class="flex-child diffBox" style="width:5%;text-align:left;">
-                <?php
-                if($loggedIn){
-                    $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
-                    $selectStmt->bind_param("ii", $userId, $beatmapID);
-                    $selectStmt->execute();
-                    $tags_result = $selectStmt->get_result();
-                    $tags_row = $tags_result->fetch_assoc();
-                    $allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
-                    $selectStmt->close();
-                    ?>
-                    <span class="identifier" style="display: inline-block;">
-                        <ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
-                            <li class="icon-remove" style="opacity:0;"></li>
-                            <?php for ($i = 1; $i <= 5; $i++){ ?>
-                                <li class="star icon-star<?php
-                                if ($userMapRating == ($i - 0.5)) {
-                                    echo '-half-empty';
-                                } else if ($userMapRating < $i) {
-                                    echo '-empty';
-                                }
-                                ?>" value="<?php echo $i; ?>"></li>
-                            <?php } ?>
-                        </ol>
-                    </span>
-                    <span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span>
-                    <span class="star-value<?php if(!$userHasRatedThis) echo ' unrated';  ?>"><?php if($userHasRatedThis) echo $userMapRating; else echo '&ZeroWidthSpace;';  ?></span>
-                    <select class="star-rating-list-mobile" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-                        <option value="-2" <?php if ($userMapRating == -1) echo "selected"; ?>>...</option>
-                        <?php for ($i = 0; $i <= 5; $i += 0.5) {
-                            $selected = $userMapRating == $i ? "selected" : "";
-                            echo "<option value='{$i}' {$selected}>{$i}</option>";
-                        } ?>
-                    </select>
-                    <div style="overflow:hidden;text-overflow:ellipsis;">
-                        <span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
-                    </div>
-                    <?php
-                } else {
-                    echo 'Log in to rate maps!';
-                }
-                ?>
-            </div>
+		<div class="flex-child diffBox" style="width:0;text-align:center;">
+			<?php
+			if($totalRatings > 0 && !$blackListed){
+				?>
+				<div class="mapsetRankingDistribution">
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
+					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
+				</div>
+				<span class="subText" style="width:100%;">Rating Distribution</span>
+				<?php
+			}
+			?>
+		</div>
+		<div class="flex-child diffBox" style="text-align:right;width:25%;">
+			<?php if (!$blackListed) { ?>
+				<?php
+				$averageRating = number_format($averageRating, 2);
+				if ($totalRatings > 0) {
+					?>
+					Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
+					<?php
+				}
+				if ($hasFriendsRatings) {
+					?>
+					Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
+					<?php
+				}
+				if($hasCharted) {
+					?>
+					Ranking:
+					<b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><?php if (!is_null($row["ChartRank"])){ ?>,
+					<b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a><?php } ?><br>
+					<?php
+				}
+				?>
+			<?php } else { ?>
+				<b>This difficulty has been blacklisted from OMDB charts.</b> <br>
+				Ratings on this difficulty are private.
+				<?php $hasBlacklistedDifficulties = true; ?>
+			<?php } ?>
+			<span class="map-descriptors">
+				<table style="margin-left: auto;">
+					<tr>
+						<th style="padding:0;">
+							<span class="subText" style="font-weight:normal;">
+								<?php
+								$descriptorLinks = array();
+								while($descriptor = $descriptorResult->fetch_assoc()){
+									$descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
+									$descriptorLinks[] = $descriptorLink;
+								}
+								echo implode(', ', $descriptorLinks);
+								?>
+							</span>
+						</th>
+						<?php if ($loggedIn) { ?>
+						<th style="padding:0;padding-left:0.5em;">
+							<a href="descriptor-vote/?id=<?php echo $row["BeatmapID"]; ?>"><i class="icon-plus"></i></a>
+						</th>
+						<?php } ?>
+					</tr>
+				</table>
+			</span>
+		</div>
+		<div class="flex-child diffBox" style="width:5%;text-align:left;">
+			<?php
+			if($loggedIn){
+				$selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
+				$selectStmt->bind_param("ii", $userId, $beatmapID);
+				$selectStmt->execute();
+				$tags_result = $selectStmt->get_result();
+				$tags_row = $tags_result->fetch_assoc();
+				$allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
+				$selectStmt->close();
+				?>
+				<span class="identifier" style="display: inline-block;">
+					<ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
+						<li class="icon-remove" style="opacity:0;"></li>
+						<?php for ($i = 1; $i <= 5; $i++){ ?>
+							<li class="star icon-star<?php
+							if ($userMapRating == ($i - 0.5)) {
+								echo '-half-empty';
+							} else if ($userMapRating < $i) {
+								echo '-empty';
+							}
+							?>" value="<?php echo $i; ?>"></li>
+						<?php } ?>
+					</ol>
+				</span>
+				<span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span>
+				<span class="star-value<?php if(!$userHasRatedThis) echo ' unrated';  ?>"><?php if($userHasRatedThis) echo $userMapRating; else echo '&ZeroWidthSpace;';  ?></span>
+				<select class="star-rating-list-mobile" beatmapid="<?php echo $row["BeatmapID"]; ?>">
+					<option value="-2" <?php if ($userMapRating == -1) echo "selected"; ?>>...</option>
+					<?php for ($i = 0; $i <= 5; $i += 0.5) {
+						$selected = $userMapRating == $i ? "selected" : "";
+						echo "<option value='{$i}' {$selected}>{$i}</option>";
+					} ?>
+				</select>
+				<div style="overflow:hidden;text-overflow:ellipsis;">
+					<span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
+				</div>
+				<?php
+			} else {
+				echo 'Log in to rate maps!';
+			}
+			?>
+		</div>
 
-            <div class="flex-child diffBox" style="text-align: right;width:0%;display: contents;">
-                <?php
-                    if($loggedIn) { ?>
-                <span class="tag-button" style="min-width: 1em;padding-right:1em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-ellipsis-vertical"></i></span>
-                <?php } ?>
-            </div>
+		<div class="flex-child diffBox" style="text-align: right;width:0%;display: contents;">
+			<?php
+				if($loggedIn) { ?>
+			<span class="tag-button" style="min-width: 1em;padding-right:1em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-ellipsis-vertical"></i></span>
+			<?php } ?>
+		</div>
 
-            <div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-                <div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
-                    <div>
-                        <input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
-                        <button class="tag-input-submit" style="min-width:0;">Save</button><br>
-                    </div>
-                    <span class="subText">separate your tags with commas</span>
-                </div>
-            </div>
-
-        <?php
-        } else { ?>
-            <div class="flex-child diffBox" style="width:50%;">
-                <b>This difficulty has been blacklisted from OMDB.</b><br>
-                Reason: <?php echo $row["BlacklistReason"]; ?>
-                <?php $hasBlacklistedDifficulties = true; ?>
-            </div>
-        <?php } ?>
+		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
+			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+				<div>
+					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
+					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
+				</div>
+				<span class="subText">separate your tags with commas</span>
+			</div>
+		</div>
     </div>
     <?php
 }
@@ -432,13 +463,32 @@ while($row = $result->fetch_assoc()) {
 
 <div style="margin-top: 2em;">
     <?php if ($loggedIn) { ?>
-        <a href="edit/?id=<?php echo $mapset_id; ?>"><span class="subText"><i class="icon-edit"></i> Propose edit</span></a>
+        <span class="subText"><a href="edit/?id=<?php echo $mapset_id; ?>"><i class="icon-edit"></i> Propose edit</a></span>
     <?php } ?>
 </div>
 <hr style="margin-bottom:1em;margin-top: 0">
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
+		<?php if ($credits) { ?>
+		<div style="background-color:#182828;padding: 0.25em;">
+            Credits
+        </div>
+		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
+            <ul>
+			<?php
+				foreach ($credits as $credit) {
+					echo "<li>
+					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
+                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
+					<br>
+					<span class='subText'>{$credit['Roles']}</span>
+					</li>";
+				}
+			?>
+			</ul>
+        </div>
+		<?php } ?>
         <div style="background-color:#182828;padding: 0.25em;">
             Latest Ratings
         </div>
@@ -489,6 +539,7 @@ while($row = $result->fetch_assoc()) {
             }
         ?>
     </div>
+	<?php if ($mapset_id !== "1991647") { ?>
     <div class="flex-child column-when-mobile" style="width:60%;">
         <div style="background-color:#182828;padding: 0.25em;">
             Comments (<?php echo $commentCount; ?>)
@@ -502,7 +553,7 @@ while($row = $result->fetch_assoc()) {
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                     </form>
                     <?php if ($hasBlacklistedDifficulties) { ?>
-                        <p style="font-weight: bolder;">
+                        <p>
                             This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
                         </p>
                     <?php } ?>
@@ -537,7 +588,7 @@ while($row = $result->fetch_assoc()) {
                             if ($loggedIn && $userName == "moonpoint") { ?>
                                 <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
-                            if ($row["UserID"] == $userId) { ?>
+                            if ($row["UserID"] == $userId || $userName == "moonpoint") { ?>
                                 <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
                             echo GetHumanTime($row["date"]); ?>
@@ -558,6 +609,7 @@ while($row = $result->fetch_assoc()) {
 
         </div>
     </div>
+	<?php } ?>
 </div>
 
 <script>

@@ -1,9 +1,10 @@
 <?php
     require '../base.php';
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST');
-    header("Access-Control-Allow-Headers: X-Requested-With");
+	header('Access-Control-Allow-Origin: *');
+	header('Access-Control-Allow-Methods: GET, POST');
+	header("Access-Control-Allow-Headers: X-Requested-With");
     header('Content-Type: application/json; charset=utf-8');
+
 
     $response = array();
     $args = array_keys($_GET);
@@ -21,7 +22,6 @@
     $stmt->bind_param("s", $apiKey);
     $stmt->execute();
     $result = $stmt->get_result();
-    $stmt->close();
 
     if($result->num_rows === 0)
         die(json_encode(array("error" => "Invalid api key")));
@@ -35,10 +35,9 @@
         $stmt->bind_param("i", $setID);
         $stmt->execute();
         $result = $stmt->get_result();
-        $stmt->close();
-
         while ($row = $result->fetch_assoc()) {
-            $beatmapID = $row["BeatmapID"];
+			$beatmapID = $row["BeatmapID"];
+			
             $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
@@ -48,17 +47,17 @@
             $rating = null;
             if ($ratingResult != null)
                 $rating = $ratingResult["Score"];
+			
+			$stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
+			$stmt->bind_param("i", $beatmapID);
+			$stmt->execute();
+			$ratingsResult = $stmt->get_result();
+			$stmt->close();
 
-            $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
-            $stmt->bind_param("i", $beatmapID);
-            $stmt->execute();
-            $ratingsResult = $stmt->get_result();
-            $stmt->close();
-
-            $ratingsCounts = array();
-            while ($ratingRow = $ratingsResult->fetch_assoc()) {
-                $ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
-            }
+			$ratingsCounts = array();
+			while ($ratingRow = $ratingsResult->fetch_assoc()) {
+				$ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
+			}
 
             $response[] = array(
                 "BeatmapID" => $row["BeatmapID"],
@@ -69,8 +68,8 @@
                 "ChartYearRank" => $row["ChartYearRank"],
                 "RatingCount" => $row["RatingCount"],
                 "WeightedAvg" => $row["WeightedAvg"],
-                "Rating" => $rating,
-                "Ratings" => $ratingsCounts,
+				"OwnRating" => $rating,
+				"Ratings" => $ratingsCounts,
             );
         }
 
@@ -81,9 +80,7 @@
         $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? ORDER BY SR DESC;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
+        $result = $stmt->get_result()->fetch_assoc();;
         if ($result != null) {
             $response = array(
                 "SetID" => $result["SetID"],
@@ -95,27 +92,57 @@
                 "RatingCount" => $result["RatingCount"],
                 "WeightedAvg" => $result["WeightedAvg"],
             );
-
+			
             $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
-            $result = $stmt->get_result()->fetch_assoc();
+            $ownRating = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-
-            $response["Rating"] = $result["Score"] ?? null;
-
-            $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
+			
+			$response["OwnRating"] = $ownRating["Score"] ?? null;
+			
+			$stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
+			$stmt->bind_param("i", $beatmapID);
+			$stmt->execute();
+			$ratingsResult = $stmt->get_result();
+			$stmt->close();
+			$ratingsCounts = array();
+			while ($ratingRow = $ratingsResult->fetch_assoc()) {
+				$ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
+			}
+			
+			$response["Ratings"] = $ratingsCounts;
+			$stmt = $conn->prepare("
+                                SELECT d.Name
+                                FROM descriptor_votes 
+                                JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
+                                WHERE BeatmapID = ?
+                                GROUP BY d.DescriptorID
+                                HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > (SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) + 0)
+                                ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, d.DescriptorID
+                                LIMIT 5;");
             $stmt->bind_param("i", $beatmapID);
             $stmt->execute();
-            $ratingsResult = $stmt->get_result();
+            $descriptorResult = $stmt->get_result()->fetch_all();
             $stmt->close();
 
-            $ratingsCounts = array();
-            while ($ratingRow = $ratingsResult->fetch_assoc()) {
-                $ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
-            }
+            $descriptors = implode(', ', array_column($descriptorResult, 0));
+            $response["Descriptors"] = $descriptors;
+			
+			$stmt = $conn->prepare("SELECT bn.NominatorID as UserID, m.Username as Username FROM beatmapset_nominators bn 
+                                          JOIN mappernames m ON bn.NominatorID = m.UserID WHERE bn.SetID = ?;");
+            $stmt->bind_param("i", $result["SetID"]);
+            $stmt->execute();
+            $nominatorResult = $stmt->get_result();
 
-            $response["Ratings"] = $ratingsCounts;
+            $nominators = [];
+            while($nominator = $nominatorResult->fetch_assoc()) {
+                $nominators[] = array(
+                    "UserID" => $nominator["UserID"],
+                    "Username" => $nominator["Username"]
+                );
+            }
+            $response["Nominators"] = $nominators;
         }
 
         if (sizeof($response) == 0)
@@ -123,10 +150,11 @@
     } elseif ($uri[2] == "user") {
         $userID = $uri[3];
         if ($uri[4] == "ratings") {
-            $query = "SELECT r.*, b.SetID, b.Artist, b.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID WHERE r.UserID = ?";
+            $query = "SELECT r.*, b.SetID, s.Artist, s.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s ON b.SetID = s.SetID WHERE r.UserID = ?";
 
             $year = $_GET["year"] ?? -1;
             $score = $_GET["score"] ?? -1;
+			$min_score = $_GET["min_score"] ?? -1;
             $mode = $_GET["mode"] ?? -1;
 
             $types = "i";
@@ -143,6 +171,12 @@
                 $types .= "d";
                 $params[] = $score;
             }
+			
+			if ($min_score != -1) {
+                $query .= " AND `Score` >= ?";
+                $types .= "d";
+                $params[] = $min_score;
+            }
 
             if ($mode != -1) {
                 $query .= " AND `Mode`=?";
@@ -157,7 +191,6 @@
             $stmt->bind_param($types, ...$params);
             $stmt->execute();
             $result = $stmt->get_result();
-            $stmt->close();
 
             while ($row = $result->fetch_assoc()) {
                 $response[] = array(

@@ -5,7 +5,6 @@
 		</div>
 		<div class="footerBar">
             <a href="/rules/">rules</a> |
-            <a href="https://github.com/apollo-dw/omdb">github</a> |
             <a href="https://discord.gg/NwcphppBMG">discord</a> |
             <a href="/descriptors">descriptors</a> |
             <a href="/edit-queue">edit queue</a> |

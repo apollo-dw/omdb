@@ -1,4 +1,9 @@
-<?php require_once 'base.php'; ?>
+<?php require_once 'base.php'; 
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,14 +15,14 @@
         <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
         <meta property="og:site_name" content="OMDB">
         <meta name="theme-color" content="#2F4F4F">
-		<link rel="stylesheet" href="/omdb/font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=30" />
+        <link rel="stylesheet" type="text/css" href="/style.css?v=32" />
         <script src="/script.js?v=3"></script>
 	</head>
 	<body>
@@ -33,7 +38,6 @@
 				</div>
 			</div>
             <a href="/lists/"><div class="topBarLink">lists</div></a>
-            <a href="/forum/"><div class="topBarLink">forum</div></a>
 			
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
@@ -72,7 +76,6 @@
                     <div class="dropdown-content">
                         <a href="/descriptor/proposal/list">descriptor proposals</a>
                         <a href="/edit-queue/">edit queue</a>
-                        <a href="/project-legacy/">project legacy</a>
                         <a href="/maps/add/">add grave sets</a>
                     </div>
 			    </div>
@@ -116,9 +119,8 @@
 			</span>
 		</div>
 		
-		<div class="content" style="margin-top:6em;">
-            <!--
-            <div class="warningBar">
-                <i class="icon-warning-sign" style="color:FireBrick;"></i><br>Overall scores and charts are now influenced by per-user weighing! Users with poor rating quality will now contribute less to a map's overall score.
-            </div>
-            -->
+		<div class="content" style="margin-top:5em;">
+		<!--
+            <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
+                <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">consider contributing to <a href="/project-legacy/">project legacy</a>! <br>incentives now available on the page</span>
+            </div> --> 

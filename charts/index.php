@@ -129,7 +129,8 @@
             <select name="country" id="country" autocomplete="off" onchange="updateChart();">
                 <option value="0" selected="selected">Any</option>
                 <?php
-                $result = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Country IS NOT NULL AND Country != 'XX';");
+			
+                $result = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Username IS NOT NULL AND Country IS NOT NULL;");
 
                 while ($row = $result->fetch_assoc()) {
                     $countryCode = $row["Country"];
@@ -137,13 +138,14 @@
                     $options[] = array('code' => $countryCode, 'name' => $fullName);
                 }
 
-                // Sort the options array by full country name
                 usort($options, function($a, $b) {
                     return strcmp($a['name'], $b['name']);
                 });
 
-                // Output the sorted options
                 foreach ($options as $option) {
+					if (is_null($option['name']))
+						continue;
+					
                     echo "<option value=\"{$option['code']}\">{$option['name']}</option>";
                 }
                 ?>
@@ -232,8 +234,9 @@
             <input type="checkbox" id="excludeLoved" name="excludeLoved" onchange="updateChart();">
             <label for="excludeLoved">Loved maps</label> <br>
             <input type="checkbox" id="excludeGraveyard" name="excludeGraveyard" onchange="updateChart();">
-            <label for="excludeGraveyard">Graveyard maps</label>
-
+            <label for="excludeGraveyard">Graveyard maps</label> <br>
+			<input type="checkbox" id="excludeRanked" name="excludeRanked" onchange="updateChart();">
+            <label for="excludeRanked">Ranked maps</label>
 
         </form><br><br>
 		<span>Info</span>
@@ -421,6 +424,9 @@
 
         var excludeLovedElement = document.getElementById("excludeLoved");
         var excludeLoved = excludeLovedElement ? excludeLovedElement.checked : false;
+		
+		var excludeRankedElement = document.getElementById("excludeRanked");
+        var excludeRanked = excludeRankedElement ? excludeRankedElement.checked : false;
 
         var descriptorsJSON = JSON.stringify(selectedDescriptors);
 
@@ -444,7 +450,8 @@
             "&descriptors=" + encodeURIComponent(descriptorsJSON) +
             "&alreadyRated=" + String(hideRated) +
             "&excludeLoved=" + String(excludeLoved) +
-            "&excludeGraveyard=" + String(excludeGraveyard);
+            "&excludeGraveyard=" + String(excludeGraveyard) +
+            "&excludeRanked=" + String(excludeRanked);
         xmlhttp.send(params);
 	}
 

@@ -3,10 +3,18 @@
         include "../../base.php";
 
     $profileId = $_GET["id"];
+	
+	$isSelf = false;
+	if ($loggedIn)
+		$isSelf = $profileId == $userId;
 ?>
 
 <div id="tabbed-latest" class="tab">
     <?php
+	$hideBlacklistedMapsCondition = "WHERE b.Blacklisted = 0";
+	if ($isSelf)
+		$hideBlacklistedMapsCondition = "";
+	
     $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags, s.*
                                 FROM (
                                     SELECT r.`RatingID`, GROUP_CONCAT(t.`Tag` SEPARATOR ', ') AS Tags
@@ -19,7 +27,8 @@
                                 JOIN `ratings` r ON t.`RatingID` = r.`RatingID`
                                 JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
                                 JOIN `beatmapsets` s on b.SetID = s.SetID
-                                ORDER BY r.`date` DESC
+								${hideBlacklistedMapsCondition}
+                                ORDER BY r.`date` DESC 
                                 LIMIT 50");
     $stmt->bind_param("ii", $profileId, $mode);
     $stmt->execute();
@@ -32,12 +41,13 @@
             <div class="flex-child">
                 <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
             </div>
-            <div class="flex-child" style="flex:0 0 85%;">
+            <div class="flex-child" style="flex:0 0 60%;">
                 <?php echo RenderUserRating($conn, $beatmap); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo mb_strimwidth(htmlspecialchars("{$beatmap["Title"]} [{$beatmap["DifficultyName"]}]"), 0, 80, "..."); ?></a>
                 <br>
                 <span class="subText"><?php echo $tags; ?></span>
             </div>
             <div class="flex-child" style="margin-left:auto;">
+				<?php if ($beatmap["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
                 <?php echo GetHumanTime($beatmap["date"]); ?>
             </div>
         </div>

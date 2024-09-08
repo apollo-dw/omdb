@@ -44,6 +44,22 @@
                 <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom00Rating"]); ?>"/> 0.0<br>
             </td>
         </tr>
+		<tr>
+            <td>
+                <label>Description:</label><br>
+            </td>
+            <td>
+				<textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo htmlspecialchars($user["CustomDescription"]); ?></textarea> <br><br>
+				<button type="button" onclick="insertTag('img')" class="small-button">img</button>
+				<button type="button" onclick="insertTag('a')" class="small-button">link</button>
+				<button type="button" onclick="insertTag('code')" class="small-button">code</button>
+				<button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
+				<button type="button" onclick="insertTag('b')" class="small-button">bold</button>
+				<button type="button" onclick="insertTag('i')" class="small-button">italics</button>
+				<button type="button" onclick="insertTag('u')" class="small-button">underline</button> <br>
+                <span class="subText">Write a custom description that appears on your profile.</span>
+            </td>
+        </tr>
         <tr>
             <td>
                 <label>Hide ratings:</label><br>
@@ -121,11 +137,12 @@
 
         const randomBehaviour = document.getElementById("RandomBehaviour").value;
         const hideRatings = document.getElementById("HideRatings").value;
+		const customDescription = document.getElementById("CustomDescription").value;
 
         fetch("save.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings }),
+            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings, customDescription }),
         }).then(response => {
             if (response.status == 200) {
                 document.getElementById("statusText").textContent = "Saved!";
@@ -133,6 +150,28 @@
                 $("#statusText").fadeOut( 3000, "linear", function() {});
             }
         });
+    }
+	
+	function insertTag(tag, param = '') {
+        var textarea = document.getElementById("CustomDescription");
+        var cursorPos = textarea.selectionStart;
+        var cursorEnd = textarea.selectionEnd;
+        var tagText = '';
+
+        switch (tag) {
+            case 'font':
+                tagText = '[' + tag + ' ' + param + ']' + textarea.value.substring(cursorPos, cursorEnd) + '[/' + tag + ']';
+                break;
+            default:
+                tagText = '[' + tag + ']' + textarea.value.substring(cursorPos, cursorEnd) + '[/' + tag + ']';
+        }
+
+        var textBefore = textarea.value.substring(0, cursorPos);
+        var textAfter = textarea.value.substring(cursorEnd);
+
+        textarea.value = textBefore + tagText + textAfter;
+        textarea.setSelectionRange(cursorPos, cursorPos + tagText.length);
+        textarea.focus();
     }
 </script>
 

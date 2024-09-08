@@ -3,7 +3,7 @@
 	$page = $_GET['p'] ?? 1;
 	$rating = $_GET['r'] ?? "";
     $order = $_GET['o'] ?? "0";
-    $year = $_GET['y'] ?? "-1";
+    $year = $_GET['y'] ?? "all-time";
     $tagArgument = urldecode($_GET['t']) ?? "";
 
     $PageTitle = "Ratings";
@@ -25,6 +25,10 @@
 
     if ($profile == NULL)
         die("Can't view this bros friends cuz they aint an OMDB user");
+	
+	$isSelf = false;
+	if ($loggedIn)
+		$isSelf = $profileId == $userId;
 
 	$limit = 25;
 	$prevPage = $page - 1;
@@ -143,13 +147,14 @@
             $tagJoinString = "";
             $tagAndString = "";
             if ($tagArgument != "") {
+				$tagJoinString = "LEFT JOIN rating_tags rt ON b.BeatmapID = rt.BeatmapID";
                 $tagAndString = "AND rt.Tag = ?";
                 $queryParameterTypes .= "s";
                 $queryParameterValues[] = $tagArgument;
             }
 
             $yearString = "";
-            if ($year != "-1") {
+            if ($year != "all-time") {
                 $yearString = "AND YEAR(s.DateRanked) = ?";
                 $queryParameterTypes .= "i";
                 $queryParameterValues[] = intval($year);
@@ -169,16 +174,21 @@
                 default:
                     $orderString = "ORDER BY r.DATE DESC";
             }
+			
+			$hideBlacklistedMapsCondition = "AND b.Blacklisted = 0";
+			if ($isSelf)
+				$hideBlacklistedMapsCondition = "";
 
-            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName
+            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted
                     FROM `ratings` r
-                    JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
-                    JOIN beatmapsets s ON b.SetID = s.SetID
+                    LEFT JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+                    LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                     {$tagJoinString}
-                    WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString} {$yearString}
+                    WHERE r.UserID = ? AND b.Mode = ? {$ratingString} {$tagAndString} {$yearString} {$hideBlacklistedMapsCondition}
                     {$orderString} {$pageString};";
 
             $stmt = $conn->prepare($stmt);
+			
             $stmt->bind_param($queryParameterTypes, ...$queryParameterValues);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -199,6 +209,7 @@
                     <br> <span class="subText"><?php echo $tags; ?></span>
                 </div>
 				<div class="flex-child" style="width:100%;text-align:right;">
+					<?php if ($row["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
 					<?php echo GetHumanTime($row["date"]); ?>
 				</div>
 			</div>

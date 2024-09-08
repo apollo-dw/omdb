@@ -36,7 +36,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
 		<?php
-		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
+		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and b.blacklisted = 0 and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
 		  $stmt->bind_param("i", $mode);
           $stmt->execute();
 		  $result = $stmt->get_result();
@@ -68,10 +68,13 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
 		<?php
-                $stmt = $conn->prepare("(SELECT c.*, r.UserIDTo AS blocked, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+                $stmt = $conn->prepare("(SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
                                                 FROM comments c
-                                                LEFT JOIN user_relations r ON c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                                                WHERE EXISTS (
+                                                WHERE NOT EXISTS (
+													SELECT 1 
+													FROM user_relations r 
+													WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+												) AND EXISTS (
                                                     SELECT 1
                                                     FROM beatmaps b
                                                     WHERE b.SetID = c.SetID AND b.Mode = ?
@@ -79,7 +82,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                                             )
                                             UNION ALL
                                             (
-                                                SELECT dpc.*, NULL AS blocked, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+                                                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
                                                 FROM descriptor_proposal_comments dpc
                                                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
                                                 WHERE 1
@@ -91,7 +94,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
-            $is_blocked = $row['blocked'] ? 1 : 0;
             $linkID = $row['comment_type'] === 'beatmap' ? "/mapset/{$row["SetID"]}" : "/descriptor/proposal/?id={$row["ProposalID"]}";
             ?>
             <div class="flex-container ratingContainer alternating-bg">
@@ -118,12 +120,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     </div>
                     <div style="flex:0 0 auto;text-overflow:ellipsis;min-width:0%;">
                         <a style="color:white;" href="<?php echo $linkID; ?>">
-                            <?php
-                            if (!$is_blocked)
-                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
-                            else
-                                echo "[blocked comment]";
-                            ?>
+							<?php
+								echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
+							?>
                         </a>
                     </div>
                 </div>
@@ -176,7 +175,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     "SELECT b.BeatmapID, b.SetID, s.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, s.Title
                             FROM beatmaps b
                             JOIN cache_home_best_map c ON b.BeatmapID = c.BeatmapID
-                            JOIN beatmapsets s on B.SetID = s.SetID
+                            JOIN beatmapsets s on b.SetID = s.SetID
                             WHERE
                                 b.Rating IS NOT NULL
                                 AND b.Mode = ?
@@ -236,10 +235,10 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <?php
             $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
                                           FROM beatmaps b
-                                          JOIN beatmapsets s on B.SetID = s.SetID
+                                          JOIN beatmapsets s on b.SetID = s.SetID
                                           INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
                                           WHERE r.date >= NOW() - INTERVAL 1 WEEK
-                                          AND b.Mode = ?
+                                          AND b.Mode = ? AND b.blacklisted = 0
                                           GROUP BY b.BeatmapID
                                           ORDER BY num_ratings DESC
                                           LIMIT 25;");

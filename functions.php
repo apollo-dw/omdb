@@ -1,6 +1,7 @@
 <?php
     include_once 'sensitiveStrings.php';
 	include_once 'functions/bbcode.php';
+	include_once 'functions/access.php';
 
 	/**
 	 * Sends a redirect header pointed to the given relative location (using the
@@ -16,7 +17,7 @@
 	 * PUBLIC_URL to determine the host) as a string.
 	 */
 	function relUrl(string $path = "/") {
-		return getenv("PUBLIC_URL") . $path;
+		return "https://omdb.nyahh.net" . $path;
 	}
 
 	function GetBeatmapDataOsuApi(string $token, int $id){
@@ -115,6 +116,9 @@
 
 		$response = curl_exec($curl);
 		curl_close($curl);
+		
+		if ($response === "[]")
+			return;
 
 		return json_decode($response, true)[0];
 	}
@@ -154,7 +158,7 @@
 			return $cache[$id];
 
 		$stmt = $conn->prepare("SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
-		$stmt->bind_param("ii", $id, $id);
+		$stmt->bind_param("i", $id);
 		$stmt->execute();
 		$result = $stmt->get_result();
 		if ($result->num_rows >= 1) {
@@ -165,8 +169,11 @@
 				return $row[0];
 			}
 		}
-
+		
+		try {
         $userData = GetUserDataOsuApi($id);
+		if (!$userData)
+			return "ID => " . strval($id);
 		$username = $userData["username"];
         $country = $userData["country"];
 
@@ -174,242 +181,15 @@
 		$stmt->bind_param("iss", $id, $username, $country);
 		$stmt->execute();
 		$stmt->close();
-
+		} catch (Exception $e) {
+			unset($e);
+		}
+		
 		$cache[$id] = $username;
 		return $username;
 	}
-
-	function ParseCommentLinks($conn, $string) {
-		$string = bbcode_to_html($string);
-
-		$pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
-		$replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
-		$string = preg_replace($pattern, $replacement, $string);
-
-		$pattern = '/https:\/\/osu\.ppy\.sh\/(?P<endpoint>beatmapsets|beatmaps|b|s)\/(?P<id1>\d+)(?:\S+)?(?:#(osu|taiko|fruits|mania)\/(?P<id2>\d+))?/';
-
-		$string = preg_replace_callback($pattern, function ($matches) {
-			$setID = $matches['id1'];
-			$mapID = $matches['id2'] ?? '';
-
-			if ($mapID != '')
-				return '<a href="' . $matches[0] . '">/b/' . $mapID . '</a>';
-			else
-				return '<a href="' . $matches[0] . '">/s/' . $setID . '</a>';
-
-		}, $string);
-
-		$pattern = '/https:\/\/omdb\.nyahh\.net\/mapset\/(\d+)/';
-		$string = preg_replace_callback($pattern, function ($matches) use ($conn) {
-			$setID = $matches[1];
-
-			$stmt = $conn->prepare("SELECT Artist, Title, CreatorID FROM beatmaps b JOIN beatmapsets s ON b.SetID = s.SetID WHERE b.SetID = ? LIMIT 1;");
-			$stmt->bind_param("i", $setID);
-			$stmt->execute();
-			$beatmap = $stmt->get_result()->fetch_assoc();
-
-			if (isset($beatmap)){
-				$mapper = GetUserNameFromId($beatmap["SetCreatorID"], $conn);
-				return "<a href='{$matches[0]}'> {$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})</a>";
-			}
-
-			return $matches[0];
-		}, $string);
-
-		return $string;
-	}
-
-	function RenderRating($rating){
-		$starString = "";
-		for ($i = 0; $i < 5; $i++) {
-			if ($i < $rating) {
-				if ($rating - 0.5 == $i) {
-					$starString .= "<i class='star icon-star-half'></i>";
-				} else {
-					$starString .= "<i class='star icon-star'></i>";
-				}
-			}
-		}
-		$backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
-		return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
-	}
-
-    function RenderUserRating($conn, $ratingRow) {
-        $score = $ratingRow["Score"];
-
-		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
-		$stmt->bind_param("i", $ratingRow["UserID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$user = $result->fetch_assoc();
-		$stmt->close();
-
-        switch($score){
-            case 0:
-                $hint = $user["Custom00Rating"];
-                break;
-            case 0.5:
-                $hint = $user["Custom05Rating"];
-                break;
-            case 1:
-                $hint = $user["Custom10Rating"];
-                break;
-            case 1.5:
-                $hint = $user["Custom15Rating"];
-                break;
-            case 2.0:
-                $hint = $user["Custom20Rating"];
-                break;
-            case 2.5:
-                $hint = $user["Custom25Rating"];
-                break;
-            case 3.0:
-                $hint = $user["Custom30Rating"];
-                break;
-            case 3.5:
-                $hint = $user["Custom35Rating"];
-                break;
-            case 4.0:
-                $hint = $user["Custom40Rating"];
-                break;
-            case 4.5:
-                $hint = $user["Custom45Rating"];
-                break;
-            case 5.0:
-                $hint = $user["Custom50Rating"];
-                break;
-        }
-
-		$starString = RenderRating($score);
-		if ($hint == "" || !isset($hint))
-			return $starString;
-
-        $hint = htmlspecialchars($hint, ENT_QUOTES);
-        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
-    }
-
-	function CalculatePearsonCorrelation($x, $y) {
-		$n = count($x);
-		$sum_x = array_sum($x);
-		$sum_y = array_sum($y);
-		$sum_x_sq = array_sum(array_map(function($x) { return pow($x, 2); }, $x));
-		$sum_y_sq = array_sum(array_map(function($y) { return pow($y, 2); }, $y));
-		$sum_xy = 0;
-		for ($i = 0; $i < $n; $i++) {
-			$sum_xy += $x[$i] * $y[$i];
-		}
-		$numerator = $n * $sum_xy - $sum_x * $sum_y;
-		$denominator = sqrt(($n * $sum_x_sq - pow($sum_x, 2)) * ($n * $sum_y_sq - pow($sum_y, 2)));
-		if ($denominator == 0) {
-			return -1;
-		}
-		return $numerator / $denominator;
-	}
-
-    function SubmitRating($conn, $beatmapID, $userID, $score): bool
-    {
-        $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
-        if (!in_array($score, $validRatings))
-            return false;
-
-        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ? AND `Blacklisted`='0';");
-        $stmt->bind_param("i", $beatmapID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows != 1) return false;
-
-        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
-        $stmt->bind_param("i", $userID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows != 1) return false;
-
-        if($score == -2){
-            $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
-            $stmt->bind_param("ii", $beatmapID, $userID);
-            $stmt->execute();
-        } else {
-            $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
-            $stmt->bind_param("ii", $beatmapID, $userID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if($result->num_rows == 1){
-                $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
-                $stmt->bind_param("dii", $score, $beatmapID, $userID);
-                $stmt->execute();
-            }else{
-                $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
-                $stmt->bind_param("iid", $beatmapID, $userID, $score);
-                $stmt->execute();
-            }
-        }
-
-        return true;
-    }
-
-	function getGenre($number) {
-		switch ($number) {
-			case 2:
-				return "Video Game";
-			case 3:
-				return "Anime";
-			case 4:
-				return "Rock";
-			case 5:
-				return "Pop";
-			case 6:
-				return "Other Genre";
-			case 7:
-				return "Novelty";
-			case 9:
-				return "Hip Hop";
-			case 10:
-				return "Electronic";
-			case 11:
-				return "Metal";
-			case 12:
-				return "Classical";
-			case 13:
-				return "Folk";
-			case 14:
-				return "Jazz";
-			default:
-				return null;
-		}
-	}
-
-	function getLanguage($number) {
-		switch ($number) {
-			case 2:
-				return "English";
-			case 3:
-				return "Japanese";
-			case 4:
-				return "Chinese";
-			case 5:
-				return "Instrumental";
-			case 6:
-				return "Korean";
-			case 7:
-				return "French";
-			case 8:
-				return "German";
-			case 9:
-				return "Swedish";
-			case 10:
-				return "Spanish";
-			case 11:
-				return "Italian";
-			case 12:
-				return "Russian";
-			case 13:
-				return "Polish";
-			case 14:
-				return "Other Language";
-		}
-	}
-
-    function getFullCountryName($code) {
+	
+function getFullCountryName($code) {
         $countries = array
         (
             'AF' => 'Afghanistan',
@@ -659,8 +439,238 @@
             'ZW' => 'Zimbabwe',
         );
 
-        return $countries[$code] ?? "";
+        return $countries[$code];
     }
+
+	function ParseCommentLinks($conn, $string) {
+		$string = bbcode_to_html($string);
+
+		$pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
+		$replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
+		$string = preg_replace($pattern, $replacement, $string);
+
+		$pattern = '/https:\/\/osu\.ppy\.sh\/(?P<endpoint>beatmapsets|beatmaps|b|s)\/(?P<id1>\d+)(?:\S+)?(?:#(osu|taiko|fruits|mania)\/(?P<id2>\d+))?/';
+
+		$string = preg_replace_callback($pattern, function ($matches) {
+			$setID = $matches['id1'];
+			$mapID = $matches['id2'] ?? '';
+
+			if ($mapID != '')
+				return '<a href="' . $matches[0] . '">/b/' . $mapID . '</a>';
+			else
+				return '<a href="' . $matches[0] . '">/s/' . $setID . '</a>';
+
+		}, $string);
+
+		$pattern = '/https:\/\/omdb\.nyahh\.net\/mapset\/(\d+)/';
+		$string = preg_replace_callback($pattern, function ($matches) use ($conn) {
+			$setID = $matches[1];
+
+			$stmt = $conn->prepare("SELECT Artist, Title, CreatorID FROM beatmaps b JOIN beatmapsets s ON b.SetID = s.SetID WHERE b.SetID = ? LIMIT 1;");
+			$stmt->bind_param("i", $setID);
+			$stmt->execute();
+			$beatmap = $stmt->get_result()->fetch_assoc();
+
+			if (isset($beatmap)){
+				$mapper = GetUserNameFromId($beatmap["CreatorID"], $conn);
+				return "<a href='{$matches[0]}'> {$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})</a>";
+			}
+
+			return $matches[0];
+		}, $string);
+
+		return $string;
+	}
+
+	function RenderRating($rating){
+		$starString = "";
+		for ($i = 0; $i < 5; $i++) {
+			if ($i < $rating) {
+				if ($rating - 0.5 == $i) {
+					$starString .= "<i class='star icon-star-half'></i>";
+				} else {
+					$starString .= "<i class='star icon-star'></i>";
+				}
+			}
+		}
+		$backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
+		return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
+	}
+
+    function RenderUserRating($conn, $ratingRow) {
+        $score = $ratingRow["Score"];
+
+		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+		$stmt->bind_param("i", $ratingRow["UserID"]);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$user = $result->fetch_assoc();
+		$stmt->close();
+
+        switch($score){
+            case 0:
+                $hint = $user["Custom00Rating"];
+                break;
+            case 0.5:
+                $hint = $user["Custom05Rating"];
+                break;
+            case 1:
+                $hint = $user["Custom10Rating"];
+                break;
+            case 1.5:
+                $hint = $user["Custom15Rating"];
+                break;
+            case 2.0:
+                $hint = $user["Custom20Rating"];
+                break;
+            case 2.5:
+                $hint = $user["Custom25Rating"];
+                break;
+            case 3.0:
+                $hint = $user["Custom30Rating"];
+                break;
+            case 3.5:
+                $hint = $user["Custom35Rating"];
+                break;
+            case 4.0:
+                $hint = $user["Custom40Rating"];
+                break;
+            case 4.5:
+                $hint = $user["Custom45Rating"];
+                break;
+            case 5.0:
+                $hint = $user["Custom50Rating"];
+                break;
+        }
+
+		$starString = RenderRating($score);
+		if ($hint == "" || !isset($hint))
+			return $starString;
+
+        $hint = htmlspecialchars($hint, ENT_QUOTES);
+        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
+    }
+
+	function CalculatePearsonCorrelation($x, $y) {
+		$n = count($x);
+		$sum_x = array_sum($x);
+		$sum_y = array_sum($y);
+		$sum_x_sq = array_sum(array_map(function($x) { return pow($x, 2); }, $x));
+		$sum_y_sq = array_sum(array_map(function($y) { return pow($y, 2); }, $y));
+		$sum_xy = 0;
+		for ($i = 0; $i < $n; $i++) {
+			$sum_xy += $x[$i] * $y[$i];
+		}
+		$numerator = $n * $sum_xy - $sum_x * $sum_y;
+		$denominator = sqrt(($n * $sum_x_sq - pow($sum_x, 2)) * ($n * $sum_y_sq - pow($sum_y, 2)));
+		if ($denominator == 0) {
+			return -1;
+		}
+		return $numerator / $denominator;
+	}
+
+    function SubmitRating($conn, $beatmapID, $userID, $score): bool
+    {
+        $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
+        if (!in_array($score, $validRatings))
+            return false;
+
+        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
+        $stmt->bind_param("i", $beatmapID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
+
+        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
+        $stmt->bind_param("i", $userID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 1) return false;
+
+        if($score == -2){
+            $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt->bind_param("ii", $beatmapID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result->num_rows == 1){
+                $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
+                $stmt->bind_param("dii", $score, $beatmapID, $userID);
+                $stmt->execute();
+            }else{
+                $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
+                $stmt->bind_param("iid", $beatmapID, $userID, $score);
+                $stmt->execute();
+            }
+        }
+
+        return true;
+    }
+
+	function getGenre($number) {
+		switch ($number) {
+			case 2:
+				return "Video Game";
+			case 3:
+				return "Anime";
+			case 4:
+				return "Rock";
+			case 5:
+				return "Pop";
+			case 6:
+				return "Other Genre";
+			case 7:
+				return "Novelty";
+			case 9:
+				return "Hip Hop";
+			case 10:
+				return "Electronic";
+			case 11:
+				return "Metal";
+			case 12:
+				return "Classical";
+			case 13:
+				return "Folk";
+			case 14:
+				return "Jazz";
+			default:
+				return null;
+		}
+	}
+
+	function getLanguage($number) {
+		switch ($number) {
+			case 2:
+				return "English";
+			case 3:
+				return "Japanese";
+			case 4:
+				return "Chinese";
+			case 5:
+				return "Instrumental";
+			case 6:
+				return "Korean";
+			case 7:
+				return "French";
+			case 8:
+				return "German";
+			case 9:
+				return "Swedish";
+			case 10:
+				return "Spanish";
+			case 11:
+				return "Italian";
+			case 12:
+				return "Russian";
+			case 13:
+				return "Polish";
+			case 14:
+				return "Other Language";
+		}
+	}
 
 	function getModeIcon($mode) {
 		switch ($mode) {
@@ -716,7 +726,7 @@
 
 				break;
 			case "beatmap":
-                $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
+				$stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
                         FROM `beatmapsets` s
                         INNER JOIN `beatmaps` b ON s.SetID = b.SetID
                         WHERE b.BeatmapID = ?;");
@@ -750,7 +760,7 @@
 
 		return [$imageUrl, $title, $linkUrl];
 	}
-
+	
 	function RenderLocalTime($time) { ?>
 		<script type="text/javascript">
 			var myDate = new Date('<?php echo $time; ?>')

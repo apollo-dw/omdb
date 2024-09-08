@@ -51,7 +51,7 @@
         $mutualCount = $mutuals->num_rows;
         $stmt->close();
     }
-
+	
     $is_friend = $is_blocked = $is_friended = 0;
     if ($loggedIn) {
         $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
@@ -105,28 +105,35 @@
 		<div class="profileImage">
 			<img src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
 		</div>
+		
+		<?php if ($isValidUser && !IS_NULL($profile['UserTitle'])) { ?>
+		<div class="profileUserTitle">
+			<span class="subText" style="font-weight:bolder;"><?php echo $profile['UserTitle']; ?></span>
+		</div>
+		<?php } ?>
+		
+		<?php if ($profileId != $userId && $isValidUser && $loggedIn){ ?>
         <div class="profileActions">
             <?php
-                if ($profileId != $userId && $isValidUser && $loggedIn){
+				if (!$is_blocked) {
+					if ($is_friend && $is_friended) {
+						echo '<button id="friendButton" class="mutual">Mutual</button> ';
+					} elseif ($is_friend && !$is_friended) {
+						echo '<button id="friendButton">Friend</button> ';
+					} else {
+						echo '<button id="friendButton">Add Friend</button> ';
+					}
+				}
 
-                    if (!$is_blocked) {
-                        if ($is_friend && $is_friended) {
-                            echo '<button id="friendButton" class="mutual">Mutual</button> ';
-                        } elseif ($is_friend && !$is_friended) {
-                            echo '<button id="friendButton">Friend</button> ';
-                        } else {
-                            echo '<button id="friendButton">Add Friend</button> ';
-                        }
-                    }
-
-                    if ($is_blocked) {
-                        echo '<button id="blockButton" class="blocked">Unblock</button>';
-                    } else {
-                        echo '<button id="blockButton">Block</button>';
-                    }
-                }
+				if ($is_blocked) {
+					echo '<button id="blockButton" class="blocked">Unblock</button>';
+				} else {
+					echo '<button id="blockButton">Block</button>';
+				}
             ?>
         </div>
+		<?php } ?>
+		
         <div class="profileStats">
             <?php
                 $stmt = $conn->prepare("SELECT COUNT(*) FROM `user_relations` WHERE `UserIDTo` = ? AND `type` = '1'");
@@ -191,17 +198,17 @@
         </div>
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-                <div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4&p=1">4.0 <?php if ($profile["Custom40Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom40Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5 <?php if ($profile["Custom35Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom35Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3&p=1">3.0 <?php if ($profile["Custom30Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom30Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5 <?php if ($profile["Custom25Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom25Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2&p=1">2.0 <?php if ($profile["Custom20Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom20Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5 <?php if ($profile["Custom15Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom15Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1&p=1">1.0 <?php if ($profile["Custom10Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom10Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5 <?php if ($profile["Custom05Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom05Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0&p=1">0.0 <?php if ($profile["Custom00Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom00Rating"]); } ?></a></div>
+                <div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["5.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4&p=1">4.0 <?php if ($profile["Custom40Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom40Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5 <?php if ($profile["Custom35Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom35Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3&p=1">3.0 <?php if ($profile["Custom30Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom30Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5 <?php if ($profile["Custom25Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom25Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2&p=1">2.0 <?php if ($profile["Custom20Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom20Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5 <?php if ($profile["Custom15Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom15Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1&p=1">1.0 <?php if ($profile["Custom10Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom10Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5 <?php if ($profile["Custom05Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom05Rating"]); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0&p=1">0.0 <?php if ($profile["Custom00Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom00Rating"]); } ?></a></div>
 			</div>
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
@@ -241,10 +248,33 @@
 </div>
 
 <?php
+    if($isValidUser) {
+		$desc = trim($profile["CustomDescription"]);
+		
+		if (!empty($desc)) {
+?>
+			<hr>
+			<h2>About me</h2>
+			<div style="background-color:DarkSlateGrey;padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
+				<?php
+					echo ParseCommentLinks($conn, $desc);
+				?>
+			</div>
+
+			<?php
+			 if ($profileId == $userId){
+				 echo "<br><a href='../settings'><div style='float:right;'>edit your description</div></a>";
+			 }
+			 echo "<br />";
+		}
+    }
+?>
+
+<?php
     if($isValidUser && $mutualCount > 0) {
 ?>
         <hr>
-        Mutuals
+        <h2>Mutuals</h2>
         <div class="flex-container" style="background-color:DarkSlateGrey;padding:0px;">
             <br>
             <?php
@@ -273,7 +303,6 @@
     }
 ?>
 
-
 <hr>
 <span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
 <div id="beatmaps">
@@ -291,9 +320,9 @@
         $stmt->close();
 
         while($set = $setsResult->fetch_assoc()) {
-            if ($set['SetID'] == null)
-                continue;
-            
+			if ($set['SetID'] == null)
+				continue;
+			
             $stmt = $conn->prepare("SELECT b.`BeatmapID`, s.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
                        (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
                        FROM beatmaps b
@@ -322,8 +351,13 @@
             <div class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
-                    <a href="/mapset/<?php echo $set['SetID']; ?>"><?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
-                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?></span><br>
+                    <a href="/mapset/<?php echo $set['SetID']; ?>">
+					<?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> 
+					<a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;">
+					</i></a><br></a>
+                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>">
+					<?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText">
+					<?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?></span><br>
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
                 <div style="margin-left:auto;">

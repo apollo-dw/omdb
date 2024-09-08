@@ -19,6 +19,12 @@
     $stmt->bind_param("ii", $commentId, $setId);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
+	
+	if (!($userName === "moonpoint" || $result["UserID"] === $userId)) {
+        header('HTTP/1.0 403 Forbidden');
+        http_response_code(403);
+        die("Forbidden");
+    }
 
     $array = array(
         "type" => "comment_deletion",
@@ -37,8 +43,8 @@
     $stmt->execute();
     $stmt->close();
 
-    $stmt = $conn->prepare("DELETE FROM `comments` WHERE `CommentID` = ? AND `UserID` = ? AND `SetID` = ?");
-    $stmt->bind_param("iii", $commentId, $userId, $setId);
+    $stmt = $conn->prepare("DELETE FROM `comments` WHERE `CommentID` = ? AND `SetID` = ?");
+    $stmt->bind_param("ii", $commentId, $setId);
     $stmt->execute();
     $stmt->close();
 ?>

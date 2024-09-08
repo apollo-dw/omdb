@@ -128,8 +128,8 @@
             <div class="forum-post-info">
                 <div>
                     <div class="profileTitle" style="text-align: center;">
-                        <a href="https://osu.ppy.sh/u/<?php echo $post["UserID"]; ?>" target="_blank" rel="noopener noreferrer"><?php echo GetUserNameFromId($post["UserID"], $conn); ?></a>
-                        <a href="https://osu.ppy.sh/u/<?php echo $post["UserID"]; ?>" target="_blank" rel="noopener noreferrer"></a>
+                        <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"><?php echo GetUserNameFromId($post["UserID"], $conn); ?></a>
+                        <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"></a>
                     </div>
                     <div class="profileImage">
                         <img src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">

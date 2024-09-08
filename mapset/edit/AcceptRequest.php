@@ -1,7 +1,7 @@
 <?php
 require '../../base.php';
 
-if (!($userName === "moonpoint" || $userId === 12704035 || $userId === 1721120) || !$loggedIn) {
+if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
     die("Forbidden");
@@ -29,6 +29,7 @@ if ($isEditingSet) {
     if ($request) {
         $editDataArray = json_decode($request['EditData'], true);
         $newNominators = $editDataArray["Mappers"];
+		$newCredits = $editDataArray["Credits"];
 
         $stmt = $conn->prepare("DELETE FROM beatmapset_nominators WHERE `SetID` = ?;");
         $stmt->bind_param('i', $setID);
@@ -39,6 +40,25 @@ if ($isEditingSet) {
         foreach ($newNominators as $nominatorID) {
             $stmt->execute();
         }
+		
+		$stmt = $conn->prepare("DELETE FROM beatmapset_credits WHERE `SetID` = ?;");
+		$stmt->bind_param('i', $setID);
+		$stmt->execute();
+
+		$stmt = $conn->prepare("INSERT INTO beatmapset_credits (`SetID`, `MapID`, `RoleID`, `UserID`) VALUES (?, NULL, ?, ?);");
+		$stmt->bind_param('iii', $setID, $roleID, $userID);
+
+		foreach ($newCredits as $credit) {
+			$roleIDStmt = $conn->prepare("SELECT RoleID FROM beatmap_roles WHERE Name = ?");
+			$roleIDStmt->bind_param('s', $credit['role']);
+			$roleIDStmt->execute();
+			$roleIDResult = $roleIDStmt->get_result();
+			$roleIDRow = $roleIDResult->fetch_assoc();
+			$roleID = $roleIDRow['RoleID'];
+
+			$userID = $credit['userID'];
+			$stmt->execute();
+		}
 
         $stmt = $conn->prepare("UPDATE beatmap_edit_requests SET Status = 'Approved', EditorID = ? WHERE `EditID` = ?;");
         $stmt->bind_param('ii', $userId, $request['EditID']);
