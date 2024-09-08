@@ -43,11 +43,8 @@ if ($isEditingSet) {
 }
 
 $request = $result->fetch_assoc();
-if (!($userName === "moonpoint" ||
-        $userId === 12704035 ||
-        $userId === 1721120 ||
-        $userId == $request['UserID'])
-    || !$loggedIn) {
+if (!$loggedIn || !(isIdEditRequestAdmin($userId) ||
+					$userId == $request['UserID'])) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
     die("Forbidden");

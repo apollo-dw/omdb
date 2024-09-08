@@ -36,9 +36,7 @@
 <div style="text-align:center;min-width:80%;">
     <h1>OMDB is currently undergoing maintenance.</h1>
     <img src="android-chrome-192x192.png" />
-    <div id="reason">updating the internal beatmaps table to support GDs and loved maps (should fix all missing maps too)</div>
-</div>
-<div class="footerBar">
-    omdb made by <a href="https://twitter.com/apolloOzu">apollo</a> | icon made by olc | <a href="https://github.com/apollo-dw/omdb">github</a> | <a href="https://ko-fi.com/meowswares">donate</a>
+    <div id="reason">doing stuff<br><br>
+	<a href="https://x.com/SpaceBetelgeuse/status/1799052308816462224">go look at this art</a></div>
 </div>
 </body>

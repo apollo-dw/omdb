@@ -69,11 +69,13 @@
 	$json = json_decode($response, true);
 	$userId = $json["id"];
 	$username = $json["username"];
+	$country = $json["country"];
 
 	$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
 	$stmt->bind_param("s", $userId);
 	$stmt->execute();
 	$result = $stmt->get_result();
+
 
 	if ($result && $result->num_rows == 0) {
 		$stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES (?, ?, ?, ?);");
@@ -87,6 +89,24 @@
 		$stmt->close();
 	}
 	
-	setcookie("AccessToken", $accessToken, time() + ($expiresIn * 5));
+	$stmt = $conn->prepare("SELECT * FROM `mappernames` WHERE `UserID` = ?");
+	$stmt->bind_param("s", $userId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+
+	if ($result && $result->num_rows == 0) {
+		$stmt = $conn->prepare("INSERT INTO `mappernames` (UserID, Username, Country) VALUES (?, ?, ?);");
+		$stmt->bind_param("iss", $userId, $username, $country->code);
+		$stmt->execute();
+		$stmt->close();
+	} else {
+		$stmt = $conn->prepare("UPDATE `mappernames` SET `Username` = ?, `Country` = ? WHERE `UserID` = ?");
+		$stmt->bind_param("ssi", $username, $country->code, $userId);
+		$stmt->execute();
+		$stmt->close();
+	}
+	
+	setcookie("AccessToken", $accessToken, time() + $expiresIn);
 	siteRedirect($redirect_url);
 ?>

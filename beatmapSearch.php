@@ -7,7 +7,7 @@
 	if(preg_match('/https:\/\/osu\.ppy\.sh\/(beatmapsets|beatmapset|s)\/(\d+)/', $q, $matches)){
 		$setID = $matches[2];
 		
-		$stmt = $conn->prepare("SELECT SetID, Title, Artist FROM `beatmaps` WHERE `SetID`= ?;");
+		$stmt = $conn->prepare("SELECT SetID, Title, Artist FROM `beatmapsets` WHERE `SetID`= ?;");
 		$stmt->bind_param('s', $setID);
 		$stmt->execute();
 		$res = $stmt->get_result(); 
@@ -40,8 +40,14 @@
 
     $stmt->close();
 
-	$stmt = $conn->prepare("SELECT `SetID`, Title, Artist, DifficultyName FROM `beatmaps` WHERE MATCH (DifficultyName, Artist, Title) AGAINST(? IN NATURAL LANGUAGE MODE) AND Mode = ? LIMIT 25;");
-	$stmt->bind_param("si", $like, $mode);
+    $stmt = $conn->prepare("SELECT s.`SetID`, s.Title, s.Artist, b.DifficultyName 
+                            FROM `beatmaps` b 
+                            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
+                            WHERE (b.DifficultyName LIKE ? OR s.Artist LIKE ? OR s.Title LIKE ?)
+                                AND b.Mode = ?
+                            ORDER BY RatingCount DESC
+                            LIMIT 25;");
+    $stmt->bind_param("sssi", $like, $like, $like, $mode);
 	$stmt->execute();
 	$stmt->bind_result($setId, $title, $artist, $difficultyName);
     $stmt->store_result();

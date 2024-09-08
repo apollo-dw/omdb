@@ -94,8 +94,8 @@ a .topBarLink {
     z-index: 1;
     line-height: 1.5em;
     overflow-y: auto;
-    max-height: 19em;
-    width: 25em;
+    max-height: 25em;
+    width: 50em;
     border-radius: 6px;
 }
 

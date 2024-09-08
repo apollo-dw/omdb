@@ -17,13 +17,19 @@
 			$userId = $row['UserID'];
 			$userName = $row['Username'];
 			$user = $row;
-
-            // Update the last accessed site column in one-minute limits.
-            if((time() - strtotime($row['LastAccessedSite'])) > 60){
-                $stmt = $conn->prepare("UPDATE `users` SET `LastAccessedSite` = CURRENT_TIMESTAMP WHERE `AccessToken` = ?");
-                $stmt->bind_param("s", $token);
-                $stmt->execute();
-            }
+			
+			// Update the last accessed site column in one-minute limits.
+			if((time() - strtotime($row['LastAccessedSite'])) > 60){
+				$ip = $_SERVER['HTTP_CLIENT_IP'] 
+					   ? $_SERVER['HTTP_CLIENT_IP'] 
+					   : ($_SERVER['HTTP_X_FORWARDED_FOR'] 
+							? $_SERVER['HTTP_X_FORWARDED_FOR'] 
+							: $_SERVER['REMOTE_ADDR']);
+		
+				$stmt = $conn->prepare("UPDATE `users` SET `LastAccessedSite` = CURRENT_TIMESTAMP, `IpAddress` = ? WHERE `AccessToken` = ?");
+				$stmt->bind_param("ss", $ip, $token);
+				$stmt->execute();
+			}
 		}
 	}
 ?>

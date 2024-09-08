@@ -1,8 +1,8 @@
 <?php
 	include_once '../base.php';
 
-	$page = $_POST['p'] ?? 1;
-	$year = $_POST['y'] ?? $year;
+	$page = $_POST['p'] ?? $_GET['p'] ?? 1;
+	$year = $_POST['y'] ?? $_GET['y'] ?? $year;
 	$order = $_POST['o'] ?? 1;
     $genre = $_POST['g'] ?? 0;
     $language = $_POST['l'] ?? 0;
@@ -11,6 +11,9 @@
     $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
     $excludeGraveyard = $_POST['excludeGraveyard'] ?? "false";
     $excludeLoved = $_POST['excludeLoved'] ?? "false";
+	$excludeRanked = $_POST['excludeRanked'] ?? "false";
+	$minSR = $_post['minSR'] ?? 0;
+	$maxSR = $_post['maxSR'] ?? -1;
 
     $descriptorsJSON = $_POST['descriptors'] ?? "[]";
 
@@ -18,7 +21,7 @@
         $selectedDescriptors = json_decode($descriptorsJSON, true);
     }
 
-	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language)){
+	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language) || !is_numeric($country) || !is_numeric($minSR) || !is_numeric($maxSR)){
 		die("NOO");
 	}
 ?>
@@ -32,6 +35,7 @@
             $hideAlreadyRated = $hideAlreadyRated == "true";
             $excludeGraveyard = $excludeGraveyard == "true";
             $excludeLoved = $excludeLoved == "true";
+			$excludeRanked = $excludeRanked == "true";
 
 			$lim = 50;
 			$counter = ($page - 1) * $lim;
@@ -71,7 +75,7 @@
                 $languageString = "AND `Lang`='{$language}'";
 
             $countryString = "";
-            if ($country != 0) {
+            if ($country !== 0 && $country !== "0") {
                 $countryString = "AND b.BeatmapID IN (
                                         SELECT bc.BeatmapID
                                         FROM beatmap_creators bc
@@ -110,7 +114,17 @@
             $excludeGraveyardString = "";
             if ($excludeGraveyard)
                 $excludeGraveyardString = "AND b.Status != -2";
-
+			
+			$excludeRankedString = "";
+            if ($excludeRanked) 
+                $excludeRankedString = "AND b.Status != 1 AND b.Status != 2";
+			
+			$srRangeString = "";
+			if ($maxSR > 0)
+				$srRangeString += "AND b.SR <= {$maxSR}";
+			if ($minSR > 0)
+				$srRangeString += "AND b.SR >= {$minSR}";
+			
             $stmt = null;
             if ($onlyFriends) {
                 $stmt = $conn->prepare("SELECT
@@ -136,7 +150,7 @@
                                                       u.UserID = ?
                                                       AND ur.type = 1
                                                       AND b.Mode = ?
-                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$countryString} {$excludeLovedString} {$excludeGraveyardString}
+                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$countryString} {$excludeLovedString} {$excludeGraveyardString} {$excludeRankedString}
                                                     GROUP BY
                                                         r.BeatmapID
                                                 ) AS subquery
@@ -157,7 +171,7 @@
                                               WHERE b.Rating IS NOT NULL 
                                               {$genreString} AND `Mode` = ? 
                                               {$languageString} {$yearString} {$descriptorString} {$countryString}
-                                              {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString}
+                                              {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString} {$excludeRankedString}
                                               ORDER BY {$columnString} {$orderString}, BeatmapID 
                                               {$pageString}");
                 $stmt->bind_param($types, ...$params);

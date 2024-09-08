@@ -16,6 +16,7 @@
 <h1>Add graved set</h1>
 
 <div class="container">
+#
     Add a new graved set to OMDB through this page! Some things to note:
     <ul>
         <li><b>The set you're trying to add has to be at least 6 months old.</b> This is to provide ample space for sets that may move back to pending.</li>
@@ -23,9 +24,8 @@
         <li><b>Ratings and comments are removed if their difficulty gets deleted.</b></li>
         <li><b>You cannot add blacklisted mappers' graveyarded sets.</b></li>
     </ul>
-    For the time being, graveyarded maps will not be included on charts.
     <hr>
-    <?php if ($loggedIn) { ?>
+	<?php if ($loggedIn) { ?>
         <form action="AddGravedMapset.php">
             <label for="id">Set ID:</label><br>
             <input type="text" name="id" id="id" required />

@@ -4,7 +4,8 @@ if(!$loggedIn){
     die("NO");
 }
 
-$mappers = $_POST["mapperListData"];
+$mappers = $_POST["mapperListData"] ?? "{}";
+$credits = $_POST["creditsListData"] ?? "{}";
 $meta = $_POST["meta"];
 $beatmapID = $_POST["BeatmapID"] ?? null;
 $setID = $_POST["SetID"] ?? null;
@@ -13,6 +14,7 @@ $isEditingSet = !is_null($setID);
 $array = [
     "Meta" => $meta,
     "Mappers" => json_decode($mappers),
+	"Credits" => json_decode($credits)
 ];
 
 $json = json_encode($array);

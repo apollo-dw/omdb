@@ -28,7 +28,7 @@
     $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.Description, l.UserID,
                                   (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount,
                                   (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount 
-                                  FROM lists l ORDER BY UpdatedAt LIMIT 25;");
+                                  FROM lists l ORDER BY UpdatedAt DESC LIMIT 25;");
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
