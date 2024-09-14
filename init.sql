@@ -122,7 +122,7 @@ CREATE TABLE `ratings` (
   `BeatmapID` int NOT NULL,
   `UserID` int NOT NULL,
   `Score` decimal(2,1) DEFAULT NULL,
-  `date` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`RatingID`),
   KEY `idx_beatmapID` (`BeatmapID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=100307 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
