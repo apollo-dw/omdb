@@ -34,9 +34,10 @@
     if($order == "rating")
         $orderString = "score DESC";
 
-$mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
+$mainQuery = 
+    "SELECT r.*, CASE WHEN (r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1)) THEN 2 WHEN r.UserID={$userID} THEN 3 ELSE 1 END AS order_weight,
     (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
-     WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
+    WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
     FROM `ratings` r
     LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
     {$selectString}
