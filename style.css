@@ -567,6 +567,10 @@ ol.star-rating-list > li{
     opacity: 0.33;
 }
 
+.bg-self {
+    background-color: #69593d;
+}
+
 .alternating-bg:nth-of-type(odd) {
     background-color: #203838;
 }
