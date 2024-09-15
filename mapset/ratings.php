@@ -66,7 +66,7 @@ $mainQuery =
 
     while($row = $result->fetch_assoc()) {
 ?>
-<div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
+<div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : ($row["order_weight"] == 3) ? 'bg-self' : 'alternating-bg'; ?>"
     <div class="flex-child">
         <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
     </div>
