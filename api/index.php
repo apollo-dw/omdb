@@ -31,7 +31,7 @@
 
     if ($uri[2] == "set") {
         $setID = $uri[3];
-        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? ORDER BY SR DESC;");
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY SR DESC;");
         $stmt->bind_param("i", $setID);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -77,7 +77,7 @@
             $response = array("error" => "Mapset not found");
     } elseif ($uri[2] == "beatmap") {
         $beatmapID = $uri[3];
-        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? ORDER BY SR DESC;");
+        $stmt = $conn->prepare("SELECT * FROM beatmaps WHERE BeatmapID = ? AND Blacklisted = 0 ORDER BY SR DESC;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();;
@@ -150,7 +150,7 @@
     } elseif ($uri[2] == "user") {
         $userID = $uri[3];
         if ($uri[4] == "ratings") {
-            $query = "SELECT r.*, b.SetID, s.Artist, s.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s ON b.SetID = s.SetID WHERE r.UserID = ?";
+            $query = "SELECT r.*, b.SetID, s.Artist, s.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s ON b.SetID = s.SetID WHERE r.UserID = ? AND b.Blacklisted = 0";
 
             $year = $_GET["year"] ?? -1;
             $score = $_GET["score"] ?? -1;

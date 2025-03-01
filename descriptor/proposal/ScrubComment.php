@@ -15,7 +15,7 @@
         die("NO");
     }
 
-    if ($userName != "moonpoint") {
+    if ($userName != "apollodw") {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
         die("Forbidden");

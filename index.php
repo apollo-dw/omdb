@@ -36,8 +36,42 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
 		<?php
-		  $stmt = $conn->prepare("SELECT r.*, b.DifficultyName, b.SetID FROM `ratings` r INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID INNER JOIN `users` u on r.UserID = u.UserID WHERE b.Mode = ? and b.blacklisted = 0 and u.HideRatings = 0 ORDER BY r.date DESC LIMIT 60;");
-		  $stmt->bind_param("i", $mode);
+		  if ($loggedIn) {
+				$stmt = $conn->prepare("
+					SELECT r.*, b.DifficultyName, b.SetID 
+					FROM `ratings` r 
+					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+					INNER JOIN `users` u ON r.UserID = u.UserID 
+					WHERE b.Mode = ? 
+					  AND b.blacklisted = 0 
+					  AND u.HideRatings = 0
+					  AND (
+						  (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+						  OR r.UserID IN (
+							  SELECT UserIDTo 
+							  FROM user_relations 
+							  WHERE UserIDFrom = ? AND type = 1
+						  )
+						  OR r.UserID = ?
+					  )
+					ORDER BY r.date DESC 
+					LIMIT 100
+				");
+				$stmt->bind_param("iiii", $mode, $userId, $userId, $userId);
+			} else {
+				$stmt = $conn->prepare("
+					SELECT r.*, b.DifficultyName, b.SetID 
+					FROM `ratings` r 
+					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+					INNER JOIN `users` u ON r.UserID = u.UserID 
+					WHERE b.Mode = ? 
+					  AND b.blacklisted = 0 
+					  AND u.HideRatings = 0
+					ORDER BY r.date DESC 
+					LIMIT 60
+				");
+				$stmt->bind_param("i", $mode);
+			}
           $stmt->execute();
 		  $result = $stmt->get_result();
 
@@ -68,28 +102,72 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
 		<?php
-                $stmt = $conn->prepare("(SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-                                                FROM comments c
-                                                WHERE NOT EXISTS (
-													SELECT 1 
-													FROM user_relations r 
-													WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-												) AND EXISTS (
-                                                    SELECT 1
-                                                    FROM beatmaps b
-                                                    WHERE b.SetID = c.SetID AND b.Mode = ?
-                                                )
-                                            )
-                                            UNION ALL
-                                            (
-                                                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-                                                FROM descriptor_proposal_comments dpc
-                                                LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-                                                WHERE 1
-                                            )
-                                            ORDER BY date DESC
-                                            LIMIT 20;");
-                $stmt->bind_param("ii", $userId, $mode);
+                if ($loggedIn) {
+					// Logged-in user: apply OnlyFriendsOnFrontPage logic
+					$stmt = $conn->prepare("
+						(
+							SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+							FROM comments c
+							WHERE NOT EXISTS (
+								SELECT 1 
+								FROM user_relations r 
+								WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+							)
+							AND EXISTS (
+								SELECT 1
+								FROM beatmaps b
+								WHERE b.SetID = c.SetID AND b.Mode = ?
+							)
+							AND (
+								(SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+								OR c.UserID IN (
+									SELECT UserIDTo
+									FROM user_relations
+									WHERE UserIDFrom = ? AND type = 1
+								)
+								or c.UserID = ?
+							)
+						)
+						UNION ALL
+						(
+							SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+							FROM descriptor_proposal_comments dpc
+							LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+							WHERE 1
+						)
+						ORDER BY date DESC
+						LIMIT 20;
+					");
+					$stmt->bind_param("iiiii", $userId, $mode, $userId, $userId, $userId);
+				} else {
+					// Logged-out user: skip OnlyFriendsOnFrontPage logic
+					$stmt = $conn->prepare("
+						(
+							SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+							FROM comments c
+							WHERE NOT EXISTS (
+								SELECT 1 
+								FROM user_relations r 
+								WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+							)
+							AND EXISTS (
+								SELECT 1
+								FROM beatmaps b
+								WHERE b.SetID = c.SetID AND b.Mode = ?
+							)
+						)
+						UNION ALL
+						(
+							SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+							FROM descriptor_proposal_comments dpc
+							LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+							WHERE 1
+						)
+						ORDER BY date DESC
+						LIMIT 20;
+					");
+					$stmt->bind_param("ii", $userId, $mode);
+				}
                 $stmt->execute();
                 $result = $stmt->get_result();
 

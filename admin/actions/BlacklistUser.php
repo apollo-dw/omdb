@@ -9,7 +9,7 @@
     $stmt->execute();
 
     $stmt = $conn->prepare("UPDATE beatmaps AS bm
-                                    SET ChartRank = NULL,
+                                  SET ChartRank = NULL,
                                     ChartYearRank = NULL,
                                     Rating = NULL,
 									RatingCount = NULL,
@@ -35,5 +35,5 @@
                                   );");
     $stmt->execute();
 
-    header("Location: ../blacklist.php");
+    //header("Location: ../blacklist.php");
     die();

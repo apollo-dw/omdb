@@ -136,7 +136,7 @@
                 </tr>
             <?php } ?>
         </table>
-        <?php if ($loggedIn && $userName === "moonpoint") { ?>
+        <?php if ($loggedIn && $userName === "apollodw") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
                 <option value="pending" <?php if ($proposal["Status"] === "pending") echo 'selected="selected"'; ?>>Pending</option>
@@ -212,7 +212,7 @@
     <?php if ($proposal["Status"] !== "pending") echo "<span class='subText'>Comments are disabled for proposals with an outcome.</span><br>"; ?><br>
     <div class="flex-container commentContainer" style="width:100%;">
 
-        <?php if($loggedIn && ($proposal["Status"] === "pending" || $userName === "moonpoint")) { ?>
+        <?php if($loggedIn && ($proposal["Status"] === "pending" || $userName === "apollodw")) { ?>
             <div class="flex-child commentComposer">
                 <form>
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -264,10 +264,10 @@
                     </div>
                     <div class="flex-child" style="margin-left:auto;">
                         <?php
-                        if ($loggedIn && $userName == "moonpoint") { ?>
+                        if ($loggedIn && $userName == "apollodw") { ?>
                             <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
                         <?php }
-                        if ($row["UserID"] == $userId) { ?>
+                        if ($row["UserID"] == $userId || $userName == "apollodw") { ?>
                             <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                         <?php }
                         echo GetHumanTime($row["Timestamp"]); ?>

@@ -6,11 +6,9 @@
     $stmt->execute();
 
     $stmt = $conn->prepare("UPDATE beatmaps AS bm
-                                        SET ChartRank = NULL,
+                                      SET ChartRank = NULL,
                                         ChartYearRank = NULL,
                                         Rating = NULL,
-                                        RatingCount = NULL,
-                                        WeightedAvg = NULl,
                                         Blacklisted = '1',
                                         BlacklistReason = 'mapper has requested blacklist'
                                       WHERE bm.BeatmapID IN (
