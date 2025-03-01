@@ -20,7 +20,7 @@
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
 	
-	if (!($userName === "moonpoint" || $result["UserID"] === $userId)) {
+	if (!($userName === "apollodw" || $result["UserID"] === $userId)) {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
         die("Forbidden");

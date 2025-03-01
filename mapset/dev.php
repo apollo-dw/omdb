@@ -94,6 +94,41 @@ GROUP BY
 		margin-left: 0;
 		margin-bottom: 0.5em;
 	}
+	
+	.modal {
+	  display: none;
+	  position: fixed;
+	  z-index: 100;
+	  padding-top: 20%;
+	  left: 0;
+	  top: 0;
+	  width: 100%;
+	  height: 100%;
+	  overflow: auto;
+	  background-color: rgb(0,0,0);
+	  background-color: rgba(0,0,0,0.4);
+	}
+
+	.modal-content {
+	  background-color: DarkSlateGray;
+	  margin: auto;
+	  padding: 20px;
+	  width: 50%;
+	}
+
+	.close {
+	  color: #aaaaaa;
+	  float: right;
+	  font-size: 28px;
+	  font-weight: bold;
+	}
+
+	.close:hover,
+	.close:focus {
+	  color: #000;
+	  text-decoration: none;
+	  cursor: pointer;
+	}
 </style>
 
 <center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
@@ -409,12 +444,15 @@ while($row = $result->fetch_assoc()) {
 		</div>
 
 		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:5em;text-align:center;display:flex;flex-direction:column;align-items: center;">
 				<div>
 					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
 					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
 				</div>
 				<span class="subText">separate your tags with commas</span>
+				<div style="margin-top:0.5em;">
+					<button class="open-modal-btn" data-map-id="123" data-map-title="<?php echo htmlspecialchars($sampleRow['Title']) . " [" . htmlspecialchars($sampleRow['DifficultyName']) . "]"; ?>">Add to list</button>
+				</div>
 			</div>
 		</div>
     </div>
@@ -815,6 +853,91 @@ while($row = $result->fetch_assoc()) {
             }
         });
     });
+</script>
+
+<?php 
+	$stmt = $conn->prepare("
+    SELECT
+        l.ListID,
+        l.Title,
+        (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount
+    FROM
+        lists l
+    WHERE
+        l.UserID = ?;");
+	$stmt->bind_param("i", $userId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+
+	$listData = [];
+
+	while ($row = $result->fetch_assoc()) {
+		$stmt = $conn->prepare("
+			SELECT *
+			FROM list_items
+			WHERE `ListID` = ? AND `order` = 1
+		");
+		$stmt->bind_param("i", $row["ListID"]);
+		$stmt->execute();
+		$item = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		if ($item) {
+			$listData[$row["ListID"]] = [
+				"title" => "{$row["Title"]} ({$row["ItemCount"]})",
+			];
+		}
+	}
+
+?>
+
+<div id="list-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modal-map-title">{Map title}</h2>
+	<p id="modal-description">{Modal description}</p>
+	<select id="list-select" style="background-color: #203838;">
+		<option disabled selected value> -- select an option -- </option>
+		<?php foreach ($listData as $listId => $data): ?>
+			<option value="<?php echo htmlspecialchars($listId); ?>">
+				<?php echo htmlspecialchars($data['title']); ?>
+			</option>
+		<?php endforeach; ?>
+    </select>
+    <p><a id="modal-content" href="#?id={map id}"></a></p>
+  </div>
+</div>
+
+<script>
+	var modal = document.getElementById("list-modal");
+	var span = document.getElementsByClassName("close")[0];
+
+	function openModal(mapID, mapTitle) {
+		document.getElementById("modal-map-title").textContent = mapTitle;
+		document.getElementById("modal-description").textContent = "You are adding " + mapTitle + " to a list.";
+		modal.style.display = "block";
+	}
+	
+	span.onclick = function() {
+		modal.style.display = "none";
+	};
+
+	window.onclick = function(event) {
+		if (event.target == modal) {
+			modal.style.display = "none";
+		}
+	};
+
+	document.addEventListener("DOMContentLoaded", function() {
+		document.querySelectorAll(".open-modal-btn").forEach(function(button) {
+			button.addEventListener("click", function() {
+				const mapID = this.getAttribute("data-map-id");
+				const mapTitle = this.getAttribute("data-map-title");
+				openModal(mapID, mapTitle);
+			});
+		});
+	});
 </script>
 
 <?php

@@ -120,7 +120,7 @@ error_reporting(E_ALL);
 		</div>
 		
 		<div class="content" style="margin-top:5em;">
-		<!--
+
             <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
-                <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">consider contributing to <a href="/project-legacy/">project legacy</a>! <br>incentives now available on the page</span>
-            </div> --> 
+                <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">omdb will be going down on march 1st 2025 13:00 UTC+00<br>🥀🥀🥀<br><a href="/byebye/">read more here</a></span>
+            </div>
