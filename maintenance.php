@@ -30,13 +30,19 @@
             display: table-cell;
             vertical-align: middle;
         }
+		
+		a {
+			color: white;
+			text-decoration: underline;
+		}
     </style>
 </head>
 <body>
 <div style="text-align:center;min-width:80%;">
     <h1>OMDB is currently undergoing maintenance.</h1>
-    <img src="android-chrome-192x192.png" />
-    <div id="reason">doing stuff<br><br>
-	<a href="https://x.com/SpaceBetelgeuse/status/1799052308816462224">go look at this art</a></div>
+    <img src="../android-chrome-192x192.png" />
+
+
+    <div id="reason">	omdb returns on <b>Mar 27 2026 12:00 UTC+00</b> with Luscent now overseeing the site! <br> <a href="https://x.com/luscentos/status/2036500075749556567">https://x.com/luscentos/status/2036500075749556567</a> <br> !!!!!!!!!!!!!! <br> <br> <a href="adventure/1.html" style="color:grey;font-size:0.75em;text-decoration:none;">first, an adventure?</a><br><br>
 </div>
 </body>

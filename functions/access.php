@@ -8,6 +8,7 @@
 				 15243233, //kurboh
 				 11220416, //wither
 				 266596, //kevincela
+				 2688581, //luscent
 				 14102976]; // hivie
 	
     foreach ($haystack as $item) {

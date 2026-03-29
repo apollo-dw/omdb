@@ -31,8 +31,7 @@
             </div>
             <div>
                 <a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo "{$artist} - {$title} [$diffname]"; ?></a> <br>
-                <?php if (!is_null($row["RatingCount"])) { ?><b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span> <?php } ?>
-				<?php if (!is_null($row["ChartRank"])) { ?>,
+                <?php if (!is_null($row["RatingCount"])) { ?><b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><?php } ?><?php if (!is_null($row["ChartRank"])) { ?>,
                 <b>#<?php echo $row["ChartRank"]; ?></b> <span class="subText">overall</span> <?php } ?>
             </div>
         </div>

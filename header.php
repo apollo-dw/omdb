@@ -14,7 +14,7 @@ error_reporting(E_ALL);
         <meta name="description" content="osu! map database is a platform that allows for the rating of osu! beatmaps."/>
         <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
         <meta property="og:site_name" content="OMDB">
-        <meta name="theme-color" content="#2F4F4F">
+        <meta name="theme-color" content="#454545">
 		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
@@ -22,7 +22,7 @@ error_reporting(E_ALL);
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-        <link rel="stylesheet" type="text/css" href="/style.css?v=32" />
+		<link rel="stylesheet" type="text/css" href="/style.css?v=33" />
         <script src="/script.js?v=3"></script>
 	</head>
 	<body>
@@ -121,6 +121,7 @@ error_reporting(E_ALL);
 		
 		<div class="content" style="margin-top:5em;">
 
+
             <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
-                <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">omdb will be going down on march 1st 2025 13:00 UTC+00<br>🥀🥀🥀<br><a href="/byebye/">read more here</a></span>
+                <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">welcome back!<br><a href="/update.php">read more</a></span>
             </div>

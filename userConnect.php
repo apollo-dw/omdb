@@ -1,5 +1,6 @@
 <?php
 	$loggedIn = false;
+	$isModerator = false;
 	$userId = -1;
 	$userName = "";
 
@@ -16,6 +17,7 @@
 			$loggedIn = true;
 			$userId = $row['UserID'];
 			$userName = $row['Username'];
+			$isModerator = $row['moderator'] === 1;
 			$user = $row;
 			
 			// Update the last accessed site column in one-minute limits.

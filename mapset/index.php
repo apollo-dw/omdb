@@ -81,7 +81,7 @@ GROUP BY
     }
 
     .light-bg {
-        background-color: DarkSlateGray;
+        background-color: DarkSlateGrey;
     }
 	
 	.credits-list ul {
@@ -409,7 +409,7 @@ while($row = $result->fetch_assoc()) {
 		</div>
 
 		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:#454545;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
 				<div>
 					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
 					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
@@ -471,7 +471,7 @@ while($row = $result->fetch_assoc()) {
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
 		<?php if ($credits) { ?>
-		<div style="background-color:#182828;padding: 0.25em;">
+		<div style="background-color:#203838;padding: 0.25em;">
             Credits
         </div>
 		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
@@ -489,7 +489,7 @@ while($row = $result->fetch_assoc()) {
 			</ul>
         </div>
 		<?php } ?>
-        <div style="background-color:#182828;padding: 0.25em;">
+        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
             Latest Ratings
         </div>
         <div id="setRatingsDisplay">
@@ -513,7 +513,7 @@ while($row = $result->fetch_assoc()) {
 
             if ($result->num_rows > 0) {
                 ?>
-                <div style="background-color:#182828;padding: 0.25em;">
+                <div style="background-color:#203838;padding: 0.25em;">
                     Featured on lists
                 </div>
                 <?php
@@ -541,7 +541,7 @@ while($row = $result->fetch_assoc()) {
     </div>
 	<?php if ($mapset_id !== "1991647") { ?>
     <div class="flex-child column-when-mobile" style="width:60%;">
-        <div style="background-color:#182828;padding: 0.25em;">
+        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
             Comments (<?php echo $commentCount; ?>)
         </div>
         <div class="flex-container commentContainer" style="width:100%;">
@@ -585,10 +585,10 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
-                            if ($loggedIn && $userName == "apollodw") { ?>
+                            if ($loggedIn && $isModerator) { ?>
                                 <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
-                            if ($row["UserID"] == $userId || $userName == "apollodw") { ?>
+                            if ($row["UserID"] == $userId || $isModerator) { ?>
                                 <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
                             echo GetHumanTime($row["date"]); ?>
@@ -613,11 +613,13 @@ while($row = $result->fetch_assoc()) {
 </div>
 
 <script>
-    function submitComment(){
-        console.log("yeah");
-        var text = $('#commentForm').val();
-        console.log(text);
+	window.addEventListener('DOMContentLoaded', function() {
+		const container = document.getElementById('comment-container');
+		container.scrollTop = container.scrollHeight;
+	});
 
+    function submitComment(){
+        var text = $('#commentForm').val();
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
@@ -659,26 +661,6 @@ while($row = $result->fetch_assoc()) {
         };
 
         xhttp.open("POST", "RemoveComment.php", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
-    });
-
-    $(".scrubComment").click(function(event){
-        var $this = $(this);
-
-        if (!confirm("Are you sure you want to scrub this comment?")) {
-            return;
-        }
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
-                location.reload();
-            }
-        };
-
-        xhttp.open("POST", "ScrubComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
     });

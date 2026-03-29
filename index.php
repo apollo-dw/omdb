@@ -36,7 +36,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
 		<?php
-		  if ($loggedIn) {
+		  if ($userId !== -1) {
 				$stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID 
 					FROM `ratings` r 
@@ -102,7 +102,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	</div>
 	<div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
 		<?php
-                if ($loggedIn) {
+                if ($userId !== -1) {
 					// Logged-in user: apply OnlyFriendsOnFrontPage logic
 					$stmt = $conn->prepare("
 						(

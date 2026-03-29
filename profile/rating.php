@@ -19,6 +19,12 @@
     $stmt->execute();
     $listCount = $stmt->get_result()->fetch_assoc()["count"];
     $stmt->close();
+
+    $stmt = $conn->prepare("SELECT Count(DISTINCT SetID) as count FROM beatmapset_credits WHERE UserID = ?;");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $creditCount = $stmt->get_result()->fetch_assoc()["count"];
+    $stmt->close();
 ?>
 
 <style>
@@ -51,7 +57,10 @@
         <?php } ?>
     <?php } ?>
     <?php if ($nominationCount > 0) { ?>
-        <button data-tab="nominations" <?php if (!$isValidUser) { echo "class='active'"; } ?>>Nominations (<?php echo $nominationCount; ?>)</button>
+    <button data-tab="nominations" <?php if (!$isValidUser) { echo "class='active'"; } ?>>Nominations (<?php echo $nominationCount; ?>)</button>
+    <?php } ?>
+    <?php if ($creditCount > 0) { ?>
+        <button data-tab="credits">Credits (<?php echo $creditCount; ?>)</button>
     <?php } ?>
 </div>
 

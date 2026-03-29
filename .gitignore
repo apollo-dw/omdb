@@ -40,3 +40,5 @@ site.webmanifest
 ChartUpdate.php
 /docker-data
 /.env
+.env
+/adventure/*

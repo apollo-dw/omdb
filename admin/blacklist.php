@@ -14,7 +14,7 @@ include 'header.php';
 
     tr, td {
         padding: 0.1em;
-        font-size: 10px;
+        font-size: 14px;
     }
 </style>
 
@@ -22,7 +22,7 @@ include 'header.php';
 
 <label for="blacklistID">Blacklist ID:</label>
 <input name="blacklistID" type="number" oninput="GetUsername()" />
-<input type="button" value="Add ID" onclick="SubmitBlacklist()"/>
+<input type="button" value="Toggle ID" onclick="SubmitBlacklist()"/>
 <div id="username"></div>
 
 <form action="actions/ReloadBlacklist.php">

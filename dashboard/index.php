@@ -16,7 +16,7 @@
             height:40em;
             display:flex;
             flex-direction:column;
-            background-color: DarkSlateGrey;
+            background-color: #454545;
             overflow-y: scroll;
             width: 50%;
             margin: 0.2em;
@@ -29,7 +29,7 @@
 
         .map {
             width:100%;
-            background-color: DarkSlateGrey;
+            background-color: #454545;
             display:flex;
             align-items: center;
             box-sizing: border-box;
@@ -39,7 +39,7 @@
         }
 
         .map:nth-child(even) {
-            background-color: #203838;
+            background-color: #313131;
         }
 
         .difficulty-name  {
@@ -49,7 +49,7 @@
         }
 
         .recommendation {
-            background-color: DarkSlateGrey;
+            background-color: #454545;
             padding: 0.5em;
             font-size: 11px;
         }

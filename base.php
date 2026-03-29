@@ -5,6 +5,8 @@
 
     session_start();
     $timeAtPageLoad = microtime(true);
+	
+	$env = parse_ini_file(__DIR__ . '/.env');
 
     $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 0;
 
@@ -19,8 +21,8 @@
    : ($_SERVER['HTTP_X_FORWARDED_FOR'] 
         ? $_SERVER['HTTP_X_FORWARDED_FOR'] 
         : $_SERVER['REMOTE_ADDR']);
-    if ($maintenance && $ip != "82.10.155.251"){
-        require("maintenance.php");
-        die("");
-    }
+    if ($maintenance && (!isset($_COOKIE['maintenance_access']) || $_COOKIE['maintenance_access'] !== $env['MAINTENANCE_BYPASS_CODE'])) {
+		include_once 'maintenance.php';
+		die("");
+	}
 ?>

@@ -255,7 +255,7 @@
 ?>
 			<hr>
 			<h2>About me</h2>
-			<div style="background-color:DarkSlateGrey;padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
+			<div style="background-color:#203838;padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
 				<?php
 					echo ParseCommentLinks($conn, $desc);
 				?>
@@ -275,7 +275,7 @@
 ?>
         <hr>
         <h2>Mutuals</h2>
-        <div class="flex-container" style="background-color:DarkSlateGrey;padding:0px;">
+        <div class="flex-container" style="background-color:#203838;padding:0px;">
             <br>
             <?php
                 $counter = 0;

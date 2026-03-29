@@ -27,7 +27,7 @@
 <style>
     .container {
         width: 100%;
-        background-color: darkslategray;
+        background-color: #454545;
         padding: 1.5em;
         box-sizing: border-box;
         overflow: hidden;
@@ -39,14 +39,14 @@
 
     textarea {
         border: 1px solid white;
-        background-color: #203838;
+        background-color: #313131;
         color: white;
         width: 100%;
     }
 
     .container select{
         border: 1px solid white;
-        background-color: #203838;
+        background-color: #313131;
     }
 
     .draggable-container {

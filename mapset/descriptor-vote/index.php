@@ -142,20 +142,19 @@ while ($voteRow = $voteResult->fetch_assoc())
         <p>
             Misuse of the descriptor feature will result in you being banned. Do not abuse this feature by assigning obviously incorrect descriptors.
         </p>
-        <?php if($loggedIn) { ?>
-            <input type="text" id="searchInput" placeholder="Search...">
-            <div id="descriptorTreePopover" class="popover">
-                <?php
-                    $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 
-                    $tree = buildTree($descriptors);
-                    echo generateTreeHTML($tree);
-                ?>
-            </div>
-        <?php } ?>
+		<input type="text" id="searchInput" placeholder="Search...">
+		<div id="descriptorTreePopover" class="popover">
+			<?php
+				$stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
+				$stmt->execute();
+				$result = $stmt->get_result();
+				$descriptors = $result->fetch_all(MYSQLI_ASSOC);
+
+				$tree = buildTree($descriptors);
+				echo generateTreeHTML($tree);
+			?>
+		</div>
 
         <a href="../../descriptors/">View all descriptors</a>
 
@@ -204,163 +203,194 @@ while ($voteRow = $voteResult->fetch_assoc())
         </div>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#searchInput').on('focus', function () {
-                $('#descriptorTreePopover').show();
-            });
+<script>
+	console.log("Hello");
+    const searchInput = document.getElementById('searchInput');
+	console.log(searchInput);
+    const descriptorTreePopover = document.getElementById('descriptorTreePopover');
+    const descriptorBoxContainer = document.getElementById('descriptor-box-container');
+	
+document.addEventListener('DOMContentLoaded', function () {
+    searchInput.addEventListener('focus', () => {
+        descriptorTreePopover.style.display = 'block';
+    });
 
-            $(document).on('click', function (event) {
-                if (!$(event.target).closest('#descriptorTreePopover').length && !$(event.target).is('#searchInput')) {
-                    $('#descriptorTreePopover').hide();
-                }
-            });
+    document.addEventListener('click', (event) => {
+        if (!descriptorTreePopover.contains(event.target) && event.target !== searchInput) {
+            descriptorTreePopover.style.display = 'none';
+        }
+    });
 
-            $('#searchInput').on('input', function () {
-                const searchKeyword = $(this).val().toLowerCase();
-                console.log(searchKeyword);
-                $('#descriptorTreePopover li').each(function () {
-                    const text = $(this).text().toLowerCase();
-                    if (text.includes(searchKeyword)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            });
+    searchInput.addEventListener('input', () => {
+        const searchKeyword = searchInput.value.toLowerCase();
+        console.log(searchKeyword);
+        const listItems = descriptorTreePopover.querySelectorAll('li');
+        listItems.forEach(li => {
+            const text = li.textContent.toLowerCase();
+            li.style.display = text.includes(searchKeyword) ? '' : 'none';
+        });
+    });
 
-            $(document).on('click', '.descriptor', function(event) {
-                if ($(this).find('.unusable').length > 0) {
-                    event.stopPropagation();
-                    return;
-                }
-                var descriptorID = $(this).data('descriptor-id');
-                handleDescriptorClick(descriptorID);
-                $('#searchInput').val('');
-                $('#searchInput').trigger('input');
-                event.stopPropagation();
-            });
+    // Delegate click event for '.descriptor' inside document
+    document.addEventListener('click', function(event) {
+        const target = event.target.closest('.descriptor');
+        if (!target) return;
 
-            $('.descriptor-box').each(function() {
-                const descriptorID = $(this).data('descriptor-id');
-                const upvoteIcon = $(this).find('.icon-thumbs-up');
-                const downvoteIcon = $(this).find('.icon-thumbs-down');
+        if (target.querySelector('.unusable')) {
+            event.stopPropagation();
+            return;
+        }
 
-                upvoteIcon.click(function() {
-                    if (upvoteIcon.hasClass('voted')) {
-                        upvoteIcon.removeClass('voted');
-                    } else {
-                        downvoteIcon.removeClass('voted');
-                        upvoteIcon.addClass('voted');
-                    }
+        const descriptorID = target.dataset.descriptorId;
+        handleDescriptorClick(descriptorID);
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        event.stopPropagation();
+    });
 
-                    submitVote(descriptorID, 1);
-                });
+    // Initialize vote icon click handlers for existing descriptor boxes
+    document.querySelectorAll('.descriptor-box').forEach(descriptorBox => {
+        const descriptorID = descriptorBox.dataset.descriptorId;
+        const upvoteIcon = descriptorBox.querySelector('.icon-thumbs-up');
+        const downvoteIcon = descriptorBox.querySelector('.icon-thumbs-down');
 
-                downvoteIcon.click(function() {
-                    if (downvoteIcon.hasClass('voted')) {
-                        downvoteIcon.removeClass('voted');
-                    } else {
-                        upvoteIcon.removeClass('voted');
-                        downvoteIcon.addClass('voted');
-                    }
-
-                    submitVote(descriptorID, 0);
-                });
-            });
+        upvoteIcon.addEventListener('click', () => {
+            if (upvoteIcon.classList.contains('voted')) {
+                upvoteIcon.classList.remove('voted');
+            } else {
+                downvoteIcon.classList.remove('voted');
+                upvoteIcon.classList.add('voted');
+            }
+            submitVote(descriptorID, 1);
         });
 
-        function handleDescriptorClick(descriptorID) {
-            $.ajax({
-                type: "GET",
-                url: "GetDescriptor.php",
-                data: { descriptorID: descriptorID },
-                dataType: "json",
-                success: function(response) {
-                    if (response) {
-                        if (!isDescriptorBoxExist(descriptorID)) {
-                            createDescriptorBox(response);
-                        }
-                        submitVote(descriptorID, 1);
-                        $('#descriptorTreePopover').toggle();
+        downvoteIcon.addEventListener('click', () => {
+            if (downvoteIcon.classList.contains('voted')) {
+                downvoteIcon.classList.remove('voted');
+            } else {
+                upvoteIcon.classList.remove('voted');
+                downvoteIcon.classList.add('voted');
+            }
+            submitVote(descriptorID, 0);
+        });
+    });
+
+    // Functions
+
+    function handleDescriptorClick(descriptorID) {
+        fetch(`GetDescriptor.php?descriptorID=${encodeURIComponent(descriptorID)}`)
+            .then(response => response.json())
+            .then(response => {
+                if (response) {
+                    if (!isDescriptorBoxExist(descriptorID)) {
+                        createDescriptorBox(response);
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
+                    submitVote(descriptorID, 1);
+                    descriptorTreePopover.style.display = descriptorTreePopover.style.display === 'none' || !descriptorTreePopover.style.display ? 'block' : 'none';
                 }
-            });
+            })
+            .catch(error => console.error(error));
+    }
+
+    function isDescriptorBoxExist(descriptorID) {
+        return !!document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
+    }
+
+    function createDescriptorBox(descriptorData) {
+        const descriptorBox = document.createElement('div');
+        descriptorBox.className = 'descriptor-box';
+        descriptorBox.dataset.descriptorId = descriptorData.DescriptorID;
+
+        const h2 = document.createElement('h2');
+        h2.textContent = descriptorData.Name;
+        descriptorBox.appendChild(h2);
+
+        const subText = document.createElement('span');
+        subText.className = 'subText';
+        subText.textContent = descriptorData.ShortDescription;
+        descriptorBox.appendChild(subText);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions';
+
+        const upvoteIcon = document.createElement('i');
+        upvoteIcon.className = 'icon-thumbs-up voted';
+
+        const downvoteIcon = document.createElement('i');
+        downvoteIcon.className = 'icon-thumbs-down';
+
+        actionsDiv.appendChild(upvoteIcon);
+        actionsDiv.appendChild(downvoteIcon);
+
+        descriptorBox.appendChild(actionsDiv);
+
+        descriptorBox.appendChild(document.createElement('hr'));
+
+        const upvotesB = document.createElement('b');
+        upvotesB.className = 'upvotes';
+        upvotesB.textContent = `upvotes (0): `;
+        descriptorBox.appendChild(upvotesB);
+
+        const upvoteUsersSpan = document.createElement('span');
+        upvoteUsersSpan.className = 'user';
+        descriptorBox.appendChild(upvoteUsersSpan);
+
+        descriptorBox.appendChild(document.createElement('hr'));
+
+        const downvotesB = document.createElement('b');
+        downvotesB.className = 'downvotes';
+        downvotesB.textContent = `downvotes (0): `;
+        descriptorBox.appendChild(downvotesB);
+
+        const downvoteUsersSpan = document.createElement('span');
+        downvoteUsersSpan.className = 'user';
+        descriptorBox.appendChild(downvoteUsersSpan);
+
+        descriptorBoxContainer.appendChild(descriptorBox);
+
+        upvoteIcon.addEventListener('click', () => {
+            if (upvoteIcon.classList.contains('voted')) {
+                upvoteIcon.classList.remove('voted');
+            } else {
+                downvoteIcon.classList.remove('voted');
+                upvoteIcon.classList.add('voted');
+            }
+            submitVote(descriptorData.DescriptorID, 1);
+        });
+
+        downvoteIcon.addEventListener('click', () => {
+            if (downvoteIcon.classList.contains('voted')) {
+                downvoteIcon.classList.remove('voted');
+            } else {
+                upvoteIcon.classList.remove('voted');
+                downvoteIcon.classList.add('voted');
+            }
+            submitVote(descriptorData.DescriptorID, 0);
+        });
+    }
+
+    function updateDescriptorBox(descriptorID, voteData) {
+        const descriptorBox = document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
+        if (!descriptorBox) return;
+
+        const upvotesElem = descriptorBox.querySelector('.upvotes');
+        const downvotesElem = descriptorBox.querySelector('.downvotes');
+        const upvoteUsernamesElem = upvotesElem.nextElementSibling;
+        const downvoteUsernamesElem = downvotesElem.nextElementSibling;
+
+        if (voteData.upvotes == null && voteData.downvotes == null) {
+            descriptorBox.remove();
+            return;
         }
 
-        function isDescriptorBoxExist(descriptorID) {
-            return $('.descriptor-box[data-descriptor-id="' + descriptorID + '"]').length > 0;
-        }
+        upvotesElem.innerHTML = `upvotes (${voteData.upvotes}):`;
+        upvoteUsernamesElem.textContent = voteData.upvoteUsernames.join(', ');
 
-        function createDescriptorBox(descriptorData) {
-            const descriptorBoxContainer = $('#descriptor-box-container');
-            const descriptorBox = $('<div>', {
-                class: 'descriptor-box',
-                'data-descriptor-id': descriptorData.DescriptorID
-            });
+        downvotesElem.innerHTML = `downvotes (${voteData.downvotes}):`;
+        downvoteUsernamesElem.textContent = voteData.downvoteUsernames.join(', ');
+    }
 
-            $('<h2>', { text: descriptorData.Name }).appendTo(descriptorBox);
-            $('<span>', { class: 'subText', text: descriptorData.ShortDescription }).appendTo(descriptorBox);
-            $('<div>', { class: 'actions' }).append(
-                $('<i>', { class: 'icon-thumbs-up voted' }),
-                $('<i>', { class: 'icon-thumbs-down' })
-            ).appendTo(descriptorBox);
-            $('<hr>').appendTo(descriptorBox);
-            $('<b>', { class: 'upvotes' }).text(`upvotes (0): `).appendTo(descriptorBox);
-            $('<span>', { class: 'user' }).appendTo(descriptorBox);
-            $('<hr>').appendTo(descriptorBox);
-            $('<b>', { class: 'downvotes' }).text(`downvotes (0): `).appendTo(descriptorBox);
-            $('<span>', { class: 'user' }).appendTo(descriptorBox);
-
-            descriptorBoxContainer.append(descriptorBox);
-
-            const upvoteIcon = descriptorBox.find('.icon-thumbs-up');
-            const downvoteIcon = descriptorBox.find('.icon-thumbs-down');
-
-            upvoteIcon.click(function() {
-                if (upvoteIcon.hasClass('voted')) {
-                    upvoteIcon.removeClass('voted');
-                } else {
-                    downvoteIcon.removeClass('voted');
-                    upvoteIcon.addClass('voted');
-                }
-
-                submitVote(descriptorData.DescriptorID, 1);
-            });
-
-            downvoteIcon.click(function() {
-                if (downvoteIcon.hasClass('voted')) {
-                    downvoteIcon.removeClass('voted');
-                } else {
-                    upvoteIcon.removeClass('voted');
-                    downvoteIcon.addClass('voted');
-                }
-
-                submitVote(descriptorData.DescriptorID, 0);
-            });
-        }
-
-        function updateDescriptorBox(descriptorID, voteData) {
-            const descriptorBox = $('.descriptor-box[data-descriptor-id="' + descriptorID + '"]');
-            const upvotesElem = descriptorBox.find('.upvotes');
-            const downvotesElem = descriptorBox.find('.downvotes');
-            const upvoteUsernamesElem = upvotesElem.next('.user');
-            const downvoteUsernamesElem = downvotesElem.next('.user');
-
-            if (voteData.upvotes == null && voteData.downvotes == null)
-                 descriptorBox.remove();
-
-            upvotesElem.html(`upvotes (${voteData.upvotes}):`);
-            upvoteUsernamesElem.text(voteData.upvoteUsernames.join(', '));
-
-            downvotesElem.html(`downvotes (${voteData.downvotes}):`);
-            downvoteUsernamesElem.text(voteData.downvoteUsernames.join(', '));
-        }
-
-        function submitVote(descriptorID, vote) {
+    function submitVote(descriptorID, vote) {
             $.ajax({
                 type: "POST",
                 url: "SubmitVote.php",
@@ -378,7 +408,8 @@ while ($voteRow = $voteResult->fetch_assoc())
                 }
             });
         }
-    </script>
+});
+</script>
 
 <?php
 require '../../footer.php';
