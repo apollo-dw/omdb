@@ -5,8 +5,6 @@
 
     session_start();
     $timeAtPageLoad = microtime(true);
-	
-	$env = parse_ini_file(__DIR__ . '/.env');
 
     $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 0;
 
