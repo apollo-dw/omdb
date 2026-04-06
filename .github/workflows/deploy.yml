@@ -22,7 +22,7 @@ jobs:
             fi
   
             cd /var/www/nyahh/omdb-test/
-            git pull origin main
+            git pull origin master
 
             # write env file
             cat <<EOF > .env
