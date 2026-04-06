@@ -1,0 +1,30 @@
+name: Deploy VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/nyahh/omdb-test/
+            git pull origin main
+
+            # write env file
+            cat <<EOF > .env
+            DATABASE_USER=${{ secrets.DATABASE_USER }}
+            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            MAINTENANCE_BYPASS_CODE=${{ secrets.MAINTENANCE_BYPASS_CODE }}
+            OSU_API_V1_KEY=${{ secrets.OSU_API_V1_KEY }}
+            OSU_CLIENT_ID=${{ secrets.OSU_CLIENT_ID }}
+            OSU_CLIENT_SECRET=${{ secrets.OSU_CLIENT_SECRET }}
+            EOF
