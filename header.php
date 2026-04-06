@@ -121,7 +121,9 @@ error_reporting(E_ALL);
 		
 		<div class="content" style="margin-top:5em;">
 
-
+		<!--
             <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
                 <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">welcome back!<br><a href="/update.php">read more</a></span>
             </div>
+		-->
+		
