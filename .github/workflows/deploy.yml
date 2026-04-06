@@ -17,6 +17,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            if [ ! -d "/var/www/nyahh/omdb-test/.git" ]; then
+              git clone https://github.com/apollo-dw/omdb.git /var/www/nyahh/omdb-test
+            fi
+  
             cd /var/www/nyahh/omdb-test/
             git pull origin main
 
