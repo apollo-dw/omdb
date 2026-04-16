@@ -3,7 +3,7 @@
 	require "../base.php";
     require '../header.php';
 
-    $year = $_GET["y"] ?? 2025;
+    $year = $_GET["y"] ?? 2026;
     $page = $_GET['p'] ?? 1;
     $yearString = $year == "all-time" ? 'All Time' : $year;
 
