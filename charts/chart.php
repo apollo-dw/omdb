@@ -21,7 +21,7 @@
         $selectedDescriptors = json_decode($descriptorsJSON, true);
     }
 
-	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language) || !is_numeric($country) || !is_numeric($minSR) || !is_numeric($maxSR)){
+	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($genre) || !is_numeric($language) || !is_numeric($minSR) || !is_numeric($maxSR)){
 		die("NOO");
 	}
 ?>
