@@ -1,15 +1,9 @@
 <?php
 	function isIdEditRequestAdmin($needle) {
-    $haystack = [12704035, //fsjallink
-				 9558549, //moonpoint 
+    $haystack = [9558549, //fsjallink
 				 8088092, // shizume
-				 290128, //onosakihito
-				 4335785, //maxus
-				 15243233, //kurboh
 				 11220416, //wither
-				 266596, //kevincela
-				 2688581, //luscent
-				 14102976]; // hivie
+				 2688581]; //luscent
 	
     foreach ($haystack as $item) {
         if ($item === $needle) {
