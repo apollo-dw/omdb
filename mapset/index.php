@@ -243,17 +243,19 @@ while($row = $result->fetch_assoc()) {
 
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
 
-    $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name
-                                          FROM descriptor_votes 
-                                          JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
-                                          WHERE BeatmapID = ?
-                                          GROUP BY DescriptorID
-                                          HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)
-                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
-                                          LIMIT 10;");
-    $stmt->bind_param("i", $beatmapID);
-    $stmt->execute();
-    $descriptorResult = $stmt->get_result();
+    $stmt = $conn->prepare("
+		SELECT 
+			bd.DescriptorID,
+			d.Name
+		FROM beatmap_descriptors bd
+		JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+		WHERE bd.BeatmapID = ?
+		ORDER BY bd.Weight DESC, bd.DescriptorID
+		LIMIT 10
+	");
+	$stmt->bind_param("i", $beatmapID);
+	$stmt->execute();
+	$descriptorResult = $stmt->get_result();
 ?>
 
     <div class="flex-container difficulty-container alternating-bg" >

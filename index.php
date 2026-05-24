@@ -265,20 +265,20 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 if ($result->num_rows >= 1) {
                     $result = $result->fetch_assoc();
                     $year = date("Y", strtotime($result['DateRanked']));
-
-
-                    $stmt = $conn->prepare("
-                                SELECT d.DescriptorID, d.Name
-                                FROM descriptor_votes 
-                                JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
-                                WHERE BeatmapID = ?
-                                GROUP BY DescriptorID
-                                HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > (SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) + 0)
-                                ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
-                                LIMIT 5;");
-                    $stmt->bind_param("i", $result["BeatmapID"]);
-                    $stmt->execute();
-                    $descriptorResult = $stmt->get_result();
+					
+					$stmt = $conn->prepare("
+						SELECT 
+							bd.DescriptorID,
+							d.Name
+						FROM beatmap_descriptors bd
+						JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+						WHERE bd.BeatmapID = ?
+						ORDER BY bd.Weight DESC, bd.DescriptorID
+						LIMIT 5
+					");
+					$stmt->bind_param("i", $result["BeatmapID"]);
+					$stmt->execute();
+					$descriptorResult = $stmt->get_result();
                 } else {
                     $result = null;
                 }

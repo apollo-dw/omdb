@@ -55,6 +55,30 @@
     $stmt->execute();
     $result = $stmt->get_result();
     $voteData = $result->fetch_assoc();
+	
+	$upvotes = (int)$voteData['upvotes'];
+	$downvotes = (int)$voteData['downvotes'];
+	$net = $upvotes - $downvotes;
+
+	if ($net > 0) {
+		$stmt = $conn->prepare("
+			INSERT INTO beatmap_descriptors (BeatmapID, DescriptorID, Weight)
+			VALUES (?, ?, ?)
+			ON DUPLICATE KEY UPDATE Weight = VALUES(Weight)
+		");
+
+		$stmt->bind_param('iid', $beatmapID, $descriptorID, $net);
+		$stmt->execute();
+
+	} else {
+		$stmt = $conn->prepare("
+			DELETE FROM beatmap_descriptors
+			WHERE BeatmapID = ? AND DescriptorID = ?
+		");
+
+		$stmt->bind_param('ii', $beatmapID, $descriptorID);
+		$stmt->execute();
+	}
 
     $stmt = $conn->prepare( "SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 1;");
     $stmt->bind_param('ii', $beatmapID, $descriptorID);

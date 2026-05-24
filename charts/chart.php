@@ -87,21 +87,24 @@
                 $params[] = $country;
             }
 
-            $descriptorString = "";
-            if (!empty($selectedDescriptors)) {
-                $subqueries = [];
+			$descriptorString = "";
+			if (!empty($selectedDescriptors)) {
+				$subqueries = [];
 
-                foreach ($selectedDescriptors as $descriptor) {
-                    $descriptorID = $descriptor['id'];
+				foreach ($selectedDescriptors as $descriptor) {
+					$descriptorID = $descriptor['id'];
 
-                    if (!is_numeric($descriptorID))
-                        die("NOOO");
-                    $subquery = "(SELECT COUNT(*) FROM descriptor_votes dv WHERE b.BeatmapID = dv.BeatmapID AND dv.DescriptorID = '{$descriptorID}' AND dv.Vote = 1)";
-                    $subqueries[] = "{$subquery} > (SELECT COALESCE(COUNT(*), 0) FROM descriptor_votes dv WHERE b.BeatmapID = dv.BeatmapID AND dv.DescriptorID = '{$descriptorID}' AND dv.Vote = 0)";
-                }
+					if (!is_numeric($descriptorID)) {
+						die("NOOO");
+					}
 
-                $descriptorString = "AND (" . implode(" AND ", $subqueries) . ")";
-            }
+					$descriptorID = (int)$descriptorID;
+
+					$subqueries[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = $descriptorID)";
+				}
+
+				$descriptorString = "AND (" . implode(" AND ", $subqueries) . ")";
+			}
 
             $hideAlreadyRatedString = "";
             if ($hideAlreadyRated)
@@ -181,17 +184,19 @@
             $result = $stmt->get_result();
 
 			while($row = $result->fetch_assoc()) {
-                $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name
-                                          FROM descriptor_votes 
-                                          JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
-                                          WHERE BeatmapID = ?
-                                          GROUP BY DescriptorID
-                                          HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > (SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) + 0)
-                                          ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
-                                          LIMIT 10;");
-                $stmt->bind_param("i", $row["BeatmapID"]);
-                $stmt->execute();
-                $descriptorResult = $stmt->get_result();
+				$stmt = $conn->prepare("
+					SELECT 
+						bd.DescriptorID,
+						d.Name
+					FROM beatmap_descriptors bd
+					JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+					WHERE bd.BeatmapID = ?
+					ORDER BY bd.Weight DESC, bd.DescriptorID
+					LIMIT 10
+				");
+				$stmt->bind_param("i", $row["BeatmapID"]);
+				$stmt->execute();
+				$descriptorResult = $stmt->get_result();
 
 				$counter += 1;
 		?>
