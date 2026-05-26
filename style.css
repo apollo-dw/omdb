@@ -778,7 +778,7 @@ ol.star-rating-list > li {
   max-width: 220px;
   background: #000;
   color: #fff;
-  border: 1px solid DarkSlateGrey;
+  border: 1px solid #203838;
   border-radius: 4px;
   padding: 6px 10px;
   font-size: 12px;
@@ -810,5 +810,5 @@ ol.star-rating-list > li {
   bottom: 100%;
   top: auto;
 
-  border-color: transparent transparent DarkSlateGrey transparent;
+  border-color: transparent transparent #203838 transparent;
 }
