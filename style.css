@@ -431,6 +431,10 @@ button.blocked:hover {
 
 textarea {
   margin: 0;
+  background-color: #203838;
+  color: white;
+  border: 1px solid white;
+  box-sizing: border-box;
 }
 
 textarea#commentForm {
@@ -438,10 +442,6 @@ textarea#commentForm {
   text-align: left;
   resize: none;
   height: 6em;
-  background-color: #203838;
-  color: white;
-  border: 1px solid white;
-  box-sizing: border-box;
 }
 
 [contenteditable] {
