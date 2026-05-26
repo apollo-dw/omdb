@@ -669,6 +669,38 @@ while($row = $result->fetch_assoc()) {
 
                     if ($is_blocked)
                         continue;
+
+                    $stmt = $conn->prepare("
+                        SELECT
+                            COUNT(*) AS totalHearts,
+                            SUM(CASE WHEN UserID = ? THEN 1 ELSE 0 END) AS userLiked,
+                            GROUP_CONCAT(UserID) AS heartedUsers
+                        FROM review_hearts
+                        WHERE ReviewID = ?
+                    ");
+                    $stmt->bind_param("ii", $userId, $row["ReviewID"]);
+                    $stmt->execute();
+
+                    $heartData = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+
+                    $reviewHeartCount = (int)$heartData['totalHearts'];
+                    $userHasLikedReview = ((int)$heartData['userLiked']) > 0;
+
+                    $heartedUserIds = [];
+                    if (!empty($heartData['heartedUsers'])) {
+                        $heartedUserIds = array_map('intval', explode(',', $heartData['heartedUsers']));
+                    }
+                    $heartedUsernames = [];
+
+                    foreach ($heartedUserIds as $uid) {
+                        $heartedUsernames[] =
+                            "<span style='white-space: nowrap;'>" .
+                            htmlspecialchars(GetUserNameFromId($uid, $conn)) .
+                            "</span>";
+                    }
+
+                    $heartedUsernamesString = implode(", ", $heartedUsernames);
                     
 					?>
                     <div class="flex-container flex-child commentHeader">
@@ -690,6 +722,22 @@ while($row = $result->fetch_assoc()) {
 						<?php
                             echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
                         ?>
+                            <?php if ($loggedIn) { ?>
+                                <div class="tooltip-wrapper" style="float:right;">
+                                    <span class="subText">[<?php echo $reviewHeartCount; ?>]</span>
+
+                                    <i
+                                        style="cursor: pointer;"
+                                        id="review-heart"
+                                        class="icon-heart<?php if (!$userHasLikedReview) echo "-empty"; ?>"
+                                        value="<?php echo $row["ReviewID"]; ?>"
+                                    ></i>
+
+                                    <div class="tooltip-box">
+                                        <?php echo $heartedUsernamesString; ?>
+                                    </div>
+                                </div>
+                            <?php } ?>
 					</div>
 					<?php
 				}
@@ -899,6 +947,23 @@ while($row = $result->fetch_assoc()) {
                 console.log(response);
             } else {
                 console.error(error);
+            }
+        });
+    });
+
+    $('#review-heart').on('click', function() {
+        var $this = $(this);
+        $.ajax({
+            type: 'POST',
+            url: 'HeartReview.php',
+            data: { rID:  $this.attr('value') },
+            dataType: 'json',
+            success: function(response) {
+                if (response.state === 1) {
+                    $('#list-heart').removeClass('icon-heart-empty').addClass('icon-heart');
+                } else if (response.state === 0) {
+                    $('#list-heart').removeClass('icon-heart').addClass('icon-heart-empty');
+                }
             }
         });
     });
