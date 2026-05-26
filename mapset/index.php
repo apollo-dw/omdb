@@ -713,7 +713,7 @@ while($row = $result->fetch_assoc()) {
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
                             if ($row["UserID"] == $userId || $isModerator) { ?>
-                                <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
+                                <i class="icon-remove removeReview" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
                             <?php }
                             echo GetHumanTime($row["date"]); ?>
                         </div>
@@ -816,6 +816,26 @@ while($row = $result->fetch_assoc()) {
         xhttp.open("POST", "RemoveComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
+    });
+
+    $(".removeReview").click(function(event){
+        var $this = $(this);
+
+        if (!confirm("Are you sure you want to remove this review?")) {
+            return;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                location.reload();
+            }
+        };
+
+        xhttp.open("POST", "RemoveReview.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&rID=" + $this.attr('value'));
     });
 
     function setStarRatingDisplay(element, value) {
