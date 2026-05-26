@@ -19,6 +19,17 @@
     if($mapset_id == -1){
         siteRedirect();
     }
+	
+	$stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
+	$stmt->bind_param("ss", $userId, $mapset_id);
+	$stmt->execute();
+	$stmt->store_result();
+	
+	$review_comment = "";
+	if ($stmt->num_rows > 0) {
+		$stmt->bind_result($review_comment);
+		$stmt->fetch();
+	}
 
     $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
     $stmt->bind_param("s", $mapset_id);
@@ -411,7 +422,7 @@ while($row = $result->fetch_assoc()) {
 		</div>
 
 		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:#454545;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
 				<div>
 					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
 					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
@@ -472,97 +483,10 @@ while($row = $result->fetch_assoc()) {
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
-		<?php if ($credits) { ?>
-		<div style="background-color:#203838;padding: 0.25em;">
-            Credits
-        </div>
-		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
-            <ul>
+        <h3>Comments (<?php echo $commentCount; ?>)</h3>
+		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
-				foreach ($credits as $credit) {
-					echo "<li>
-					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
-                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
-					<br>
-					<span class='subText'>{$credit['Roles']}</span>
-					</li>";
-				}
-			?>
-			</ul>
-        </div>
-		<?php } ?>
-        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
-            Latest Ratings
-        </div>
-        <div id="setRatingsDisplay">
-            <?php
-            require 'ratings.php';
-            ?>
-        </div>
-        <?php
-            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
-                                          FROM lists l
-                                          LEFT JOIN list_items li ON l.ListID = li.ListID
-                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
-                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
-                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
-                                          LIMIT 10;");
-
-            $stmt->bind_param("ii", $mapset_id, $mapset_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $stmt->close();
-
-            if ($result->num_rows > 0) {
-                ?>
-                <div style="background-color:#203838;padding: 0.25em;">
-                    Featured on lists
-                </div>
-                <?php
-                while ($row = $result->fetch_assoc()) {
-                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
-                    $stmt->bind_param("i", $row["ListID"]);
-                    $stmt->execute();
-                    $item = $stmt->get_result()->fetch_assoc();
-
-                    list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
-                    ?>
-                    <div class="flex-container ratingContainer alternating-bg">
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
-                        </div>
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
-                        </div>
-                    </div>
-                    <?php
-                }
-            }
-        ?>
-    </div>
-	<?php if ($mapset_id !== "1991647") { ?>
-    <div class="flex-child column-when-mobile" style="width:60%;">
-        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
-            Comments (<?php echo $commentCount; ?>)
-        </div>
-        <div class="flex-container commentContainer" style="width:100%;">
-            <?php if($loggedIn) { ?>
-                <div class="flex-child commentComposer">
-                    <form>
-                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-                        <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
-                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
-                    </form>
-                    <?php if ($hasBlacklistedDifficulties) { ?>
-                        <p>
-                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
-                        </p>
-                    <?php } ?>
-                </div>
-            <?php }
-
-            $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
+            $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -596,7 +520,7 @@ while($row = $result->fetch_assoc()) {
                             echo GetHumanTime($row["date"]); ?>
                         </div>
                     </div>
-                    <div class="flex-child comment" style="min-width:0;overflow: hidden;">
+                    <div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
                         <?php
                             if (!$is_blocked)
                                 echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
@@ -608,15 +532,150 @@ while($row = $result->fetch_assoc()) {
                 }
             }
             ?>
+			
+			<?php if($loggedIn) { ?>
+                <div class="flex-child commentComposer">
+                    <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
+                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
+						<a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
+                    </form>
+                    <?php if ($hasBlacklistedDifficulties) { ?>
+                        <p>
+                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
+                        </p>
+                    <?php } ?>
+                </div>
+            <?php } ?>
 
         </div>
+		<hr />
+		<?php if ($credits) { ?>
+		<div style="padding: 0.25em;">
+            <h3>Credits</h3>
+        </div>
+		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
+            <ul>
+			<?php
+				foreach ($credits as $credit) {
+					echo "<li>
+					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
+                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
+					<br>
+					<span class='subText'>{$credit['Roles']}</span>
+					</li>";
+				}
+			?>
+			</ul>
+        </div>
+		< hr/>
+		<?php } ?>
+        <h3>Latest Ratings</h3>
+        <div id="setRatingsDisplay">
+            <?php
+            require 'ratings.php';
+            ?>
+        </div>
+        <?php
+            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
+                                          FROM lists l
+                                          LEFT JOIN list_items li ON l.ListID = li.ListID
+                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
+                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
+                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
+                                          LIMIT 10;");
+
+            $stmt->bind_param("ii", $mapset_id, $mapset_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            if ($result->num_rows > 0) {
+                ?>
+                <hr />
+                <h3>Featured on lists</h3>
+                <?php
+                while ($row = $result->fetch_assoc()) {
+                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
+                    $stmt->bind_param("i", $row["ListID"]);
+                    $stmt->execute();
+                    $item = $stmt->get_result()->fetch_assoc();
+
+                    list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
+                    ?>
+                    <div class="flex-container ratingContainer alternating-bg">
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
+                        </div>
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
+                        </div>
+                    </div>
+                    <?php
+                }
+            }
+        ?>
     </div>
-	<?php } ?>
+	<div class="flex-child column-when-mobile" style="width:60%;">
+		<h3>Reviews</h3>
+		
+		<form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+			<textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a video: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
+			<input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
+		</form>
+		
+		<?php
+			$stmt = $conn->prepare("SELECT * FROM `reviews` WHERE SetID = ? ORDER BY date DESC");
+			$stmt->bind_param("s", $sampleRow["SetID"]);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			if ($result->num_rows != 0) {
+                
+				while ($row = $result->fetch_assoc()) {
+                    $is_blocked = 0;
+
+                    if ($loggedIn) {
+                        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
+                        $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                        $stmt_relation_to_profile_user->execute();
+                        $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+                    }
+                    
+					?>
+                    <div class="flex-container flex-child commentHeader">
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                        </div>
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                        </div>
+                        <div class="flex-child" style="margin-left:auto;">
+                            <?php
+                            if ($row["UserID"] == $userId || $isModerator) { ?>
+                                <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
+                            <?php }
+                            echo GetHumanTime($row["date"]); ?>
+                        </div>
+                    </div>
+					<div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
+						<?php
+                            if (!$is_blocked)
+                                echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
+                            else
+                                echo "<p>[blocked comment]</p>";
+                        ?>
+					</div>
+					<?php
+				}
+			}
+		?>
+	</div>
 </div>
 
 <script>
 	window.addEventListener('DOMContentLoaded', function() {
-		const container = document.getElementById('comment-container');
+		const container = document.getElementById('commentContainer');
 		container.scrollTop = container.scrollHeight;
 	});
 
@@ -636,6 +695,25 @@ while($row = $result->fetch_assoc()) {
             xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + encodeURIComponent(text));
         }
     }
+	
+	function submitReview() {
+		var text = document.getElementById('reviewForm').value;
+		if (text.length > 3) {
+			document.getElementById('reviewSubmit').disabled = true;
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState === 4 && this.status === 200) {
+					location.reload();
+				}
+			};
+
+			var sID = "<?php echo $mapset_id; ?>";
+			xhttp.open("POST", "SubmitReview.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("sID=" + sID + "&comment=" + encodeURIComponent(text));
+		}
+	}
 
     $('#commentForm').keydown(function (event) {
         if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
