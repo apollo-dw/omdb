@@ -479,11 +479,69 @@ while($row = $result->fetch_assoc()) {
         <span class="subText"><a href="edit/?id=<?php echo $mapset_id; ?>"><i class="icon-edit"></i> Propose edit</a></span>
     <?php } ?>
 </div>
-<hr style="margin-bottom:1em;margin-top: 0">
+<hr style="margin-top: 0">
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
-        <h3>Comments (<?php echo $commentCount; ?>)</h3>
+        <?php if ($credits) { ?>
+        <h4 style="margin-bottom: 0;">Credits</h4>
+		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
+            <ul>
+			<?php
+				foreach ($credits as $credit) {
+					echo "<li>
+					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
+                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
+					<br>
+					<span class='subText'>{$credit['Roles']}</span>
+					</li>";
+				}
+			?>
+			</ul>
+        </div>
+        <hr />
+		<?php } ?>
+        <?php
+            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
+                                          FROM lists l
+                                          LEFT JOIN list_items li ON l.ListID = li.ListID
+                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
+                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
+                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
+                                          LIMIT 10;");
+
+            $stmt->bind_param("ii", $mapset_id, $mapset_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            if ($result->num_rows > 0) {
+                ?>
+                <h4 style="margin-bottom: 0;">Featured on lists</h4>
+                <?php
+                while ($row = $result->fetch_assoc()) {
+                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
+                    $stmt->bind_param("i", $row["ListID"]);
+                    $stmt->execute();
+                    $item = $stmt->get_result()->fetch_assoc();
+
+                    list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
+                    ?>
+                    <div class="flex-container ratingContainer alternating-bg">
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
+                        </div>
+                        <div class="flex-child">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
+                        </div>
+                    </div>
+                    <?php
+                }
+                echo "<hr />";
+            }
+        ?>
+        <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
 		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
             $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date ASC");
@@ -550,75 +608,15 @@ while($row = $result->fetch_assoc()) {
 
         </div>
 		<hr />
-		<?php if ($credits) { ?>
-		<div style="padding: 0.25em;">
-            <h3>Credits</h3>
-        </div>
-		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
-            <ul>
-			<?php
-				foreach ($credits as $credit) {
-					echo "<li>
-					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
-                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
-					<br>
-					<span class='subText'>{$credit['Roles']}</span>
-					</li>";
-				}
-			?>
-			</ul>
-        </div>
-		< hr/>
-		<?php } ?>
-        <h3>Latest Ratings</h3>
+        <h4 style="margin-bottom: 0;">Latest Ratings</h4>
         <div id="setRatingsDisplay">
             <?php
             require 'ratings.php';
             ?>
         </div>
-        <?php
-            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
-                                          FROM lists l
-                                          LEFT JOIN list_items li ON l.ListID = li.ListID
-                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
-                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
-                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
-                                          LIMIT 10;");
-
-            $stmt->bind_param("ii", $mapset_id, $mapset_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $stmt->close();
-
-            if ($result->num_rows > 0) {
-                ?>
-                <hr />
-                <h3>Featured on lists</h3>
-                <?php
-                while ($row = $result->fetch_assoc()) {
-                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
-                    $stmt->bind_param("i", $row["ListID"]);
-                    $stmt->execute();
-                    $item = $stmt->get_result()->fetch_assoc();
-
-                    list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
-                    ?>
-                    <div class="flex-container ratingContainer alternating-bg">
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
-                        </div>
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
-                        </div>
-                    </div>
-                    <?php
-                }
-            }
-        ?>
     </div>
 	<div class="flex-child column-when-mobile" style="width:60%;">
-		<h3>Reviews</h3>
+		<h4 style="margin-bottom: 0;">Reviews</h4>
 		
 		<form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
 			<textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
