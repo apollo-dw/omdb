@@ -134,68 +134,86 @@
         </div>
 		<?php } ?>
 		
+        <?php
+            $stmt = $conn->prepare("
+                SELECT
+                    (SELECT COUNT(*)
+                    FROM user_relations
+                    WHERE UserIDTo = ?
+                    AND type = '1') AS friendCount,
+
+                    (SELECT COUNT(*)
+                    FROM ratings
+                    WHERE UserID = ?) AS ratingCount,
+
+                    (SELECT COUNT(*)
+                    FROM comments
+                    WHERE UserID = ?) AS commentCount,
+
+                    (SELECT COUNT(*)
+                    FROM beatmapsets s
+                    WHERE CreatorID = ?
+                    AND EXISTS (
+                        SELECT 1
+                        FROM beatmaps bm
+                        WHERE bm.SetID = s.SetID
+                        AND bm.Status IN (1, 2)
+                    )) AS mapsetCount,
+
+                    (SELECT COUNT(*)
+                    FROM beatmap_edit_requests
+                    WHERE UserID = ?
+                    AND Status = 'Approved') AS approvedEditCount,
+
+                    (SELECT COUNT(*)
+                    FROM descriptor_votes
+                    WHERE UserID = ?) AS descriptorVoteCount
+            ");
+
+            $stmt->bind_param(
+                "iiiiii",
+                $profileId,
+                $profileId,
+                $profileId,
+                $profileId,
+                $profileId,
+                $profileId
+            );
+
+            $stmt->execute();
+
+            $stats = $stmt->get_result()->fetch_assoc();
+
+            $stmt->close();
+
+            $friendCount = $stats["friendCount"];
+            $ratingCount = $stats["ratingCount"];
+            $commentCount = $stats["commentCount"];
+            $mapsetCount = $stats["mapsetCount"];
+            $approvedEditCount = $stats["approvedEditCount"];
+            $descriptorVoteCount = $stats["descriptorVoteCount"];
+        ?>
+
         <div class="profileStats">
-            <?php
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM `user_relations` WHERE `UserIDTo` = ? AND `type` = '1'");
-                $stmt->bind_param("i", $profileId);
-                $stmt->execute();
-                $stmt->bind_result($friendCount);
-                $stmt->fetch();
-                $stmt->close();
-            ?>
-            <a href="friends/?id=<?php echo $profileId; ?>"><b>Friends:</b> <?php echo $friendCount; ?></a><br>
+            <a href="friends/?id=<?php echo $profileId; ?>">
+                <b>Friends:</b> <?php echo $friendCount; ?>
+            </a><br>
 
-            <?php
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings` WHERE `UserID` = ?");
-                $stmt->bind_param("i", $profileId);
-                $stmt->execute();
-                $stmt->bind_result($ratingCount);
-                $stmt->fetch();
-                $stmt->close();
-            ?>
-            <a href="ratings/?id=<?php echo $profileId; ?>&p=1"><b>Ratings:</b> <?php echo $ratingCount; ?></a><br>
+            <a href="ratings/?id=<?php echo $profileId; ?>&p=1">
+                <b>Ratings:</b> <?php echo $ratingCount; ?>
+            </a><br>
 
-            <?php
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
-                $stmt->bind_param("i", $profileId);
-                $stmt->execute();
-                $stmt->bind_result($commentCount);
-                $stmt->fetch();
-                $stmt->close();
-            ?>
-            <a href="comments/?id=<?php echo $profileId; ?>"><b>Comments:</b> <?php echo $commentCount; ?></a><br>
+            <a href="comments/?id=<?php echo $profileId; ?>">
+                <b>Comments:</b> <?php echo $commentCount; ?>
+            </a><br>
 
-            <?php
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM beatmapsets s WHERE CreatorID = ? 
-                                     AND EXISTS ( SELECT 1 FROM `beatmaps` bm WHERE bm.SetID = s.SetID AND bm.Status IN (1, 2));");
-                $stmt->bind_param("i", $profileId);
-                $stmt->execute();
-                $stmt->bind_result($mapsetCount);
-                $stmt->fetch();
-                $stmt->close();
-            ?>
             <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
 
-            <?php
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `beatmap_edit_requests` WHERE `UserID` = ? AND Status = 'Approved';");
-            $stmt->bind_param("i", $profileId);
-            $stmt->execute();
-            $stmt->bind_result($approvedEditCount);
-            $stmt->fetch();
-            $stmt->close();
-            ?>
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
 
-            <?php
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `descriptor_votes` WHERE `UserID` = ?;");
-            $stmt->bind_param("i", $profileId);
-            $stmt->execute();
-            $stmt->bind_result($descriptorVoteCount);
-            $stmt->fetch();
-            $stmt->close();
-            ?>
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
         </div>
+
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
                 <div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["5.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
