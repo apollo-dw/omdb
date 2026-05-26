@@ -623,10 +623,10 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
-                            if ($loggedIn && $userName == "apollodw") { ?>
+                            if ($loggedIn && $userName == "moonpoint") { ?>
                                 <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
-                            if ($row["UserID"] == $userId || $userName == "apollodw") { ?>
+                            if ($row["UserID"] == $userId || $userName == "moonpoint") { ?>
                                 <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
                             echo GetHumanTime($row["date"]); ?>

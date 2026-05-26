@@ -37,7 +37,7 @@
     $stmt->execute();
     $stmt->close();
 
-    if ($result["UserID"] != $userId && $userName != "apollodw") {
+    if ($result["UserID"] != $userId && $userName != "moonpoint") {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
         die("Forbidden");
