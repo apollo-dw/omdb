@@ -16,7 +16,7 @@
             height:40em;
             display:flex;
             flex-direction:column;
-            background-color: #454545;
+            background-color: DarkSlateGrey;
             overflow-y: scroll;
             width: 50%;
             margin: 0.2em;
@@ -29,7 +29,7 @@
 
         .map {
             width:100%;
-            background-color: #454545;
+            background-color: DarkSlateGrey;
             display:flex;
             align-items: center;
             box-sizing: border-box;
@@ -49,7 +49,7 @@
         }
 
         .recommendation {
-            background-color: #454545;
+            background-color: DarkSlateGrey;
             padding: 0.5em;
             font-size: 11px;
         }

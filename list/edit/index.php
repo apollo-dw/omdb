@@ -27,7 +27,7 @@
 <style>
     .container {
         width: 100%;
-        background-color: #454545;
+        background-color: DarkSlateGrey;
         padding: 1.5em;
         box-sizing: border-box;
         overflow: hidden;

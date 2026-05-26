@@ -32,7 +32,7 @@
 
 <style>
     .container {
-        background-color: #454545;
+        background-color: DarkSlateGrey;
         width: 100%;
         box-sizing: border-box;
         padding: 1em;
