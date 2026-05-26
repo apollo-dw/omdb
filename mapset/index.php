@@ -534,7 +534,7 @@ while($row = $result->fetch_assoc()) {
             ?>
 			
 			<?php if($loggedIn) { ?>
-                <div class="flex-child commentComposer">
+                <div class="commentComposer">
                     <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
                         <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
@@ -620,7 +620,7 @@ while($row = $result->fetch_assoc()) {
 	<div class="flex-child column-when-mobile" style="width:60%;">
 		<h3>Reviews</h3>
 		
-		<form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+		<form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
 			<textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
 			<input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
 		</form>
@@ -641,6 +641,9 @@ while($row = $result->fetch_assoc()) {
                         $stmt_relation_to_profile_user->execute();
                         $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
                     }
+
+                    if ($is_blocked)
+                        continue;
                     
 					?>
                     <div class="flex-container flex-child commentHeader">
@@ -660,10 +663,7 @@ while($row = $result->fetch_assoc()) {
                     </div>
 					<div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
 						<?php
-                            if (!$is_blocked)
-                                echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
-                            else
-                                echo "<p>[blocked comment]</p>";
+                            echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
                         ?>
 					</div>
 					<?php
