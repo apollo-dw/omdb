@@ -776,6 +776,7 @@ ol.star-rating-list > li {
   position: absolute;
   right: 0;
   max-width: 220px;
+  width: max-content;
   background: #000;
   color: #fff;
   border: 1px solid #203838;
