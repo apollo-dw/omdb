@@ -388,16 +388,18 @@ button.blocked:hover {
 }
 
 .mapsetRankingDistributionBar {
-  float: bottom;
-  width: calc(100% / 11);
   min-height: 0px;
   margin: 0px;
   padding: 0px;
   text-align: left;
-  display: inline;
   vertical-align: bottom;
   background-color: rgba(125, 125, 125, 0.33);
   border-bottom: 1px solid rgba(125, 125, 125, 0.33);
+  transition: background-color 0.15s ease;
+}
+
+.mapsetRankingDistributionBar:hover {
+  background-color: rgba(125, 125, 125, 0.66);
 }
 
 .commentContainer {

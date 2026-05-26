@@ -198,40 +198,57 @@ while($row = $result->fetch_assoc()) {
     $stmt->execute();
     $ratedQueryResult = $stmt->get_result();
 
+    $blackListed = $row["Blacklisted"];
+    $hasCharted = $row["ChartYearRank"] != null;
+
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 
-    $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count, SUM(u.Weight) as WeightedCount FROM `ratings` JOIN users u on ratings.UserID = u.UserID WHERE `BeatmapID` = ? GROUP BY `Score`");
+    $scoreBuckets = [
+        "0.0" => ["weighted" => 0, "count" => 0],
+        "0.5" => ["weighted" => 0, "count" => 0],
+        "1.0" => ["weighted" => 0, "count" => 0],
+        "1.5" => ["weighted" => 0, "count" => 0],
+        "2.0" => ["weighted" => 0, "count" => 0],
+        "2.5" => ["weighted" => 0, "count" => 0],
+        "3.0" => ["weighted" => 0, "count" => 0],
+        "3.5" => ["weighted" => 0, "count" => 0],
+        "4.0" => ["weighted" => 0, "count" => 0],
+        "4.5" => ["weighted" => 0, "count" => 0],
+        "5.0" => ["weighted" => 0, "count" => 0],
+    ];
+
+    $stmt = $conn->prepare("
+        SELECT
+            Score,
+            COUNT(*) AS cnt,
+            SUM(u.Weight) AS weighted
+        FROM ratings
+        JOIN users u ON ratings.UserID = u.UserID
+        WHERE BeatmapID = ?
+        GROUP BY Score
+    ");
+
     $stmt->bind_param("i", $row["BeatmapID"]);
     $stmt->execute();
-    $ratingResult = $stmt->get_result();
-
-    $blackListed = $row["Blacklisted"] == 1;
-    $hasCharted = $ratingResult->num_rows > 0 && $row["ChartYearRank"] != null;
-
-    // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
-    $ratingCounts = array();
-    $ratingCounts['0.0'] = 0;
-    $ratingCounts['0.5'] = 0;
-    $ratingCounts['1.0'] = 0;
-    $ratingCounts['1.5'] = 0;
-    $ratingCounts['2.0'] = 0;
-    $ratingCounts['2.5'] = 0;
-    $ratingCounts['3.0'] = 0;
-    $ratingCounts['3.5'] = 0;
-    $ratingCounts['4.0'] = 0;
-    $ratingCounts['4.5'] = 0;
-    $ratingCounts['5.0'] = 0;
+    $result = $stmt->get_result();
 
     $totalRatings = 0;
-    $averageRating = 0;
 
-    while ($ratingRow = $ratingResult->fetch_assoc()) {
-        $ratingCounts[$ratingRow['Score']] = $ratingRow['WeightedCount'];
-        $totalRatings += $ratingRow['count'];
+    while ($r = $result->fetch_assoc()) {
+        $score = $r["Score"];
+
+        if (isset($scoreBuckets[$score])) {
+            $scoreBuckets[$score]["count"] = (int)$r["cnt"];
+            $scoreBuckets[$score]["weighted"] = (float)$r["weighted"];
+            $totalRatings += (int)$r["cnt"];
+        }
     }
 
-    $maxRating = max(max($ratingCounts), 5);
+    $stmt->close();
+
+    $maxRating = max(array_column($scoreBuckets, "weighted"));
+    $maxRating = max($maxRating, 5);
 
     if ($totalRatings > 0) {
         $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
@@ -302,18 +319,28 @@ while($row = $result->fetch_assoc()) {
 			if($totalRatings > 0 && !$blackListed){
 				?>
 				<div class="mapsetRankingDistribution">
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
-				</div>
+
+                    <?php
+                    foreach (array_reverse($scoreBuckets, true) as $score => $data) {
+
+                        $height = ($data["weighted"] / $maxRating) * 90;
+                        $count = $data["count"];
+                        ?>
+                        
+                        <div class="tooltip-wrapper" style="width: calc(100% / 11);">
+                            <div
+                                class="mapsetRankingDistributionBar"
+                                style="height: <?php echo $height; ?>%;"
+                            >
+                        </div>
+                            <div class="tooltip-box" style="transform: rotate(180deg);">
+                                <?php echo $score; ?>★ <br> <?php echo $count; ?> vote<?php if ($count !== 1) echo "s"; ?>
+                            </div>
+                        </div>
+
+                    <?php } ?>
+
+                </div>
 				<span class="subText" style="width:100%;">Rating Distribution</span>
 				<?php
 			}
