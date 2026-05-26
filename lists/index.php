@@ -18,8 +18,7 @@
     }
 </style>
 <h1>Lists</h1>
-<span class="subText">This listing shows the 25 latest updated lists.</span> <br><br>
-
+<br>
 <a href="../list/edit/">Create new list</a>
 <hr>
 
@@ -28,7 +27,7 @@
     $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.Description, l.UserID,
                                   (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount,
                                   (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount 
-                                  FROM lists l ORDER BY UpdatedAt DESC LIMIT 25;");
+                                  FROM lists l ORDER BY UpdatedAt DESC;");
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
@@ -58,3 +57,8 @@
     ?>
 </div>
 
+<?php
+    $PageTitle = "Lists";
+    include '../footer.php';
+
+    ?>
