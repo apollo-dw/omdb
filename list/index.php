@@ -17,22 +17,42 @@
     if (!is_numeric($listId))
         die("How dare you");
 
-    $stmt = $conn->prepare("SELECT Count(*) as count from `list_hearts` WHERE UserID = ? AND ListID = ?;");
+    $stmt = $conn->prepare("
+        SELECT
+            COUNT(*) AS totalHearts,
+            SUM(CASE WHEN UserID = ? THEN 1 ELSE 0 END) AS userLiked,
+            GROUP_CONCAT(UserID) AS heartedUsers
+        FROM list_hearts
+        WHERE ListID = ?
+    ");
     $stmt->bind_param("ii", $userId, $listId);
     $stmt->execute();
-    $userHasLikedList = $stmt->get_result()->fetch_assoc()["count"] >= 1;
+
+    $heartData = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT Count(*) as count from `list_hearts` WHERE ListID = ?;");
-    $stmt->bind_param("i", $listId);
-    $stmt->execute();
-    $listHeartCount = $stmt->get_result()->fetch_assoc()["count"];
-    $stmt->close();
+    $listHeartCount = (int)$heartData['totalHearts'];
+    $userHasLikedList = ((int)$heartData['userLiked']) > 0;
+
+    $heartedUserIds = [];
+    if (!empty($heartData['heartedUsers'])) {
+        $heartedUserIds = array_map('intval', explode(',', $heartData['heartedUsers']));
+    }
+    $heartedUsernames = [];
+
+    foreach ($heartedUserIds as $uid) {
+        $heartedUsernames[] =
+            "<span style='white-space: nowrap;'>" .
+            htmlspecialchars(GetUserNameFromId($uid, $conn)) .
+            "</span>";
+    }
+
+    $heartedUsernamesString = implode(", ", $heartedUsernames);
 ?>
 
 <style>
     .container {
-        background-color: #454545;
+        background-color: DarkSlateGrey;
         width: 100%;
         box-sizing: border-box;
         padding: 1em;
@@ -68,10 +88,19 @@
 
 <div class="container">
     <?php if ($loggedIn) { ?>
-    <div style="float:right;">
-        <span class="subText">[<?php echo $listHeartCount; ?>]</span>
-        <i id="list-heart" class="icon-heart<?php if (!$userHasLikedList) echo "-empty"; ?>"></i>
-    </div>
+        <div class="tooltip-wrapper" style="float:right;">
+            <span class="subText">[<?php echo $listHeartCount; ?>]</span>
+
+            <i
+                id="list-heart"
+                class="icon-heart<?php if (!$userHasLikedList) echo "-empty"; ?>"
+            ></i>
+            <?php if ($heartedUsernamesString) { ?>
+                <div class="tooltip-box">
+                    <?php echo $heartedUsernamesString; ?>
+                </div>
+            <?php } ?>
+        </div>
     <?php } ?>
     <h1><?php echo $title; ?></h1>
     <span class="subText">

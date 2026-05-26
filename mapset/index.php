@@ -19,6 +19,17 @@
     if($mapset_id == -1){
         siteRedirect();
     }
+	
+	$stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
+	$stmt->bind_param("ss", $userId, $mapset_id);
+	$stmt->execute();
+	$stmt->store_result();
+	
+	$review_comment = "";
+	if ($stmt->num_rows > 0) {
+		$stmt->bind_result($review_comment);
+		$stmt->fetch();
+	}
 
     $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
     $stmt->bind_param("s", $mapset_id);
@@ -187,40 +198,57 @@ while($row = $result->fetch_assoc()) {
     $stmt->execute();
     $ratedQueryResult = $stmt->get_result();
 
+    $blackListed = $row["Blacklisted"];
+    $hasCharted = $row["ChartYearRank"] != null;
+
     $userHasRatedThis = $ratedQueryResult->num_rows == 1;
     $userMapRating = $ratedQueryResult->fetch_row()[3] ?? -1;
 
-    $stmt = $conn->prepare("SELECT `Score`, COUNT(*) as count, SUM(u.Weight) as WeightedCount FROM `ratings` JOIN users u on ratings.UserID = u.UserID WHERE `BeatmapID` = ? GROUP BY `Score`");
+    $scoreBuckets = [
+        "0.0" => ["weighted" => 0, "count" => 0],
+        "0.5" => ["weighted" => 0, "count" => 0],
+        "1.0" => ["weighted" => 0, "count" => 0],
+        "1.5" => ["weighted" => 0, "count" => 0],
+        "2.0" => ["weighted" => 0, "count" => 0],
+        "2.5" => ["weighted" => 0, "count" => 0],
+        "3.0" => ["weighted" => 0, "count" => 0],
+        "3.5" => ["weighted" => 0, "count" => 0],
+        "4.0" => ["weighted" => 0, "count" => 0],
+        "4.5" => ["weighted" => 0, "count" => 0],
+        "5.0" => ["weighted" => 0, "count" => 0],
+    ];
+
+    $stmt = $conn->prepare("
+        SELECT
+            Score,
+            COUNT(*) AS cnt,
+            SUM(u.Weight) AS weighted
+        FROM ratings
+        JOIN users u ON ratings.UserID = u.UserID
+        WHERE BeatmapID = ?
+        GROUP BY Score
+    ");
+
     $stmt->bind_param("i", $row["BeatmapID"]);
     $stmt->execute();
-    $ratingResult = $stmt->get_result();
-
-    $blackListed = $row["Blacklisted"] == 1;
-    $hasCharted = $ratingResult->num_rows > 0 && $row["ChartYearRank"] != null;
-
-    // Why do I need to do this here and not on the profile rating distribution chart. I don't get it
-    $ratingCounts = array();
-    $ratingCounts['0.0'] = 0;
-    $ratingCounts['0.5'] = 0;
-    $ratingCounts['1.0'] = 0;
-    $ratingCounts['1.5'] = 0;
-    $ratingCounts['2.0'] = 0;
-    $ratingCounts['2.5'] = 0;
-    $ratingCounts['3.0'] = 0;
-    $ratingCounts['3.5'] = 0;
-    $ratingCounts['4.0'] = 0;
-    $ratingCounts['4.5'] = 0;
-    $ratingCounts['5.0'] = 0;
+    $result = $stmt->get_result();
 
     $totalRatings = 0;
-    $averageRating = 0;
 
-    while ($ratingRow = $ratingResult->fetch_assoc()) {
-        $ratingCounts[$ratingRow['Score']] = $ratingRow['WeightedCount'];
-        $totalRatings += $ratingRow['count'];
+    while ($r = $result->fetch_assoc()) {
+        $score = $r["Score"];
+
+        if (isset($scoreBuckets[$score])) {
+            $scoreBuckets[$score]["count"] = (int)$r["cnt"];
+            $scoreBuckets[$score]["weighted"] = (float)$r["weighted"];
+            $totalRatings += (int)$r["cnt"];
+        }
     }
 
-    $maxRating = max(max($ratingCounts), 5);
+    $stmt->close();
+
+    $maxRating = max(array_column($scoreBuckets, "weighted"));
+    $maxRating = max($maxRating, 5);
 
     if ($totalRatings > 0) {
         $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
@@ -291,18 +319,28 @@ while($row = $result->fetch_assoc()) {
 			if($totalRatings > 0 && !$blackListed){
 				?>
 				<div class="mapsetRankingDistribution">
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["5.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["4.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["3.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["2.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["1.0"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.5"]/$maxRating)*90; ?>%;"></div>
-					<div class="mapsetRankingDistributionBar" style="height: <?php echo ($ratingCounts["0.0"]/$maxRating)*90; ?>%;"></div>
-				</div>
+
+                    <?php
+                    foreach (array_reverse($scoreBuckets, true) as $score => $data) {
+
+                        $height = ($data["weighted"] / $maxRating) * 90;
+                        $count = $data["count"];
+                        ?>
+                        
+                        <div class="tooltip-wrapper" style="width: calc(100% / 11);">
+                            <div
+                                class="mapsetRankingDistributionBar"
+                                style="height: <?php echo $height; ?>%;"
+                            >
+                        </div>
+                            <div class="tooltip-box" style="transform: rotate(180deg);">
+                                <?php echo $score; ?>★ <br> <?php echo $count; ?> vote<?php if ($count !== 1) echo "s"; ?>
+                            </div>
+                        </div>
+
+                    <?php } ?>
+
+                </div>
 				<span class="subText" style="width:100%;">Rating Distribution</span>
 				<?php
 			}
@@ -411,7 +449,7 @@ while($row = $result->fetch_assoc()) {
 		</div>
 
 		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:#454545;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
 				<div>
 					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
 					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
@@ -468,14 +506,12 @@ while($row = $result->fetch_assoc()) {
         <span class="subText"><a href="edit/?id=<?php echo $mapset_id; ?>"><i class="icon-edit"></i> Propose edit</a></span>
     <?php } ?>
 </div>
-<hr style="margin-bottom:1em;margin-top: 0">
+<hr style="margin-top: 0">
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
-		<?php if ($credits) { ?>
-		<div style="background-color:#203838;padding: 0.25em;">
-            Credits
-        </div>
+        <?php if ($credits) { ?>
+        <h4 style="margin-bottom: 0;">Credits</h4>
 		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
             <ul>
 			<?php
@@ -490,15 +526,8 @@ while($row = $result->fetch_assoc()) {
 			?>
 			</ul>
         </div>
+        <hr />
 		<?php } ?>
-        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
-            Latest Ratings
-        </div>
-        <div id="setRatingsDisplay">
-            <?php
-            require 'ratings.php';
-            ?>
-        </div>
         <?php
             $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
                                           FROM lists l
@@ -515,9 +544,7 @@ while($row = $result->fetch_assoc()) {
 
             if ($result->num_rows > 0) {
                 ?>
-                <div style="background-color:#203838;padding: 0.25em;">
-                    Featured on lists
-                </div>
+                <h4 style="margin-bottom: 0;">Featured on lists</h4>
                 <?php
                 while ($row = $result->fetch_assoc()) {
                     $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
@@ -538,31 +565,13 @@ while($row = $result->fetch_assoc()) {
                     </div>
                     <?php
                 }
+                echo "<hr />";
             }
         ?>
-    </div>
-	<?php if ($mapset_id !== "1991647") { ?>
-    <div class="flex-child column-when-mobile" style="width:60%;">
-        <div style="background-color:DarkSlateGrey;padding: 0.25em;">
-            Comments (<?php echo $commentCount; ?>)
-        </div>
-        <div class="flex-container commentContainer" style="width:100%;">
-            <?php if($loggedIn) { ?>
-                <div class="flex-child commentComposer">
-                    <form>
-                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-                        <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
-                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
-                    </form>
-                    <?php if ($hasBlacklistedDifficulties) { ?>
-                        <p>
-                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
-                        </p>
-                    <?php } ?>
-                </div>
-            <?php }
-
-            $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date DESC");
+        <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
+		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
+			<?php
+            $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -596,7 +605,7 @@ while($row = $result->fetch_assoc()) {
                             echo GetHumanTime($row["date"]); ?>
                         </div>
                     </div>
-                    <div class="flex-child comment" style="min-width:0;overflow: hidden;">
+                    <div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
                         <?php
                             if (!$is_blocked)
                                 echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
@@ -608,15 +617,140 @@ while($row = $result->fetch_assoc()) {
                 }
             }
             ?>
+			
+			<?php if($loggedIn) { ?>
+                <div class="commentComposer">
+                    <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
+                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
+						<a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
+                    </form>
+                    <?php if ($hasBlacklistedDifficulties) { ?>
+                        <p>
+                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
+                        </p>
+                    <?php } ?>
+                </div>
+            <?php } ?>
 
         </div>
+		<hr />
+        <h4 style="margin-bottom: 0;">Latest Ratings</h4>
+        <div id="setRatingsDisplay">
+            <?php
+            require 'ratings.php';
+            ?>
+        </div>
     </div>
-	<?php } ?>
+	<div class="flex-child column-when-mobile" style="width:60%;">
+		<h4 style="margin-bottom: 0;">Reviews</h4>
+		
+		<form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
+			<textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
+			<input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
+		</form>
+		
+		<?php
+			$stmt = $conn->prepare("SELECT * FROM `reviews` WHERE SetID = ? ORDER BY date DESC");
+			$stmt->bind_param("s", $sampleRow["SetID"]);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			if ($result->num_rows != 0) {
+                
+				while ($row = $result->fetch_assoc()) {
+                    $is_blocked = 0;
+
+                    if ($loggedIn) {
+                        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
+                        $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                        $stmt_relation_to_profile_user->execute();
+                        $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+                    }
+
+                    if ($is_blocked)
+                        continue;
+
+                    $stmt = $conn->prepare("
+                        SELECT
+                            COUNT(*) AS totalHearts,
+                            SUM(CASE WHEN UserID = ? THEN 1 ELSE 0 END) AS userLiked,
+                            GROUP_CONCAT(UserID) AS heartedUsers
+                        FROM review_hearts
+                        WHERE ReviewID = ?
+                    ");
+                    $stmt->bind_param("ii", $userId, $row["ReviewID"]);
+                    $stmt->execute();
+
+                    $heartData = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+
+                    $reviewHeartCount = (int)$heartData['totalHearts'];
+                    $userHasLikedReview = ((int)$heartData['userLiked']) > 0;
+
+                    $heartedUserIds = [];
+                    if (!empty($heartData['heartedUsers'])) {
+                        $heartedUserIds = array_map('intval', explode(',', $heartData['heartedUsers']));
+                    }
+                    $heartedUsernames = [];
+
+                    foreach ($heartedUserIds as $uid) {
+                        $heartedUsernames[] =
+                            "<span style='white-space: nowrap;'>" .
+                            htmlspecialchars(GetUserNameFromId($uid, $conn)) .
+                            "</span>";
+                    }
+
+                    $heartedUsernamesString = implode(", ", $heartedUsernames);
+                    
+					?>
+                    <div class="flex-container flex-child commentHeader">
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                        </div>
+                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                        </div>
+                        <div class="flex-child" style="margin-left:auto;">
+                            <?php
+                            if ($row["UserID"] == $userId || $isModerator) { ?>
+                                <i class="icon-remove removeReview" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
+                            <?php }
+                            echo GetHumanTime($row["date"]); ?>
+                        </div>
+                    </div>
+					<div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
+						<?php
+                            echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
+                        ?>
+                            <?php if ($loggedIn) { ?>
+                                <div class="tooltip-wrapper" style="float:right;">
+                                    <span class="subText">[<?php echo $reviewHeartCount; ?>]</span>
+
+                                    <i
+                                        style="cursor: pointer;"
+                                        id="review-heart"
+                                        class="icon-heart<?php if (!$userHasLikedReview) echo "-empty"; ?>"
+                                        value="<?php echo $row["ReviewID"]; ?>"
+                                    ></i>
+
+                                    <?php if ($heartedUsernamesString) { ?>
+                                        <div class="tooltip-box">
+                                            <?php echo $heartedUsernamesString; ?>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+					</div>
+					<?php
+				}
+			}
+		?>
+	</div>
 </div>
 
 <script>
 	window.addEventListener('DOMContentLoaded', function() {
-		const container = document.getElementById('comment-container');
+		const container = document.getElementById('commentContainer');
 		container.scrollTop = container.scrollHeight;
 	});
 
@@ -636,6 +770,25 @@ while($row = $result->fetch_assoc()) {
             xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + encodeURIComponent(text));
         }
     }
+	
+	function submitReview() {
+		var text = document.getElementById('reviewForm').value;
+		if (text.length > 3) {
+			document.getElementById('reviewSubmit').disabled = true;
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState === 4 && this.status === 200) {
+					location.reload();
+				}
+			};
+
+			var sID = "<?php echo $mapset_id; ?>";
+			xhttp.open("POST", "SubmitReview.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("sID=" + sID + "&comment=" + encodeURIComponent(text));
+		}
+	}
 
     $('#commentForm').keydown(function (event) {
         if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
@@ -665,6 +818,26 @@ while($row = $result->fetch_assoc()) {
         xhttp.open("POST", "RemoveComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&cID=" + $this.attr('value'));
+    });
+
+    $(".removeReview").click(function(event){
+        var $this = $(this);
+
+        if (!confirm("Are you sure you want to remove this review?")) {
+            return;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                location.reload();
+            }
+        };
+
+        xhttp.open("POST", "RemoveReview.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&rID=" + $this.attr('value'));
     });
 
     function setStarRatingDisplay(element, value) {
@@ -796,6 +969,23 @@ while($row = $result->fetch_assoc()) {
                 console.log(response);
             } else {
                 console.error(error);
+            }
+        });
+    });
+
+    $('#review-heart').on('click', function() {
+        var $this = $(this);
+        $.ajax({
+            type: 'POST',
+            url: 'HeartReview.php',
+            data: { rID:  $this.attr('value') },
+            dataType: 'json',
+            success: function(response) {
+                if (response.state === 1) {
+                    $('#review-heart').removeClass('icon-heart-empty').addClass('icon-heart');
+                } else if (response.state === 0) {
+                    $('#review-heart').removeClass('icon-heart').addClass('icon-heart-empty');
+                }
             }
         });
     });

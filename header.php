@@ -14,7 +14,7 @@ error_reporting(E_ALL);
         <meta name="description" content="osu! map database is a platform that allows for the rating of osu! beatmaps."/>
         <meta property="og:title" content="<?php echo $PageTitle; ?> | OMDB">
         <meta property="og:site_name" content="OMDB">
-        <meta name="theme-color" content="#454545">
+        <meta name="theme-color" content="DarkSlateGrey">
 		<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>

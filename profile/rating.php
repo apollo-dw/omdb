@@ -2,29 +2,49 @@
     include_once '../connection.php';
     include_once '../functions.php';
 
-    $stmt = $conn->prepare("SELECT Count(*) as count FROM rating_tags WHERE UserID = ?;");
-    $stmt->bind_param("i", $profileId);
+    $stmt = $conn->prepare("
+        SELECT
+            (SELECT COUNT(*)
+            FROM rating_tags
+            WHERE UserID = ?) AS tagCount,
+
+            (SELECT COUNT(*)
+            FROM beatmapset_nominators
+            WHERE NominatorID = ?) AS nominationCount,
+
+            (SELECT COUNT(*)
+            FROM lists
+            WHERE UserID = ?) AS listCount,
+
+            (SELECT COUNT(*)
+            FROM list_hearts
+            WHERE UserID = ?) AS heartedListCount,
+
+            (SELECT COUNT(DISTINCT SetID)
+            FROM beatmapset_credits
+            WHERE UserID = ?) AS creditCount
+    ");
+
+    $stmt->bind_param(
+        "iiiii",
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId
+    );
+
     $stmt->execute();
-    $tagCount = $stmt->get_result()->fetch_assoc()["count"];
+
+    $counts = $stmt->get_result()->fetch_assoc();
+
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT Count(*) as count FROM beatmapset_nominators WHERE NominatorID = ?;");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    $nominationCount = $stmt->get_result()->fetch_assoc()["count"];
-    $stmt->close();
-
-    $stmt = $conn->prepare("SELECT Count(*) as count FROM lists WHERE UserID = ?;");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    $listCount = $stmt->get_result()->fetch_assoc()["count"];
-    $stmt->close();
-
-    $stmt = $conn->prepare("SELECT Count(DISTINCT SetID) as count FROM beatmapset_credits WHERE UserID = ?;");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    $creditCount = $stmt->get_result()->fetch_assoc()["count"];
-    $stmt->close();
+    $tagCount = $counts["tagCount"];
+    $nominationCount = $counts["nominationCount"];
+    $listCount = $counts["listCount"];
+    $heartedListCount = $counts["heartedListCount"];
+    $creditCount = $counts["creditCount"];
 ?>
 
 <style>
@@ -52,7 +72,7 @@
             <button data-tab="tags">Tags (<?php echo $tagCount; ?>)</button>
         <?php } ?>
         <button data-tab="stats">Stats</button>
-        <?php if ($listCount > 0) { ?>
+        <?php if (($listCount + $heartedListCount) > 0) { ?>
             <button data-tab="lists">Lists (<?php echo $listCount; ?>)</button>
         <?php } ?>
     <?php } ?>
