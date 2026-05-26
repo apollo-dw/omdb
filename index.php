@@ -100,107 +100,150 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  $stmt->close();
 		?>
 	</div>
-	<div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
-		<?php
-                if ($userId !== -1) {
-					// Logged-in user: apply OnlyFriendsOnFrontPage logic
-					$stmt = $conn->prepare("
-						(
-							SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-							FROM comments c
-							WHERE NOT EXISTS (
-								SELECT 1 
-								FROM user_relations r 
-								WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-							)
-							AND EXISTS (
-								SELECT 1
-								FROM beatmaps b
-								WHERE b.SetID = c.SetID AND b.Mode = ?
-							)
-							AND (
-								(SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-								OR c.UserID IN (
-									SELECT UserIDTo
-									FROM user_relations
-									WHERE UserIDFrom = ? AND type = 1
-								)
-								or c.UserID = ?
-							)
-						)
-						UNION ALL
-						(
-							SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-							FROM descriptor_proposal_comments dpc
-							LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-							WHERE 1
-						)
-						ORDER BY date DESC
-						LIMIT 20;
-					");
-					$stmt->bind_param("iiiii", $userId, $mode, $userId, $userId, $userId);
-				} else {
-					// Logged-out user: skip OnlyFriendsOnFrontPage logic
-					$stmt = $conn->prepare("
-						(
-							SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-							FROM comments c
-							WHERE NOT EXISTS (
-								SELECT 1 
-								FROM user_relations r 
-								WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-							)
-							AND EXISTS (
-								SELECT 1
-								FROM beatmaps b
-								WHERE b.SetID = c.SetID AND b.Mode = ?
-							)
-						)
-						UNION ALL
-						(
-							SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-							FROM descriptor_proposal_comments dpc
-							LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-							WHERE 1
-						)
-						ORDER BY date DESC
-						LIMIT 20;
-					");
-					$stmt->bind_param("ii", $userId, $mode);
-				}
-                $stmt->execute();
-                $result = $stmt->get_result();
+    <div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
+        <?php
+        if ($userId !== -1) {
+            // Logged-in user: apply OnlyFriendsOnFrontPage logic
+            $stmt = $conn->prepare("
+                (
+                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+                    FROM comments c
+                    WHERE NOT EXISTS (
+                        SELECT 1 
+                        FROM user_relations r 
+                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    )
+                    AND EXISTS (
+                        SELECT 1
+                        FROM beatmaps b
+                        WHERE b.SetID = c.SetID AND b.Mode = ?
+                    )
+                    AND (
+                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                        OR c.UserID IN (
+                            SELECT UserIDTo
+                            FROM user_relations
+                            WHERE UserIDFrom = ? AND type = 1
+                        )
+                        OR c.UserID = ?
+                    )
+                )
+                UNION ALL
+                (
+                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+                    FROM descriptor_proposal_comments dpc
+                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                    WHERE 1
+                )
+                UNION ALL
+                (
+                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
+                    FROM reviews r
+                    WHERE NOT EXISTS (
+                        SELECT 1 
+                        FROM user_relations ur 
+                        WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                    )
+                    AND EXISTS (
+                        SELECT 1
+                        FROM beatmaps b
+                        WHERE b.SetID = r.SetID AND b.Mode = ?
+                    )
+                )
+                ORDER BY date DESC
+                LIMIT 20;
+            ");
+            $stmt->bind_param("iiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode);
+        } else {
+            // Logged-out user: skip OnlyFriendsOnFrontPage logic
+            $stmt = $conn->prepare("
+                (
+                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
+                    FROM comments c
+                    WHERE NOT EXISTS (
+                        SELECT 1 
+                        FROM user_relations r 
+                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    )
+                    AND EXISTS (
+                        SELECT 1
+                        FROM beatmaps b
+                        WHERE b.SetID = c.SetID AND b.Mode = ?
+                    )
+                )
+                UNION ALL
+                (
+                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
+                    FROM descriptor_proposal_comments dpc
+                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                    WHERE 1
+                )
+                UNION ALL
+                (
+                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
+                    FROM reviews r
+                    WHERE EXISTS (
+                        SELECT 1
+                        FROM beatmaps b
+                        WHERE b.SetID = r.SetID AND b.Mode = ?
+                    )
+                )
+                ORDER BY date DESC
+                LIMIT 20;
+            ");
+            $stmt->bind_param("iii", $userId, $mode, $mode);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
-            $linkID = $row['comment_type'] === 'beatmap' ? "/mapset/{$row["SetID"]}" : "/descriptor/proposal/?id={$row["ProposalID"]}";
-            ?>
+            $linkID = $row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review'
+                ? "/mapset/{$row["SetID"]}"
+                : "/descriptor/proposal/?id={$row["ProposalID"]}";
+        ?>
             <div class="flex-container ratingContainer alternating-bg">
                 <div class="flex-child" style="margin-left:0.5em;">
-                    <?php if ($row["comment_type"] == 'beatmap') { ?>
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                    <?php if ($row["comment_type"] == 'beatmap' || $row["comment_type"] == 'review') { ?>
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>">
+                            <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
+                                class="diffThumb"
+                                onerror="this.onerror=null; this.src='/charts/INF.png';"/>
+                        </a>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
                             <i class="icon-pencil"></i>
                         </div>
                     <?php } ?>
                 </div>
+
                 <div class="flex-child">
                     <div>
                         <a href="/profile/<?php echo $row["UserID"]; ?>">
-                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
+                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
+                                style="height:24px;width:24px;"
+                                title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
                             <span><?php echo GetUserNameFromId($row["UserID"], $conn); ?></span>
                         </a>
+
                         <span>
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
                                 on <a href="<?php echo $linkID; ?>"><?php echo $row["Name"]; ?> descriptor</a>
+                            <?php } elseif ($row["comment_type"] == 'review') { ?>
+                                reviewed a map
                             <?php } ?>
                         </span>
                     </div>
+
                     <div style="flex:0 0 auto;text-overflow:ellipsis;min-width:0%;">
                         <a style="color:white;" href="<?php echo $linkID; ?>">
-							<?php
-								echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
-							?>
+                            <?php
+                                $length = 180;
+                                if ($row["comment_type"] == 'review')
+                                    $length = 360;
+                                
+                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, $length, "..."));
+                            ?>
                         </a>
                     </div>
                 </div>
@@ -208,8 +251,8 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         <?php
         }
         $stmt->close();
-		?>
-	</div>
+        ?>
+    </div>
 </div>
 <br>
 <div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
