@@ -151,6 +151,10 @@
                     WHERE UserID = ?) AS commentCount,
 
                     (SELECT COUNT(*)
+                    FROM reviews
+                    WHERE UserID = ?) AS reviewCount,
+
+                    (SELECT COUNT(*)
                     FROM beatmapsets s
                     WHERE CreatorID = ?
                     AND EXISTS (
@@ -171,7 +175,8 @@
             ");
 
             $stmt->bind_param(
-                "iiiiii",
+                "iiiiiii",
+                $profileId,
                 $profileId,
                 $profileId,
                 $profileId,
@@ -189,6 +194,7 @@
             $friendCount = $stats["friendCount"];
             $ratingCount = $stats["ratingCount"];
             $commentCount = $stats["commentCount"];
+            $reviewCount = $stats["reviewCount"];
             $mapsetCount = $stats["mapsetCount"];
             $approvedEditCount = $stats["approvedEditCount"];
             $descriptorVoteCount = $stats["descriptorVoteCount"];
@@ -205,6 +211,10 @@
 
             <a href="comments/?id=<?php echo $profileId; ?>">
                 <b>Comments:</b> <?php echo $commentCount; ?>
+            </a><br>
+
+            <a href="reviews/?id=<?php echo $profileId; ?>">
+                <b>Reviews:</b> <?php echo $reviewCount; ?>
             </a><br>
 
             <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
