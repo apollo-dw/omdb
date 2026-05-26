@@ -201,6 +201,14 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             $linkID = $row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review'
                 ? "/mapset/{$row["SetID"]}"
                 : "/descriptor/proposal/?id={$row["ProposalID"]}";
+
+            if ($row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review') {
+                $stmt = $conn->prepare("SELECT * FROM `beatmapsets` WHERE `SetID` = ?;");
+                $stmt->bind_param("i", $row["SetID"]);
+                $stmt->execute();
+                $beatmapset = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
         ?>
             <div class="flex-container ratingContainer alternating-bg">
                 <div class="flex-child" style="margin-left:0.5em;">
@@ -230,7 +238,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
                                 on <a href="<?php echo $linkID; ?>"><?php echo $row["Name"]; ?> descriptor</a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
-                                reviewed a map
+                                reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars($beatmapset["Artist"] . " - " . $beatmapset["Title"]); ?></a>
                             <?php } ?>
                         </span>
                     </div>
@@ -241,7 +249,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                                 $length = 180;
                                 if ($row["comment_type"] == 'review')
                                     $length = 360;
-                                
+
                                 echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, $length, "..."));
                             ?>
                         </a>
