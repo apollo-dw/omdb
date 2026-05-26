@@ -733,9 +733,11 @@ while($row = $result->fetch_assoc()) {
                                         value="<?php echo $row["ReviewID"]; ?>"
                                     ></i>
 
-                                    <div class="tooltip-box">
-                                        <?php echo $heartedUsernamesString; ?>
-                                    </div>
+                                    <?php if ($heartedUsernamesString) { ?>
+                                        <div class="tooltip-box">
+                                            <?php echo $heartedUsernamesString; ?>
+                                        </div>
+                                    <?php } ?>
                                 </div>
                             <?php } ?>
 					</div>

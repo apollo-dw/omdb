@@ -95,10 +95,11 @@
                 id="list-heart"
                 class="icon-heart<?php if (!$userHasLikedList) echo "-empty"; ?>"
             ></i>
-
-            <div class="tooltip-box">
-                <?php echo $heartedUsernamesString; ?>
-            </div>
+            <?php if ($heartedUsernamesString) { ?>
+                <div class="tooltip-box">
+                    <?php echo $heartedUsernamesString; ?>
+                </div>
+            <?php } ?>
         </div>
     <?php } ?>
     <h1><?php echo $title; ?></h1>
