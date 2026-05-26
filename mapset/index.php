@@ -231,11 +231,11 @@ while($row = $result->fetch_assoc()) {
 
     $stmt->bind_param("i", $row["BeatmapID"]);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $resultScore = $stmt->get_result();
 
     $totalRatings = 0;
 
-    while ($r = $result->fetch_assoc()) {
+    while ($r = $resultScore->fetch_assoc()) {
         $score = $r["Score"];
 
         if (isset($scoreBuckets[$score])) {
@@ -245,7 +245,6 @@ while($row = $result->fetch_assoc()) {
         }
     }
 
-    $stmt->close();
 
     $maxRating = max(array_column($scoreBuckets, "weighted"));
     $maxRating = max($maxRating, 5);
