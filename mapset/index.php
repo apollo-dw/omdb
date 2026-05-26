@@ -960,9 +960,9 @@ while($row = $result->fetch_assoc()) {
             dataType: 'json',
             success: function(response) {
                 if (response.state === 1) {
-                    $('#list-heart').removeClass('icon-heart-empty').addClass('icon-heart');
+                    $('#review-heart').removeClass('icon-heart-empty').addClass('icon-heart');
                 } else if (response.state === 0) {
-                    $('#list-heart').removeClass('icon-heart').addClass('icon-heart-empty');
+                    $('#review-heart').removeClass('icon-heart').addClass('icon-heart-empty');
                 }
             }
         });
