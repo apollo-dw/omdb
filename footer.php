@@ -4,10 +4,10 @@
 		
 		</div>
 		<div class="footerBar">
+            <a href="https://github.com/apollo-dw/omdb/" target="_blank">github</a> |
             <a href="/rules/">rules</a> |
             <a href="/descriptors">descriptors</a> |
-            <a href="/edit-queue">edit queue</a> |
-            <a href="/project-legacy">project legacy</a><br>
+            <a href="/edit-queue">edit queue</a>
             <span style="color:black;"><?php echo $timeForPageExecution; ?>s</span>
 		</div>
     </body>
