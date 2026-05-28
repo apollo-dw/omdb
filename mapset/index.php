@@ -248,7 +248,8 @@ while($row = $result->fetch_assoc()) {
 
     $maxRating = max(array_column($scoreBuckets, "weighted"));
     $maxRating = max($maxRating, 5);
-
+    $averageRating = 2.5;
+    
     if ($totalRatings > 0) {
         $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
                                         FROM ratings r

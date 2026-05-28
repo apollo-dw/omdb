@@ -10,7 +10,7 @@
 		die("SHORT");
 	}
 	
-	if( strlen($comment) > 8000){
+	if( strlen($comment) > 40000){
 		die("LONG");
 	}
 
