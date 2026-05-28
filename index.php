@@ -282,7 +282,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
-		<span class="subtext">
+		<span class="subText">
 			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Metadata"]}"; ?></a><br>
             by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo $artist; ?></a> <br>
 			<?php echo GetHumanTime($row["Timestamp"]); ?>
