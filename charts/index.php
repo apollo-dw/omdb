@@ -54,11 +54,11 @@
 
 <div style="text-align:left;">
     <div class="pagination">
-        <span onClick="changePage(<?php echo $page-1 ?>)">&laquo;</span>
+        <span onClick="changePage(page-1)">&laquo;</span>
         <?php for ($i = 1; $i <= 9; $i++) { ?>
             <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
         <?php } ?>
-        <span onClick="changePage(<?php echo $page+1 ?>)">&raquo;</span>
+        <span onClick="changePage(page+1)">&raquo;</span>
     </div>
 </div>
 
@@ -250,17 +250,17 @@
 
     <div style="text-align:left;">
         <div class="pagination">
-            <span onClick="changePage(<?php echo $page-1 ?>)">&laquo;</span>
+            <span onClick="changePage(page-1)">&laquo;</span>
             <?php for ($i = 1; $i <= 9; $i++) { ?>
                 <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
             <?php } ?>
-            <span onClick="changePage(<?php echo $page+1 ?>)">&raquo;</span>
+            <span onClick="changePage(page+1)">&raquo;</span>
         </div>
     </div>
 
 <script>
     const cronInterval = 24 * 60 * 60 * 1000; // 1 day
-	var page = 1;
+    var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
 
     var selectedDescriptors = [];
     <?php foreach ($selectedDescriptors as $descriptor): ?>
@@ -360,7 +360,8 @@
     });
 
 	function changePage(newPage) {
-		page = Math.min(Math.max(newPage, 1), 9);
+		var nextPage = parseInt(newPage, 10);
+		page = Math.max(Math.min(nextPage, 9), 1);
 		updateChart();
 	}
 
@@ -368,10 +369,7 @@
         $("#chart-container").removeClass("faded");
 		$(".pageLink").removeClass("active");
 
-        console.log(selectedDescriptors)
-
 		var pageLink = '.page' + page;
-
 		$(pageLink).addClass("active");
 
 		var year = document.getElementById("year").value;

@@ -39,7 +39,7 @@
         }
 
         .map:nth-child(even) {
-            background-color: #313131;
+            background-color: #203838;
         }
 
         .difficulty-name  {

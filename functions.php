@@ -17,7 +17,9 @@
 	 * PUBLIC_URL to determine the host) as a string.
 	 */
 	function relUrl(string $path = "/") {
-		return "https://omdb.nyahh.net" . $path;
+        global $env;
+		$publicUrl = $env["PUBLIC_URL"] ?? "https://omdb.nyahh.net";
+		return $publicUrl . $path;
 	}
 
 	function GetBeatmapDataOsuApi(string $token, int $id){

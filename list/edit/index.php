@@ -39,14 +39,14 @@
 
     textarea {
         border: 1px solid white;
-        background-color: #313131;
+        background-color: #203838;
         color: white;
         width: 100%;
     }
 
     .container select{
         border: 1px solid white;
-        background-color: #313131;
+        background-color: #203838;
     }
 
     .draggable-container {
