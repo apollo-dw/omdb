@@ -151,7 +151,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     )
                 )
                 ORDER BY date DESC
-                LIMIT 20;
+                LIMIT 40;
             ");
             $stmt->bind_param("iiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode);
         } else {
@@ -189,7 +189,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     )
                 )
                 ORDER BY date DESC
-                LIMIT 20;
+                LIMIT 40;
             ");
             $stmt->bind_param("iii", $userId, $mode, $mode);
         }
@@ -246,11 +246,12 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     <div style="flex:0 0 auto;text-overflow:ellipsis;min-width:0%;">
                         <a style="color:white;" href="<?php echo $linkID; ?>">
                             <?php
-                                $length = 180;
-                                if ($row["comment_type"] == 'review')
-                                    $length = 360;
+                                if ($row["comment_type"] == 'review') {
+                                    echo nl2br(htmlspecialchars(mb_strimwidth(implode("\n\n", array_slice(preg_split('/\R\s*\R/', $row["Comment"]), 0, 2)), 0, 460, '...'), ENT_QUOTES));
+                                } else {
+                                    echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."));
+                                }
 
-                                echo htmlspecialchars(mb_strimwidth($row["Comment"], 0, $length, "..."));
                             ?>
                         </a>
                     </div>
@@ -258,7 +259,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             </div>
         <?php
         }
-        $stmt->close();
         ?>
     </div>
 </div>
