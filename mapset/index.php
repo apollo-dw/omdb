@@ -725,24 +725,26 @@ while($row = $result->fetch_assoc()) {
 						<?php
                             echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
                         ?>
-                            <?php if ($loggedIn) { ?>
-                                <div class="tooltip-wrapper" style="float:right;">
-                                    <span class="subText">[<?php echo $reviewHeartCount; ?>]</span>
+                            <div class="tooltip-wrapper" style="float:right;">
+                                <span class="subText">[<?php echo $reviewHeartCount; ?>]</span>
 
+                                <?php if ($loggedIn) { ?>
                                     <i
                                         style="cursor: pointer;"
                                         id="review-heart"
                                         class="icon-heart<?php if (!$userHasLikedReview) echo "-empty"; ?>"
                                         value="<?php echo $row["ReviewID"]; ?>"
                                     ></i>
+                                <?php } else { ?>
+                                    <i class="icon-heart-empty"></i>
+                                <?php } ?>
 
-                                    <?php if ($heartedUsernamesString) { ?>
-                                        <div class="tooltip-box">
-                                            <?php echo $heartedUsernamesString; ?>
-                                        </div>
-                                    <?php } ?>
-                                </div>
-                            <?php } ?>
+                                <?php if ($heartedUsernamesString) { ?>
+                                    <div class="tooltip-box">
+                                        <?php echo $heartedUsernamesString; ?>
+                                    </div>
+                                <?php } ?>
+                            </div>
 					</div>
 					<?php
 				}
