@@ -111,6 +111,6 @@
         $creators_stmt->execute();
     }
 
-    header("Location: ../../mapset/" . $requestedSetId);
+    header("Location: ../../mapset/" . $setID);
     die();
 ?>
