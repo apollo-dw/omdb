@@ -6,9 +6,17 @@
         die('Goodbye');
     }
 
-    $requestedSetId = $_GET["id"] ?? "";
+    $requestedRaw = trim($_GET["id"] ?? "");
 
-    if ($requestedSetId === "" || !is_numeric($requestedSetId)) {
+    if ($requestedRaw === "") {
+        die("No");
+    }
+
+    if (ctype_digit($requestedRaw)) {
+        $requestedSetId = (int)$requestedRaw;
+    } elseif (preg_match('~^https?://osu\.ppy\.sh/(?:s|beatmapsets)/(?P<setid>\d+)~', $requestedRaw, $matches)) {
+        $requestedSetId = (int)$matches['setid'];
+    } else {
         die("No");
     }
 
