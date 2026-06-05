@@ -97,12 +97,12 @@
 
 	if ($result && $result->num_rows == 0) {
 		$stmt = $conn->prepare("INSERT INTO `mappernames` (UserID, Username, Country) VALUES (?, ?, ?);");
-		$stmt->bind_param("iss", $userId, $username, $country->code);
+		$stmt->bind_param("iss", $userId, $username, $country["code"]);
 		$stmt->execute();
 		$stmt->close();
 	} else {
 		$stmt = $conn->prepare("UPDATE `mappernames` SET `Username` = ?, `Country` = ? WHERE `UserID` = ?");
-		$stmt->bind_param("ssi", $username, $country->code, $userId);
+		$stmt->bind_param("ssi", $username, $country["code"], $userId);
 		$stmt->execute();
 		$stmt->close();
 	}
