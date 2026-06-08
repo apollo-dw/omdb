@@ -3,7 +3,10 @@ services:
     build: .
     ports:
       - "8400:80"
-    env_file: .env
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root
     volumes:
       - .:/var/www/html
     depends_on:
