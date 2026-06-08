@@ -32,7 +32,7 @@ $stmt = $conn->query("SELECT
                             ft.TopicID
                     ) tp ON ft.TopicID = tp.TopicID;");
 					
-	if ($username !== "moonpoint") {
+	if ($userName !== "moonpoint") {
 		die("What");
 	}
 ?>
