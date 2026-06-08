@@ -566,7 +566,7 @@ function getFullCountryName($code) {
 		$numerator = $n * $sum_xy - $sum_x * $sum_y;
 		$denominator = sqrt(($n * $sum_x_sq - pow($sum_x, 2)) * ($n * $sum_y_sq - pow($sum_y, 2)));
 		if ($denominator == 0) {
-			return -1;
+			return null;
 		}
 		return $numerator / $denominator;
 	}

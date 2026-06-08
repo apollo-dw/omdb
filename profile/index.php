@@ -242,7 +242,7 @@
 				Rating Distribution<br>
 			</div>
         <?php
-				if ($loggedIn && $profileId != $userId) {
+				if ($loggedIn && $profileId != $userId && $correlation !== null) {
                     $widthPercentage = abs(($correlation / 2) * 100);
                     $leftMargin = 0;
 
