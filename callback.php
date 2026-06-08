@@ -18,8 +18,8 @@
 
 	$code = $_GET["code"];
 	$fields = json_encode(array(
-		"client_id" => $clientID,
-		"client_secret" => $clientSecret,
+		"client_id" => $env['OSU_CLIENT_ID'],
+		"client_secret" => $env['OSU_CLIENT_SECRET'],
 		"code" => $code,
 		"grant_type" => "authorization_code",
 		"redirect_uri" => relUrl("/callback.php"),
