@@ -44,7 +44,7 @@
     $stmt->fetch();
     $stmt->close();
 
-	if (!$result || !count($result)) {
+	if (!$result) {
 		http_response_code(404);
 		echo "No beatmaps";
 	} else {
