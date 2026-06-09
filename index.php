@@ -83,12 +83,12 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			    </div>
                 <div class="flex-child">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                 </div>
                 <div class="flex-child" style="flex:0 0 66%;">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <?php echo GetUserNameFromId($row["UserID"], $conn); ?>
+                        <?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn)); ?>
                     </a>
                     <?php
                         echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"]), 0, 35, "...") . "</a>";
@@ -236,7 +236,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 
                         <span>
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
-                                on <a href="<?php echo $linkID; ?>"><?php echo $row["Name"]; ?> descriptor</a>
+                                on <a href="<?php echo $linkID; ?>"><?php echo htmlspecialchars($row["Name"]); ?> descriptor</a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
                                 reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars($beatmapset["Artist"] . " - " . $beatmapset["Title"]); ?></a>
                             <?php } ?>
@@ -283,8 +283,8 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
 		<span class="subText">
-			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Metadata"]}"; ?></a><br>
-            by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo $artist; ?></a> <br>
+			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars($row["Metadata"]); ?></a><br>
+            by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo htmlspecialchars($artist); ?></a> <br>
 			<?php echo GetHumanTime($row["Timestamp"]); ?>
 		</span>
 	</div>
@@ -340,7 +340,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <div style="width:100%;text-align:center;">
                 <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
                 <br><br>
-                <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo "{$result["Title"]} [{$result["DifficultyName"]}]";?></a></b><br>
+                <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]");?></a></b><br>
                 by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
                 <span class="subText map-descriptors">
                     <?php
@@ -389,7 +389,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                         <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
                     </div>
                     <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Title"]} [{$row["DifficultyName"]}]";?></a>
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]");?></a>
                     </div>
                     <div class="flex-child" style="margin-left: auto;text-align:right;min-width:6em;">
                         <?php echo $row["num_ratings"];?> ratings

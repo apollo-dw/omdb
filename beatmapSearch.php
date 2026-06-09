@@ -17,7 +17,7 @@
 			die("Mapset not found!");
 		}
 		?>
-		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:DarkSlateGrey;" ><?php echo $value[2] . " - " . $value[1]; ?></div></a>
+		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:DarkSlateGrey;" ><?php echo htmlspecialchars($value[2] . " - " . $value[1]); ?></div></a>
 		<?php
 		die();
 	}
@@ -33,7 +33,7 @@
         echo "<div style='background-color:#182828;'><b>Users</b></div>";
         while ($stmt->fetch()) {
             ?>
-            <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;" ><a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;"><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo $username; ?>"/> <?php echo $username; ?></a></div>
+            <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;" ><a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;"><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars($username, ENT_QUOTES); ?>"/> <?php echo htmlspecialchars($username); ?></a></div>
             <?php
         }
     }
@@ -56,7 +56,7 @@
         echo "<div style='background-color:#182828;'><b>Maps</b></div>";
         while ($stmt->fetch()) {
             ?>
-            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo $artist . " - " . $title . " [" . $difficultyName . "]"; ?></a></div>
+            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo htmlspecialchars($artist . " - " . $title . " [" . $difficultyName . "]"); ?></a></div>
             <?php
         }
     }
