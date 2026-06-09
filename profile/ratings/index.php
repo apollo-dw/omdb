@@ -57,9 +57,10 @@
     }
 
     if ($starRating !== "") {
-        $filterConditions .= " AND b.SR DIV 1 = ?";
+        $srValue = intval($starRating);
+        $filterConditions .= $srValue >= 12 ? " AND b.SR DIV 1 >= ?" : " AND b.SR DIV 1 = ?";
         $filterTypes .= "i";
-        $filterValues[] = intval($starRating);
+        $filterValues[] = $srValue;
     }
 
     if ($genre !== "") {
@@ -156,11 +157,12 @@
 <select id="sr" name="sr" onchange="changePage(1)">
     <option value=''>All</option>
     <?php
-        $maxSR = 10;
-        for ($i = 0; $i <= $maxSR; $i++) {
+        for ($i = 0; $i < 12; $i++) {
             $selected = $starRating !== "" && intval($starRating) === $i ? " selected='selected'" : "";
             echo "<option value='{$i}'{$selected}>{$i}&#9733; - " .  ($i + 1) . "&#9733;</option>";
         }
+        $selected = $starRating !== "" && intval($starRating) >= 12 ? " selected='selected'" : "";
+        echo "<option value='12'{$selected}>12&#9733;+</option>";
     ?>
 </select> <br>
 
