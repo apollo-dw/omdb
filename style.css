@@ -26,6 +26,10 @@ body {
   padding-left: 10%;
   padding-right: 10%;
   z-index: 999;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 @media (min-width: 2000px) {
@@ -812,4 +816,21 @@ ol.star-rating-list > li {
   top: auto;
 
   border-color: transparent transparent #203838 transparent;
+}
+
+@media only screen and (max-width: 680px) {
+  .topBar {
+    padding-left: 1%;
+    padding-right: 1%;
+  }
+
+  .topBarLink {
+    min-width: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .topBar > a:first-child {
+    margin-right: 0.5rem;
+  }
 }

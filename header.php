@@ -22,7 +22,7 @@ error_reporting(E_ALL);
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-		<link rel="stylesheet" type="text/css" href="/style.css?v=37" />
+		<link rel="stylesheet" type="text/css" href="/style.css?v=38" />
         <script src="/script.js?v=4"></script>
 	</head>
 	<body>
@@ -70,7 +70,7 @@ error_reporting(E_ALL);
 				}
 			?>
 
-			<span style="float:right;">
+			<span style="margin-left:auto;">
                 <div class="topBarDropDown">
                     <div class="topBarLink topBarDropDownButton"><i class="icon-pencil"></i></div>
                     <div class="dropdown-content">
