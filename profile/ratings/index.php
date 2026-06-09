@@ -57,10 +57,9 @@
     }
 
     if ($starRating !== "") {
-        $srValue = intval($starRating);
-        $filterConditions .= $srValue >= 12 ? " AND b.SR DIV 1 >= ?" : " AND b.SR DIV 1 = ?";
+        $filterConditions .= " AND LEAST(b.SR DIV 1, 12) = ?";
         $filterTypes .= "i";
-        $filterValues[] = $srValue;
+        $filterValues[] = intval($starRating);
     }
 
     if ($genre !== "") {
