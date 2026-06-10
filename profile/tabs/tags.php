@@ -12,8 +12,8 @@ $profileId = $_GET["id"];
     $result = $stmt->get_result();
 
     while ($row = $result->fetch_assoc()) {
-        $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
-        $encodedTag = urlencode($tag);
+        $tag = htmlspecialchars($row["Tag"], ENT_QUOTES, "ISO-8859-1");
+        $encodedTag = urlencode($row["Tag"]);
         echo "<a href='ratings/?id={$profileId}&t={$encodedTag}'>{$tag} ({$row["TagCount"]})</a> <br>";
     }
     ?>

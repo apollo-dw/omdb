@@ -10,7 +10,7 @@
     $list = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $title = htmlspecialchars($list['Title']);
+    $title = htmlspecialchars($list['Title'], ENT_QUOTES);
 
     if (is_null($list))
         die("List not found");
@@ -43,7 +43,7 @@
     foreach ($heartedUserIds as $uid) {
         $heartedUsernames[] =
             "<span style='white-space: nowrap;'>" .
-            htmlspecialchars(GetUserNameFromId($uid, $conn)) .
+            htmlspecialchars(GetUserNameFromId($uid, $conn), ENT_QUOTES) .
             "</span>";
     }
 
@@ -104,7 +104,7 @@
     <?php } ?>
     <h1><?php echo $title; ?></h1>
     <span class="subText">
-        Made by <a href="../profile/<?php echo $list["UserID"]; ?>"><?php echo GetUserNameFromId($list["UserID"], $conn); ?></a><br>
+        Made by <a href="../profile/<?php echo $list["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($list["UserID"], $conn), ENT_QUOTES); ?></a><br>
     </span>
     <hr>
     <div>
@@ -136,7 +136,7 @@
             </div>
             <div style="text-align: center; width: 8em;">
                 <a href="<?php echo $linkUrl; ?>"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../charts/INF.png';" /></a><br>
-                <span class="subText"><?php echo $title; ?></span>
+                <span class="subText"><?php echo htmlspecialchars($title, ENT_QUOTES); ?></span>
             </div>
             <div style="flex-grow: 1; box-sizing: border-box;">
                 <?php echo ParseCommentLinks($conn, $listItem['Description']); ?>

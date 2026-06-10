@@ -40,7 +40,7 @@ $stmt = $conn->prepare("
     $stmt->close();
 
     ?>
-<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s friends</h1></center>
+<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s friends</h1></center>
 
     <div class="flex-row-container">
         <?php
@@ -51,7 +51,7 @@ $stmt = $conn->prepare("
                 <a href="/profile/<?php echo $row["ID"]; ?>">
                     <div class="profileImage">
                         <img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/><br>
-                        <?php echo $row["username"]; ?>
+                        <?php echo htmlspecialchars($row["username"], ENT_QUOTES); ?>
                     </div>
                 </a>
             </div>

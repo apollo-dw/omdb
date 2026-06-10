@@ -264,7 +264,7 @@
 
     var selectedDescriptors = [];
     <?php foreach ($selectedDescriptors as $descriptor): ?>
-    selectedDescriptors.push({ id: <?php echo $descriptor['id']; ?>, name: '<?php echo $descriptor['name']; ?>' });
+    selectedDescriptors.push({ id: <?php echo (int)$descriptor['id']; ?>, name: <?php echo json_encode($descriptor['name']); ?> });
     <?php endforeach; ?>
 
     var genres = {

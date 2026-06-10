@@ -107,7 +107,7 @@
     $amntOfPages = floor($count / $limit) + 1;
 ?>
 
-<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s ratings</h1></center>
+<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s ratings</h1></center>
 
 <hr>
 
@@ -174,7 +174,7 @@
             if (is_null($genreString))
                 continue;
             $selected = $genre !== "" && intval($genre) === $i ? " selected='selected'" : "";
-            echo "<option value='{$i}'{$selected}>" . htmlspecialchars($genreString) . "</option>";
+            echo "<option value='{$i}'{$selected}>" . htmlspecialchars($genreString, ENT_QUOTES) . "</option>";
         }
     ?>
 </select> <br>
@@ -188,7 +188,7 @@
             if (is_null($languageString))
                 continue;
             $selected = $language !== "" && intval($language) === $i ? " selected='selected'" : "";
-            echo "<option value='{$i}'{$selected}>" . htmlspecialchars($languageString) . "</option>";
+            echo "<option value='{$i}'{$selected}>" . htmlspecialchars($languageString, ENT_QUOTES) . "</option>";
         }
     ?>
 </select> <br>
@@ -219,7 +219,7 @@
 
         foreach ($countryOptions as $code => $name) {
             $selected = $country === strval($code) ? " selected='selected'" : "";
-            echo "<option value='" . htmlspecialchars($code, ENT_QUOTES) . "'{$selected}>" . htmlspecialchars($name) . "</option>";
+            echo "<option value='" . htmlspecialchars($code, ENT_QUOTES) . "'{$selected}>" . htmlspecialchars($name, ENT_QUOTES) . "</option>";
         }
     ?>
 </select> <br>
@@ -234,8 +234,8 @@
         $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
-            $tag = htmlspecialchars($row["Tag"], ENT_COMPAT, "ISO-8859-1");
-            $encodedTag = urlencode($tag);
+            $tag = htmlspecialchars($row["Tag"], ENT_QUOTES, "ISO-8859-1");
+            $encodedTag = urlencode($row["Tag"]);
             $selected = $tagArgument == $row["Tag"] ? " selected='selected'" : "";
             echo "<option value='{$encodedTag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
         }
@@ -297,14 +297,14 @@
                 $stmt->bind_param('ii', $profileId, $row["BeatmapID"]);
                 $stmt->execute();
                 $tags = $stmt->get_result()->fetch_assoc()["Tags"];
-                $tags = htmlspecialchars($tags, ENT_COMPAT, "ISO-8859-1");
+                $tags = htmlspecialchars($tags, ENT_QUOTES, "ISO-8859-1");
         ?>
 			<div class="flex-container ratingContainer alternating-bg">
 				<div class="flex-child">
 					<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo RenderUserRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]");?></a>
+					<?php echo RenderUserRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
                     <br> <span class="subText"><?php echo $tags; ?></span>
                 </div>
 				<div class="flex-child" style="width:100%;text-align:right;">

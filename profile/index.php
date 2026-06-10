@@ -100,7 +100,7 @@
 <div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
 		<div class="profileTitle">
-            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo GetUserNameFromId($profileId, $conn); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
+            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
 		</div>
 		<div class="profileImage">
 			<img src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
@@ -226,17 +226,17 @@
 
 		<?php if ($isValidUser){ ?>
 			<div class="profileRankingDistribution" style="margin-bottom:0.5em;">
-                <div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["5.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4&p=1">4.0 <?php if ($profile["Custom40Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom40Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5 <?php if ($profile["Custom35Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom35Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3&p=1">3.0 <?php if ($profile["Custom30Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom30Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5 <?php if ($profile["Custom25Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom25Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2&p=1">2.0 <?php if ($profile["Custom20Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom20Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5 <?php if ($profile["Custom15Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom15Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1&p=1">1.0 <?php if ($profile["Custom10Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom10Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5 <?php if ($profile["Custom05Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom05Rating"]); } ?></a></div>
-				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0&p=1">0.0 <?php if ($profile["Custom00Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom00Rating"]); } ?></a></div>
+                <div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["5.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=5&p=1">5.0 <?php if ($profile["Custom50Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom50Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4.5&p=1">4.5 <?php if ($profile["Custom45Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom45Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["4.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=4&p=1">4.0 <?php if ($profile["Custom40Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom40Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3.5&p=1">3.5 <?php if ($profile["Custom35Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom35Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["3.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=3&p=1">3.0 <?php if ($profile["Custom30Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom30Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2.5&p=1">2.5 <?php if ($profile["Custom25Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom25Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["2.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=2&p=1">2.0 <?php if ($profile["Custom20Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom20Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1.5&p=1">1.5 <?php if ($profile["Custom15Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom15Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["1.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=1&p=1">1.0 <?php if ($profile["Custom10Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom10Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.5"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0.5&p=1">0.5 <?php if ($profile["Custom05Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom05Rating"], ENT_QUOTES); } ?></a></div>
+				<div class="profileRankingDistributionBar" style="width: <?php echo (($ratingCounts["0.0"] ?? 0)/$maxRating)*90; ?>%;"><a href="ratings/?id=<?php echo $profileId; ?>&r=0&p=1">0.0 <?php if ($profile["Custom00Rating"] != "") { echo " - " . htmlspecialchars($profile["Custom00Rating"], ENT_QUOTES); } ?></a></div>
 			</div>
 			<div style="margin-bottom:1.5em;">
 				Rating Distribution<br>
@@ -314,7 +314,7 @@
                     <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;flex-direction:column;">
                         <div class="profileImage">
                             <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/></a><br>
-                            <a href="/profile/<?php echo $row["ID"]; ?>"><?php echo $row["username"]; ?></a>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><?php echo htmlspecialchars($row["username"], ENT_QUOTES); ?></a>
                         </div>
                     </div>
             <?php
@@ -380,11 +380,11 @@
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
-					<?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title']); ?> 
+					<?php echo $set['Artist']; ?> - <?php echo htmlspecialchars($set['Title'], ENT_QUOTES); ?> 
 					<a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;">
 					</i></a><br></a>
                     <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>">
-					<?php echo htmlspecialchars($topMap['DifficultyName']); ?></a> <span class="subText">
+					<?php echo htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?></a> <span class="subText">
 					<?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?></span><br>
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
@@ -416,7 +416,7 @@
                 ?>
                     <div class="profile-lesser-map">
                         <div style="display:inline-block;">
-                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName']); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
+                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo htmlspecialchars($map['DifficultyName'], ENT_QUOTES); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
                         </div>
 
                         <div style="float:right;display: inline-block;min-width:13em;min-height:1px;text-align:right;">

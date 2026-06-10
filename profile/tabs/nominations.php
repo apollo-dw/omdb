@@ -19,9 +19,9 @@
         if (in_array($row["SetID"], $usedSets))
             continue;
 
-        $artist = htmlspecialchars($row["Artist"]);
-        $title = htmlspecialchars($row["Title"]);
-        $diffname = htmlspecialchars($row["DifficultyName"]);
+        $artist = htmlspecialchars($row["Artist"], ENT_QUOTES);
+        $title = htmlspecialchars($row["Title"], ENT_QUOTES);
+        $diffname = htmlspecialchars($row["DifficultyName"], ENT_QUOTES);
         $avgRating = number_format($row["Rating"], 2);
 
         ?>

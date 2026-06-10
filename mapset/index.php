@@ -10,7 +10,7 @@
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
 
-    $PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
+    $PageTitle = $sampleRow['Title'] . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
     $year = date("Y", strtotime($sampleRow['DateRanked']));
     $isLoved = $sampleRow["Status"] == 4;
     $isGraveyarded = $sampleRow["Status"] == -2;
@@ -107,7 +107,7 @@ GROUP BY
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo $sampleRow['Artist'] . " - " . htmlspecialchars($sampleRow['Title']) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  GetUserNameFromId($sampleRow['CreatorID'], $conn); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  htmlspecialchars(GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
@@ -174,8 +174,9 @@ GROUP BY
                     echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
                     $nominatorLinks = array();
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
-                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$nominatorName'></a>
-                                     <a href='/profile/$nominatorID'>$nominatorName</a>";
+                        $escapedNominatorName = htmlspecialchars($nominatorName, ENT_QUOTES);
+                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'></a>
+                                     <a href='/profile/$nominatorID'>$escapedNominatorName</a>";
                     }
                     echo implode(" ", $nominatorLinks);
                     echo "</td></tr>";
@@ -292,7 +293,7 @@ while($row = $result->fetch_assoc()) {
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
-                <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?>
+                <?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName'], ENT_QUOTES), 0, 35, "..."); ?>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
@@ -405,7 +406,7 @@ while($row = $result->fetch_assoc()) {
 				$selectStmt->execute();
 				$tags_result = $selectStmt->get_result();
 				$tags_row = $tags_result->fetch_assoc();
-				$allTags = htmlspecialchars($tags_row['AllTags'], ENT_COMPAT, "ISO-8859-1");
+				$allTags = htmlspecialchars($tags_row['AllTags'], ENT_QUOTES, "ISO-8859-1");
 				$selectStmt->close();
 				?>
 				<span class="identifier" style="display: inline-block;">
@@ -516,9 +517,10 @@ while($row = $result->fetch_assoc()) {
             <ul>
 			<?php
 				foreach ($credits as $credit) {
+					$escapedCreditName = htmlspecialchars($credit['Username'], ENT_QUOTES);
 					echo "<li>
-					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$credit['Username']}'></a>
-                    <a href='/profile/{$credit['UserID']}'>{$credit['Username']}</a>
+					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
+                    <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
 					<br>
 					<span class='subText'>{$credit['Roles']}</span>
 					</li>";
@@ -559,8 +561,8 @@ while($row = $result->fetch_assoc()) {
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
                         </div>
                         <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"]); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a></span>
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a></span>
                         </div>
                     </div>
                     <?php
@@ -589,10 +591,10 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
@@ -699,7 +701,7 @@ while($row = $result->fetch_assoc()) {
                     foreach ($heartedUserIds as $uid) {
                         $heartedUsernames[] =
                             "<span style='white-space: nowrap;'>" .
-                            htmlspecialchars(GetUserNameFromId($uid, $conn)) .
+                            htmlspecialchars(GetUserNameFromId($uid, $conn), ENT_QUOTES) .
                             "</span>";
                     }
 
@@ -708,10 +710,10 @@ while($row = $result->fetch_assoc()) {
 					?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php

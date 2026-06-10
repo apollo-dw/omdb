@@ -57,7 +57,7 @@ $profileId = $_GET["id"];
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"]); ?>
+                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <span class="subText">
@@ -127,7 +127,7 @@ $profileId = $_GET["id"];
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"]); ?>
+                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <span class="subText">

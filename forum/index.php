@@ -76,7 +76,7 @@ $stmt = $conn->query("SELECT
                 <div style="margin-right: 6em;display:flex;align-items:center;">
                     <div style="margin-left: 0.5em;text-align: right;">
                         <a style="display:flex;" href="post/?id=<?php echo $latestThread["ThreadID"]; ?>">
-                            <?php echo $latestThread["ThreadTitle"]; ?>
+                            <?php echo htmlspecialchars($latestThread["ThreadTitle"], ENT_QUOTES); ?>
                         </a>
                         <span class="subText"><?php echo GetHumanTime($latestThread["PostCreatedAt"]); ?></span>
                     </div>

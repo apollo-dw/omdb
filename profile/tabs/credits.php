@@ -24,9 +24,9 @@
     $result = $stmt->get_result();
 
     while($row = $result->fetch_assoc()){
-        $artist = htmlspecialchars($row["Artist"]);
-        $title = htmlspecialchars($row["Title"]);
-        $credits = htmlspecialchars($row["userCredits"]);
+        $artist = htmlspecialchars($row["Artist"], ENT_QUOTES);
+        $title = htmlspecialchars($row["Title"], ENT_QUOTES);
+        $credits = htmlspecialchars($row["userCredits"], ENT_QUOTES);
 
         ?>
         <div style='padding-left:0.25em;height:5em;display:flex;align-items: center;' class='alternating-bg'>
