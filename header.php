@@ -110,9 +110,8 @@ error_reporting(E_ALL);
                         <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
 				<?php
 					} else {
-						include_once 'sensitiveStrings.php'; // needed for $clientID
 				?>
-					<b><a href=<?php echo FetchOsuOauthLink($clientID, $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
+					<b><a href=<?php echo FetchOsuOauthLink($env['OSU_CLIENT_ID'], $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
 				<?php
 					}
 				?>

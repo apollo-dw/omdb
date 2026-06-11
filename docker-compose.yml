@@ -1,21 +1,27 @@
-version: '3'
-
 services:
   omdb:
     build: .
-    ports: [8400:80]
-    env_file: .env
+    ports:
+      - "8400:80"
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root
     volumes:
       - .:/var/www/html
+    depends_on:
+      - db
 
   db:
     image: mysql:8
-    # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
-    # (this is just an example, not intended to be a production configuration)
-    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "127.0.0.1:3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=example
-      - MYSQL_DATABASE=omdb
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: omdb
     volumes:
-      - ./docker-data/mysql:/var/lib/mysql
+      - db:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db:

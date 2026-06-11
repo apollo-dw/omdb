@@ -1,5 +1,5 @@
 <?php
-    include_once 'sensitiveStrings.php';
+    include_once 'env.php';
 	include_once 'functions/bbcode.php';
 	include_once 'functions/access.php';
 
@@ -18,7 +18,7 @@
 	 */
 	function relUrl(string $path = "/") {
         global $env;
-		$publicUrl = $env["PUBLIC_URL"] ?? "https://omdb.nyahh.net";
+		$publicUrl = $env["PUBLIC_URL"];
 		return $publicUrl . $path;
 	}
 
@@ -122,11 +122,11 @@
 	}
 	
 	function GetUserDataOsuApi(int $id){
-        global $apiV1Key;
+		global $env;
 		$curl = curl_init();
 	
 		curl_setopt_array($curl, array(
-		  CURLOPT_URL => "https://osu.ppy.sh/api/get_user?k={$apiV1Key}&u=" . strval($id),
+		  CURLOPT_URL => 'https://osu.ppy.sh/api/get_user?k=' . $env['OSU_API_V1_KEY'] . '&u=' . strval($id),
 		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json'],
 		  CURLOPT_RETURNTRANSFER => true,
 	      CURLOPT_ENCODING => '',
