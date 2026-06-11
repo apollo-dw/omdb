@@ -3,8 +3,8 @@
 	require "../base.php";
     require '../header.php';
 
-    $year = $_GET["y"] ?? 2026;
-    $page = $_GET['p'] ?? 1;
+    $year = ($_GET["y"] ?? "") === "all-time" ? "all-time" : GetIntParam("y", 2026, "NOO");
+    $page = GetIntParam('p', 1, "NOO");
     $yearString = $year == "all-time" ? 'All Time' : $year;
 
     $result = $conn->query("SELECT DescriptorID, Name FROM descriptors WHERE Usable = 1");
@@ -264,7 +264,7 @@
 
     var selectedDescriptors = [];
     <?php foreach ($selectedDescriptors as $descriptor): ?>
-    selectedDescriptors.push({ id: <?php echo $descriptor['id']; ?>, name: '<?php echo $descriptor['name']; ?>' });
+    selectedDescriptors.push({ id: <?php echo (int)$descriptor['id']; ?>, name: <?php echo json_encode($descriptor['name']); ?> });
     <?php endforeach; ?>
 
     var genres = {

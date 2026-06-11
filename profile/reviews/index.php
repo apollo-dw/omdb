@@ -1,14 +1,11 @@
 <?php
-	$profileId = $_GET['id'] ?? -1;
-	$page = $_GET['p'] ?? 1;
     $PageTitle = "Reviews";
 
     require "../../base.php";
     require '../../header.php';
-	
-	if($profileId == -1){
-		die("Invalid page bro");
-	}
+
+	$profileId = GetIntParam('id', -1, "Invalid page bro");
+	$page = GetIntParam('p', 1, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
@@ -33,7 +30,7 @@
 
     $amntOfPages = floor($count / $limit) + 1;
 ?>
-<center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo GetUserNameFromId($profileId, $conn); ?></a>'s reviews</h1></center>
+<center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s reviews</h1></center>
 
 <hr>
 
@@ -84,10 +81,10 @@
 				?>
 				<div class="flex-container flex-child commentHeader">
 					<div class="flex-child" style="height:24px;width:24px;">
-						<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+						<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
 					</div>
 					<div class="flex-child">
-						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo GetUserNameFromId($row["UserID"], $conn); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo "${beatmap["Artist"]} - ${beatmap["Title"]}"; ?></a>
+						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]}", ENT_QUOTES); ?></a>
 					</div>
 					<div class="flex-child" style="margin-left:auto;">
 						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>

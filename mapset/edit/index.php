@@ -1,6 +1,6 @@
 <?php
-$mapset_id = $_GET['id'] ?? -1;
 require '../../base.php';
+$mapset_id = GetIntParam('id', -1);
 
 if (!$loggedIn) {
     die("You need to be logged in to view this page.");
@@ -18,7 +18,7 @@ $result = $stmt->get_result();
 $sampleRow = $result->fetch_assoc();
 mysqli_data_seek($result, 0);
 
-$PageTitle = htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
+$PageTitle = $sampleRow['Title'] . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
 require '../../header.php';
 
 if($mapset_id == -1){
@@ -29,7 +29,7 @@ $difficulties = [];
 while ($row = $result->fetch_assoc())
     $difficulties[$row['BeatmapID']] = $row;
 
-$mapset_id = htmlspecialchars($mapset_id);
+$mapset_id = htmlspecialchars($mapset_id, ENT_QUOTES);
 
 $stmt = $conn->prepare("SELECT * FROM `beatmap_edit_requests` WHERE SetID = ? AND `Status` = 'Pending';");
 $stmt->bind_param('i', $mapset_id);
@@ -49,7 +49,7 @@ $rolesJson = json_encode($roles);
 
 ?>
 
-    <h1>Edit request for <?php echo htmlspecialchars($sampleRow['Title']) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
+    <h1>Edit request for <?php echo htmlspecialchars($sampleRow['Title'], ENT_QUOTES) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
     <a href="../<?php echo $mapset_id; ?>">Return to mapset</a><br><br><br><br>
 
     <style>
@@ -108,10 +108,10 @@ $rolesJson = json_encode($roles);
 
             $requesterUsername = GetUserNameFromId($setRequest['UserID'], $conn);
             $data = json_decode($setRequest['EditData'], true);
-            $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"]) : "<i>No comment for request</i>";
+            $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"], ENT_QUOTES) : "<i>No comment for request</i>";
             $newMappers = $data["Mappers"];
 
-            echo "<b>{$requesterUsername}</b> submitted this request on {$setRequest["Timestamp"]}<br><br>
+            echo "<b>" . htmlspecialchars($requesterUsername, ENT_QUOTES) . "</b> submitted this request on {$setRequest["Timestamp"]}<br><br>
         <a href='http://osu.ppy.sh/b/{$beatmapID}' target='_blank'>Link to set on osu! website</a>
         <hr>";
 
@@ -346,10 +346,10 @@ foreach($difficulties as $beatmapID => $difficulty) {
 
         $requesterUsername = GetUserNameFromId($request['UserID'], $conn);
         $data = json_decode($request['EditData'], true);
-        $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"]) : "<i>No comment for request</i>";
+        $meta = $data["Meta"] != '' ? htmlspecialchars($data["Meta"], ENT_QUOTES) : "<i>No comment for request</i>";
         $newMappers = $data["Mappers"];
 
-        echo "<b>{$requesterUsername}</b> submitted this request on {$request["Timestamp"]}<br><br>
+        echo "<b>" . htmlspecialchars($requesterUsername, ENT_QUOTES) . "</b> submitted this request on {$request["Timestamp"]}<br><br>
                   <a href='http://osu.ppy.sh/b/{$beatmapID}' target='_blank'>Link to set on osu! website</a>
                   <hr>";
 
@@ -418,7 +418,7 @@ foreach($difficulties as $beatmapID => $difficulty) {
                         $result = $stmt->get_result();
 
                         while($row = $result->fetch_assoc())
-                            echo "<li><i class='icon-remove remove-button'></i> {$row["Username"]} <span class='subText mapperid'>{$row["CreatorID"]}</span></li>";
+                            echo "<li><i class='icon-remove remove-button'></i> " . htmlspecialchars($row["Username"], ENT_QUOTES) . " <span class='subText mapperid'>{$row["CreatorID"]}</span></li>";
                         ?>
                     </ul>
                 </div>

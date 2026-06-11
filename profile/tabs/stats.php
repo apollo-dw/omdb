@@ -1,9 +1,8 @@
 <?php
-    include "../../base.php";
+    if (file_exists("../../base.php"))
+        include "../../base.php";
 
-    $profileId = $_GET["id"];
-    if (!is_numeric($profileId))
-        die("What are you trying to do man.");
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-stats" class="tab" style="padding: 2em;">

@@ -1,15 +1,16 @@
 <?php
-    $topicId = $_GET['id'] ?? -1;
     $PageTitle = "Forums";
     require "../../base.php";
     require '../../header.php';
+
+    $topicId = GetIntParam('id', -1, "AHHH");
 
     $stmt = $conn->prepare("SELECT Name FROM forum_topics WHERE TopicID = ?;");
     $stmt->bind_param("i", $topicId);
     $stmt->execute();
     $topic = $stmt->get_result()->fetch_assoc()["Name"];
 
-    if (is_null($topic) || !is_numeric($topicId))
+    if (is_null($topic))
         die("AHHH");
 
     if (!$loggedIn)
@@ -47,7 +48,7 @@
 <form action="CreatePost.php" method="post">
     <div class="container">
         <h2>New post</h2>
-        <span class="subText"><?php echo $topic; ?></span>
+        <span class="subText"><?php echo htmlspecialchars($topic, ENT_QUOTES); ?></span>
         <hr>
 
         <input type="hidden" name="PostTopic" value="<?php echo $topicId; ?>" />
@@ -55,7 +56,7 @@
         <input autocomplete="off" name="PostSubject" id="PostSubject" style="width:50%;" required/><br><br>
 
         <label>Body:</label> <br>
-        <textarea name="PostBody" id="PostBody"><?php echo $list["Description"] ?? ""; ?></textarea> <br><br>
+        <textarea name="PostBody" id="PostBody"><?php echo htmlspecialchars($list["Description"] ?? "", ENT_QUOTES); ?></textarea> <br><br>
         <button type="button" onclick="insertTag('img')" class="small-button">img</button>
         <button type="button" onclick="insertTag('a')" class="small-button">link</button>
         <button type="button" onclick="insertTag('code')" class="small-button">code</button>

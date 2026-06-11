@@ -1,7 +1,8 @@
 <?php
-    $threadId = $_GET['id'] ?? -1;
-    $page = $_GET['p'] ?? 1;
     require_once "../../base.php";
+
+    $threadId = GetIntParam('id', -1, "AHHH");
+    $page = GetIntParam('p', 1, "AHHH");
 
     $stmt = $conn->prepare("SELECT * FROM forum_threads LEFT JOIN forum_topics ft on forum_threads.TopicID = ft.TopicID WHERE ThreadID = ?;");
     $stmt->bind_param("i", $threadId);
@@ -9,8 +10,8 @@
     $thread = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($thread) || !is_numeric($threadId) || !is_numeric($page))
-        die("ahhh");
+    if (is_null($thread))
+        die("AHHH");
 
     $PageTitle = $thread["Title"];
     require_once '../../header.php';
@@ -107,8 +108,8 @@
     }
 </style>
 
-<h2><?php echo $thread["Title"]; ?></h2>
-<span class="subText"><?php echo $thread["Name"]; ?></span>
+<h2><?php echo htmlspecialchars($thread["Title"], ENT_QUOTES); ?></h2>
+<span class="subText"><?php echo htmlspecialchars($thread["Name"], ENT_QUOTES); ?></span>
 
 <div style="float:right;">
     <div class="pagination">
@@ -128,7 +129,7 @@
             <div class="forum-post-info">
                 <div>
                     <div class="profileTitle" style="text-align: center;">
-                        <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"><?php echo GetUserNameFromId($post["UserID"], $conn); ?></a>
+                        <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"><?php echo htmlspecialchars(GetUserNameFromId($post["UserID"], $conn), ENT_QUOTES); ?></a>
                         <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"></a>
                     </div>
                     <div class="profileImage">

@@ -45,7 +45,7 @@ include 'header.php';
         while ($row = $result->fetch_assoc()) {
             echo "<tr>";
             echo "<td>" . $row["UserID"] . "</td>";
-            echo "<td>" . $row["Username"] . "</td>";
+            echo "<td>" . htmlspecialchars($row["Username"], ENT_QUOTES) . "</td>";
             echo "</tr>";
         }
         ?>

@@ -1,6 +1,6 @@
 <?php
     require "../base.php";
-    $descriptor_id = $_GET['id'] ?? -1;
+    $descriptor_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
     $stmt->bind_param("i", $descriptor_id);
@@ -51,10 +51,10 @@
 
     $parentTree = getParentTree($descriptor, $conn);
 
-    echo "<h1>Descriptor - {$descriptor["Name"]}</h1>";
+    echo "<h1>Descriptor - " . htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
     echo "<h3 style='color:#a8a8a8;'>{$beatmapCount} beatmaps</h3>";
-    echo $descriptor["ShortDescription"] . "<br>";
-    echo "<span class='subText'>$parentTree</span>";
+    echo htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES) . "<br>";
+    echo "<span class='subText'>" . htmlspecialchars($parentTree, ENT_QUOTES) . "</span>";
 ?>
 
 <style>
@@ -98,7 +98,7 @@
 <a href="../descriptors/">View all descriptors</a>
 <br><br>
 
-<h2 style="margin-bottom: 0px;">Highest ranked <?php echo $descriptor["Name"]; ?> maps</h2><br>
+<h2 style="margin-bottom: 0px;">Highest ranked <?php echo htmlspecialchars($descriptor["Name"], ENT_QUOTES); ?> maps</h2><br>
 <div class="flex-container alternating-bg" style="width:100%;padding:0;margin-bottom:2em;">
     <?php
     $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
@@ -132,12 +132,12 @@
         if ($counter > 9)
             break;
 
-        $difficultyName = mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "...");
+        $difficultyName = mb_strimwidth(htmlspecialchars($row['DifficultyName'], ENT_QUOTES), 0, 35, "...");
         ?>
         <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;">
             <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
             <span class="subText">
-			    <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo "{$row["Title"]} [$difficultyName]"; ?></a><br>
+			    <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Title"]} [$difficultyName]", ENT_QUOTES); ?></a><br>
 		    </span>
         </div>
         <?php
@@ -148,7 +148,7 @@
 </div>
 
 <?php if ($counter === 10) { ?>
-<a href="../charts/?y=all-time&descriptors=<?php echo $descriptor["Name"]; ?>">
+<a href="../charts/?y=all-time&descriptors=<?php echo htmlspecialchars(rawurlencode($descriptor["Name"]), ENT_QUOTES); ?>">
     <div style="float:right;">
         ... view more!
     </div>

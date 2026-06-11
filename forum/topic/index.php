@@ -1,7 +1,8 @@
 <?php
-    $topicId = $_GET['id'] ?? -1;
-    $page = $_GET['p'] ?? 1;
     require_once "../../base.php";
+
+    $topicId = GetIntParam('id', -1, "AHHH");
+    $page = GetIntParam('p', 1);
 
     $stmt = $conn->prepare("SELECT * FROM forum_topics WHERE TopicID = ?;");
     $stmt->bind_param("i", $topicId);
@@ -9,8 +10,8 @@
     $topic = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($topic) || !is_numeric($topicId) || !is_numeric($page))
-        die("ahhh");
+    if (is_null($topic))
+        die("AHHH");
 
     $PageTitle = $topic["Name"];
     require_once '../../header.php';
@@ -70,9 +71,9 @@
     }
 </style>
 
-<h2><?php echo $topic["Name"]; ?></h2>
+<h2><?php echo htmlspecialchars($topic["Name"], ENT_QUOTES); ?></h2>
 <div>
-    <span class="subText"><?php echo $topic["Description"]; ?></span>
+    <span class="subText"><?php echo htmlspecialchars($topic["Description"], ENT_QUOTES); ?></span>
     <?php if ($loggedIn) { ?>
         <div style="float:right;"><a href="../new/?id=<?php echo $topicId; ?>">Create new post</a></div>
     <?php } ?>
@@ -84,21 +85,21 @@
         ?>
         <div class="flex-container forum-thread alternating-bg">
             <div>
-                <a href="../post/?id=<?php echo $thread["ThreadID"]; ?>"><b><?php echo $thread["Title"]; ?></b></a> <br>
+                <a href="../post/?id=<?php echo $thread["ThreadID"]; ?>"><b><?php echo htmlspecialchars($thread["Title"], ENT_QUOTES); ?></b></a> <br>
                 <span class="subText">
                     by <a href="../../profile/<?php echo $thread["ThreadUserID"]; ?>">
-                        <?php echo GetUserNameFromId($thread["ThreadUserID"], $conn); ?></a>
+                        <?php echo htmlspecialchars(GetUserNameFromId($thread["ThreadUserID"], $conn), ENT_QUOTES); ?></a>
                      | <?php RenderLocalTime($thread["ThreadCreatedAt"]); ?>
                 </span>
             </div>
             <div style="margin-left:auto;display:flex;align-items:center;">
                 <div style="margin-right: 6em;display:flex;align-items:center;">
                     <a href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo GetUserNameFromId($thread["LatestPostUserID"], $conn); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                     <div style="margin-left: 0.5em;">
                         <a style="display:flex;" href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
-                            <?php echo GetUserNameFromId($thread["LatestPostUserID"], $conn); ?>
+                            <?php echo htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>
                         </a>
                         <span class="subText"><?php echo GetHumanTime($thread["LatestPostCreatedAt"]); ?></span>
                     </div>

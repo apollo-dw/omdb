@@ -2,7 +2,7 @@
     if (file_exists("../../base.php"))
         include "../../base.php";
 
-    $profileId = $_GET["id"];
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-credits" class="tab" style="padding-top:0.5em;">
@@ -24,9 +24,9 @@
     $result = $stmt->get_result();
 
     while($row = $result->fetch_assoc()){
-        $artist = htmlspecialchars($row["Artist"]);
-        $title = htmlspecialchars($row["Title"]);
-        $credits = htmlspecialchars($row["userCredits"]);
+        $artist = htmlspecialchars($row["Artist"], ENT_QUOTES);
+        $title = htmlspecialchars($row["Title"], ENT_QUOTES);
+        $credits = htmlspecialchars($row["userCredits"], ENT_QUOTES);
 
         ?>
         <div style='padding-left:0.25em;height:5em;display:flex;align-items: center;' class='alternating-bg'>

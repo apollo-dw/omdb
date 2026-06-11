@@ -1,7 +1,8 @@
 <?php
-    $proposal_id = $_GET['id'] ?? -1;
     $PageTitle = "Edit Descriptor Proposal";
     require '../../../header.php';
+
+    $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT * FROM `descriptor_proposals` WHERE `ProposalID` = ?;");
     $stmt->bind_param("i", $proposal_id);
@@ -58,7 +59,7 @@
                     <label>Descriptor name:</label><br>
                 </td>
                 <td style="width:80%;">
-                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" maxlength="40" value="<?php echo $proposal["Name"]; ?>" required/>
+                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" maxlength="40" value="<?php echo htmlspecialchars($proposal["Name"], ENT_QUOTES); ?>" required/>
                 </td>
             </tr>
             <tr>
@@ -66,7 +67,7 @@
                     <label>Description:</label>
                 </td>
                 <td>
-                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo $proposal["ShortDescription"]; ?></textarea>
+                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></textarea>
                 </td>
             </tr>
             <tr>

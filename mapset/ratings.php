@@ -3,14 +3,10 @@
     include_once '../functions.php';
     include_once '../userConnect.php';
 
-    $page = $_GET['p'] ?? 1;
-    $mapset_id = $_GET['id'] ?? $mapset_id;
-    $beatmap_id = $_GET['bID'] ?? -1;
+    $page = GetIntParam('p', 1, "NOO");
+    $mapset_id = GetIntParam('id', $mapset_id ?? null, "NOO");
+    $beatmap_id = GetIntParam('bID', -1, "NOO");
     $order = $_GET['o'] ?? "newest";
-
-    if(!is_numeric($page) || !is_numeric($mapset_id)){
-        die("NOO");
-    }
 
     if ($beatmap_id == -1) {
         $countQuery = "SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)";
@@ -67,11 +63,11 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
 ?>
 <div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
     <div class="flex-child">
-        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo GetUserNameFromId($row["UserID"], $conn); ?>"/></a>
+        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
         <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-            <?php echo GetUserNameFromId($row["UserID"], $conn); ?>
+            <?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
         </a>
         <?php
             $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
@@ -79,12 +75,12 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
             $stmt2->execute();
             $result2 = $stmt2->get_result();
             $row2 = $result2->fetch_row();
-            echo RenderUserRating($conn, $row) . " on " . htmlspecialchars(mb_strimwidth($row2[0], 0, 40, "..."));
+            echo RenderUserRating($conn, $row) . " on " . htmlspecialchars(mb_strimwidth($row2[0], 0, 40, "..."), ENT_QUOTES);
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
         <?php if (strlen($row["Tags"]) > 0) { ?>
-            <i title='<?php echo $row["Tags"] ?>' style='border-bottom:1px dotted white;' class="icon-tags"></i>
+            <i title='<?php echo htmlspecialchars($row["Tags"], ENT_QUOTES) ?>' style='border-bottom:1px dotted white;' class="icon-tags"></i>
         <?php } ?>
         <?php echo GetHumanTime($row["date"]); ?>
     </div>
@@ -107,7 +103,7 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
 
         while($row = $result->fetch_assoc()){
             $selectedString = $beatmap_id == $row['BeatmapID'] ? "selected" : "";
-            $difficultyName = htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 40, "..."));
+            $difficultyName = htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 40, "..."), ENT_QUOTES);
             echo "<option value='{$row['BeatmapID']}' {$selectedString}>{$difficultyName}</option>";
         }
     ?>

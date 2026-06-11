@@ -2,7 +2,7 @@
     if (file_exists("../../base.php"))
         include "../../base.php";
 
-    $profileId = $_GET["id"];
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-nominations" class="tab" style="padding-top:0.5em;">
@@ -19,9 +19,9 @@
         if (in_array($row["SetID"], $usedSets))
             continue;
 
-        $artist = htmlspecialchars($row["Artist"]);
-        $title = htmlspecialchars($row["Title"]);
-        $diffname = htmlspecialchars($row["DifficultyName"]);
+        $artist = htmlspecialchars($row["Artist"], ENT_QUOTES);
+        $title = htmlspecialchars($row["Title"], ENT_QUOTES);
+        $diffname = htmlspecialchars($row["DifficultyName"], ENT_QUOTES);
         $avgRating = number_format($row["Rating"], 2);
 
         ?>

@@ -13,6 +13,20 @@
 	}
 
 	/**
+	 * Reads int parameter from req
+	 * Dies if the value exists but not numeric
+	 * OR if it is missing and no default was given.
+	 */
+	function GetIntParam(string $key, ?int $default = null, ?string $error = null): int {
+		$value = $_POST[$key] ?? $_GET[$key] ?? $default;
+
+		if ($value === null || !is_numeric($value))
+			die($error ?? "Invalid '{$key}' parameter");
+
+		return (int)$value;
+	}
+
+	/**
 	 * Returns the requested relative location (using the environment variable
 	 * PUBLIC_URL to determine the host) as a string.
 	 */
@@ -479,9 +493,9 @@ function getFullCountryName($code) {
 			$mapID = $matches['id2'] ?? '';
 
 			if ($mapID != '')
-				return '<a href="' . $matches[0] . '">/b/' . $mapID . '</a>';
+				return '<a href="' . htmlspecialchars($matches[0], ENT_QUOTES) . '">/b/' . $mapID . '</a>';
 			else
-				return '<a href="' . $matches[0] . '">/s/' . $setID . '</a>';
+				return '<a href="' . htmlspecialchars($matches[0], ENT_QUOTES) . '">/s/' . $setID . '</a>';
 
 		}, $string);
 
@@ -496,7 +510,7 @@ function getFullCountryName($code) {
 
 			if (isset($beatmap)){
 				$mapper = GetUserNameFromId($beatmap["CreatorID"], $conn);
-				return "<a href='{$matches[0]}'> {$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})</a>";
+				return "<a href='{$matches[0]}'> " . htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})", ENT_QUOTES) . "</a>";
 			}
 
 			return $matches[0];
@@ -721,7 +735,7 @@ function getFullCountryName($code) {
 
 		while ($creator = $creators->fetch_assoc()){
 			$creatorName = GetUserNameFromId($creator['CreatorID'], $conn);
-			echo "<a href='/profile/{$creator['CreatorID']}'>{$creatorName}</a>";
+			echo "<a href='/profile/{$creator['CreatorID']}'>" . htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
 			$index++;
 			if ($index < $creatorCount - 1)

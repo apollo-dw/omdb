@@ -15,6 +15,6 @@ descriptors.DescriptorID = descriptor_votes.DescriptorID LEFT JOIN beatmaps ON b
         //    $editorName = GetUserNameFromId($row["EditorID"], $conn);
         //    $status = "{$row["Status"]} by {$editorName}";
         //}
-        echo "<a href='../mapset/?mapset_id={$row["SetID"]}'>{$row["Username"]} on {$row["Title"]} [{$row["DifficultyName"]}]</a> {$row["Name"]} {$row["Vote"]}<br>";
+        echo "<a href='../mapset/?mapset_id={$row["SetID"]}'>" . htmlspecialchars("{$row["Username"]} on {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES) . "</a> " . htmlspecialchars("{$row["Name"]} {$row["Vote"]}", ENT_QUOTES) . "<br>";
     }
 

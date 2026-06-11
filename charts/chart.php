@@ -1,29 +1,25 @@
 <?php
 	include_once '../base.php';
 
-	$page = $_POST['p'] ?? $_GET['p'] ?? 1;
-	$year = $_POST['y'] ?? $_GET['y'] ?? $year;
-	$order = $_POST['o'] ?? 1;
-    $genre = $_POST['g'] ?? 0;
-    $language = $_POST['l'] ?? 0;
+	$page = GetIntParam('p', 1, "NOO");
+	$year = ($_POST['y'] ?? $_GET['y'] ?? "") === "all-time" ? "all-time" : GetIntParam('y', 2026, "NOO");
+	$order = GetIntParam('o', 1, "NOO");
+    $genre = GetIntParam('g', 0, "NOO");
+    $language = GetIntParam('l', 0, "NOO");
     $country = $_POST['c'] ?? 0;
     $onlyFriends = $_POST['f'] ?? "false";
     $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
     $excludeGraveyard = $_POST['excludeGraveyard'] ?? "false";
     $excludeLoved = $_POST['excludeLoved'] ?? "false";
 	$excludeRanked = $_POST['excludeRanked'] ?? "false";
-	$minSR = $_post['minSR'] ?? 0;
-	$maxSR = $_post['maxSR'] ?? -1;
+	$minSR = (float)($_POST['minSR'] ?? 0);
+	$maxSR = (float)($_POST['maxSR'] ?? -1);
 
     $descriptorsJSON = $_POST['descriptors'] ?? "[]";
 
     if (!isset($selectedDescriptors)) {
         $selectedDescriptors = json_decode($descriptorsJSON, true);
     }
-
-	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($language) || !is_numeric($minSR) || !is_numeric($maxSR)){
-		die("NOO");
-	}
 ?>
 
 <div class="flex-item" style="padding:0.5em;">
@@ -59,12 +55,8 @@
                 $columnString = "(WeightedAvg - CAST(Rating AS FLOAT))*SQRT(RatingCount)";
 
             $yearString = "";
-            if ($year != "all-time"){
-                if (!is_numeric($year))
-                    die("NOOO!");
-
+            if ($year !== "all-time")
                 $yearString = "AND YEAR(s.DateRanked) = '{$year}'";
-            }
 
             $genreString = "";
             if ($genre > 0)
@@ -92,13 +84,7 @@
 				$subqueries = [];
 
 				foreach ($selectedDescriptors as $descriptor) {
-					$descriptorID = $descriptor['id'];
-
-					if (!is_numeric($descriptorID)) {
-						die("NOOO");
-					}
-
-					$descriptorID = (int)$descriptorID;
+					$descriptorID = (int)$descriptor['id'];
 
 					$subqueries[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = $descriptorID)";
 				}
@@ -208,8 +194,8 @@
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:80px;width:80px;" onerror="this.onerror=null; this.src='INF.png';" /></a>
 				</div>
 				<div style="flex: 0 0 46%;">
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title']); ?> <br></a>
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName']), 0, 35, "..."); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title'], ENT_QUOTES); ?> <br></a>
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName'], ENT_QUOTES), 0, 35, "..."); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
                     <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
                     <span class="subText map-descriptors">

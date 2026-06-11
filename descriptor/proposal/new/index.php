@@ -1,7 +1,8 @@
 <?php
-    $proposal_id = $_GET['id'] ?? -1;
     $PageTitle = "New Descriptor Proposal";
     require '../../../header.php';
+
+    $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $MAX_PROPOSAL_COUNT = 3;
     $activeProposalCount = $conn->query("SELECT * FROM `descriptor_proposals` WHERE Status = 'pending';")->num_rows;

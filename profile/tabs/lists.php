@@ -1,6 +1,8 @@
 <?php
-include "../../base.php";
-$profileId = $_GET["id"];
+    if (file_exists("../../base.php"))
+        include "../../base.php";
+
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-lists" class="lists">
@@ -57,7 +59,7 @@ $profileId = $_GET["id"];
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"]); ?>
+                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <span class="subText">
@@ -127,7 +129,7 @@ $profileId = $_GET["id"];
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"]); ?>
+                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <span class="subText">

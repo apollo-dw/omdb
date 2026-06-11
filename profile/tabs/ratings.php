@@ -1,8 +1,8 @@
 <?php
-    include "../../base.php";
+    if (file_exists("../../base.php"))
+        include "../../base.php";
 
-    $profileId = $_GET["id"];
-    $maxRating = $_GET["maxRating"];
+    $profileId = GetIntParam("id", null, "Invalid page bro");
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
@@ -77,7 +77,7 @@
                 <td style="width:20%;">
                     <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"><?php echo $formattedRating; ?><br>
                         <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != ""){ ?>
-                            <span class="subText"><?php echo htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"]); ?></span>
+                            <span class="subText"><?php echo htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"], ENT_QUOTES); ?></span>
                         <?php } ?>
                     </a>
                 </td>
