@@ -195,7 +195,7 @@
 				</div>
 				<div style="flex: 0 0 46%;">
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title'], ENT_QUOTES); ?> <br></a>
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo mb_strimwidth(htmlspecialchars($row['DifficultyName'], ENT_QUOTES), 0, 35, "..."); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
                     <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
                     <span class="subText map-descriptors">

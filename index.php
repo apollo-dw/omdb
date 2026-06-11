@@ -91,7 +91,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                         <?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
                     </a>
                     <?php
-                        echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . mb_strimwidth(htmlspecialchars($row["DifficultyName"], ENT_QUOTES), 0, 35, "...") . "</a>";
+                        echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
                     ?>
                 </div>
 			</div>
