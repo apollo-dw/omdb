@@ -1,8 +1,9 @@
 <?php
-    $proposal_id = $_GET['id'] ?? -1;
     $PageTitle = "Descriptor Proposal";
     require "../../base.php";
     require '../../header.php';
+
+    $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT * FROM `descriptor_proposals` WHERE `ProposalID` = ?;");
     $stmt->bind_param("i", $proposal_id);

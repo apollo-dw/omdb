@@ -2,7 +2,7 @@
     $PageTitle = "List creation";
     require "../../header.php";
 
-    $id = $_GET["id"] ?? "";
+    $id = GetIntParam("id", -1, "How dare you");
     $stmt = $conn->prepare("SELECT * FROM `lists` WHERE `ListID` = ?;");
     $stmt->bind_param("i", $id);
     $stmt->execute();

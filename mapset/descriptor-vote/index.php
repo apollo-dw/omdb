@@ -1,8 +1,9 @@
 <?php
-$map_id = $_GET['id'] ?? -1;
 $PageTitle = "Vote Descriptors";
 require "../../base.php";
 require '../../header.php';
+
+$map_id = GetIntParam('id', -1);
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

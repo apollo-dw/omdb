@@ -3,9 +3,9 @@
 	require "../base.php";
 	require '../header.php';
 	
-	$month = $_GET['m'] ?? date("m");
-	$year = $_GET['y'] ?? date("Y");
-	$page = $_GET['p'] ?? 1;
+	$month = GetIntParam('m', (int)date("m"));
+	$year = GetIntParam('y', (int)date("Y"));
+	$page = GetIntParam('p', 1);
 
     $minMonth = 1;
     $maxMonth = 12;

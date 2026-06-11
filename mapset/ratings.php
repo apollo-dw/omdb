@@ -3,14 +3,10 @@
     include_once '../functions.php';
     include_once '../userConnect.php';
 
-    $page = $_GET['p'] ?? 1;
-    $mapset_id = $_GET['id'] ?? $mapset_id;
-    $beatmap_id = $_GET['bID'] ?? -1;
+    $page = GetIntParam('p', 1, "NOO");
+    $mapset_id = GetIntParam('id', $mapset_id ?? null, "NOO");
+    $beatmap_id = GetIntParam('bID', -1, "NOO");
     $order = $_GET['o'] ?? "newest";
-
-    if(!is_numeric($page) || !is_numeric($mapset_id)){
-        die("NOO");
-    }
 
     if ($beatmap_id == -1) {
         $countQuery = "SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?)";

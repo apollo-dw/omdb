@@ -1,15 +1,16 @@
 <?php
-    $topicId = $_GET['id'] ?? -1;
     $PageTitle = "Forums";
     require "../../base.php";
     require '../../header.php';
+
+    $topicId = GetIntParam('id', -1, "AHHH");
 
     $stmt = $conn->prepare("SELECT Name FROM forum_topics WHERE TopicID = ?;");
     $stmt->bind_param("i", $topicId);
     $stmt->execute();
     $topic = $stmt->get_result()->fetch_assoc()["Name"];
 
-    if (is_null($topic) || !is_numeric($topicId))
+    if (is_null($topic))
         die("AHHH");
 
     if (!$loggedIn)

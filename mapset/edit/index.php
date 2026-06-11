@@ -1,6 +1,6 @@
 <?php
-$mapset_id = $_GET['id'] ?? -1;
 require '../../base.php';
+$mapset_id = GetIntParam('id', -1);
 
 if (!$loggedIn) {
     die("You need to be logged in to view this page.");

@@ -1,13 +1,10 @@
 <?php
-    $profileId = $_GET['id'] ?? -1;
     $PageTitle = "Similar users";
 
     require "../../base.php";
     require '../../header.php';
 
-    if($profileId == -1 || !is_numeric($profileId)){
-    die("Invalid page bro");
-    }
+    $profileId = GetIntParam('id', "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);

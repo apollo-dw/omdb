@@ -1,8 +1,9 @@
 <?php
-    $listId = $_GET['id'] ?? -1;
     $PageTitle = "List";
     require "../base.php";
     require '../header.php';
+
+    $listId = GetIntParam('id', -1, "How dare you");
 
     $stmt = $conn->prepare("SELECT * FROM `lists` WHERE `ListID` = ?;");
     $stmt->bind_param("i", $listId);
@@ -10,12 +11,10 @@
     $list = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $title = htmlspecialchars($list['Title'], ENT_QUOTES);
-
     if (is_null($list))
         die("List not found");
-    if (!is_numeric($listId))
-        die("How dare you");
+
+    $title = htmlspecialchars($list['Title'], ENT_QUOTES);
 
     $stmt = $conn->prepare("
         SELECT

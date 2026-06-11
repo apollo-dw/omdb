@@ -1,29 +1,27 @@
 <?php
 	include_once '../base.php';
 
-	$page = $_POST['p'] ?? $_GET['p'] ?? 1;
+	$page = GetIntParam('p', 1, "NOO");
 	$year = $_POST['y'] ?? $_GET['y'] ?? $year;
-	$order = $_POST['o'] ?? 1;
-    $genre = $_POST['g'] ?? 0;
-    $language = $_POST['l'] ?? 0;
+	if ($year !== "all-time")
+		$year = (int)$year;
+	$order = GetIntParam('o', 1, "NOO");
+    $genre = GetIntParam('g', 0, "NOO");
+    $language = GetIntParam('l', 0, "NOO");
     $country = $_POST['c'] ?? 0;
     $onlyFriends = $_POST['f'] ?? "false";
     $hideAlreadyRated = $_POST['alreadyRated'] ?? "false";
     $excludeGraveyard = $_POST['excludeGraveyard'] ?? "false";
     $excludeLoved = $_POST['excludeLoved'] ?? "false";
 	$excludeRanked = $_POST['excludeRanked'] ?? "false";
-	$minSR = $_post['minSR'] ?? 0;
-	$maxSR = $_post['maxSR'] ?? -1;
+	$minSR = (float)($_POST['minSR'] ?? 0);
+	$maxSR = (float)($_POST['maxSR'] ?? -1);
 
     $descriptorsJSON = $_POST['descriptors'] ?? "[]";
 
     if (!isset($selectedDescriptors)) {
         $selectedDescriptors = json_decode($descriptorsJSON, true);
     }
-
-	if(!is_numeric($page) || !is_numeric($order) || !is_numeric($language) || !is_numeric($minSR) || !is_numeric($maxSR)){
-		die("NOO");
-	}
 ?>
 
 <div class="flex-item" style="padding:0.5em;">
@@ -59,12 +57,8 @@
                 $columnString = "(WeightedAvg - CAST(Rating AS FLOAT))*SQRT(RatingCount)";
 
             $yearString = "";
-            if ($year != "all-time"){
-                if (!is_numeric($year))
-                    die("NOOO!");
-
+            if ($year !== "all-time")
                 $yearString = "AND YEAR(s.DateRanked) = '{$year}'";
-            }
 
             $genreString = "";
             if ($genre > 0)
@@ -92,13 +86,7 @@
 				$subqueries = [];
 
 				foreach ($selectedDescriptors as $descriptor) {
-					$descriptorID = $descriptor['id'];
-
-					if (!is_numeric($descriptorID)) {
-						die("NOOO");
-					}
-
-					$descriptorID = (int)$descriptorID;
+					$descriptorID = (int)$descriptor['id'];
 
 					$subqueries[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = $descriptorID)";
 				}

@@ -1,6 +1,6 @@
 <?php
-    $mapset_id = $_GET['mapset_id'] ?? -1;
     require '../base.php';
+    $mapset_id = GetIntParam('mapset_id', -1);
 
     $foundSet = false;
     $stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");

@@ -1,7 +1,8 @@
 <?php
-    $threadId = $_GET['id'] ?? -1;
-    $page = $_GET['p'] ?? 1;
     require_once "../../base.php";
+
+    $threadId = GetIntParam('id', -1, "AHHH");
+    $page = GetIntParam('p', 1, "AHHH");
 
     $stmt = $conn->prepare("SELECT * FROM forum_threads LEFT JOIN forum_topics ft on forum_threads.TopicID = ft.TopicID WHERE ThreadID = ?;");
     $stmt->bind_param("i", $threadId);
@@ -9,8 +10,8 @@
     $thread = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($thread) || !is_numeric($threadId) || !is_numeric($page))
-        die("ahhh");
+    if (is_null($thread))
+        die("AHHH");
 
     $PageTitle = $thread["Title"];
     require_once '../../header.php';

@@ -1,14 +1,11 @@
 <?php
-	$profileId = $_GET['id'] ?? -1;
-	$page = $_GET['p'] ?? 1;
     $PageTitle = "Comments";
 
     require "../../base.php";
     require '../../header.php';
-	
-	if($profileId == -1){
-		die("Invalid page bro");
-	}
+
+	$profileId = GetIntParam('id', "Invalid page bro");
+	$page = GetIntParam('p', 1, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);

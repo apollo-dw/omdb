@@ -1,6 +1,8 @@
 <?php
-include "../../base.php";
-$profileId = $_GET["id"];
+    if (file_exists("../../base.php"))
+        include "../../base.php";
+
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-lists" class="lists">

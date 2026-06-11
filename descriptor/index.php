@@ -1,6 +1,6 @@
 <?php
     require "../base.php";
-    $descriptor_id = $_GET['id'] ?? -1;
+    $descriptor_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
     $stmt->bind_param("i", $descriptor_id);

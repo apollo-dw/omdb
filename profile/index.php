@@ -1,10 +1,7 @@
 <?php
-	$profileId = $_GET['id'] ?? -1;
 	require "../base.php";
 
-	if ($profileId == -1 || !is_numeric($profileId)) {
-		siteRedirect();
-	}
+	$profileId = GetIntParam('id', -1, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);

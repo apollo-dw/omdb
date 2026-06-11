@@ -1,8 +1,8 @@
 <?php
-    include "../../base.php";
+    if (file_exists("../../base.php"))
+        include "../../base.php";
 
-    $profileId = $_GET["id"];
-    $maxRating = $_GET["maxRating"];
+    $profileId = GetIntParam("id", null, "Invalid page bro");
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();

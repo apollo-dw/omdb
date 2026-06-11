@@ -1,9 +1,6 @@
 <?php
-	$profileId = $_GET['id'] ?? -1;
-	$page = $_GET['p'] ?? 1;
     $order = $_GET['o'] ?? "0";
 	$rating = $_GET['r'] ?? "";
-    $year = $_GET['y'] ?? "all-time";
     $starRating = $_GET['sr'] ?? "";
     $genre = $_GET['g'] ?? "";
     $language = $_GET['lang'] ?? "";
@@ -15,9 +12,9 @@
     require "../../base.php";
     require '../../header.php';
 	
-	if($profileId == -1 || !is_numeric($profileId)){
-		die("Invalid page bro");
-	}
+	$profileId = GetIntParam('id', null, "Invalid page bro");
+	$page = GetIntParam('p', 1, "Invalid page bro");
+	$year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y');
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);

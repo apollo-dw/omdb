@@ -2,7 +2,7 @@
     if (file_exists("../../base.php"))
         include "../../base.php";
 
-    $profileId = $_GET["id"];
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
 <div id="tabbed-nominations" class="tab" style="padding-top:0.5em;">

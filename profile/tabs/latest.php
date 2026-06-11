@@ -2,7 +2,7 @@
     if (file_exists("../../base.php"))
         include "../../base.php";
 
-    $profileId = $_GET["id"];
+    $profileId = GetIntParam("id", null, "What are you trying to do man.");
 	
 	$isSelf = false;
 	if ($loggedIn)

@@ -1,7 +1,8 @@
 <?php
-    $topicId = $_GET['id'] ?? -1;
-    $page = $_GET['p'] ?? 1;
     require_once "../../base.php";
+
+    $topicId = GetIntParam('id', -1, "AHHH");
+    $page = GetIntParam('p', 1);
 
     $stmt = $conn->prepare("SELECT * FROM forum_topics WHERE TopicID = ?;");
     $stmt->bind_param("i", $topicId);
@@ -9,8 +10,8 @@
     $topic = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($topic) || !is_numeric($topicId) || !is_numeric($page))
-        die("ahhh");
+    if (is_null($topic))
+        die("AHHH");
 
     $PageTitle = $topic["Name"];
     require_once '../../header.php';

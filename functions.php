@@ -13,6 +13,20 @@
 	}
 
 	/**
+	 * Reads int parameter from req
+	 * Dies if the value exists but not numeri
+	 * OR if it is missing and no default was given.
+	 */
+	function GetIntParam(string $key, ?int $default = null, ?string $error = null): int {
+		$value = $_POST[$key] ?? $_GET[$key] ?? $default;
+
+		if ($value === null || !is_numeric($value))
+			die($error ?? "Invalid '{$key}' parameter");
+
+		return (int)$value;
+	}
+
+	/**
 	 * Returns the requested relative location (using the environment variable
 	 * PUBLIC_URL to determine the host) as a string.
 	 */
