@@ -9,4 +9,4 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    echo $result->fetch_assoc()["Username"];
+    echo htmlspecialchars($result->fetch_assoc()["Username"] ?? "", ENT_QUOTES);
