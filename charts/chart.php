@@ -2,9 +2,7 @@
 	include_once '../base.php';
 
 	$page = GetIntParam('p', 1, "NOO");
-	$year = $_POST['y'] ?? $_GET['y'] ?? $year;
-	if ($year !== "all-time")
-		$year = (int)$year;
+	$year = ($_POST['y'] ?? $_GET['y'] ?? "") === "all-time" ? "all-time" : GetIntParam('y', 2026, "NOO");
 	$order = GetIntParam('o', 1, "NOO");
     $genre = GetIntParam('g', 0, "NOO");
     $language = GetIntParam('l', 0, "NOO");

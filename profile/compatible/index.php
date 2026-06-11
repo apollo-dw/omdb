@@ -4,7 +4,7 @@
     require "../../base.php";
     require '../../header.php';
 
-    $profileId = GetIntParam('id', "Invalid page bro");
+    $profileId = GetIntParam('id', null, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);

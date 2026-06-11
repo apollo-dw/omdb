@@ -14,7 +14,7 @@
 	
 	$profileId = GetIntParam('id', null, "Invalid page bro");
 	$page = GetIntParam('p', 1, "Invalid page bro");
-	$year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y');
+	$year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
