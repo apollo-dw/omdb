@@ -132,7 +132,7 @@
         if ($counter > 9)
             break;
 
-        $difficultyName = mb_strimwidth(htmlspecialchars($row['DifficultyName'], ENT_QUOTES), 0, 35, "...");
+        $difficultyName = mb_strimwidth($row['DifficultyName'], 0, 35, "...");
         ?>
         <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;">
             <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
