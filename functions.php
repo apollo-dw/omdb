@@ -14,7 +14,7 @@
 
 	/**
 	 * Reads int parameter from req
-	 * Dies if the value exists but not numeri
+	 * Dies if the value exists but not numeric
 	 * OR if it is missing and no default was given.
 	 */
 	function GetIntParam(string $key, ?int $default = null, ?string $error = null): int {

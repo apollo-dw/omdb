@@ -14,11 +14,12 @@ $stmt->bind_param("i", $map_id);
 $stmt->execute();
 $beatmap = $stmt->get_result()->fetch_assoc();
 
+if (is_null($beatmap))
+    die("Beatmap not found");
+
 $title = htmlspecialchars($beatmap['Title'], ENT_QUOTES);
 $difficultyName = htmlspecialchars($beatmap['DifficultyName'], ENT_QUOTES);
 
-if (is_null($beatmap))
-    die("Beatmap not found");
 
 function generateTreeHTML($tree) {
     $html = '<ul>';
