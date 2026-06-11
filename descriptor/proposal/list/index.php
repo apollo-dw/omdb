@@ -1,8 +1,6 @@
 <?php
     $PageTitle = "View Descriptor Proposals";
     require '../../../header.php';
-
-    $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
 ?>
 
 <style>
