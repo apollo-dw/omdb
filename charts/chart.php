@@ -110,12 +110,14 @@
 			
 			$srRangeString = "";
 			if ($maxSR > 0)
-				$srRangeString += "AND b.SR <= {$maxSR}";
+				$srRangeString .= "AND b.SR <= {$maxSR}";
 			if ($minSR > 0)
-				$srRangeString += "AND b.SR >= {$minSR}";
+				$srRangeString .= "AND b.SR >= {$minSR}";
 			
             $stmt = null;
             if ($onlyFriends) {
+                $types .= "i";
+                $params[] = $userId;
                 $stmt = $conn->prepare("SELECT
                                                 b.*,
                                                 s.*,
