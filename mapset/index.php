@@ -509,6 +509,28 @@ while($row = $result->fetch_assoc()) {
 </div>
 <hr style="margin-top: 0">
 
+<?php
+    $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, [], $similarMapsSeed);
+    if (!empty($similarMaps)) {
+?>
+<h4 style="margin-bottom: 0;">Similar maps to [<?php echo htmlspecialchars(mb_strimwidth($similarMapsSeed["DifficultyName"], 0, 35, "..."), ENT_QUOTES); ?>]</h4>
+<div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+    <br>
+    <?php foreach ($similarMaps as $similarMap) {
+        $similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
+    ?>
+    <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+        <a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
+        <span class="subText">
+            <a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 50, "..."), ENT_QUOTES); ?></a><br>
+            by <a href="/profile/<?php echo $similarMap["CreatorID"]; ?>"><?php echo htmlspecialchars($similarMapper, ENT_QUOTES); ?></a>
+        </span>
+    </div>
+    <?php } ?>
+</div>
+<hr>
+<?php } ?>
+
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">
         <?php if ($credits) { ?>
