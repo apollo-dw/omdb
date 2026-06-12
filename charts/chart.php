@@ -24,154 +24,226 @@
 
 <div class="flex-item" style="padding:0.5em;">
 		<?php
-            $types = "ii";
-            $params = [$userId, $mode];
+			$counter = 0;
+			$types = "ii";
+			$params = [$userId, $mode];
 
-            $onlyFriends = $onlyFriends == "true";
-            $hideAlreadyRated = $hideAlreadyRated == "true";
-            $excludeGraveyard = $excludeGraveyard == "true";
-            $excludeLoved = $excludeLoved == "true";
+			$onlyFriends = $onlyFriends == "true";
+			$hideAlreadyRated = $hideAlreadyRated == "true";
+			$excludeGraveyard = $excludeGraveyard == "true";
+			$excludeLoved = $excludeLoved == "true";
 			$excludeRanked = $excludeRanked == "true";
 
 			$lim = 50;
-			$counter = ($page - 1) * $lim;
 
 			$pageString = "LIMIT {$lim}";
-			if ($page > 1){
-				$lower = ($page - 1) * $lim;
-				$pageString = "LIMIT {$lower}, {$lim}";
+			if ($page > 1) {
+				$offset = ($page - 1) * $lim;
+				$pageString = "LIMIT {$offset}, {$lim}";
 			}
 
-            $orderString = "DESC";
-            if ($order == 2)
-                $orderString = "ASC";
+			$orderString = ($order == 2) ? "ASC" : "DESC";
 
-            $columnString = "Rating";
-            if ($order == 3)
-                $columnString = "RatingCount";
-            else if ($order == 4)
-                $columnString = "controversy";
-            else if ($order == 5)
-                $columnString = "(WeightedAvg - CAST(Rating AS FLOAT))*SQRT(RatingCount)";
 
-            $yearString = "";
-            if ($year !== "all-time")
-                $yearString = "AND YEAR(s.DateRanked) = '{$year}'";
+			$yearString = "";
+			if ($year !== "all-time") {
+				$yearString = "AND YEAR(s.DateRanked) = ?";
+				$types .= "s";
+				$params[] = $year;
+			}
 
-            $genreString = "";
-            if ($genre > 0)
-                $genreString = "AND `s.Genre`='{$genre}'";
+			$genreString = "";
+			if ($genre > 0) {
+				$genreString = "AND s.Genre = ?";
+				$types .= "i";
+				$params[] = $genre;
+			}
 
-            $languageString = "";
-            if ($language > 0)
-                $languageString = "AND `s.Lang`='{$language}'";
+			$languageString = "";
+			if ($language > 0) {
+				$languageString = "AND s.Lang = ?";
+				$types .= "i";
+				$params[] = $language;
+			}
 
-            $countryString = "";
-            if ($country !== 0 && $country !== "0") {
-                $countryString = "AND b.BeatmapID IN (
-                                        SELECT bc.BeatmapID
-                                        FROM beatmap_creators bc
-                                        JOIN mappernames mn ON bc.CreatorID = mn.UserID
-                                        GROUP BY bc.BeatmapID
-                                        HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country = ?) = 1
-                                    )";
-                $types .= "s";
-                $params[] = $country;
-            }
+			$countryString = "";
+			if ($country !== 0 && $country !== "0") {
+				$countryString = "
+					AND b.BeatmapID IN (
+						SELECT bc.BeatmapID
+						FROM beatmap_creators bc
+						JOIN mappernames mn
+							ON mn.UserID = bc.CreatorID
+						GROUP BY bc.BeatmapID
+						HAVING COUNT(DISTINCT mn.Country) = 1
+						   AND MAX(mn.Country = ?) = 1
+					)";
+				$types .= "s";
+				$params[] = $country;
+			}
 
 			$descriptorString = "";
 			if (!empty($selectedDescriptors)) {
-				$subqueries = [];
-
+				$descriptorClauses = [];
 				foreach ($selectedDescriptors as $descriptor) {
-					$descriptorID = (int)$descriptor['id'];
-
-					$subqueries[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = $descriptorID)";
+					$descriptorId = (int)$descriptor['id'];
+					$descriptorClauses[] = "
+						EXISTS (
+							SELECT 1
+							FROM beatmap_descriptors bd
+							WHERE bd.BeatmapID = b.BeatmapID
+							  AND bd.DescriptorID = {$descriptorId}
+						)
+					";
 				}
-
-				$descriptorString = "AND (" . implode(" AND ", $subqueries) . ")";
+				$descriptorString = "AND (" . implode(" AND ", $descriptorClauses) . ")";
 			}
 
-            $hideAlreadyRatedString = "";
-            if ($hideAlreadyRated)
-                $hideAlreadyRatedString = "AND Score IS NULL";
-
-            $excludeLovedString = "";
-            if ($excludeLoved)
-                $excludeLovedString = "AND b.Status != 4";
-
-            $excludeGraveyardString = "";
-            if ($excludeGraveyard)
-                $excludeGraveyardString = "AND b.Status != -2";
-			
-			$excludeRankedString = "";
-            if ($excludeRanked) 
-                $excludeRankedString = "AND b.Status != 1 AND b.Status != 2";
-			
+			$hideAlreadyRatedString = $hideAlreadyRated ? "AND r_user.Score IS NULL" : "";
+			$excludeLovedString = $excludeLoved ? "AND b.Status != 4" : "";
+			$excludeGraveyardString = $excludeGraveyard ? "AND b.Status != -2" : "";
+			$excludeRankedString = $excludeRanked ? "AND b.Status NOT IN (1,2)" : "";
 			$srRangeString = "";
-			if ($maxSR > 0)
-				$srRangeString .= "AND b.SR <= {$maxSR}";
-			if ($minSR > 0)
-				$srRangeString .= "AND b.SR >= {$minSR}";
-			
-            $stmt = null;
-            if ($onlyFriends) {
-                $types .= "i";
-                $params[] = $userId;
-												
-                $stmt = $conn->prepare("SELECT
-                                                b.*,
-                                                s.*,
-                                                (prior_rating * prior_count + total_score) / (prior_count + rating_count) AS BayesianAverage,
-                                                rating_count AS RatingCount,
-                                                friend_rating AS WeightedAvg,
-                                                r_user.`Score` AS Score
-                                            FROM
-                                                (
-                                                    SELECT
-                                                        r.BeatmapID,
-                                                        SUM(r.Score) AS total_score,
-                                                        COUNT(r.BeatmapID) AS rating_count,
-                                                        AVG(r.Score) AS friend_rating
-                                                    FROM
-                                                        users u
-                                                            JOIN user_relations ur ON u.UserID = ur.UserIDFrom
-                                                            JOIN ratings r ON r.UserID = ur.UserIDTo
-                                                            JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
-															LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                                                    WHERE
-                                                      u.UserID = ?
-                                                      AND ur.type = 1
-                                                      AND b.Mode = ?
-                                                      {$genreString} {$languageString} {$yearString} {$descriptorString} {$countryString} {$excludeLovedString} {$excludeGraveyardString} {$excludeRankedString}
-                                                    GROUP BY
-                                                        r.BeatmapID
-                                                ) AS subquery
-                                                    JOIN beatmaps b ON b.BeatmapID = subquery.BeatmapID
-                                                    CROSS JOIN (
-                                                    SELECT AVG(Score) AS prior_rating, COUNT(BeatmapID) AS prior_count
-                                                    FROM ratings
-                                                ) AS prior
-                                            LEFT JOIN beatmapsets s on b.SetID = s.SetID
-                                            LEFT JOIN ratings r_user ON b.BeatmapID = r_user.BeatmapID AND r_user.UserID = ?
-                                            ORDER BY
-                                                BayesianAverage {$orderString}, b.BeatmapID {$pageString};");
-                $stmt->bind_param($types, ...$params);
-            } else {
-                $stmt = $conn->prepare("SELECT b.*, s.*, r.Score FROM beatmaps b 
-                                              LEFT JOIN beatmapsets s on b.SetID = s.SetID
-                                              LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
-                                              WHERE b.Rating IS NOT NULL 
-                                              AND `Mode` = ? {$genreString}
-                                              {$languageString} {$yearString} {$descriptorString} {$countryString}
-                                              {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString} {$excludeRankedString}
-                                              ORDER BY {$columnString} {$orderString}, BeatmapID 
-                                              {$pageString}");
-                $stmt->bind_param($types, ...$params);
-            }
 
-            $stmt->execute();
-            $result = $stmt->get_result();
+			if ($minSR > 0)
+				$srRangeString .= " AND b.SR >= " . (float)$minSR;
+
+			if ($maxSR > 0)
+				$srRangeString .= " AND b.SR <= " . (float)$maxSR;
+
+
+			$statsJoin = "";
+			$priorJoin = "";
+			$statsTypes = "";
+			$statsParams = [];
+
+			if ($onlyFriends) {
+				$statsJoin = "
+					INNER JOIN (
+						SELECT
+							r.BeatmapID,
+							SUM(r.Score) AS TotalScore,
+							COUNT(*) AS RatingCount,
+							AVG(r.Score) AS WeightedAvg,
+							STDDEV_POP(r.Score) * SQRT(COUNT(*)) AS Controversy
+						FROM user_relations ur
+						JOIN ratings r
+							ON r.UserID = ur.UserIDTo
+						WHERE ur.UserIDFrom = ?
+						  AND ur.Type = 1
+						GROUP BY r.BeatmapID
+					) friend_stats
+						ON friend_stats.BeatmapID = b.BeatmapID";
+
+				$priorJoin = "
+					CROSS JOIN (
+						SELECT
+							AVG(Score) AS prior_rating,
+							COUNT(*) AS prior_count
+						FROM ratings
+					) prior";
+
+				$statsTypes = "i";
+				$statsParams[] = $userId;
+			}
+
+			if ($onlyFriends) {
+				$ratingField = "friend_stats.WeightedAvg";
+				$countField = "friend_stats.RatingCount";
+				$bayesField = "
+					(
+						(
+							prior.prior_rating * prior.prior_count
+						)
+						+ friend_stats.TotalScore
+					)
+					/
+					(
+						prior.prior_count + friend_stats.RatingCount
+					)";
+			} else {
+				$ratingField = "b.WeightedAvg";
+				$countField = "b.RatingCount";
+				$bayesField = "b.Rating";
+			}
+
+			switch ($order) {
+				case 3:
+					$columnString = $countField;
+					break;
+				case 4:
+					if ($onlyFriends)
+						$columnString = "friend_stats.Controversy";
+					else
+						$columnString = "b.controversy";
+					break;
+				case 5:
+					if ($onlyFriends) 
+						$columnString =
+							"(friend_stats.WeightedAvg - b.Rating)
+							 * SQRT(friend_stats.RatingCount)";
+					else 
+						$columnString =
+							"(b.WeightedAvg - b.Rating)
+							 * SQRT(b.RatingCount)";
+					break;
+				default:
+					$columnString = "BayesianAverage";
+					break;
+			}
+
+			$sql = "
+			SELECT
+				b.*,
+				s.*,
+				{$ratingField} AS WeightedAvg,
+				{$countField} AS RatingCount,
+				{$bayesField} AS BayesianAverage,
+				r_user.Score
+			FROM beatmaps b
+			LEFT JOIN beatmapsets s
+				ON s.SetID = b.SetID
+			LEFT JOIN ratings r_user
+				ON r_user.BeatmapID = b.BeatmapID
+			   AND r_user.UserID = ?
+			{$statsJoin}
+			{$priorJoin}
+			WHERE
+				b.Mode = ?
+				" . (!$onlyFriends ? "AND b.Rating IS NOT NULL" : "") . "
+				{$genreString}
+				{$languageString}
+				{$yearString}
+				{$countryString}
+				{$descriptorString}
+				{$hideAlreadyRatedString}
+				{$excludeLovedString}
+				{$excludeGraveyardString}
+				{$excludeRankedString}
+				{$srRangeString}
+			ORDER BY
+				{$columnString} {$orderString},
+				b.BeatmapID
+			{$pageString}";
+
+			$finalTypes = $statsTypes . $types;
+			$finalParams = array_merge($statsParams, $params);
+
+			$stmt = $conn->prepare($sql);
+			if (!$stmt) {
+    die(
+        "<pre>" .
+        $conn->error .
+        "\n\n" .
+        htmlspecialchars($sql) .
+        "</pre>"
+    );
+}
+
+			$stmt->bind_param($finalTypes, ...$finalParams);
+			$stmt->execute();
+
+			$result = $stmt->get_result();
 
 			while($row = $result->fetch_assoc()) {
 				$stmt = $conn->prepare("
@@ -182,8 +254,7 @@
 					JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
 					WHERE bd.BeatmapID = ?
 					ORDER BY bd.Weight DESC, bd.DescriptorID
-					LIMIT 10
-				");
+					LIMIT 10");
 				$stmt->bind_param("i", $row["BeatmapID"]);
 				$stmt->execute();
 				$descriptorResult = $stmt->get_result();
