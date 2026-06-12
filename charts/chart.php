@@ -110,9 +110,9 @@
 			
 			$srRangeString = "";
 			if ($maxSR > 0)
-				$srRangeString += "AND b.SR <= {$maxSR}";
+				$srRangeString .= "AND b.SR <= {$maxSR}";
 			if ($minSR > 0)
-				$srRangeString += "AND b.SR >= {$minSR}";
+				$srRangeString .= "AND b.SR >= {$minSR}";
 			
             $stmt = null;
             if ($onlyFriends) {
