@@ -2,6 +2,13 @@
     require '../base.php';
     $mapset_id = GetIntParam('mapset_id', -1);
 
+    // gives just the similar maps for a diff if wanted but its basically for the select box in similar maps
+    if (isset($_GET['simdiff'])) {
+        $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, $similarMapsSeed, GetIntParam('simdiff'));
+        RenderSimilarMapCards($conn, $similarMaps);
+        exit;
+    }
+
     $foundSet = false;
     $stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
     $stmt->bind_param("s", $mapset_id);
@@ -510,24 +517,46 @@ while($row = $result->fetch_assoc()) {
 <hr style="margin-top: 0">
 
 <?php
-    $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, [], $similarMapsSeed);
+    $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, $similarMapsSeed);
     if (!empty($similarMaps)) {
 ?>
-<h4 style="margin-bottom: 0;">Similar maps to [<?php echo htmlspecialchars(mb_strimwidth($similarMapsSeed["DifficultyName"], 0, 35, "..."), ENT_QUOTES); ?>]</h4>
-<div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+<h4 style="margin-bottom: 0;">
+    Similar maps to
+    <select id="similarMapsDiffSelect">
+        <?php
+            $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
+            $stmt->bind_param("i", $mapset_id);
+            $stmt->execute();
+            $diffResult = $stmt->get_result();
+            while ($diffRow = $diffResult->fetch_assoc()) {
+                $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
+                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
+            }
+            $stmt->close();
+        ?>
+    </select>
+</h4>
+<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
     <br>
-    <?php foreach ($similarMaps as $similarMap) {
-        $similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
-    ?>
-    <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-        <a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
-        <span class="subText">
-            <a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 50, "..."), ENT_QUOTES); ?></a><br>
-            by <a href="/profile/<?php echo $similarMap["CreatorID"]; ?>"><?php echo htmlspecialchars($similarMapper, ENT_QUOTES); ?></a>
-        </span>
-    </div>
-    <?php } ?>
+    <?php RenderSimilarMapCards($conn, $similarMaps); ?>
 </div>
+<script>
+    document.getElementById('similarMapsDiffSelect').addEventListener('change', function() {
+        const container = document.getElementById('similarMapsContainer');
+        container.style.opacity = 0.5;
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState === XMLHttpRequest.DONE) {
+                if (xhttp.status === 200)
+                    container.innerHTML = "<br>" + xhttp.responseText;
+                container.style.opacity = 1;
+            }
+        };
+        xhttp.open("GET", "?simdiff=" + this.value, true);
+        xhttp.send();
+    });
+</script>
 <hr>
 <?php } ?>
 

@@ -2,26 +2,31 @@
 	// Recommends mapsets similar to the given set's highest rated difficulty
 	// Tune via weights + settings instead of editing the SQL
 	// $seed is the diff the recs are based on
-	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, $overrides = [], &$seed = null) {
+	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null) {
 		// tgese are just multiplier coeffs rn
-		$weights = array_merge([
+		$weights = [
 			"avgScore" => 5, // weighted avg rating from users who like the diff
 			"descriptorMatch" => 4, // per descriptor shared with the diff
 			"yearProximity" => 0.5, // when ranked within settings.yearWindow years of the seed
 			"sharedNominator" => 1, // per nominator shared with the set
 			"sharedMapper" => 1.5, // per mapper shared with the diff
-		], $overrides["weights"] ?? []);
+		];
 
-		$settings = array_merge([
+		$settings = [
 			"likedThreshold" => 3.5, // ratings at/above this count as "positive"
 			"yearWindow" => 1, // abs(diff rank year - TARGET) <= window
 			"bayesMean" => 3.0, // site-wide mean for bayesian avg
 			"bayesN" => 10, // n for bayesian avg
 			"minAvgScore" => 3, // similar diffs need at least this bayesian avg rating
-		], $overrides["settings"] ?? []);
+		];
 
-		$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
-		$stmt->bind_param("i", $setId);
+		if ($seedBeatmapId !== null) {
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
+			$stmt->bind_param("ii", $setId, $seedBeatmapId);
+		} else {
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
+			$stmt->bind_param("i", $setId);
+		}
 		$stmt->execute();
 		$seed = $stmt->get_result()->fetch_assoc();
 		$stmt->close();
@@ -150,20 +155,25 @@
 	}
 
 	// Same deal here
-	function GetCorrelatedBeatmaps($conn, $setId, $maxResults = 8, $overrides = [], &$seed = null) {
-		$weights = array_merge([
+	function GetCorrelatedBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null) {
+		$weights = [
 			"correlation" => 1, // how similar users rated both diffs
 			"descriptorMatch" => 0.5, // per descriptor shared with the diff
-		], $overrides["weights"] ?? []);
+		];
 
-		$settings = array_merge([
+		$settings = [
 			"minCoRaters" => 3, // diffs need at least this many users who rated BOTH maps
 			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
 			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively)
-		], $overrides["settings"] ?? []);
+		];
 
-		$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
-		$stmt->bind_param("i", $setId);
+		if ($seedBeatmapId !== null) {
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
+			$stmt->bind_param("ii", $setId, $seedBeatmapId);
+		} else {
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
+			$stmt->bind_param("i", $setId);
+		}
 		$stmt->execute();
 		$seed = $stmt->get_result()->fetch_assoc();
 		$stmt->close();
@@ -258,4 +268,24 @@
 		$stmt->close();
 
 		return array_values($recommendations);
+	}
+
+	function RenderSimilarMapCards($conn, $similarMaps) {
+		if (empty($similarMaps)) {
+			echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty</span>';
+			return;
+		}
+
+		foreach ($similarMaps as $similarMap) {
+			$similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
+			?>
+			<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+				<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
+				<span class="subText">
+					<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 50, "..."), ENT_QUOTES); ?></a><br>
+					by <a href="/profile/<?php echo $similarMap["CreatorID"]; ?>"><?php echo htmlspecialchars($similarMapper, ENT_QUOTES); ?></a>
+				</span>
+			</div>
+			<?php
+		}
 	}
