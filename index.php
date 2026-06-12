@@ -149,11 +149,20 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                         FROM beatmaps b
                         WHERE b.SetID = r.SetID AND b.Mode = ?
                     )
+                    AND (
+                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                        OR r.UserID IN (
+                            SELECT UserIDTo
+                            FROM user_relations
+                            WHERE UserIDFrom = ? AND type = 1
+                        )
+                        OR r.UserID = ?
+                    )
                 )
                 ORDER BY date DESC
                 LIMIT 40;
             ");
-            $stmt->bind_param("iiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode);
+            $stmt->bind_param("iiiiiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode, $userId, $userId, $userId);
         } else {
             // Logged-out user: skip OnlyFriendsOnFrontPage logic
             $stmt = $conn->prepare("
