@@ -60,11 +60,11 @@
 
             $genreString = "";
             if ($genre > 0)
-                $genreString = "AND `Genre`='{$genre}'";
+                $genreString = "AND `s.Genre`='{$genre}'";
 
             $languageString = "";
             if ($language > 0)
-                $languageString = "AND `Lang`='{$language}'";
+                $languageString = "AND `s.Lang`='{$language}'";
 
             $countryString = "";
             if ($country !== 0 && $country !== "0") {
@@ -118,6 +118,7 @@
             if ($onlyFriends) {
                 $types .= "i";
                 $params[] = $userId;
+												
                 $stmt = $conn->prepare("SELECT
                                                 b.*,
                                                 s.*,
@@ -137,6 +138,7 @@
                                                             JOIN user_relations ur ON u.UserID = ur.UserIDFrom
                                                             JOIN ratings r ON r.UserID = ur.UserIDTo
                                                             JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
+															LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                                                     WHERE
                                                       u.UserID = ?
                                                       AND ur.type = 1
@@ -160,7 +162,7 @@
                                               LEFT JOIN beatmapsets s on b.SetID = s.SetID
                                               LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
                                               WHERE b.Rating IS NOT NULL 
-                                              {$genreString} AND `Mode` = ? 
+                                              AND `Mode` = ? {$genreString}
                                               {$languageString} {$yearString} {$descriptorString} {$countryString}
                                               {$hideAlreadyRatedString} {$excludeLovedString} {$excludeGraveyardString} {$excludeRankedString}
                                               ORDER BY {$columnString} {$orderString}, BeatmapID 
