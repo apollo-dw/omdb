@@ -116,6 +116,8 @@
 			
             $stmt = null;
             if ($onlyFriends) {
+                $types .= "i";
+                $params[] = $userId;
                 $stmt = $conn->prepare("SELECT
                                                 b.*,
                                                 s.*,
