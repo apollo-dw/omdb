@@ -227,7 +227,7 @@
             <label for="hideRated">Hide already rated maps</label>
             <br>
             <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
-            <label for="friends">Only include friend ratings<br> <span class="subText">Only the <b>Highest Rated</b> and <b>Lowest Rated</b> sort works with the friend filter right now.</span></label><br>
+            <label for="friends">Only include friend ratings<br></label>
             <?php } ?> <br>
 
             Exclude: <br>
