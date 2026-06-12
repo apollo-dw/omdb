@@ -24,7 +24,6 @@
 
 <div class="flex-item" style="padding:0.5em;">
 		<?php
-			$counter = 0;
 			$types = "ii";
 			$params = [$userId, $mode];
 
@@ -36,9 +35,11 @@
 
 			$lim = 50;
 
+			$counter = 0;
 			$pageString = "LIMIT {$lim}";
 			if ($page > 1) {
 				$offset = ($page - 1) * $lim;
+				$counter = $offset;
 				$pageString = "LIMIT {$offset}, {$lim}";
 			}
 
