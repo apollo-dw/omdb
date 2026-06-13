@@ -13,7 +13,7 @@
 			"sharedMapper" => 4, // per mapper shared with the diff
 			"cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
 			"cohortCoverage" => 16, // share of the fans vs everyone so big fanbases of the diff get no bump in this
-			"correlation" => 0.25, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
+			"correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
 			"srProximity" => 1, // how close the diffs are in star rating
 		];
 
@@ -42,7 +42,7 @@
 			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
 			$stmt->bind_param("ii", $setId, $seedBeatmapId);
 		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, ChartRank ASC, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, WeightedAvg IS NULL, WeightedAvg DESC");
 			$stmt->bind_param("i", $setId);
 		}
 		$stmt->execute();
