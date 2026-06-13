@@ -2,29 +2,45 @@
 	// Recommends mapsets similar to the given set's highest rated difficulty
 	// Tune via weights + settings instead of editing the SQL
 	// $seed is the diff the recs are based on
-	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null) {
+	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = []) {
 		// tgese are just multiplier coeffs rn
 		$weights = [
 			"avgScore" => 5, // weighted avg rating from users who like the diff
-			"descriptorMatch" => 4, // per descriptor shared with the diff
-			"yearProximity" => 0.5, // when ranked within settings.yearWindow years of the seed
+			"descriptorMatch" => 1, // per descriptor shared with the diff
+			"descriptorPrecision" => 1.5,
+			"yearProximity" => 6, // when ranked within settings.yearWindow years of the seed
 			"sharedNominator" => 1, // per nominator shared with the set
-			"sharedMapper" => 1.5, // per mapper shared with the diff
+			"sharedMapper" => 4, // per mapper shared with the diff
+			"cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
+			"cohortCoverage" => 16, // share of the fans vs everyone so big fanbases of the diff get no bump in this
+			"correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
 		];
 
 		$settings = [
 			"likedThreshold" => 3.5, // ratings at/above this count as "positive"
-			"yearWindow" => 1, // abs(diff rank year - TARGET) <= window
+			"proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
 			"bayesMean" => 3.0, // site-wide mean for bayesian avg
-			"bayesN" => 10, // n for bayesian avg
+			"bayesN" => 2, // n for bayesian avg
 			"minAvgScore" => 3, // similar diffs need at least this bayesian avg rating
+			"minScoreShare" => 0.06, // min fraction of fans
+			"maxScoreShare" => 0.5, // max fraction of fans
+			"maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
+			"liftShrink" => 10, // n = u need 50% of the cohortLift value
+			"coverageFade" => 80, // giminish the effect of cohort if the fanbase is n large
+			"coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
+			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
+			"minCoRaters" => 3, // diffs need at least this many users who rated BOTH maps
+			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively)
 		];
+
+		$weights = array_merge($weights, $overrides["weights"] ?? []);
+		$settings = array_merge($settings, $overrides["settings"] ?? []);
 
 		if ($seedBeatmapId !== null) {
 			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
 			$stmt->bind_param("ii", $setId, $seedBeatmapId);
 		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, ChartRank ASC, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
 			$stmt->bind_param("i", $setId);
 		}
 		$stmt->execute();
@@ -97,19 +113,20 @@
 		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
 
 		$bayesAvg = "(AVG(r.Score) * COUNT(DISTINCT r.RatingID) + ?) / (COUNT(DISTINCT r.RatingID) + ?)";
+		$cohortLift = "(AVG(r.Score) - COALESCE(b.WeightedAvg, ?)) * (COUNT(DISTINCT r.RatingID) / (COUNT(DISTINCT r.RatingID) + ?))";
 
-		// H0Ly Cancer
-		$stmt = $conn->prepare("
-			SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID,
-				AVG(r.Score) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount,
-				$bayesAvg AS BayesAvg,
-				(
-					$bayesAvg * ? +
-					COUNT(DISTINCT bd.DescriptorID) * ? +
-					IF(ABS(TIMESTAMPDIFF(YEAR, ?, b.Timestamp)) <= ?, ?, 0) +
-					COUNT(DISTINCT bn.NominatorID) * ? +
-					COUNT(DISTINCT bc.CreatorID) * ?
-				) AS RecScore
+		// I hope I never have to write some bullshit like this ever again
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, AVG(r.Score) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, $bayesAvg AS BayesAvg, (
+				$bayesAvg * ? +
+				$cohortLift * ? +
+				POW(COUNT(DISTINCT r.RatingID) / ?, ?) * ? +
+				COUNT(DISTINCT bd.DescriptorID) * ? +
+				COUNT(DISTINCT bd.DescriptorID) / GREATEST(MAX(td.TotalDescriptors), 1) * ? +
+				GREATEST(0, 1 - ABS(TIMESTAMPDIFF(MONTH, ?, b.Timestamp)) / ?) * ? +
+				COUNT(DISTINCT bn.NominatorID) * ? +
+				COUNT(DISTINCT bc.CreatorID) * ? +
+				COALESCE(corr.Correlation, 0) * (corr.CoRaters / (corr.CoRaters + ?)) * ?
+			) AS RecScore
 			FROM ratings r
 			INNER JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
 			INNER JOIN beatmapsets s ON s.SetID = b.SetID
@@ -120,35 +137,74 @@
 					GROUP BY BeatmapID, DescriptorID
 					HAVING SUM(Vote = 1) > SUM(Vote = 0)
 				) bd ON bd.BeatmapID = r.BeatmapID
+			LEFT JOIN (
+					SELECT BeatmapID, COUNT(*) AS TotalDescriptors
+					FROM (
+						SELECT BeatmapID, DescriptorID
+						FROM descriptor_votes
+						GROUP BY BeatmapID, DescriptorID
+						HAVING SUM(Vote = 1) > SUM(Vote = 0)
+					) x
+					GROUP BY BeatmapID
+				) td ON td.BeatmapID = r.BeatmapID
 			LEFT JOIN beatmapset_nominators bn ON bn.SetID = b.SetID AND bn.Mode = b.Mode AND bn.NominatorID IN ($nominatorPlaceholders)
 			LEFT JOIN beatmap_creators bc ON bc.BeatmapID = r.BeatmapID AND bc.CreatorID IN ($creatorPlaceholders)
+			LEFT JOIN (
+				SELECT r2.BeatmapID,
+					COUNT(*) AS CoRaters,
+					(COUNT(*) * SUM(r1.Score * r2.Score) - SUM(r1.Score) * SUM(r2.Score)) /
+					NULLIF(SQRT(
+						(COUNT(*) * SUM(r1.Score * r1.Score) - POW(SUM(r1.Score), 2)) *
+						(COUNT(*) * SUM(r2.Score * r2.Score) - POW(SUM(r2.Score), 2))
+					), 0) AS Correlation
+				FROM ratings r1
+				INNER JOIN ratings r2 ON r2.UserID = r1.UserID AND r2.BeatmapID != r1.BeatmapID
+				WHERE r1.BeatmapID = ?
+				GROUP BY r2.BeatmapID
+				HAVING CoRaters >= ? AND Correlation >= ?
+			) corr ON corr.BeatmapID = r.BeatmapID
 			WHERE r.UserID IN ($userPlaceholders)
 				AND b.SetID != ?
 				AND b.Mode = ?
 				AND b.Blacklisted = 0
 			GROUP BY b.BeatmapID
-			HAVING BayesAvg >= ?
+			HAVING BayesAvg >= ? AND ScoreCount >= ? AND ScoreCount <= ?
 			ORDER BY RecScore DESC
 			LIMIT ?;
 		");
 
 		// Query ranks individual diffs, so a vbunch of top diffs can be in the same set
-		// So fetch extra rows to still end up with $maxResults distinct sets after deduplication.
+		// So fetch extra rows to still end up with $maxResults distinct sets after deduplication
 		$candidateLimit = $maxResults * 4;
 
+		$minScoreCount = max(2, (int)ceil($settings["minScoreShare"] * count($userIDs)));
+		$maxScoreCount = max($settings["maxScoreFloor"], $minScoreCount, (int)ceil($settings["maxScoreShare"] * count($userIDs)));
+
+		$coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
+
 		$bayesSum = $settings["bayesMean"] * $settings["bayesN"];
-		$types = "dd" . "dd" . "ddsiddd"
+
+		$types = "dd" . "dd" . "d" . "ddd" . "idd" . "ddsiddd" . "dd"
 			. str_repeat('i', count($descriptorIDs))
 			. str_repeat('i', count($nominatorIDs))
 			. str_repeat('i', count($creatorIDs))
+			. "iid"
 			. str_repeat('i', count($userIDs))
-			. "ii" . "d" . "i";
+			. "ii" . "dii" . "i";
+
 		$params = array_merge(
 			[$bayesSum, $settings["bayesN"], $bayesSum, $settings["bayesN"]],
-			[$weights["avgScore"], $weights["descriptorMatch"], $seed["Timestamp"], $settings["yearWindow"], $weights["yearProximity"], $weights["sharedNominator"], $weights["sharedMapper"]],
-			$descriptorIDs, $nominatorIDs, $creatorIDs, $userIDs,
-			[$setId, $seed["Mode"], $settings["minAvgScore"], $candidateLimit]
+			[$weights["avgScore"]],
+			[$settings["bayesMean"], $settings["liftShrink"], $weights["cohortLift"]],
+			[count($userIDs), $settings["coverageCurve"], $coverageWeight],
+			[$weights["descriptorMatch"], $weights["descriptorPrecision"], $seed["Timestamp"], $settings["proximityMonths"], $weights["yearProximity"], $weights["sharedNominator"], $weights["sharedMapper"]],
+			[$settings["corrShrink"], $weights["correlation"]],
+			$descriptorIDs, $nominatorIDs, $creatorIDs,
+			[$seed["BeatmapID"], $settings["minCoRaters"], $settings["minCorrelation"]],
+			$userIDs,
+			[$setId, $seed["Mode"], $settings["minAvgScore"], $minScoreCount, $maxScoreCount, $candidateLimit]
 		);
+
 		$stmt->bind_param($types, ...$params);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -164,232 +220,6 @@
 		$stmt->close();
 
 		return array_values($recommendations);
-	}
-
-	// Same deal here
-	function GetCorrelatedBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null) {
-		$weights = [
-			"correlation" => 1, // how similar users rated both diffs
-			"descriptorMatch" => 0.5, // per descriptor shared with the diff
-		];
-
-		$settings = [
-			"minCoRaters" => 3, // diffs need at least this many users who rated BOTH maps
-			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
-			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively)
-		];
-
-		if ($seedBeatmapId !== null) {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
-			$stmt->bind_param("ii", $setId, $seedBeatmapId);
-		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
-			$stmt->bind_param("i", $setId);
-		}
-		$stmt->execute();
-		$seed = $stmt->get_result()->fetch_assoc();
-		$stmt->close();
-
-		if ($seed === null)
-			return [];
-
-		$stmt = $conn->prepare("
-			SELECT DescriptorID
-			FROM descriptor_votes
-			WHERE BeatmapID = ?
-			GROUP BY DescriptorID
-			HAVING SUM(Vote = 1) > SUM(Vote = 0)
-		");
-		$stmt->bind_param("i", $seed["BeatmapID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		$descriptorIDs = [];
-		while ($row = $result->fetch_assoc())
-			$descriptorIDs[] = $row["DescriptorID"];
-		$stmt->close();
-
-		$seedDescriptorCount = max(1, count($descriptorIDs));
-		if (empty($descriptorIDs))
-			$descriptorIDs = [null];
-		$descriptorPlaceholders = implode(',', array_fill(0, count($descriptorIDs), '?'));
-
-		// HOLY CANCER CORRELATION CALC
-		// t = correlation dm = descriptor matching
-		$stmt = $conn->prepare("
-			SELECT t.*, COALESCE(dm.MatchingDescriptors, 0) AS MatchingDescriptors,
-				(
-					t.Correlation * (t.CoRaters / (t.CoRaters + ?)) * ? +
-					COALESCE(dm.MatchingDescriptors, 0) / ? * ?
-				) AS RecScore
-			FROM (
-				SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID,
-					COUNT(*) AS CoRaters, AVG(r2.Score) AS AvgScore,
-					(COUNT(*) * SUM(r1.Score * r2.Score) - SUM(r1.Score) * SUM(r2.Score)) /
-					SQRT(
-						(COUNT(*) * SUM(r1.Score * r1.Score) - POW(SUM(r1.Score), 2)) *
-						(COUNT(*) * SUM(r2.Score * r2.Score) - POW(SUM(r2.Score), 2))
-					) AS Correlation
-				FROM ratings r1
-				INNER JOIN ratings r2 ON r2.UserID = r1.UserID AND r2.BeatmapID != r1.BeatmapID
-				INNER JOIN beatmaps b ON b.BeatmapID = r2.BeatmapID
-				INNER JOIN beatmapsets s ON s.SetID = b.SetID
-				WHERE r1.BeatmapID = ?
-					AND b.SetID != ?
-					AND b.Mode = ?
-					AND b.Blacklisted = 0
-				GROUP BY b.BeatmapID
-				HAVING CoRaters >= ?
-			) t
-			LEFT JOIN (
-				SELECT BeatmapID, COUNT(*) AS MatchingDescriptors
-				FROM (
-					SELECT BeatmapID, DescriptorID
-					FROM descriptor_votes
-					WHERE DescriptorID IN ($descriptorPlaceholders)
-					GROUP BY BeatmapID, DescriptorID
-					HAVING SUM(Vote = 1) > SUM(Vote = 0)
-				) m
-				GROUP BY BeatmapID
-			) dm ON dm.BeatmapID = t.BeatmapID
-			WHERE t.Correlation IS NOT NULL AND t.Correlation >= ?
-			ORDER BY RecScore DESC
-			LIMIT ?;
-		");
-
-		$candidateLimit = $maxResults * 4;
-		$types = "dddd" . "iiii" . str_repeat('i', count($descriptorIDs)) . "di";
-		$params = array_merge(
-			[$settings["corrShrink"], $weights["correlation"], $seedDescriptorCount, $weights["descriptorMatch"]],
-			[$seed["BeatmapID"], $setId, $seed["Mode"], $settings["minCoRaters"]],
-			$descriptorIDs,
-			[$settings["minCorrelation"], $candidateLimit]
-		);
-		$stmt->bind_param($types, ...$params);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		$recommendations = [];
-		while ($row = $result->fetch_assoc()) {
-			if (isset($recommendations[$row["SetID"]]))
-				continue;
-			$recommendations[$row["SetID"]] = $row;
-			if (count($recommendations) >= $maxResults)
-				break;
-		}
-		$stmt->close();
-
-		return array_values($recommendations);
-	}
-
-	// From test.php
-	function GetSimilarBeatmapsTestPhp($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null) {
-		$weights = [
-			"avgScore" => 1,
-			"descriptorMatch" => 1.5,
-			"yearProximity" => 2,
-		];
-
-		$settings = [
-			"likedThreshold" => 4,
-			"yearWindow" => 2,
-			"minAvgScore" => 4,
-			"minRatingCount" => 15,
-			"maxRatingCount" => 80,
-			"descriptorLimit" => 5,
-		];
-
-		if ($seedBeatmapId !== null) {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
-			$stmt->bind_param("ii", $setId, $seedBeatmapId);
-		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY ChartYearRank IS NULL, WeightedAvg IS NULL, WeightedAvg DESC, RatingCount DESC LIMIT 1");
-			$stmt->bind_param("i", $setId);
-		}
-		$stmt->execute();
-		$seed = $stmt->get_result()->fetch_assoc();
-		$stmt->close();
-
-		if ($seed === null)
-			return [];
-
-		$stmt = $conn->prepare("
-			SELECT DescriptorID
-			FROM descriptor_votes
-			WHERE BeatmapID = ?
-			GROUP BY DescriptorID
-			HAVING SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)
-			ORDER BY (SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) - SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END)) DESC, DescriptorID
-			LIMIT ?
-		");
-		$stmt->bind_param("ii", $seed["BeatmapID"], $settings["descriptorLimit"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		$descriptorIDs = [];
-		while ($row = $result->fetch_assoc())
-			$descriptorIDs[] = $row["DescriptorID"];
-		$stmt->close();
-
-		$stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ? AND Score >= ?");
-		$stmt->bind_param("id", $seed["BeatmapID"], $settings["likedThreshold"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		$userIDs = [];
-		while ($row = $result->fetch_assoc())
-			$userIDs[] = $row["UserID"];
-		$stmt->close();
-
-		if (empty($userIDs))
-			return [];
-
-		if (empty($descriptorIDs))
-			$descriptorIDs = [null];
-
-		$descriptorPlaceholders = implode(',', array_fill(0, count($descriptorIDs), '?'));
-		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
-
-		$stmt = $conn->prepare("
-			SELECT r.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID,
-				AVG(r.Score) AS AvgScore, COUNT(r.Score) AS ScoreCount,
-				COUNT(DISTINCT dv.DescriptorID) AS MatchingDescriptors,
-				(
-					AVG(r.Score) * ? +
-					COUNT(DISTINCT dv.DescriptorID) * ? +
-					IF(ABS(TIMESTAMPDIFF(YEAR, ?, b.Timestamp)) <= ?, ?, 0)
-				) AS RecScore
-			FROM ratings r
-			LEFT JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
-			LEFT JOIN beatmapsets s ON s.SetID = b.SetID
-			LEFT JOIN descriptor_votes dv ON dv.BeatmapID = r.BeatmapID AND dv.DescriptorID IN ($descriptorPlaceholders)
-			WHERE r.UserID IN ($userPlaceholders)
-				AND r.BeatmapID != ?
-			GROUP BY r.BeatmapID
-			HAVING AvgScore >= ? AND ScoreCount > ? AND ScoreCount < ?
-			ORDER BY RecScore DESC
-			LIMIT ?;
-		");
-
-		$types = "ddsid"
-			. str_repeat('i', count($descriptorIDs))
-			. str_repeat('i', count($userIDs))
-			. "i" . "dii" . "i";
-		$params = array_merge(
-			[$weights["avgScore"], $weights["descriptorMatch"], $seed["Timestamp"], $settings["yearWindow"], $weights["yearProximity"]],
-			$descriptorIDs, $userIDs,
-			[$seed["BeatmapID"], $settings["minAvgScore"], $settings["minRatingCount"], $settings["maxRatingCount"], $maxResults]
-		);
-		$stmt->bind_param($types, ...$params);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		$recommendations = [];
-		while ($row = $result->fetch_assoc())
-			$recommendations[] = $row;
-		$stmt->close();
-
-		return $recommendations;
 	}
 
 	function RenderSimilarMapCards($conn, $similarMaps) {

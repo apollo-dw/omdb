@@ -3,8 +3,9 @@
     $mapset_id = GetIntParam('mapset_id', -1);
 
     // gives just the similar maps for a diff if wanted but its basically for the select box in similar maps
+    // similarMapsSeed is also set by the GetSimilarBeatmaps
     if (isset($_GET['simdiff'])) {
-        $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, $similarMapsSeed, GetIntParam('simdiff'));
+        $similarMaps = GetSimilarBeatmaps($conn, $mapset_id, 8, $similarMapsSeed, GetIntParam('simdiff'));
         RenderSimilarMapCards($conn, $similarMaps);
         exit;
     }
@@ -517,24 +518,30 @@ while($row = $result->fetch_assoc()) {
 <hr style="margin-top: 0">
 
 <?php
-    $similarMaps = GetCorrelatedBeatmaps($conn, $mapset_id, 8, $similarMapsSeed);
+    $similarMaps = GetSimilarBeatmaps($conn, $mapset_id, 8, $similarMapsSeed);
     if (!empty($similarMaps)) {
 ?>
 <h4 style="margin-bottom: 0;">
     Similar maps to
-    <select id="similarMapsDiffSelect">
-        <?php
-            $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
-            $stmt->bind_param("i", $mapset_id);
-            $stmt->execute();
-            $diffResult = $stmt->get_result();
-            while ($diffRow = $diffResult->fetch_assoc()) {
+    <?php
+        $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
+        $stmt->bind_param("i", $mapset_id);
+        $stmt->execute();
+        $diffResult = $stmt->get_result();
+        $diffs = $diffResult->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (count($diffs) === 1) {
+            echo "<b>[" . htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
+        } else {
+            echo '<select id="similarMapsDiffSelect">';
+            foreach ($diffs as $diffRow) {
                 $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
                 echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
             }
-            $stmt->close();
-        ?>
-    </select>
+            echo '</select>';
+        }
+    ?>
 </h4>
 <div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
     <br>
