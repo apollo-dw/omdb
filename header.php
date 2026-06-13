@@ -77,6 +77,7 @@ error_reporting(E_ALL);
                         <a href="/descriptor/proposal/list">descriptor proposals</a>
                         <a href="/edit-queue/">edit queue</a>
                         <a href="/maps/add/">add grave sets</a>
+						<a href="/labs/">labs</a>
                     </div>
 			    </div>
                 <div class="topBarDropDown">

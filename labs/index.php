@@ -1,0 +1,32 @@
+<?php
+    $PageTitle = "Labs";
+
+    require "../base.php";
+    require '../header.php';
+
+    $labsPages = [
+        [
+            'title' => 'Recommendations',
+            'url' => '/labs/recommendations.php',
+            'description' => 'Play with the weights and settings of the recommendation system!',
+        ],
+    ];
+?>
+
+<h1>Labs</h1>
+<span class="subText">Try Out Some Epic New Stuffz Here!!!!1</span>
+
+<hr>
+
+<div class="flex-row-container" style="gap:0.75em;max-width:60em;">
+    <?php foreach ($labsPages as $labPage) { ?>
+        <div class="flex-child alternating-bg" style="padding:1em;box-sizing:border-box;">
+            <h3 style="margin-top:0;margin-bottom:0.25em;"><a href="<?php echo htmlspecialchars($labPage['url'], ENT_QUOTES); ?>"><?php echo htmlspecialchars($labPage['title'], ENT_QUOTES); ?></a></h3>
+            <div class="subText"><?php echo htmlspecialchars($labPage['description'], ENT_QUOTES); ?></div>
+        </div>
+    <?php } ?>
+</div>
+
+<?php
+require '../footer.php';
+?>
