@@ -552,7 +552,7 @@ while($row = $result->fetch_assoc()) {
         </span>
     </span>
 </h4>
-<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
     <br>
     <?php RenderSimilarMapCards($conn, $similarMaps); ?>
 </div>
