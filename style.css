@@ -804,10 +804,16 @@ ol.star-rating-list > li {
   transition: opacity 0.15s ease;
   z-index: 9999;
   box-sizing: border-box;
+  bottom: calc(100% + 8px);
 }
 
-.tooltip-box {
-  bottom: calc(100% + 8px);
+.tooltip-box::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  top: 100%;
 }
 
 .tooltip-wrapper:hover .tooltip-box {
