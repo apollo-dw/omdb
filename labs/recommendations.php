@@ -198,7 +198,7 @@
             return;
         }
         searchTimeout = setTimeout(() => {
-            fetch('/beatmapSearch.php/?q=' + encodeURIComponent(q))
+            fetch('/beatmapSearch.php?q=' + encodeURIComponent(q))
                 .then(r => r.text())
                 .then(html => {
                     // Parsing links from the html
