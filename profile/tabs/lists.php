@@ -86,6 +86,7 @@
         SELECT
             l.ListID,
             l.Title,
+            l.Private,
             (
                 SELECT COUNT(*)
                 FROM list_items li
@@ -95,11 +96,10 @@
         INNER JOIN lists l
             ON l.ListID = lh.ListID
         WHERE lh.UserID = ?
-        AND l.UserID != ?
-        AND l.Private = 0
+        AND (l.Private = 0 OR ? = lh.UserID)
     ");
 
-    $stmt->bind_param("ii", $profileId, $profileId);
+    $stmt->bind_param("ii", $profileId, $userId);
     $stmt->execute();
 
     $heartedLists = $stmt->get_result();
@@ -138,6 +138,10 @@
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
                     <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
+
+                <?php if (!empty($row["Private"])) { ?>
+                    <span class="subText">| private</span>
+                <?php } ?>
 
                 <span class="subText">
                     (<?php echo $row["ItemCount"]; ?> items)
