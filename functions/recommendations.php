@@ -7,8 +7,8 @@
 		$weights = [
 			"avgScore" => 5, // weighted avg rating from users who like the diff
 			"descriptorMatch" => 1, // per descriptor shared with the diff
-			"descriptorPrecision" => 1.5,
-			"yearProximity" => 6, // when ranked within settings.yearWindow years of the seed
+			"descriptorPrecision" => 1.5, // similar to descriptorMatch but divided by the total descriptor count (aka map with 2/3 descriptors rated higher than map with 2/20 descriptors)
+			"monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
 			"sharedNominator" => 1, // per nominator shared with the set
 			"sharedMapper" => 4, // per mapper shared with the diff
 			"cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
@@ -27,7 +27,7 @@
 			"maxScoreShare" => 0.5, // max fraction of fans
 			"maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
 			"liftShrink" => 10, // n = u need 50% of the cohortLift value
-			"coverageFade" => 80, // giminish the effect of cohort if the fanbase is n large
+			"coverageFade" => 80, // diminish the effect of cohort if the fanbase is n large
 			"coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
 			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
 			"minCoRaters" => 3, // diffs need at least this many users who rated BOTH maps
@@ -203,7 +203,7 @@
 			[count($userIDs), $settings["coverageCurve"], $coverageWeight],
 			[$weights["descriptorMatch"]],
 			[$weights["descriptorPrecision"]],
-			[$seed["Timestamp"], $settings["proximityMonths"], $weights["yearProximity"]],
+			[$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"]],
 			[$weights["sharedNominator"]],
 			[$weights["sharedMapper"]],
 			[$settings["corrShrink"], $weights["correlation"]],
