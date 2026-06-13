@@ -522,7 +522,15 @@ while($row = $result->fetch_assoc()) {
     if (!empty($similarMaps)) {
 ?>
 <h4 style="margin-bottom: 0;">
-    Similar maps to
+    <span class="badge">BETA</span>
+    <span class="tooltip-wrapper">
+        <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
+        <span class="tooltip-box" style="right:auto;">
+            This is WIP if u wanna help or just play with the weights and settings, check out
+            <a href="/labs/">Labs</a>.
+        </span>
+    </span>
+    People who liked 
     <?php
         $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
         $stmt->bind_param("i", $mapset_id);
@@ -542,14 +550,7 @@ while($row = $result->fetch_assoc()) {
             echo '</select>';
         }
     ?>
-    <span class="badge">BETA</span>
-    <span class="tooltip-wrapper">
-        <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
-        <span class="tooltip-box" style="right:auto;">
-            This is WIP if u wanna help or just play with the weights and settings, check out
-            <a href="/labs/">Labs</a>.
-        </span>
-    </span>
+    also liked:
 </h4>
 <div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
     <br>
