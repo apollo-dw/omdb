@@ -67,10 +67,8 @@
 
 		$stmt = $conn->prepare("
 			SELECT DescriptorID
-			FROM descriptor_votes
+			FROM beatmap_descriptors
 			WHERE BeatmapID = ?
-			GROUP BY DescriptorID
-			HAVING SUM(Vote = 1) > SUM(Vote = 0)
 		");
 		$stmt->bind_param("i", $seed["BeatmapID"]);
 		$stmt->execute();
@@ -133,23 +131,14 @@
 			FROM ratings r
 			INNER JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
 			INNER JOIN beatmapsets s ON s.SetID = b.SetID
+			LEFT JOIN beatmap_descriptors bd
+				ON bd.BeatmapID = r.BeatmapID
+				AND bd.DescriptorID IN ($descriptorPlaceholders)
 			LEFT JOIN (
-					SELECT BeatmapID, DescriptorID
-					FROM descriptor_votes
-					WHERE DescriptorID IN ($descriptorPlaceholders)
-					GROUP BY BeatmapID, DescriptorID
-					HAVING SUM(Vote = 1) > SUM(Vote = 0)
-				) bd ON bd.BeatmapID = r.BeatmapID
-			LEFT JOIN (
-					SELECT BeatmapID, COUNT(*) AS TotalDescriptors
-					FROM (
-						SELECT BeatmapID, DescriptorID
-						FROM descriptor_votes
-						GROUP BY BeatmapID, DescriptorID
-						HAVING SUM(Vote = 1) > SUM(Vote = 0)
-					) x
-					GROUP BY BeatmapID
-				) td ON td.BeatmapID = r.BeatmapID
+				SELECT BeatmapID, COUNT(*) AS TotalDescriptors
+				FROM beatmap_descriptors
+				GROUP BY BeatmapID
+			) td ON td.BeatmapID = r.BeatmapID
 			LEFT JOIN beatmapset_nominators bn ON bn.SetID = b.SetID AND bn.Mode = b.Mode AND bn.NominatorID IN ($nominatorPlaceholders)
 			LEFT JOIN beatmap_creators bc ON bc.BeatmapID = r.BeatmapID AND bc.CreatorID IN ($creatorPlaceholders)
 			LEFT JOIN (
