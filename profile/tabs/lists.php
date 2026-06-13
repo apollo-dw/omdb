@@ -14,6 +14,7 @@
         SELECT
             l.ListID,
             l.Title,
+            l.Private,
             (
                 SELECT COUNT(*)
                 FROM list_items li
@@ -21,9 +22,10 @@
             ) AS ItemCount
         FROM lists l
         WHERE l.UserID = ?
+        AND (l.Private = 0 OR ? = l.UserID)
     ");
 
-    $stmt->bind_param("i", $profileId);
+    $stmt->bind_param("ii", $profileId, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
@@ -62,6 +64,10 @@
                     <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
+                <?php if (!empty($row["Private"])) { ?>
+                    <span class="subText">| private</span>
+                <?php } ?>
+
                 <span class="subText">
                     (<?php echo $row["ItemCount"]; ?> items)
                 </span>
@@ -90,6 +96,7 @@
             ON l.ListID = lh.ListID
         WHERE lh.UserID = ?
         AND l.UserID != ?
+        AND l.Private = 0
     ");
 
     $stmt->bind_param("ii", $profileId, $profileId);
