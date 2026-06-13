@@ -542,27 +542,38 @@ while($row = $result->fetch_assoc()) {
             echo '</select>';
         }
     ?>
+    <span class="badge">BETA</span>
+    <span class="tooltip-wrapper">
+        <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
+        <span class="tooltip-box" style="right:auto;">
+            This is WIP if u wanna help or just play with the weights and settings, check out
+            <a href="/labs/">Labs</a>.
+        </span>
+    </span>
 </h4>
 <div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
     <br>
     <?php RenderSimilarMapCards($conn, $similarMaps); ?>
 </div>
 <script>
-    document.getElementById('similarMapsDiffSelect').addEventListener('change', function() {
-        const container = document.getElementById('similarMapsContainer');
-        container.style.opacity = 0.5;
+    const similarMapsDiffSelect = document.getElementById('similarMapsDiffSelect');
+    if (similarMapsDiffSelect) {
+        similarMapsDiffSelect.addEventListener('change', function() {
+            const container = document.getElementById('similarMapsContainer');
+            container.style.opacity = 0.5;
 
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState === XMLHttpRequest.DONE) {
-                if (xhttp.status === 200)
-                    container.innerHTML = "<br>" + xhttp.responseText;
-                container.style.opacity = 1;
-            }
-        };
-        xhttp.open("GET", "?simdiff=" + this.value, true);
-        xhttp.send();
-    });
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xhttp.status === 200)
+                        container.innerHTML = "<br>" + xhttp.responseText;
+                    container.style.opacity = 1;
+                }
+            };
+            xhttp.open("GET", "?simdiff=" + this.value, true);
+            xhttp.send();
+        });
+    }
 </script>
 <hr>
 <?php } ?>

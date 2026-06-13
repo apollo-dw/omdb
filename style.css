@@ -263,6 +263,15 @@ span.subText {
   color: #a8a8a8;
 }
 
+.badge {
+  padding: 0.1em 0.4em;
+  border-radius: 999px;
+  background: #6fffea;
+  color: black;
+  font-size: 0.7em;
+  font-weight: 700;
+}
+
 .ratingContainer {
   background-color: DarkSlateGrey;
   align-items: center;
