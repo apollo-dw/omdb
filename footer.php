@@ -4,6 +4,7 @@
 		
 		</div>
 		<div class="footerBar">
+            <a href="/labs">labs</a> |
 			<a href="https://discord.gg/PWVGrQRq2w" target="_blank">discord</a> |
             <a href="https://github.com/apollo-dw/omdb/" target="_blank">github</a> |
             <a href="/rules/">rules</a> |

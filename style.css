@@ -155,8 +155,8 @@ a .topBarLink {
 
 .content {
   margin-top: 3rem;
-  padding-left: 20%;
-  padding-right: 20%;
+  padding-left: 15%;
+  padding-right: 15%;
   min-height: 50%;
 }
 
@@ -261,6 +261,15 @@ a .topBarLink {
 span.subText {
   font-size: 11px;
   color: #a8a8a8;
+}
+
+.badge {
+  padding: 0.1em 0.4em;
+  border-radius: 999px;
+  background: #6fffea;
+  color: black;
+  font-size: 0.7em;
+  font-weight: 700;
 }
 
 .ratingContainer {
@@ -795,10 +804,16 @@ ol.star-rating-list > li {
   transition: opacity 0.15s ease;
   z-index: 9999;
   box-sizing: border-box;
+  bottom: calc(100% + 8px);
 }
 
-.tooltip-box {
-  bottom: calc(100% + 8px);
+.tooltip-box::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  top: 100%;
 }
 
 .tooltip-wrapper:hover .tooltip-box {

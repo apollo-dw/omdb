@@ -2,6 +2,14 @@
     require '../base.php';
     $mapset_id = GetIntParam('mapset_id', -1);
 
+    // gives just the similar maps for a diff if wanted but its basically for the select box in similar maps
+    // similarMapsSeed is also set by the GetSimilarBeatmaps
+    if (isset($_GET['simdiff'])) {
+        $similarMaps = GetSimilarBeatmaps($conn, $mapset_id, 8, $similarMapsSeed, GetIntParam('simdiff'));
+        RenderSimilarMapCards($conn, $similarMaps);
+        exit;
+    }
+
     $foundSet = false;
     $stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
     $stmt->bind_param("s", $mapset_id);
@@ -508,6 +516,67 @@ while($row = $result->fetch_assoc()) {
     <?php } ?>
 </div>
 <hr style="margin-top: 0">
+
+<?php
+    $similarMaps = GetSimilarBeatmaps($conn, $mapset_id, 8, $similarMapsSeed);
+    if (!empty($similarMaps)) {
+?>
+<h4 style="margin-bottom: 0;">
+    Similar maps to
+    <?php
+        $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
+        $stmt->bind_param("i", $mapset_id);
+        $stmt->execute();
+        $diffResult = $stmt->get_result();
+        $diffs = $diffResult->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (count($diffs) === 1) {
+            echo "<b>[" . htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
+        } else {
+            echo '<select id="similarMapsDiffSelect">';
+            foreach ($diffs as $diffRow) {
+                $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
+                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
+            }
+            echo '</select>';
+        }
+    ?>
+    <span class="badge">BETA</span>
+    <span class="tooltip-wrapper">
+        <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
+        <span class="tooltip-box" style="right:auto;">
+            This is WIP if u wanna help or just play with the weights and settings, check out
+            <a href="/labs/">Labs</a>.
+        </span>
+    </span>
+</h4>
+<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+    <br>
+    <?php RenderSimilarMapCards($conn, $similarMaps); ?>
+</div>
+<script>
+    const similarMapsDiffSelect = document.getElementById('similarMapsDiffSelect');
+    if (similarMapsDiffSelect) {
+        similarMapsDiffSelect.addEventListener('change', function() {
+            const container = document.getElementById('similarMapsContainer');
+            container.style.opacity = 0.5;
+
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xhttp.status === 200)
+                        container.innerHTML = "<br>" + xhttp.responseText;
+                    container.style.opacity = 1;
+                }
+            };
+            xhttp.open("GET", "?simdiff=" + this.value, true);
+            xhttp.send();
+        });
+    }
+</script>
+<hr>
+<?php } ?>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:40%;">

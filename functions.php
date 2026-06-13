@@ -2,6 +2,7 @@
     include_once 'env.php';
 	include_once 'functions/bbcode.php';
 	include_once 'functions/access.php';
+	include_once 'functions/recommendations.php';
 
 	/**
 	 * Sends a redirect header pointed to the given relative location (using the
