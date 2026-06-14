@@ -41,6 +41,9 @@
     $filterTypes = "";
     $filterValues = array();
 
+    $baseTable = "`ratings` r JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID";
+    $userCondition = "r.UserID = ?";
+
     if ($rating != "") {
         $filterConditions .= " AND r.Score = ?";
         $filterTypes .= "d";
@@ -78,7 +81,11 @@
     }
 
     if ($tagArgument != "") {
-        $filterJoins .= " LEFT JOIN rating_tags rt ON b.BeatmapID = rt.BeatmapID";
+        // Change the foundation to rating_tags so we can include unrated maps
+        $baseTable = "`rating_tags` rt 
+                      JOIN `beatmaps` b ON rt.BeatmapID = b.BeatmapID 
+                      LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = rt.UserID";
+        $userCondition = "rt.UserID = ?";
         $filterConditions .= " AND rt.Tag = ?";
         $filterTypes .= "s";
         $filterValues[] = $tagArgument;
@@ -87,11 +94,10 @@
     $hideBlacklistedMapsCondition = $isSelf ? "" : "AND b.Blacklisted = 0";
 
     $countSql = "SELECT COUNT(*)
-                 FROM `ratings` r
-                 JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+                 FROM {$baseTable}
                  LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                  {$filterJoins}
-                 WHERE r.UserID = ? AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}";
+                 WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}";
     $stmt = $conn->prepare($countSql);
     $countTypes = "ii" . $filterTypes;
     $countValues = array_merge(array($profileId, $mode), $filterValues);
@@ -275,12 +281,12 @@
                     $orderString = "ORDER BY r.DATE DESC";
             }
 
-            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted
-                    FROM `ratings` r
-                    LEFT JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+            // Note: Explicitly selecting b.BeatmapID last ensures it is never overridden with a NULL r.BeatmapID
+            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted, b.BeatmapID
+                    FROM {$baseTable}
                     LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                     {$filterJoins}
-                    WHERE r.UserID = ? AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}
+                    WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}
                     {$orderString} {$pageString};";
 
             $stmt = $conn->prepare($stmt);
@@ -301,12 +307,12 @@
 					<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../charts/INF.png';"></a>
 				</div>
 				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo RenderUserRating($conn, $row); ?> on <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
+					<?php echo isset($row["Score"]) ? RenderUserRating($conn, $row) . " on" : ""; ?> <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
                     <br> <span class="subText"><?php echo $tags; ?></span>
                 </div>
 				<div class="flex-child" style="width:100%;text-align:right;">
 					<?php if ($row["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
-					<?php echo GetHumanTime($row["date"]); ?>
+					<?php echo isset($row["date"]) ? GetHumanTime($row["date"]) : ""; ?>
 				</div>
 			</div>
 			<?php
