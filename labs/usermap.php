@@ -97,11 +97,11 @@
     Every dot is a user based on correlation data (and people with less ratings are deweighted)
     <br>
     Hover a user to see their strongest connections, click to go to their profile
+    <br>
+    Scroll/pinch to zoom, drag the background to pan
 </span>
 
 <div class="flex-row-container" style="align-items:center; gap:0.75em; margin:1em 0;">
-    <label for="minRatings">Minimum ratings to appear on the map:</label>
-    <input type="number" id="minRatings" value="10" min="1" max="1000" style="width:5em;">
     <button onclick="loadUserMap()">reload</button>
     <span id="mapStatus" class="subText"></span>
 </div>
@@ -114,7 +114,6 @@
     <svg id="usermap" width="100%" height="100%" style="display:block;"></svg>
     <div id="usermapTooltip" style="position:absolute; pointer-events:none; opacity:0; transition:opacity 0.1s; background:#182828; border:1px solid #395f5f; border-radius:4px; padding:0.4em 0.6em; font-size:0.85em; white-space:nowrap; z-index:5;"></div>
 </div>
-<span class="subText">Scroll/pinch to zoom, drag the background to pan</span>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script>
@@ -150,8 +149,7 @@
     }
 
     function loadUserMap() {
-        let minRatings = parseInt(document.getElementById('minRatings').value, 10);
-        if (!minRatings || minRatings < 1) minRatings = 10;
+        let minRatings = 10;
 
         const status = document.getElementById('mapStatus');
         status.textContent = 'loading...';
@@ -226,8 +224,8 @@
             }))
             .force('collide', d3.forceCollide().radius(d => getRadius(d) + (nodeSpacing / 2)).iterations(3))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('x', d3.forceX(width * 0.9).strength(d => isConnected(d) ? 0 : 0.15))
-            .force('y', d3.forceY(height * 0.8).strength(d => isConnected(d) ? 0 : 0.15))
+            .force('x', d3.forceX(width * 0.5).strength(d => isConnected(d) ? 0 : 0.75))
+            .force('y', d3.forceY(height * 0.3).strength(d => isConnected(d) ? 0 : 0.75))
             .stop();
 
         const status = document.getElementById('mapStatus');
