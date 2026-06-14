@@ -5,8 +5,8 @@
 
     $listId = GetIntParam('id', -1, "How dare you");
 
-    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE `ListID` = ?;");
-    $stmt->bind_param("i", $listId);
+    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE `ListID` = ? AND (`Private` = 0 OR `UserID` = ?);");
+    $stmt->bind_param("ii", $listId, $userId);
     $stmt->execute();
     $list = $stmt->get_result()->fetch_assoc();
     $stmt->close();
@@ -104,6 +104,7 @@
     <h1><?php echo $title; ?></h1>
     <span class="subText">
         Made by <a href="../profile/<?php echo $list["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($list["UserID"], $conn), ENT_QUOTES); ?></a><br>
+        <?php if (!empty($list["Private"])) { ?><span class="subText">Private list</span><br><?php } ?>
     </span>
     <hr>
     <div>

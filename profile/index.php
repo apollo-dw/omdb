@@ -274,7 +274,7 @@
 
 <?php
     if($isValidUser) {
-		$desc = trim($profile["CustomDescription"]);
+		$desc = trim($profile["CustomDescription"] ?? "");
 		
 		if (!empty($desc)) {
 ?>

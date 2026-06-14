@@ -336,6 +336,7 @@ CREATE TABLE `lists` (
   `Title` varchar(255) NOT NULL,
   `Description` text,
   `UserID` int NOT NULL,
+  `Private` tinyint(1) NOT NULL DEFAULT '0',
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -877,3 +878,13 @@ CREATE TABLE `sessions` (
   PRIMARY KEY (`SessionToken`),
   INDEX (`UserID`)
 );
+
+CREATE TABLE `beatmap_recommendations` (
+  `RecommendationID` int unsigned NOT NULL AUTO_INCREMENT,
+  `MapID` int NOT NULL,
+  `RecMapID` int NOT NULL,
+  `RecScore` float DEFAULT NULL,
+  `ProcessDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`RecommendationID`),
+  KEY `idx_mapid_processdate` (`MapID`,`ProcessDate`)
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

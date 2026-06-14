@@ -71,7 +71,7 @@ class BBCode
     static private function encode($input) : string
     {
         // break substring into individual unicode chars
-        $characters = preg_split('//u', $input, null, PREG_SPLIT_NO_EMPTY);
+        $characters = preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY);
 
         // append each one-at-a-time to create output
         $lf = 0;
@@ -143,7 +143,7 @@ class BBCode
             // pick up chars between tags and HTML-encode them
             $output .= self::encode(substr($input, $input_ptr, $offset - $input_ptr));
             // advance input_ptr to just past the current tag
-            $input_ptr = $offset + strlen($match);
+            $input_ptr = $offset + strlen($match ?? "");
 
             // decode the tag
             list('name' => $name, 'open' => $open, 'args' => $args) = self::decode_tag($match);
@@ -245,7 +245,7 @@ class BBCode
                         // encode everything contained between here and there
                         $output = $output . '<pre>' . self::encode(substr($input, $input_ptr, $search_offset - $input_ptr)) . '</pre>';
                         // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match);
+                        $input_ptr = $search_offset + strlen($search_match ?? "");
                         // update search position
                         $match_idx = $i;
                     } else {
@@ -277,7 +277,7 @@ class BBCode
                         // emit the tag
                         $output = $output . '<a href="' . $url . '">' . self::encode($buffer) . '</a>';
                         // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match);
+                        $input_ptr = $search_offset + strlen($search_match ?? "");
                         // update search position
                         $match_idx = $i;
                     } else {
@@ -321,7 +321,7 @@ class BBCode
                         $output .= '>';
 
                         // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match);
+                        $input_ptr = $search_offset + strlen($search_match ?? "");
                         // update search position
                         $match_idx = $i;
                     } else {

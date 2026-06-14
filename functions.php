@@ -208,17 +208,18 @@
 			}
 		}
 		
+		$username = "ID => " . strval($id);
 		try {
-        $userData = GetUserDataOsuApi($id);
-		if (!$userData)
-			return "ID => " . strval($id);
-		$username = $userData["username"];
-        $country = $userData["country"];
+			$userData = GetUserDataOsuApi($id);
+			if ($userData) {
+				$username = $userData["username"];
+				$country = $userData["country"];
 
-		$stmt = $conn->prepare("REPLACE INTO `mappernames` VALUES (?, ?, ?)");
-		$stmt->bind_param("iss", $id, $username, $country);
-		$stmt->execute();
-		$stmt->close();
+				$stmt = $conn->prepare("REPLACE INTO `mappernames` VALUES (?, ?, ?)");
+				$stmt->bind_param("iss", $id, $username, $country);
+				$stmt->execute();
+				$stmt->close();
+			}
 		} catch (Exception $e) {
 			unset($e);
 		}
@@ -477,7 +478,7 @@ function getFullCountryName($code) {
             'ZW' => 'Zimbabwe',
         );
 
-        return $countries[$code];
+        return $countries[$code] ?? null;
     }
 
 	function ParseCommentLinks($conn, $string) {
@@ -545,6 +546,7 @@ function getFullCountryName($code) {
 		$user = $result->fetch_assoc();
 		$stmt->close();
 
+		$hint = "";
         switch($score){
             case 0:
                 $hint = $user["Custom00Rating"];
@@ -582,8 +584,8 @@ function getFullCountryName($code) {
         }
 
 		$starString = RenderRating($score);
-		if ($hint == "" || !isset($hint))
-			return $starString;
+		if (empty($hint))
+    		return $starString;
 
         $hint = htmlspecialchars($hint, ENT_QUOTES);
         echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";

@@ -29,7 +29,7 @@
     $insertStmt->bind_param("iis", $userId, $beatmapID, $tag);
 
     foreach ($tagList as $tag) {
-        $tag = trim($tag);
+        $tag = trim($tag ?? "");
 
         if (empty($tag))
             continue;

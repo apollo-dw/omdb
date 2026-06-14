@@ -4,13 +4,13 @@
     include '../base.php';
 	
 	$set_id = $_POST['sID'] ?? -1;
-	$comment = trim($_POST['comment']) ?? "";
+	$comment = trim($_POST['comment'] ?? "");
 	
-	if(strlen($comment) < 3){
+	if(strlen($comment ?? "") < 3){
 		die("SHORT");
 	}
 	
-	if( strlen($comment) > 40000){
+	if( strlen($comment ?? "") > 40000){
 		die("LONG");
 	}
 

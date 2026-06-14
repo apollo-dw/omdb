@@ -2,7 +2,7 @@
 	// Recommends mapsets similar to the given set's highest rated difficulty
 	// Tune via weights + settings instead of editing the SQL
 	// $seed is the diff the recs are based on
-	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = []) {
+	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = [], $useCaching = true) {
 		// tgese are just multiplier coeffs rn
 		$weights = [
 			"avgScore" => 5, // weighted avg rating from users who like the diff
@@ -51,6 +51,35 @@
 
 		if ($seed === null)
 			return [];
+
+		if ($useCaching) {
+			$stmt = $conn->prepare("
+				SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, r.RecScore
+				FROM beatmap_recommendations r
+				INNER JOIN beatmaps b ON b.BeatmapID = r.RecMapID
+				INNER JOIN beatmapsets s ON s.SetID = b.SetID
+				WHERE r.MapID = ? AND r.ProcessDate >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND b.Blacklisted = 0
+				ORDER BY r.RecScore DESC");
+			$stmt->bind_param("i", $seed["BeatmapID"]);
+			$stmt->execute();
+			$result = $stmt->get_result();
+
+			$recommendations = [];
+
+			while ($row = $result->fetch_assoc()) {
+				if (isset($recommendations[$row["SetID"]]))
+					continue;
+
+				$recommendations[$row["SetID"]] = $row;
+				if (count($recommendations) >= $maxResults)
+					break;
+			}
+
+			$stmt->close();
+
+			if (!empty($recommendations))
+				return array_values($recommendations);
+		}
 
 		$stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ? AND Score >= ?");
 		$stmt->bind_param("id", $seed["BeatmapID"], $settings["likedThreshold"]);
@@ -217,7 +246,23 @@
 		}
 		$stmt->close();
 
-		return array_values($recommendations);
+		$recommendations = array_values($recommendations);
+		if ($useCaching && !empty($recommendations)) {
+			$stmt = $conn->prepare("DELETE FROM beatmap_recommendations WHERE MapID = ?");
+			$stmt->bind_param("i", $seed["BeatmapID"]);
+			$stmt->execute();
+			$stmt->close();
+
+			$stmt = $conn->prepare("INSERT INTO beatmap_recommendations (MapID, RecMapID, RecScore) VALUES (?, ?, ?)");
+			foreach ($recommendations as $recommendation) {
+				$stmt->bind_param("iid", $seed["BeatmapID"], $recommendation["BeatmapID"], $recommendation["RecScore"]);
+				$stmt->execute();
+			}
+
+			$stmt->close();
+		}
+
+		return $recommendations;
 	}
 
 	function RenderSimilarMapCards($conn, $similarMaps) {
@@ -232,7 +277,7 @@
 			<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 				<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
 				<span class="subText">
-					<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 50, "..."), ENT_QUOTES); ?></a><br>
+					<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
 					by <a href="/profile/<?php echo $similarMap["CreatorID"]; ?>"><?php echo htmlspecialchars($similarMapper, ENT_QUOTES); ?></a>
 				</span>
 			</div>
