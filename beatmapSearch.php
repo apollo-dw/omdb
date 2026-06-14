@@ -66,8 +66,8 @@
 
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) LIMIT 5;");
-    $stmt->bind_param("s", $like);
+    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) AND (`Private` = 0 OR `UserID` = ?) LIMIT 5;");
+    $stmt->bind_param("si", $like, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
 

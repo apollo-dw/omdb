@@ -107,6 +107,9 @@
         <input autocomplete="off" name="ListTitle" id="ListTitle" value="<?php echo htmlspecialchars($list["Title"] ?? "", ENT_QUOTES); ?>" required/><br><br>
         <label>Description:</label>
         <textarea name="ListDescription" id="ListDescription"><?php echo htmlspecialchars($list["Description"] ?? "", ENT_QUOTES); ?></textarea> <br><br>
+        <input type="checkbox" id="ListPrivate" <?php if (!empty($list) && !empty($list["Private"])) echo "checked"; ?> />
+        <label>Private list</label>
+        <br><br>
 
         <?php if(!$isNewList) { ?>
             <h1><input type="button" value="Delete list" id="DeleteListButton"></h1>
@@ -170,6 +173,7 @@
     const addNewButton = document.getElementById("addNewButton");
     const newTypeSelect = document.getElementById("newType");
     const newIdInput = document.getElementById("newId");
+    const listPrivateInput = document.getElementById("ListPrivate");
     const submitButton = document.getElementById("submitButton");
     let draggingElement = null;
 
@@ -320,12 +324,14 @@
 
         const listTitle = document.getElementById("ListTitle").value;
         const listDescription = document.getElementById("ListDescription").value;
+        const listPrivate = listPrivateInput.checked ? 1 : 0;
         const postData = {
             <?php if (!$isNewList) {
                 echo "listId: {$id},";
             } ?>
             listTitle: listTitle,
             listDescription: listDescription,
+            listPrivate: listPrivate,
             items: data
         };
 

@@ -12,12 +12,13 @@
     if ($decodedData !== null) {
         $listTitle = $decodedData["listTitle"];
         $listDescription = $decodedData["listDescription"];
+        $listPrivate = !empty($decodedData["listPrivate"]) ? 1 : 0;
         $items = $decodedData["items"];
         $listId = $decodedData["listId"] ?? "";
 
         if ($listId === "") {
-            $stmt = $conn->prepare("INSERT INTO lists (Title, Description, UserID) VALUES (?, ?, ?);");
-            $stmt->bind_param("ssi", $listTitle, $listDescription, $userId);
+            $stmt = $conn->prepare("INSERT INTO lists (Title, Description, UserID, Private) VALUES (?, ?, ?, ?);");
+            $stmt->bind_param("ssii", $listTitle, $listDescription, $userId, $listPrivate);
             $stmt->execute();
             $listId = $stmt->insert_id;
             $stmt->close();
@@ -32,8 +33,8 @@
 
             $stmt->close();
 
-            $stmt = $conn->prepare("UPDATE lists SET Title = ?, Description = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE ListID = ? AND UserID = ?;");
-            $stmt->bind_param("ssii", $listTitle, $listDescription, $listId, $userId);
+            $stmt = $conn->prepare("UPDATE lists SET Title = ?, Description = ?, Private = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE ListID = ? AND UserID = ?;");
+            $stmt->bind_param("ssiii", $listTitle, $listDescription, $listPrivate, $listId, $userId);
             $stmt->execute();
             $stmt->close();
 

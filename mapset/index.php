@@ -601,15 +601,16 @@ while($row = $result->fetch_assoc()) {
         <hr />
 		<?php } ?>
         <?php
-            $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID
-                                          FROM lists l
-                                          LEFT JOIN list_items li ON l.ListID = li.ListID
-                                          WHERE (li.SubjectID = ? AND li.Type = 'beatmapset')
-                                             OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap')
-                                          GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
-                                          LIMIT 10;");
+                $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private
+                FROM lists l
+                LEFT JOIN list_items li ON l.ListID = li.ListID
+                WHERE ((li.SubjectID = ? AND li.Type = 'beatmapset')
+                    OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap'))
+                    AND (l.Private = 0 OR l.UserID = ?)
+                GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
+                LIMIT 10;");
 
-            $stmt->bind_param("ii", $mapset_id, $mapset_id);
+                $stmt->bind_param("iii", $mapset_id, $mapset_id, $userId);
             $stmt->execute();
             $result = $stmt->get_result();
             $stmt->close();
@@ -632,7 +633,7 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child">
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a></span>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
                         </div>
                     </div>
                     <?php

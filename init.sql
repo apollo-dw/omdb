@@ -336,6 +336,7 @@ CREATE TABLE `lists` (
   `Title` varchar(255) NOT NULL,
   `Description` text,
   `UserID` int NOT NULL,
+  `Private` tinyint(1) NOT NULL DEFAULT '0',
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
