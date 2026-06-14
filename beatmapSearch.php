@@ -1,7 +1,10 @@
 <?php
 	include_once 'base.php';
 	
-	$q=$_GET["q"];
+	$q=$_GET["q"] ?? "";
+    if ($q === "") {
+        die("Ok Buddy");
+    }
 
     // If it's a link in the query, we should just show the map.
 	if(preg_match('/https:\/\/osu\.ppy\.sh\/(beatmapsets|beatmapset|s)\/(\d+)/', $q, $matches)){

@@ -2,16 +2,16 @@
     include '../../base.php';
 
     $proposalID = $_POST['pID'] ?? -1;
-	$comment = trim($_POST['comment']) ?? "";
+	$comment = trim($_POST['comment'] ?? "");
 	if ($proposalID == -1) {
 		die("NO");
 	}
 	
-	if( strlen($comment) < 3){
+	if( strlen($comment ?? "") < 3){
 		die("SHORT");
 	}
 	
-	if( strlen($comment) > 8000){
+	if( strlen($comment ?? "") > 8000){
 		die("LONG");
 	}
 

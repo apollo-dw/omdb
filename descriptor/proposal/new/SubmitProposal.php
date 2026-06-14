@@ -9,10 +9,10 @@
     $shortDescription = $_POST["ShortDescription"];
     $parentID = $_POST["ParentDescriptorID"];
     $usable = $_POST["Usable"];
-    $entryComment = trim($_POST["EntryComment"]) ?? "";
+    $entryComment = trim($_POST["EntryComment"] ?? "");
     $type = "new";
 
-    if (strlen($entryComment) < 3){
+    if (strlen($entryComment ?? "") < 3){
         die("comment too short");
     }
 
