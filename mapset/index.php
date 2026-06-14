@@ -266,7 +266,7 @@ while($row = $result->fetch_assoc()) {
                                         WHERE r.BeatmapID = ?;");
         $stmt->bind_param("i", $row["BeatmapID"]);
         $stmt->execute();
-        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"], 2);
+        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"] ?? 0, 2);
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
@@ -414,7 +414,7 @@ while($row = $result->fetch_assoc()) {
 				$selectStmt->execute();
 				$tags_result = $selectStmt->get_result();
 				$tags_row = $tags_result->fetch_assoc();
-				$allTags = htmlspecialchars($tags_row['AllTags'], ENT_QUOTES, "ISO-8859-1");
+				$allTags = htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
 				$selectStmt->close();
 				?>
 				<span class="identifier" style="display: inline-block;">
@@ -522,7 +522,7 @@ while($row = $result->fetch_assoc()) {
     if (!empty($similarMaps)) {
 ?>
 <h4 style="margin-bottom: 0;">
-    Similar maps to
+    People who liked 
     <?php
         $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
         $stmt->bind_param("i", $mapset_id);
@@ -542,6 +542,7 @@ while($row = $result->fetch_assoc()) {
             echo '</select>';
         }
     ?>
+    also liked:
     <span class="badge">BETA</span>
     <span class="tooltip-wrapper">
         <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
@@ -551,7 +552,7 @@ while($row = $result->fetch_assoc()) {
         </span>
     </span>
 </h4>
-<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
     <br>
     <?php RenderSimilarMapCards($conn, $similarMaps); ?>
 </div>

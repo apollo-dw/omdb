@@ -79,7 +79,7 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
-        <?php if (strlen($row["Tags"]) > 0) { ?>
+        <?php if (strlen($row["Tags"] ?? "") > 0) { ?>
             <i title='<?php echo htmlspecialchars($row["Tags"], ENT_QUOTES) ?>' style='border-bottom:1px dotted white;' class="icon-tags"></i>
         <?php } ?>
         <?php echo GetHumanTime($row["date"]); ?>

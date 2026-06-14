@@ -71,7 +71,7 @@ class BBCode
     static private function encode($input) : string
     {
         // break substring into individual unicode chars
-        $characters = preg_split('//u', $input, null, PREG_SPLIT_NO_EMPTY);
+        $characters = preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY);
 
         // append each one-at-a-time to create output
         $lf = 0;
