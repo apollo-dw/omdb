@@ -2,16 +2,16 @@
     include '../base.php';
 	
 	$setId = $_POST['sID'] ?? -1;
-	$comment = trim($_POST['comment']) ?? "";
+	$comment = trim($_POST['comment'] ?? "");
 	if ($setId == -1) {
 		die("NO");
 	}
 	
-	if( strlen($comment) < 3){
+	if( strlen($comment ?? "") < 3){
 		die("SHORT");
 	}
 	
-	if( strlen($comment) > 8000){
+	if( strlen($comment ?? "") > 8000){
 		die("LONG");
 	}
 

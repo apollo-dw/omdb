@@ -3,7 +3,7 @@
 	
 	$beatmapId = $_POST['beatmapId'] ?? -1;
 	$listId = $_POST['listId'] ?? -1;
-	$description = trim($_POST['description']) ?? "";
+	$description = trim($_POST['description'] ?? "");
 	if ($beatmapId == -1 || $listId == -1) {
 		die("NO");
 	}
