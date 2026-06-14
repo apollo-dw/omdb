@@ -20,7 +20,7 @@
             $overrides['settings'] = array_map('floatval', $body['settings']);
 
         $seed = null;
-        $similarMaps = GetSimilarBeatmaps($conn, $setId, 8, $seed, null, $overrides);
+        $similarMaps = GetSimilarBeatmaps($conn, $setId, 8, $seed, null, $overrides, false);
 
         if (empty($similarMaps)) {
             echo '<span class="subText">No similar maps, try other weights + settings or something</span>';
