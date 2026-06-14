@@ -131,6 +131,50 @@
     </table>
 </form>
 
+<hr>
+<h2>Active Sessions</h2>
+<span class="subText">Manage your active logins across different devices. Revoking a session will log you out on that device.</span><br><br>
+
+<table style="width: 100%; text-align: left; border-collapse: collapse;">
+    <tr style="border-bottom: 1px solid #ccc;">
+        <th style="padding-bottom: 5px;">IP Address</th>
+        <th style="padding-bottom: 5px;">Last Accessed</th>
+        <th style="padding-bottom: 5px;">Action</th>
+    </tr>
+<?php
+    $stmt = $conn->prepare("
+        SELECT `SessionToken`, `IpAddress`, `LastAccessedAt` 
+        FROM `sessions` 
+        WHERE `UserID` = ? AND `ExpiresAt` > NOW() 
+        ORDER BY `LastAccessedAt` DESC
+    ");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows != 0) {
+        while ($row = $result->fetch_assoc()) {
+            $isCurrentSession = ($row["SessionToken"] === $sessionToken);
+            $ip = htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
+            $lastAccessed = htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
+            
+            echo "<tr>";
+            echo "<td style='padding: 5px 0;'>{$ip}" . ($isCurrentSession ? " <strong>(Current)</strong>" : "") . "</td>";
+            echo "<td>{$lastAccessed}</td>";
+            
+            if ($isCurrentSession) {
+                echo "<td><em>Current Session</em></td>";
+            } else {
+                echo "<td><a href='KillSession.php?token={$row["SessionToken"]}' style='color: red;'>Revoke</a></td>";
+            }
+            echo "</tr>";
+        }
+    } else {
+        echo "<tr><td colspan='3'>No active sessions found.</td></tr>";
+    }
+?>
+</table>
+
 <script>
     function saveChanges(){
         const ratingNames = [
