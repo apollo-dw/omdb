@@ -35,7 +35,7 @@
     $result = $stmt->get_result();
 
     while ($beatmap = $result->fetch_assoc()) {
-        $tags = htmlspecialchars($beatmap['Tags'], ENT_QUOTES, "ISO-8859-1")
+        $tags = htmlspecialchars($beatmap['Tags'] ?? "", ENT_QUOTES, "ISO-8859-1")
         ?>
         <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child">

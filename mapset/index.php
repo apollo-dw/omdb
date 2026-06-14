@@ -266,7 +266,7 @@ while($row = $result->fetch_assoc()) {
                                         WHERE r.BeatmapID = ?;");
         $stmt->bind_param("i", $row["BeatmapID"]);
         $stmt->execute();
-        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"], 2);
+        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"] ?? 0, 2);
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
@@ -414,7 +414,7 @@ while($row = $result->fetch_assoc()) {
 				$selectStmt->execute();
 				$tags_result = $selectStmt->get_result();
 				$tags_row = $tags_result->fetch_assoc();
-				$allTags = htmlspecialchars($tags_row['AllTags'], ENT_QUOTES, "ISO-8859-1");
+				$allTags = htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
 				$selectStmt->close();
 				?>
 				<span class="identifier" style="display: inline-block;">

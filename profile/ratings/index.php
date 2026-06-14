@@ -5,7 +5,7 @@
     $genre = $_GET['g'] ?? "";
     $language = $_GET['lang'] ?? "";
     $country = $_GET['c'] ?? "";
-    $tagArgument = urldecode($_GET['t']) ?? "";
+    $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
 
     $PageTitle = "Ratings";
 
@@ -294,7 +294,7 @@
                 $stmt->bind_param('ii', $profileId, $row["BeatmapID"]);
                 $stmt->execute();
                 $tags = $stmt->get_result()->fetch_assoc()["Tags"];
-                $tags = htmlspecialchars($tags, ENT_QUOTES, "ISO-8859-1");
+                $tags = htmlspecialchars($tags ?? "", ENT_QUOTES, "ISO-8859-1");
         ?>
 			<div class="flex-container ratingContainer alternating-bg">
 				<div class="flex-child">
