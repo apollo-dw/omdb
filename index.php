@@ -28,7 +28,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
     $stmt->close();
     ?>
 
-    <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
+    <a href="/labs/usermap.php" title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</a>,
     <?php echo $ratingsCount; ?> ratings,
     <?php echo $commentsCount; ?> comments
 </span>
