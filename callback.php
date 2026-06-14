@@ -48,6 +48,7 @@
 	$accessToken = $json["access_token"];
 	$refreshToken = $json["refresh_token"];
 	$expiresIn = (int) $json["expires_in"];
+	$tokenExpiresAt = date('Y-m-d H:i:s', time() + $expiresIn);
 
 	$curl = curl_init();
 	
@@ -78,13 +79,13 @@
 
 
 	if ($result && $result->num_rows == 0) {
-		$stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken) VALUES (?, ?, ?, ?);");
-		$stmt->bind_param("ssss", $userId, $username, $accessToken, $refreshToken);
+		$stmt = $conn->prepare("INSERT INTO `users` (UserID, Username, AccessToken, RefreshToken, TokenExpiresAt) VALUES (?, ?, ?, ?, ?);");
+		$stmt->bind_param("sssss", $userId, $username, $accessToken, $refreshToken, $tokenExpiresAt);
 		$stmt->execute();
 		$stmt->close();
 	} else {
-		$stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ?, `Username` = ? WHERE `UserID` = ?");
-		$stmt->bind_param("ssss", $accessToken, $refreshToken, $username, $userId);
+		$stmt = $conn->prepare("UPDATE `users` SET `AccessToken` = ?, `RefreshToken` = ?, `TokenExpiresAt` = ?, `Username` = ? WHERE `UserID` = ?");
+		$stmt->bind_param("ssssi", $accessToken, $refreshToken, $tokenExpiresAt, $username, $userId);
 		$stmt->execute();
 		$stmt->close();
 	}
@@ -93,7 +94,6 @@
 	$stmt->bind_param("s", $userId);
 	$stmt->execute();
 	$result = $stmt->get_result();
-
 
 	if ($result && $result->num_rows == 0) {
 		$stmt = $conn->prepare("INSERT INTO `mappernames` (UserID, Username, Country) VALUES (?, ?, ?);");
@@ -106,7 +106,19 @@
 		$stmt->execute();
 		$stmt->close();
 	}
+
+	$sessionToken = bin2hex(random_bytes(32));
+	$sessionExpiry = date('Y-m-d H:i:s', time() + 30 * 24 * 3600);
+	$stmt = $conn->prepare("INSERT INTO `sessions` (SessionToken, UserID, ExpiresAt) VALUES (?, ?, ?)");
+	$stmt->bind_param("sis", $sessionToken, $userId, $sessionExpiry);
+	$stmt->execute();
+	$stmt->close();
 	
-	setcookie("AccessToken", $accessToken, time() + $expiresIn);
+	setcookie("SessionToken", $sessionToken, [
+		'expires'  => time() + 30 * 24 * 3600,
+		'path'     => '/',
+		'secure'   => true,
+		'httponly' => true,
+	]);
 	siteRedirect($redirect_url);
 ?>
