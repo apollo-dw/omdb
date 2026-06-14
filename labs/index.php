@@ -10,6 +10,11 @@
             'url' => '/labs/recommendations.php',
             'description' => 'Play with the weights and settings of the recommendation system!',
         ],
+        [
+            'title' => 'Usermap',
+            'url' => '/labs/usermap.php',
+            'description' => 'Shows an embedding map of users on OMDB',
+        ],
     ];
 ?>
 
