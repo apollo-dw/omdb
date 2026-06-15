@@ -109,8 +109,12 @@
 
 	$sessionToken = bin2hex(random_bytes(32));
 	$sessionExpiry = date('Y-m-d H:i:s', time() + 30 * 24 * 3600);
-	$stmt = $conn->prepare("INSERT INTO `sessions` (SessionToken, UserID, ExpiresAt) VALUES (?, ?, ?)");
-	$stmt->bind_param("sis", $sessionToken, $userId, $sessionExpiry);
+
+	$ua = $_SERVER["HTTP_USER_AGENT"] ?? "";
+	$deviceInfo = parseUserAgent($ua);
+
+	$stmt = $conn->prepare("INSERT INTO `sessions` (SessionToken, UserID, ExpiresAt, DeviceInfo) VALUES (?, ?, ?, ?)");
+	$stmt->bind_param("siss", $sessionToken, $userId, $sessionExpiry, $deviceInfo);
 	$stmt->execute();
 	$stmt->close();
 	

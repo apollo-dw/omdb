@@ -875,6 +875,7 @@ CREATE TABLE `sessions` (
   `ExpiresAt`       DATETIME     NOT NULL,
   `LastAccessedAt`  DATETIME     DEFAULT CURRENT_TIMESTAMP,
   `IpAddress`       VARCHAR(45),
+  `DeviceInfo`      VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`SessionToken`),
   INDEX (`UserID`)
 );

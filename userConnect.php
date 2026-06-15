@@ -61,11 +61,14 @@
 				$newExpiry     = time() + 30 * 24 * 3600;
 				$newExpiryDate = date('Y-m-d H:i:s', $newExpiry);
 
+				$ua = $_SERVER["HTTP_USER_AGENT"] ?? "";
+				$deviceInfo = parseUserAgent($ua);
+
 				$stmt = $conn->prepare("UPDATE `sessions`
-					SET `LastAccessedAt` = CURRENT_TIMESTAMP, `ExpiresAt` = ?, `IpAddress` = ?
+					SET `LastAccessedAt` = CURRENT_TIMESTAMP, `ExpiresAt` = ?, `IpAddress` = ?, `DeviceInfo` = ?
 					WHERE `SessionToken` = ?
 				");
-				$stmt->bind_param("sss", $newExpiryDate, $ip, $sessionToken);
+				$stmt->bind_param("ssss", $newExpiryDate, $ip, $deviceInfo, $sessionToken);
 				$stmt->execute();
 
 				$stmt = $conn->prepare("UPDATE `users`

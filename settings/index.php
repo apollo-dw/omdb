@@ -137,13 +137,13 @@
 
 <table style="width: 100%; text-align: left; border-collapse: collapse;">
     <tr style="border-bottom: 1px solid #ccc;">
-        <th style="padding-bottom: 5px;">IP Address</th>
+        <th style="padding-bottom: 5px;">Device / IP</th>
         <th style="padding-bottom: 5px;">Last Accessed</th>
         <th style="padding-bottom: 5px;">Action</th>
     </tr>
 <?php
     $stmt = $conn->prepare("
-        SELECT `SessionToken`, `IpAddress`, `LastAccessedAt` 
+        SELECT `SessionToken`, `DeviceInfo`, `IpAddress`, `LastAccessedAt` 
         FROM `sessions` 
         WHERE `UserID` = ? AND `ExpiresAt` > NOW() 
         ORDER BY `LastAccessedAt` DESC
@@ -155,11 +155,12 @@
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
             $isCurrentSession = ($row["SessionToken"] === $sessionToken);
+            $deviceInfo = htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
             $ip = htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
             $lastAccessed = htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
             
             echo "<tr>";
-            echo "<td style='padding: 5px 0;'>{$ip}" . ($isCurrentSession ? " <strong>(Current)</strong>" : "") . "</td>";
+            echo "<td style='padding: 5px 0;'>{$deviceInfo}<br>{$ip}" . ($isCurrentSession ? "<br><strong>(Current)</strong>" : "") . "</td>";
             echo "<td>{$lastAccessed}</td>";
             
             if ($isCurrentSession) {
