@@ -467,7 +467,7 @@
                         count: parseInt($(this).attr('data-rating-count')) || 0
                     };
                 }).get().sort((a, b) => b.count - a.count);
-                console.log(maps);
+
                 var threshold = maps.length ? maps[0].count * 0.5 : 0;
                 $('.profile-top-map').hide();
 
