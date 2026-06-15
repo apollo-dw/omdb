@@ -30,7 +30,7 @@
 			"coverageFade" => 80, // diminish the effect of cohort if the fanbase is n large
 			"coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
 			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
-			"minCoRaters" => 3, // diffs need at least this many users who rated BOTH maps
+			"minCoRaters" => 5, // diffs need at least this many users who rated BOTH maps
 			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively),
 			"srWindow" => 0.5, // SR diff via fraction, so 0.5 = 50% of the diff's SR as the limit
 		];

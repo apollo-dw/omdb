@@ -59,7 +59,7 @@
         "coverageFade" => 80,
         "coverageCurve" => 2,
         "corrShrink" => 10,
-        "minCoRaters" => 3,
+        "minCoRaters" => 5,
         "minCorrelation" => 0,
         "srWindow" => 0.5,
     ];
