@@ -14,6 +14,54 @@
 	}
 
 	/**
+	 * Will try to parse the browser and OS
+	 * from a given user agent string
+	 * usually from HTTP_USER_AGENT
+	 * Returns `Browser on OS` in string
+	*/
+	function parseUserAgent(string $ua): string {
+		$browser = "Unknown Browser";
+		$os      = "Unknown OS";
+
+		if (preg_match("/Windows NT ([\d.]+)/", $ua, $m)) {
+			$versions = [
+				"10.0" => "Windows 10/11",
+				"6.3"  => "Windows 8.1",
+				"6.2"  => "Windows 8",
+				"6.1"  => "Windows 7",
+			];
+			$os = $versions[$m[1]] ?? "Windows";
+		} elseif (preg_match("/Mac OS X ([\d_]+)/", $ua, $m)) {
+			$os = "macOS " . str_replace("_", ".", $m[1]);
+		} elseif (preg_match("/Android ([\d.]+)/", $ua, $m)) {
+			$os = "Android " . $m[1];
+		} elseif (preg_match("/(?:iPhone|iPad).*OS ([\d_]+)/", $ua, $m)) {
+			$os = "iOS " . str_replace("_", ".", $m[1]);
+		} elseif (preg_match("/Linux/", $ua)) {
+			$os = "Linux";
+		}
+
+		// Order matters cuz of https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent#browser_name_and_version
+		if (preg_match("/Edg\/([\d.]+)/", $ua, $m)) {
+			$browser = "Edge " . $m[1];
+		} elseif (preg_match("/OPR\/([\d.]+)/", $ua, $m)) {
+			$browser = "Opera " . $m[1];
+		} elseif (preg_match("/Seamonkey\/([\d.]+)/", $ua, $m)) { // Bro What THe Fuck Is Seamonkey
+			$browser = "SeaMonkey " . $m[1];
+		} elseif (preg_match("/(?:FxiOS|Firefox)\/([\d.]+)/", $ua, $m)) {
+			$browser = "Firefox " . $m[1];
+		} elseif (preg_match("/Chromium\/([\d.]+)/", $ua, $m)) {
+			$browser = "Chromium " . $m[1];
+		} elseif (preg_match("/(?:Chrome|CriOS)\/([\d.]+)/", $ua, $m)) {
+			$browser = "Chrome " . $m[1];
+		} elseif (preg_match("/Version\/([\d.]+)/", $ua, $m) && preg_match("/Safari\//", $ua)) {
+			$browser = "Safari " . $m[1];
+		}
+
+		return $browser . " on " . $os;
+	}
+
+	/**
 	 * Reads int parameter from req
 	 * Dies if the value exists but not numeric
 	 * OR if it is missing and no default was given.
@@ -228,7 +276,7 @@
 		return $username;
 	}
 	
-function getFullCountryName($code) {
+	function getFullCountryName($code) {
         $countries = array
         (
             'AF' => 'Afghanistan',
