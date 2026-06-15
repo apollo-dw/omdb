@@ -134,11 +134,16 @@
             .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? Math.min(1, 0.3 + l.value) : 0);
     }
 
-    function clearHighlight(normalizedUsernameHighlight) {
+    function clearHighlight() {
         nodeSel.attr('fill', '#6fffea').attr('fill-opacity', 0.8);
         linkSel.attr('stroke-opacity', 0);
-        if (normalizedUsernameHighlight) {
-            highlightUsername(normalizedUsernameHighlight);
+        
+        const currentHighlight = String(document.getElementById('usernameHighlight').value || '').trim().toLowerCase();
+        if (currentHighlight && nodes) {
+            const match = nodes.find(n => String(n.name || '').trim().toLowerCase() === currentHighlight);
+            if (match) {
+                highlight(match);
+            }
         }
     }
 
@@ -266,7 +271,7 @@
                 window.open('/profile/' + d.id, '_blank');
             });
 
-        clearHighlight(normalizedUsernameHighlight);
+        clearHighlight();
 
         function showTooltip(event, d) {
             const [x, y] = d3.pointer(event, container);
@@ -281,15 +286,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('usernameHighlight').addEventListener('input', () => {
-            nodeSel.attr('fill', '#6fffea').attr('fill-opacity', 0.8);
-            linkSel.attr('stroke-opacity', 0);
-            const normalizedName = String(document.getElementById('usernameHighlight').value || '').trim().toLowerCase();
-            const match = nodes.find(n => String(n.name || '').trim().toLowerCase() === normalizedName);
-            if (match) {
-                highlight(match);
-            }
-        });
+        document.getElementById('usernameHighlight').addEventListener('input', () => clearHighlight());
         loadUserMap();
     });
 </script>
