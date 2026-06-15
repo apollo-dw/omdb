@@ -467,6 +467,7 @@ CREATE TABLE `users` (
   `Username` varchar(255) DEFAULT NULL,
   `AccessToken` varchar(2000) DEFAULT NULL,
   `RefreshToken` varchar(2000) DEFAULT NULL,
+  `TokenExpiresAt` DATETIME DEFAULT NULL,
   `banned` tinyint(1) DEFAULT '0',
   `Weight` decimal(6,4) DEFAULT NULL,
   `DoTrueRandom` tinyint(1) NOT NULL DEFAULT '0',
@@ -867,6 +868,17 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+CREATE TABLE `sessions` (
+  `SessionToken`    VARCHAR(64)  NOT NULL,
+  `UserID`          INT          NOT NULL,
+  `ExpiresAt`       DATETIME     NOT NULL,
+  `LastAccessedAt`  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  `IpAddress`       VARCHAR(45),
+  `DeviceInfo`      VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`SessionToken`),
+  INDEX (`UserID`)
+);
 
 CREATE TABLE `beatmap_recommendations` (
   `RecommendationID` int unsigned NOT NULL AUTO_INCREMENT,
