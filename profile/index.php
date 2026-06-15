@@ -331,7 +331,7 @@
 <hr>
 <div style="margin-bottom: 1em;">
     <label>
-        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span class="subText">Hide less-relevant maps (under 50% of top map's ratings, min. 10 shown)</span>
+        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (under 50% of top map's ratings, min. 10 shown)</span>
     </label>
 </div>
 <div id="beatmaps">
