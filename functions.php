@@ -23,7 +23,7 @@
 		$browser = "Unknown Browser";
 		$os      = "Unknown OS";
 
-		if (preg_match("/Windows NT ([\d.]+)/", $ua, $m)) {
+		if (preg_match("/Windows NT ([\d.]+)/i", $ua, $m)) {
 			$versions = [
 				"10.0" => "Windows 10/11",
 				"6.3"  => "Windows 8.1",
@@ -31,30 +31,30 @@
 				"6.1"  => "Windows 7",
 			];
 			$os = $versions[$m[1]] ?? "Windows";
-		} elseif (preg_match("/Mac OS X ([\d_]+)/", $ua, $m)) {
+		} elseif (preg_match("/Mac OS X ([\d_]+)/i", $ua, $m)) {
 			$os = "macOS " . str_replace("_", ".", $m[1]);
-		} elseif (preg_match("/Android ([\d.]+)/", $ua, $m)) {
+		} elseif (preg_match("/Android ([\d.]+)/i", $ua, $m)) {
 			$os = "Android " . $m[1];
-		} elseif (preg_match("/(?:iPhone|iPad).*OS ([\d_]+)/", $ua, $m)) {
+		} elseif (preg_match("/(?:iPhone|iPad).*OS ([\d_]+)/i", $ua, $m)) {
 			$os = "iOS " . str_replace("_", ".", $m[1]);
-		} elseif (preg_match("/Linux/", $ua)) {
+		} elseif (preg_match("/Linux/i", $ua)) {
 			$os = "Linux";
 		}
 
 		// Order matters cuz of https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent#browser_name_and_version
-		if (preg_match("/Edg\/([\d.]+)/", $ua, $m)) {
+		if (preg_match("/Edg\/([\d.]+)/i", $ua, $m)) {
 			$browser = "Edge " . $m[1];
-		} elseif (preg_match("/OPR\/([\d.]+)/", $ua, $m)) {
+		} elseif (preg_match("/OPR\/([\d.]+)/i", $ua, $m)) {
 			$browser = "Opera " . $m[1];
-		} elseif (preg_match("/Seamonkey\/([\d.]+)/", $ua, $m)) { // Bro What THe Fuck Is Seamonkey
+		} elseif (preg_match("/Seamonkey\/([\d.]+)/i", $ua, $m)) { // Bro What THe Fuck Is Seamonkey
 			$browser = "SeaMonkey " . $m[1];
-		} elseif (preg_match("/(?:FxiOS|Firefox)\/([\d.]+)/", $ua, $m)) {
+		} elseif (preg_match("/(?:FxiOS|Firefox)\/([\d.]+)/i", $ua, $m)) {
 			$browser = "Firefox " . $m[1];
-		} elseif (preg_match("/Chromium\/([\d.]+)/", $ua, $m)) {
+		} elseif (preg_match("/Chromium\/([\d.]+)/i", $ua, $m)) {
 			$browser = "Chromium " . $m[1];
-		} elseif (preg_match("/(?:Chrome|CriOS)\/([\d.]+)/", $ua, $m)) {
+		} elseif (preg_match("/(?:Chrome|CriOS)\/([\d.]+)/i", $ua, $m)) {
 			$browser = "Chrome " . $m[1];
-		} elseif (preg_match("/Version\/([\d.]+)/", $ua, $m) && preg_match("/Safari\//", $ua)) {
+		} elseif (preg_match("/Version\/([\d.]+)/i", $ua, $m) && preg_match("/Safari\//i", $ua)) {
 			$browser = "Safari " . $m[1];
 		}
 
