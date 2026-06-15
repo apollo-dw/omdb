@@ -329,7 +329,11 @@
 ?>
 
 <hr>
-<span class="subText">This display is currently WIP! I am planning to add a checkbox to hide less-relevant maps (ones with low amount of ratings)</span><br><br>
+<div style="margin-bottom: 1em;">
+    <label>
+        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (under 50% of top map's ratings, min. 10 shown)</span>
+    </label>
+</div>
 <div id="beatmaps">
     <?php
         $stmt = $conn->prepare("SELECT s.SetID, s.CreatorID, s.Artist, s.Title
@@ -370,10 +374,11 @@
             $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
             $topMapIsGD = $set["CreatorID"] != $profileId;
             $topMapIsCollab = $topMap["NumCreators"] > 1;
+            $topMapRatingCount = isset($topMap["RatingCount"]) ? $topMap["RatingCount"] : 0;
 
             $stmt->close();
             ?>
-            <div class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
+            <div data-rating-count="<?php echo $topMapRatingCount; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
@@ -453,6 +458,42 @@
     }
 
     $(document).ready(function() {
+
+        function relevanceCheck() {
+            if ($('#hideLessRelevantCheckbox').is(':checked')) {
+                var maps = $('.profile-top-map').map(function() {
+                    return {
+                        el: this,
+                        count: parseInt($(this).attr('data-rating-count')) || 0
+                    };
+                }).get().sort((a, b) => b.count - a.count);
+
+                var threshold = maps.length ? maps[0].count * 0.5 : 0;
+                $('.profile-top-map').hide();
+
+                maps.forEach(function(map, index) {
+                    if (index < 10 || map.count >= threshold) {
+                    $(map.el).show();
+                }
+                });
+            } else {
+                $('.profile-top-map').show();
+            }
+
+            // Cba changing the alternating BG css just for this so this is to override that
+            $('.profile-top-map').css('background-color', '');
+            $('.profile-top-map:visible').each(function(index) {
+                if (index % 2 === 0) {
+                    $(this).css('background-color', '#203838');
+                } else {
+                    $(this).css('background-color', 'darkslategray');
+                }
+            });
+        }
+
+        relevanceCheck();
+        $('#hideLessRelevantCheckbox').change(relevanceCheck);
+
         $('#friendButton').click(function() {
             $.ajax({
                 type: 'POST',
