@@ -331,7 +331,7 @@
 <hr>
 <div style="margin-bottom: 1em;">
     <label>
-        <input type="checkbox" id="hideLessRelevantCheckbox"> <span class="subText">Hide less-relevant maps (under 5 ratings)</span>
+        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span class="subText">Hide less-relevant maps (under 50% of top map's ratings, min. 10 shown)</span>
     </label>
 </div>
 <div id="beatmaps">
@@ -458,14 +458,23 @@
     }
 
     $(document).ready(function() {
-        $('#hideLessRelevantCheckbox').change(function() {
-            var threshold = 5;
-            if ($(this).is(':checked')) {
-                $('.profile-top-map').each(function() {
-                    var ratingCount = parseInt($(this).attr('data-rating-count')) || 0;
-                    if (ratingCount < threshold) {
-                        $(this).hide();
-                    }
+
+        function relevanceCheck() {
+            if ($('#hideLessRelevantCheckbox').is(':checked')) {
+                var maps = $('.profile-top-map').map(function() {
+                    return {
+                        el: this,
+                        count: parseInt($(this).attr('data-rating-count')) || 0
+                    };
+                }).get().sort((a, b) => b.count - a.count);
+                console.log(maps);
+                var threshold = maps.length ? maps[0].count * 0.5 : 0;
+                $('.profile-top-map').hide();
+
+                maps.forEach(function(map, index) {
+                    if (index < 10 || map.count >= threshold) {
+                    $(map.el).show();
+                }
                 });
             } else {
                 $('.profile-top-map').show();
@@ -473,14 +482,17 @@
 
             // Cba changing the alternating BG css just for this so this is to override that
             $('.profile-top-map').css('background-color', '');
-            $('.profile-top-map:visible').each(function (index) {
+            $('.profile-top-map:visible').each(function(index) {
                 if (index % 2 === 0) {
                     $(this).css('background-color', '#203838');
                 } else {
                     $(this).css('background-color', 'darkslategray');
                 }
             });
-        });
+        }
+
+        relevanceCheck();
+        $('#hideLessRelevantCheckbox').change(relevanceCheck);
 
         $('#friendButton').click(function() {
             $.ajax({
