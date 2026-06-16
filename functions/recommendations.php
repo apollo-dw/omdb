@@ -72,29 +72,26 @@
 
 		// tgese are just multiplier coeffs rn
 		$weights = [
-			"avgScore" => 5, // weighted avg rating from users who like the diff
+			"avgScore" => 5, // weighted avg rating from users who rated the diff
 			"descriptorScore" => 1, // Overall multiplier for the descriptor scores provided in ../descriptors.json
 			"monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
 			"sharedNominator" => 1, // per nominator shared with the set
 			"sharedMapper" => 4, // per mapper shared with the diff
-			"cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
-			"cohortCoverage" => 16, // share of the fans vs everyone so big fanbases of the diff get no bump in this
+			"cohortLift" => 8, // how much higher the seed users rate the diff vs everyone else
+			"cohortCoverage" => 16, // share of the seed users vs everyone so big fanbases of the diff get no bump in this
 			"correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
 			"srProximity" => 1, // how close the diffs are in star rating
 		];
 
 		$settings = [
-			"likedThreshold" => 3.5, // ratings at/above this count as "positive"
 			"proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
 			"bayesMean" => 3.0, // site-wide mean for bayesian avg
 			"bayesN" => 2, // n for bayesian avg
-			"minAvgScore" => 3, // similar diffs need at least this bayesian avg rating
-			"minScoreShare" => 0.06, // min fraction of fans
-			"maxScoreShare" => 0.5, // max fraction of fans
+			"maxScoreShare" => 0.9, // max fraction of fans
 			"maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
 			"liftShrink" => 10, // n = u need 50% of the cohortLift value
-			"coverageFade" => 80, // diminish the effect of cohort if the fanbase is n large
-			"coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
+			"coverageFade" => 80, // diminish the effect of cohort if the # of people rating is n large
+			"coverageCurve" => 2, // exponent setting so 90% of people rating is more than twice vs 45% fans
 			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
 			"minCoRaters" => 5, // diffs need at least this many users who rated BOTH maps
 			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively),
@@ -147,8 +144,8 @@
 				return array_values($recommendations);
 		}
 
-		$stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ? AND Score >= ?");
-		$stmt->bind_param("id", $seed["BeatmapID"], $settings["likedThreshold"]);
+		$stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ?");
+		$stmt->bind_param("i", $seed["BeatmapID"]);
 		$stmt->execute();
 		$result = $stmt->get_result();
 
@@ -157,8 +154,10 @@
 			$userIDs[] = $row["UserID"];
 		$stmt->close();
 
-		if (empty($userIDs))
-			return [];
+		// If noone's rated the map yet, then we suggest beatmaps without 
+		if (empty($userIDs)) {
+			$userIDs = [0];
+		}
 
 		$stmt = $conn->prepare("SELECT DescriptorID FROM beatmap_descriptors WHERE BeatmapID = ?");
 		$stmt->bind_param("i", $seed["BeatmapID"]);
@@ -189,6 +188,7 @@
 		if (empty($relevantTargetDescIDs)) {
 			$bdJoin = "";
 			$descriptorScoreField = "0";
+			$bdCondition = "1=0";
 		} else {
 			$relevantDescList = implode(',', $relevantTargetDescIDs);
 
@@ -211,9 +211,10 @@
 				FROM beatmap_descriptors
 				WHERE DescriptorID IN ($relevantDescList)
 				GROUP BY BeatmapID
-			) bd ON bd.BeatmapID = r.BeatmapID";
+			) bd ON bd.BeatmapID = b.BeatmapID";
 			
 			$descriptorScoreField = "COALESCE(bd.DescriptorScore, 0)";
+			$bdCondition = "bd.BeatmapID IS NOT NULL";
 		}
 
 		$stmt = $conn->prepare("SELECT DISTINCT NominatorID FROM beatmapset_nominators WHERE SetID = ? AND Mode = ? AND NominatorID IS NOT NULL");
@@ -246,11 +247,12 @@
 		$creatorPlaceholders = implode(',', array_fill(0, count($creatorIDs), '?'));
 		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
 
-		$bayesAvg = "(AVG(r.Score) * COUNT(DISTINCT r.RatingID) + ?) / (COUNT(DISTINCT r.RatingID) + ?)";
-		$cohortLift = "(AVG(r.Score) - COALESCE(b.WeightedAvg, ?)) * (COUNT(DISTINCT r.RatingID) / (COUNT(DISTINCT r.RatingID) + ?))";
+		// COALESCE for the case where there are 0 shared raters
+		$bayesAvg = "(COALESCE(AVG(r.Score), ?) * COUNT(DISTINCT r.RatingID) + ?) / (COUNT(DISTINCT r.RatingID) + ?)";
+		$cohortLift = "(COALESCE(AVG(r.Score), ?) - COALESCE(b.WeightedAvg, ?)) * (COUNT(DISTINCT r.RatingID) / (COUNT(DISTINCT r.RatingID) + ?))";
 
 		// I hope I never have to write some bullshit like this ever again
-		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, AVG(r.Score) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, $bayesAvg AS BayesAvg, (
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, $bayesAvg AS BayesAvg, (
 				$bayesAvg * ? +
 				$cohortLift * ? +
 				POW(COUNT(DISTINCT r.RatingID) / ?, ?) * ? +
@@ -258,15 +260,15 @@
 				GREATEST(0, 1 - ABS(TIMESTAMPDIFF(MONTH, ?, b.Timestamp)) / ?) * ? +
 				COUNT(DISTINCT bn.NominatorID) * ? +
 				COUNT(DISTINCT bc.CreatorID) * ? +
-				COALESCE(corr.Correlation, 0) * (corr.CoRaters / (corr.CoRaters + ?)) * ? +
+				COALESCE(corr.Correlation, 0) * (COALESCE(corr.CoRaters, 0) / (COALESCE(corr.CoRaters, 0) + ?)) * ? +
 				GREATEST(0, 1 - ABS(b.SR - ?) / (? * ?)) * ?
 			) AS RecScore
-			FROM ratings r
-			INNER JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
+			FROM beatmaps b
 			INNER JOIN beatmapsets s ON s.SetID = b.SetID
+			LEFT JOIN ratings r ON r.BeatmapID = b.BeatmapID AND r.UserID IN ($userPlaceholders)
 			$bdJoin
 			LEFT JOIN beatmapset_nominators bn ON bn.SetID = b.SetID AND bn.Mode = b.Mode AND bn.NominatorID IN ($nominatorPlaceholders)
-			LEFT JOIN beatmap_creators bc ON bc.BeatmapID = r.BeatmapID AND bc.CreatorID IN ($creatorPlaceholders)
+			LEFT JOIN beatmap_creators bc ON bc.BeatmapID = b.BeatmapID AND bc.CreatorID IN ($creatorPlaceholders)
 			LEFT JOIN (
 				SELECT r2.BeatmapID,
 					COUNT(*) AS CoRaters,
@@ -280,13 +282,19 @@
 				WHERE r1.BeatmapID = ?
 				GROUP BY r2.BeatmapID
 				HAVING CoRaters >= ? AND Correlation >= ?
-			) corr ON corr.BeatmapID = r.BeatmapID
-			WHERE r.UserID IN ($userPlaceholders)
-				AND b.SetID != ?
+			) corr ON corr.BeatmapID = b.BeatmapID
+			WHERE b.SetID != ?
 				AND b.Mode = ?
 				AND b.Blacklisted = 0
+				AND (
+					r.RatingID IS NOT NULL OR
+					$bdCondition OR
+					bn.NominatorID IS NOT NULL OR
+					bc.CreatorID IS NOT NULL OR
+					corr.BeatmapID IS NOT NULL
+				)
 			GROUP BY b.BeatmapID
-			HAVING BayesAvg >= ? AND ScoreCount >= ? AND ScoreCount <= ?
+			HAVING ScoreCount <= ?
 			ORDER BY RecScore DESC
 			LIMIT ?;
 		");
@@ -295,36 +303,40 @@
 		// So fetch extra rows to still end up with $maxResults distinct sets after deduplication
 		$candidateLimit = $maxResults * 4;
 
-		$minScoreCount = max(2, (int)ceil($settings["minScoreShare"] * count($userIDs)));
-		$maxScoreCount = max($settings["maxScoreFloor"], $minScoreCount, (int)ceil($settings["maxScoreShare"] * count($userIDs)));
+		$maxScoreCount = max($settings["maxScoreFloor"], (int)ceil($settings["maxScoreShare"] * count($userIDs)));
 
 		$coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
 
 		$bayesSum = $settings["bayesMean"] * $settings["bayesN"];
 
-		$types = "dd" . "dd" . "d" . "ddd" . "idd" . "d" . "sdd" . "dd" . "dd" . "dddd"
+		$selectParams = [
+			$settings["bayesMean"], $bayesSum, $settings["bayesN"],
+			$settings["bayesMean"], $bayesSum, $settings["bayesN"], $weights["avgScore"],
+			$settings["bayesMean"], $settings["bayesMean"], $settings["liftShrink"], $weights["cohortLift"],
+			max(1, count($userIDs)), $settings["coverageCurve"], $coverageWeight,
+			$weights["descriptorScore"],
+			$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"],
+			$weights["sharedNominator"],
+			$weights["sharedMapper"],
+			$settings["corrShrink"], $weights["correlation"],
+			$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
+		];
+
+		$types = "ddiddidddididddsidddiddddd"
+			. str_repeat('i', count($userIDs))
 			. str_repeat('i', count($nominatorIDs))
 			. str_repeat('i', count($creatorIDs))
 			. "iid"
-			. str_repeat('i', count($userIDs))
-			. "ii" . "dii" . "i";
+			. "ii"
+			. "ii";
 
 		$params = array_merge(
-			[$bayesSum, $settings["bayesN"]],
-			[$bayesSum, $settings["bayesN"]],
-			[$weights["avgScore"]],
-			[$settings["bayesMean"], $settings["liftShrink"], $weights["cohortLift"]],
-			[count($userIDs), $settings["coverageCurve"], $coverageWeight],
-			[$weights["descriptorScore"]],
-			[$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"]],
-			[$weights["sharedNominator"]],
-			[$weights["sharedMapper"]],
-			[$settings["corrShrink"], $weights["correlation"]],
-			[$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]],
-			$nominatorIDs, $creatorIDs,
-			[$seed["BeatmapID"], $settings["minCoRaters"], $settings["minCorrelation"]],
+			$selectParams,
 			$userIDs,
-			[$setId, $seed["Mode"], $settings["minAvgScore"], $minScoreCount, $maxScoreCount, $candidateLimit]
+			$nominatorIDs,
+			$creatorIDs,
+			[$seed["BeatmapID"], $settings["minCoRaters"], $settings["minCorrelation"]],
+			[$setId, $seed["Mode"], $maxScoreCount, $candidateLimit]
 		);
 
 		$stmt->bind_param($types, ...$params);
