@@ -221,8 +221,7 @@
             <div class="math-line">
                 <strong>Base Variables (Cohort variables degrade to 0 if n_c < <span class="var-s f_s_minRaters" title="Setting: minRaters"></span>):</strong><br>
                 L (Cohort Lift) = (<span class="var-d" title="Data: Avg Cohort Score">CohortAvg</span> - <span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span>) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_liftShrink" title="Setting: liftShrink"></span>))<br>
-                C<sub>base</sub> (Coverage) = (<span class="var-d" title="Data: ScoreCount">n_c</span> / <span class="var-d" title="Data: Total Seed Raters">N</span>)<sup><span class="var-s f_s_coverageCurve" title="Setting: coverageCurve"></span></sup><br>
-                W<sub>cov</sub> (Cov Weight) = max(0, 1 - (<span class="var-d" title="Data: Total Seed Raters">N</span> / <span class="var-s f_s_coverageFade" title="Setting: coverageFade"></span>))<br>
+                C (Cohort Coverage) = max(0, 1 - (<span class="var-d" title="Data: Total Seed Raters">N</span> / <span class="var-s f_s_coverageFade" title="Setting: coverageFade"></span>)) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / <span class="var-d" title="Data: Total Seed Raters">N</span>)<sup><span class="var-s f_s_coverageCurve" title="Setting: coverageCurve"></span></sup><br>
                 T (Time Prox.) = max(0, 1 - (|<span class="var-d" title="Data: Seed Rank Month">SeedMo</span> - <span class="var-d" title="Data: Cand Rank Month">CandMo</span>| / <span class="var-s f_s_proximityMonths" title="Setting: proximityMonths"></span>))<br>
                 Corr (Shrunk R) = <span class="var-d" title="Data: Pearson R">R</span> &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_corrShrink" title="Setting: corrShrink"></span>))<br>
                 P (SR Prox.) = max(0, 1 - (|<span class="var-d" title="Data: Seed SR">SeedSR</span> - <span class="var-d" title="Data: Cand SR">CandSR</span>| / (<span class="var-d" title="Data: Seed SR">SeedSR</span> &times; <span class="var-s f_s_srWindow" title="Setting: srWindow"></span>)))
@@ -233,7 +232,7 @@
                 S<sub>total</sub> = 
                 (<span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span> &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
                 (L &times; <span class="var-w f_w_cohortLift" title="Weight: cohortLift"></span>) + 
-                (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C<sub>base</sub> &times; W<sub>cov</sub>) + <br>
+                (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C) + <br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Descriptor Match Score">D</span> &times; <span class="var-w f_w_descriptorScore" title="Weight: descriptorScore"></span>) + 
                 (T &times; <span class="var-w f_w_monthProximity" title="Weight: monthProximity"></span>) + 
                 (<span class="var-d" title="Data: Shared Nominators">SharedNoms</span> &times; <span class="var-w f_w_sharedNominator" title="Weight: sharedNominator"></span>) + <br>
