@@ -1,0 +1,358 @@
+{
+	"2": {
+		"weight": 1.0,
+		"nullifiers": [
+			49
+		]
+	},
+	"3": {
+		"weight": 1.0,
+		"nullifiers": [
+			4,
+			57,
+			63
+		]
+	},
+	"4": {
+		"weight": 1.0,
+		"nullifiers": [
+			3,
+			58
+		]
+	},
+	"5": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"6": {
+		"weight": 1.0,
+		"nullifiers": [
+			7,
+			58
+		]
+	},
+	"7": {
+		"weight": 2.0,
+		"nullifiers": [
+			6
+		]
+	},
+	"8": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"9": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"11": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"12": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"13": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"14": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"15": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"16": {
+		"weight": 2.0,
+		"nullifiers": [
+			58
+		]
+	},
+	"17": {
+		"weight": 2.0,
+		"nullifiers": [
+			83
+		]
+	},
+	"18": {
+		"weight": 2.0,
+		"nullifiers": [
+			70
+		]
+	},
+	"19": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"20": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"21": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"22": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"23": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"24": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"25": {
+		"weight": 1.5,
+		"nullifiers": [26]
+	},
+	"26": {
+		"weight": 1.0,
+		"nullifiers": [25]
+	},
+	"27": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"28": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"29": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"30": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"31": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"32": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"33": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"34": {
+		"weight": 2.0,
+		"nullifiers": [
+			49
+		]
+	},
+	"35": {
+		"weight": 2.0,
+		"nullifiers": [
+			82
+		]
+	},
+	"36": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"37": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"38": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"39": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"40": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"41": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"42": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"43": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"49": {
+		"weight": 1.0,
+		"nullifiers": [
+			2,
+			34,
+			63
+		]
+	},
+	"50": {
+		"weight": 0.5,
+		"nullifiers": [
+			70
+		]
+	},
+	"52": {
+		"weight": 2.0,
+		"nullifiers": [
+			58
+		]
+	},
+	"53": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"55": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"56": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"57": {
+		"weight": 2.0,
+		"nullifiers": [
+			3,
+			58
+		]
+	},
+	"58": {
+		"weight": 2.0,
+		"nullifiers": [
+			4,
+			6,
+			16,
+			52,
+			57,
+			63
+		]
+	},
+	"59": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"60": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"61": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"62": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"63": {
+		"weight": 2.0,
+		"nullifiers": [
+			3,
+			49,
+			58,
+			83
+		]
+	},
+	"64": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"65": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"66": {
+		"weight": 1.0,
+		"nullifiers": [
+			70
+		]
+	},
+	"67": {
+		"weight": 1.0,
+		"nullifiers": [
+			70
+		]
+	},
+	"68": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"69": {
+		"weight": 1.0,
+		"nullifiers": [
+			70
+		]
+	},
+	"70": {
+		"weight": 1.0,
+		"nullifiers": [
+			66,
+			67,
+			69,
+			18,
+			50
+		]
+	},
+	"71": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"72": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"73": {
+		"weight": 1.0,
+		"nullifiers": []
+	},
+	"75": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"76": {
+		"weight": 0.5,
+		"nullifiers": []
+	},
+	"77": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"78": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"79": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"80": {
+		"weight": 2.0,
+		"nullifiers": []
+	},
+	"81": {
+		"weight": 0.0,
+		"nullifiers": []
+	},
+	"82": {
+		"weight": 1.0,
+		"nullifiers": [
+			35
+		]
+	},
+	"83": {
+		"weight": 2.0,
+		"nullifiers": [
+			17,
+			63
+		]
+	}
+}

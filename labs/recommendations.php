@@ -34,40 +34,38 @@
     }
 
     $weights = [
-        "avgScore" => 5,
-        "descriptorMatch" => 1,
-        "descriptorPrecision" => 1.5,
-        "monthProximity" => 6,
-        "sharedNominator" => 1,
-        "sharedMapper" => 4,
-        "cohortLift" => 8,
-        "cohortCoverage" => 16,
-        "correlation" => 0.25,
-        "srProximity" => 1,
+        "avgScore" => 5, // weighted avg rating from users who like the diff
+        "descriptorScore" => 1, // Overall multiplier for the descriptor scores provided in ../descriptors.json
+        "monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
+        "sharedNominator" => 1, // per nominator shared with the set
+        "sharedMapper" => 4, // per mapper shared with the diff
+        "cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
+        "cohortCoverage" => 16, // share of the fans vs everyone so big fanbases of the diff get no bump in this
+        "correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
+        "srProximity" => 1, // how close the diffs are in star rating
     ];
 
     $settings = [
-        "likedThreshold" => 3.5,
-        "proximityMonths" => 24,
-        "bayesMean" => 3.0,
-        "bayesN" => 2,
-        "minAvgScore" => 3,
-        "minScoreShare" => 0.06,
-        "maxScoreShare" => 0.5,
-        "maxScoreFloor" => 80,
-        "liftShrink" => 10,
-        "coverageFade" => 80,
-        "coverageCurve" => 2,
-        "corrShrink" => 10,
-        "minCoRaters" => 5,
-        "minCorrelation" => 0,
-        "srWindow" => 0.5,
+        "likedThreshold" => 3.5, // ratings at/above this count as "positive"
+        "proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
+        "bayesMean" => 3.0, // site-wide mean for bayesian avg
+        "bayesN" => 2, // n for bayesian avg
+        "minAvgScore" => 3, // similar diffs need at least this bayesian avg rating
+        "minScoreShare" => 0.06, // min fraction of fans
+        "maxScoreShare" => 0.5, // max fraction of fans
+        "maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
+        "liftShrink" => 10, // n = u need 50% of the cohortLift value
+        "coverageFade" => 80, // diminish the effect of cohort if the fanbase is n large
+        "coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
+        "corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
+        "minCoRaters" => 5, // diffs need at least this many users who rated BOTH maps
+        "minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively),
+        "srWindow" => 0.5, // SR diff via fraction, so 0.5 = 50% of the diff's SR as the limit
     ];
 
     $weightDescriptions = [
         "avgScore" => "weighted avg rating from users who like the diff",
-        "descriptorMatch" => "per descriptor shared with the diff",
-        "descriptorPrecision" => "similar to descriptorMatch but divided by the total descriptor count (aka map with 2/3 descriptors rated higher than map with 2/20 descriptors)",
+        "descriptorScore" => "Overall multiplier for the descriptor scores provided in ../assets/descriptors.json",
         "monthProximity" => "when ranked within settings.proximityMonths months of the seed",
         "sharedNominator" => "per nominator shared with the set",
         "sharedMapper" => "per mapper shared with the diff",
