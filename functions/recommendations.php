@@ -93,7 +93,7 @@
 			"coverageFade" => 80, // diminish the effect of cohort if the # of people rating is n large
 			"coverageCurve" => 2, // exponent setting so 90% of people rating is more than twice vs 45% fans
 			"corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
-			"minCoRaters" => 5, // diffs need at least this many users who rated BOTH maps
+			"minRaters" => 5, // diffs need at least this many users who rated BOTH maps
 			"minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively),
 			"srWindow" => 0.5, // SR diff via fraction, so 0.5 = 50% of the diff's SR as the limit
 		];
@@ -247,15 +247,18 @@
 		$creatorPlaceholders = implode(',', array_fill(0, count($creatorIDs), '?'));
 		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
 
-		// COALESCE for the case where there are 0 shared raters
-		$bayesAvg = "(COALESCE(AVG(r.Score), ?) * COUNT(DISTINCT r.RatingID) + ?) / (COUNT(DISTINCT r.RatingID) + ?)";
-		$cohortLift = "(COALESCE(AVG(r.Score), ?) - COALESCE(b.WeightedAvg, ?)) * (COUNT(DISTINCT r.RatingID) / (COUNT(DISTINCT r.RatingID) + ?))";
+		$minRaters = (int)$settings["minRaters"];
+		$cRaters = "IF(COUNT(DISTINCT r.RatingID) >= {$minRaters}, COUNT(DISTINCT r.RatingID), 0)";
+
+		// COALESCE for the case where the shared raters is below minRaters (or 0)
+		$bayesAvg = "(COALESCE(AVG(r.Score), ?) * {$cRaters} + ?) / ({$cRaters} + ?)";
+		$cohortLift = "(COALESCE(AVG(r.Score), ?) - COALESCE(b.WeightedAvg, ?)) * ({$cRaters} / ({$cRaters} + ?))";
 
 		// I hope I never have to write some bullshit like this ever again
 		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, $bayesAvg AS BayesAvg, (
 				$bayesAvg * ? +
 				$cohortLift * ? +
-				POW(COUNT(DISTINCT r.RatingID) / ?, ?) * ? +
+				POW({$cRaters} / ?, ?) * ? +
 				$descriptorScoreField * ? +
 				GREATEST(0, 1 - ABS(TIMESTAMPDIFF(MONTH, ?, b.Timestamp)) / ?) * ? +
 				COUNT(DISTINCT bn.NominatorID) * ? +
@@ -335,7 +338,7 @@
 			$userIDs,
 			$nominatorIDs,
 			$creatorIDs,
-			[$seed["BeatmapID"], $settings["minCoRaters"], $settings["minCorrelation"]],
+			[$seed["BeatmapID"], $settings["minRaters"], $settings["minCorrelation"]],
 			[$setId, $seed["Mode"], $maxScoreCount, $candidateLimit]
 		);
 
