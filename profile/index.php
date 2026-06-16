@@ -331,7 +331,7 @@
 <hr>
 <div style="margin-bottom: 1em;">
     <label>
-        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (under 50% of top map's ratings, min. 10 shown)</span>
+        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
     </label>
 </div>
 <div id="beatmaps">
@@ -359,7 +359,7 @@
                        INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
                        LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
                        WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
-                       ORDER BY b.`RatingCount` DESC");
+                       ORDER BY b.`ChartRank` IS NULL, b.`ChartRank` ASC, b.`RatingCount` DESC");
 
             $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
             $stmt->execute();
@@ -375,10 +375,11 @@
             $topMapIsGD = $set["CreatorID"] != $profileId;
             $topMapIsCollab = $topMap["NumCreators"] > 1;
             $topMapRatingCount = isset($topMap["RatingCount"]) ? $topMap["RatingCount"] : 0;
+            $topMapChartRank = isset($topMap["ChartRank"]) ? $topMap["ChartRank"] : "";
 
             $stmt->close();
             ?>
-            <div data-rating-count="<?php echo $topMapRatingCount; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
+            <div data-rating-count="<?php echo $topMapRatingCount; ?>" data-chart-rank="<?php echo $topMapChartRank; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
@@ -464,12 +465,21 @@
                 var maps = $('.profile-top-map').map(function() {
                     return {
                         el: this,
-                        count: parseInt($(this).attr('data-rating-count')) || 0
+                        count: parseInt($(this).attr('data-rating-count')) || 0,
+                        rank: parseInt($(this).attr('data-chart-rank')) || Infinity,
                     };
-                }).get().sort((a, b) => b.count - a.count);
+                }).get();
 
-                var threshold = maps.length ? maps[0].count * 0.5 : 0;
+                var maxCount = maps.length ? Math.max(...maps.map(m => m.count)) : 0;
+                var threshold = maxCount * 0.5;
                 $('.profile-top-map').hide();
+
+                maps.sort((a, b) => {
+                    if (a.rank !== b.rank) {
+                        return a.rank - b.rank; 
+                    }
+                    return b.count - a.count;
+                });
 
                 maps.forEach(function(map, index) {
                     if (index < 10 || map.count >= threshold) {
