@@ -47,8 +47,6 @@
 
     $settings = [
         "proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
-        "bayesMean" => 3.0, // site-wide mean for bayesian avg
-        "bayesN" => 2, // n for bayesian avg
         "maxScoreShare" => 0.9, // max fraction of fans
         "maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
         "liftShrink" => 10, // n = u need 50% of the cohortLift value
@@ -74,8 +72,6 @@
 
     $settingDescriptions = [
         "proximityMonths" => "abs(diff rank date - TARGET) <= window",
-        "bayesMean" => "site-wide mean for bayesian avg which is 3 currently, change at ur own risk",
-        "bayesN" => "n for bayesian avg",
         "maxScoreShare" => "max fraction of raters",
         "maxScoreFloor" => "avoid overfiltering cuz of the share settings",
         "liftShrink" => "n = u need 50% of the cohortLift value",
@@ -165,8 +161,6 @@
                 <?php
                 $settingMeta = [
                     "proximityMonths" => ["min" => 1,    "max" => 120, "step" => 1],
-                    "bayesMean"       => ["min" => 0,    "max" => 5,   "step" => 0.1],
-                    "bayesN"          => ["min" => 0,    "max" => 20,  "step" => 1],
                     "maxScoreShare"   => ["min" => 0,    "max" => 1,   "step" => 0.01],
                     "maxScoreFloor"   => ["min" => 0,    "max" => 500, "step" => 5],
                     "liftShrink"      => ["min" => 0,    "max" => 50,  "step" => 1],
@@ -226,7 +220,6 @@
             <hr style="border-color: #333;">
             <div class="math-line">
                 <strong>Base Variables (Cohort variables degrade to 0 if n_c < <span class="var-s f_s_minRaters" title="Setting: minRaters"></span>):</strong><br>
-                B (Local Bayes) = ((<span class="var-d" title="Data: Avg Cohort Score">CohortAvg</span> &times; <span class="var-d" title="Data: ScoreCount">n_c</span>) + (<span class="var-s f_s_bayesMean" title="Setting: bayesMean"></span> &times; <span class="var-s f_s_bayesN" title="Setting: bayesN"></span>)) / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_bayesN" title="Setting: bayesN"></span>)<br>
                 L (Cohort Lift) = (<span class="var-d" title="Data: Avg Cohort Score">CohortAvg</span> - <span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span>) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_liftShrink" title="Setting: liftShrink"></span>))<br>
                 C<sub>base</sub> (Coverage) = (<span class="var-d" title="Data: ScoreCount">n_c</span> / <span class="var-d" title="Data: Total Seed Raters">N</span>)<sup><span class="var-s f_s_coverageCurve" title="Setting: coverageCurve"></span></sup><br>
                 W<sub>cov</sub> (Cov Weight) = max(0, 1 - (<span class="var-d" title="Data: Total Seed Raters">N</span> / <span class="var-s f_s_coverageFade" title="Setting: coverageFade"></span>))<br>
@@ -238,7 +231,7 @@
             <div class="math-line">
                 <strong>Total Recommendation Score (S<sub>total</sub>):</strong><br>
                 S<sub>total</sub> = 
-                (B &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
+                (<span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span> &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
                 (L &times; <span class="var-w f_w_cohortLift" title="Weight: cohortLift"></span>) + 
                 (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C<sub>base</sub> &times; W<sub>cov</sub>) + <br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Descriptor Match Score">D</span> &times; <span class="var-w f_w_descriptorScore" title="Weight: descriptorScore"></span>) + 

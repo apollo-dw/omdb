@@ -85,8 +85,6 @@
 
 		$settings = [
 			"proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
-			"bayesMean" => 3.0, // site-wide mean for bayesian avg
-			"bayesN" => 2, // n for bayesian avg
 			"maxScoreShare" => 0.9, // max fraction of fans
 			"maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
 			"liftShrink" => 10, // n = u need 50% of the cohortLift value
@@ -251,12 +249,11 @@
 		$cRaters = "IF(COUNT(DISTINCT r.RatingID) >= {$minRaters}, COUNT(DISTINCT r.RatingID), 0)";
 
 		// COALESCE for the case where the shared raters is below minRaters (or 0)
-		$bayesAvg = "(COALESCE(AVG(r.Score), ?) * {$cRaters} + ?) / ({$cRaters} + ?)";
-		$cohortLift = "(COALESCE(AVG(r.Score), ?) - COALESCE(b.WeightedAvg, ?)) * ({$cRaters} / ({$cRaters} + ?))";
+		$cohortLift = "(COALESCE(AVG(r.Score), b.WeightedAvg) - COALESCE(b.WeightedAvg, 0)) * ({$cRaters} / ({$cRaters} + ?))";
 
 		// I hope I never have to write some bullshit like this ever again
-		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, $bayesAvg AS BayesAvg, (
-				$bayesAvg * ? +
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, COALESCE(b.WeightedAvg, 0) AS GlobalAvg, (
+				COALESCE(b.WeightedAvg, 0) * ? +
 				$cohortLift * ? +
 				POW({$cRaters} / ?, ?) * ? +
 				$descriptorScoreField * ? +
@@ -310,12 +307,9 @@
 
 		$coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
 
-		$bayesSum = $settings["bayesMean"] * $settings["bayesN"];
-
 		$selectParams = [
-			$settings["bayesMean"], $bayesSum, $settings["bayesN"],
-			$settings["bayesMean"], $bayesSum, $settings["bayesN"], $weights["avgScore"],
-			$settings["bayesMean"], $settings["bayesMean"], $settings["liftShrink"], $weights["cohortLift"],
+			$weights["avgScore"],
+			$settings["liftShrink"], $weights["cohortLift"],
 			max(1, count($userIDs)), $settings["coverageCurve"], $coverageWeight,
 			$weights["descriptorScore"],
 			$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"],
@@ -325,7 +319,7 @@
 			$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
 		];
 
-		$types = "ddiddidddididddsidddiddddd"
+		$types = "dididddsidddiddddd"
 			. str_repeat('i', count($userIDs))
 			. str_repeat('i', count($nominatorIDs))
 			. str_repeat('i', count($creatorIDs))
@@ -394,3 +388,4 @@
 			<?php
 		}
 	}
+?>
