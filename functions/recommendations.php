@@ -3,11 +3,77 @@
 	// Tune via weights + settings instead of editing the SQL
 	// $seed is the diff the recs are based on
 	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = [], $useCaching = true) {
+		// Descriptor data setup from JSON used by GetSimilarBeatmaps
+		static $descriptorData = null;
+		static $nullifiedBy = null;
+
+		if ($descriptorData === null || $nullifiedBy === null) {
+			$descriptorJSON = __DIR__ . "/../assets/descriptors.json";
+			$descriptorData = file_exists($descriptorJSON) ? json_decode(file_get_contents($descriptorJSON), true) : [];
+
+			$stmt = $conn->prepare("SELECT DescriptorID, ParentID FROM descriptors");
+			$stmt->execute();
+			$descResult = $stmt->get_result();
+
+			$allDescIds = [];
+			$childrenMap = [];
+			while ($row = $descResult->fetch_assoc()) {
+				$id = (int)$row['DescriptorID'];
+				$pid = $row['ParentID'] === null ? null : (int)$row['ParentID'];
+				$allDescIds[] = $id;
+				if ($pid !== null) {
+					$childrenMap[$pid][] = $id;
+				}
+			}
+			$stmt->close();
+
+			$descendantsMap = [];
+			foreach ($allDescIds as $id) {
+				$stack = $childrenMap[$id] ?? [];
+				$descendants = [];
+				while (!empty($stack)) {
+					$curr = array_pop($stack);
+					$descendants[] = $curr;
+					if (isset($childrenMap[$curr])) {
+						foreach ($childrenMap[$curr] as $c) {
+							$stack[] = $c;
+						}
+					}
+				}
+				$descendantsMap[$id] = $descendants;
+			}
+
+			$nullifiedBy = [];
+			foreach ($allDescIds as $id) {
+				$nullifiedBy[$id] = [];
+			}
+
+			foreach ($descriptorData as $jsonId => $data) {
+				$a = (int)$jsonId;
+				if (!in_array($a, $allDescIds)) continue;
+
+				$nullifiers = $data['nullifiers'] ?? [];
+				if (empty($nullifiers)) continue;
+
+				$vulnerableNodes = array_merge([$a], $descendantsMap[$a] ?? []);
+
+				foreach ($nullifiers as $b) {
+					$b = (int)$b;
+					$nullifyingNodes = array_merge([$b], $descendantsMap[$b] ?? []);
+
+					foreach ($vulnerableNodes as $v) {
+						foreach ($nullifyingNodes as $n) {
+							$nullifiedBy[$v][] = $n;
+						}
+					}
+				}
+			}
+		}
+
 		// tgese are just multiplier coeffs rn
 		$weights = [
 			"avgScore" => 5, // weighted avg rating from users who like the diff
-			"descriptorMatch" => 1, // per descriptor shared with the diff
-			"descriptorPrecision" => 1.5, // similar to descriptorMatch but divided by the total descriptor count (aka map with 2/3 descriptors rated higher than map with 2/20 descriptors)
+			"descriptorScore" => 1, // Overall multiplier for the descriptor scores provided in ../descriptors.json
 			"monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
 			"sharedNominator" => 1, // per nominator shared with the set
 			"sharedMapper" => 4, // per mapper shared with the diff
@@ -94,19 +160,61 @@
 		if (empty($userIDs))
 			return [];
 
-		$stmt = $conn->prepare("
-			SELECT DescriptorID
-			FROM beatmap_descriptors
-			WHERE BeatmapID = ?
-		");
+		$stmt = $conn->prepare("SELECT DescriptorID FROM beatmap_descriptors WHERE BeatmapID = ?");
 		$stmt->bind_param("i", $seed["BeatmapID"]);
 		$stmt->execute();
 		$result = $stmt->get_result();
 
-		$descriptorIDs = [];
+		$seedDescriptorIDs = [];
 		while ($row = $result->fetch_assoc())
-			$descriptorIDs[] = $row["DescriptorID"];
+			$seedDescriptorIDs[] = (int)$row["DescriptorID"];
 		$stmt->close();
+
+		$seedEffective = [];
+		$nullifyListMap = [];
+		foreach ($seedDescriptorIDs as $s) {
+			$seedEffective[$s] = $descriptorData[$s]['weight'] ?? 1.0; // Default to weight 1.0 if not listed in the JSON file
+			$sNullifiers = $nullifiedBy[$s] ?? [];
+			foreach ($sNullifiers as $n) {
+				$nullifyListMap[$n] = true;
+			}
+		}
+
+		$nullifyList = array_keys($nullifyListMap);
+		$relevantTargetDescIDs = array_unique(array_merge(array_keys($seedEffective), $nullifyList));
+
+		// CANCER
+		// Method: If target map has a nullifying descriptor, then descriptorScore = 0
+		// Else sum the weights of the similar descriptors
+		if (empty($relevantTargetDescIDs)) {
+			$bdJoin = "";
+			$descriptorScoreField = "0";
+		} else {
+			$relevantDescList = implode(',', $relevantTargetDescIDs);
+
+			$scoreExprs = [];
+			foreach ($seedEffective as $s => $weight) {
+				$w = floatval($weight);
+				$scoreExprs[] = "CASE WHEN MAX(CASE WHEN DescriptorID = $s THEN 1 ELSE 0 END) = 1 THEN $w ELSE 0 END";
+			}
+			$sumSql = implode(' + ', $scoreExprs);
+
+			if (!empty($nullifyList)) {
+				$nullifyListStr = implode(',', $nullifyList);
+				$descriptorScoreSql = "CASE WHEN MAX(CASE WHEN DescriptorID IN ($nullifyListStr) THEN 1 ELSE 0 END) = 1 THEN 0 ELSE ($sumSql) END";
+			} else {
+				$descriptorScoreSql = $sumSql;
+			}
+
+			$bdJoin = "LEFT JOIN (
+				SELECT BeatmapID, ($descriptorScoreSql) AS DescriptorScore
+				FROM beatmap_descriptors
+				WHERE DescriptorID IN ($relevantDescList)
+				GROUP BY BeatmapID
+			) bd ON bd.BeatmapID = r.BeatmapID";
+			
+			$descriptorScoreField = "COALESCE(bd.DescriptorScore, 0)";
+		}
 
 		$stmt = $conn->prepare("SELECT DISTINCT NominatorID FROM beatmapset_nominators WHERE SetID = ? AND Mode = ? AND NominatorID IS NOT NULL");
 		$stmt->bind_param("ii", $setId, $seed["Mode"]);
@@ -129,14 +237,11 @@
 		$stmt->close();
 
 		// empty -> IN (NULL) to keep query valid
-		if (empty($descriptorIDs))
-			$descriptorIDs = [null];
 		if (empty($nominatorIDs))
 			$nominatorIDs = [null];
 		if (empty($creatorIDs))
 			$creatorIDs = [null];
 
-		$descriptorPlaceholders = implode(',', array_fill(0, count($descriptorIDs), '?'));
 		$nominatorPlaceholders = implode(',', array_fill(0, count($nominatorIDs), '?'));
 		$creatorPlaceholders = implode(',', array_fill(0, count($creatorIDs), '?'));
 		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
@@ -149,8 +254,7 @@
 				$bayesAvg * ? +
 				$cohortLift * ? +
 				POW(COUNT(DISTINCT r.RatingID) / ?, ?) * ? +
-				COUNT(DISTINCT bd.DescriptorID) * ? +
-				COUNT(DISTINCT bd.DescriptorID) / GREATEST(MAX(td.TotalDescriptors), 1) * ? +
+				$descriptorScoreField * ? +
 				GREATEST(0, 1 - ABS(TIMESTAMPDIFF(MONTH, ?, b.Timestamp)) / ?) * ? +
 				COUNT(DISTINCT bn.NominatorID) * ? +
 				COUNT(DISTINCT bc.CreatorID) * ? +
@@ -160,14 +264,7 @@
 			FROM ratings r
 			INNER JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
 			INNER JOIN beatmapsets s ON s.SetID = b.SetID
-			LEFT JOIN beatmap_descriptors bd
-				ON bd.BeatmapID = r.BeatmapID
-				AND bd.DescriptorID IN ($descriptorPlaceholders)
-			LEFT JOIN (
-				SELECT BeatmapID, COUNT(*) AS TotalDescriptors
-				FROM beatmap_descriptors
-				GROUP BY BeatmapID
-			) td ON td.BeatmapID = r.BeatmapID
+			$bdJoin
 			LEFT JOIN beatmapset_nominators bn ON bn.SetID = b.SetID AND bn.Mode = b.Mode AND bn.NominatorID IN ($nominatorPlaceholders)
 			LEFT JOIN beatmap_creators bc ON bc.BeatmapID = r.BeatmapID AND bc.CreatorID IN ($creatorPlaceholders)
 			LEFT JOIN (
@@ -205,8 +302,7 @@
 
 		$bayesSum = $settings["bayesMean"] * $settings["bayesN"];
 
-		$types = "dd" . "dd" . "d" . "ddd" . "idd" . "dd" . "sdd" . "dd" . "dd" . "dddd"
-			. str_repeat('i', count($descriptorIDs))
+		$types = "dd" . "dd" . "d" . "ddd" . "idd" . "d" . "sdd" . "dd" . "dd" . "dddd"
 			. str_repeat('i', count($nominatorIDs))
 			. str_repeat('i', count($creatorIDs))
 			. "iid"
@@ -219,14 +315,13 @@
 			[$weights["avgScore"]],
 			[$settings["bayesMean"], $settings["liftShrink"], $weights["cohortLift"]],
 			[count($userIDs), $settings["coverageCurve"], $coverageWeight],
-			[$weights["descriptorMatch"]],
-			[$weights["descriptorPrecision"]],
+			[$weights["descriptorScore"]],
 			[$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"]],
 			[$weights["sharedNominator"]],
 			[$weights["sharedMapper"]],
 			[$settings["corrShrink"], $weights["correlation"]],
 			[$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]],
-			$descriptorIDs, $nominatorIDs, $creatorIDs,
+			$nominatorIDs, $creatorIDs,
 			[$seed["BeatmapID"], $settings["minCoRaters"], $settings["minCorrelation"]],
 			$userIDs,
 			[$setId, $seed["Mode"], $settings["minAvgScore"], $minScoreCount, $maxScoreCount, $candidateLimit]
