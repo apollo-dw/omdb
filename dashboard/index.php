@@ -147,6 +147,8 @@
             olElement.attr("rating", score.rating);
 
             let userMapRating = score.rating;
+
+            olElement.append($("<li>").addClass("icon-remove").css("opacity", "0"));
             for (let i = 1; i <= 5; i++) {
                 const liElement = $("<li>").addClass("star").addClass(function () {
                     if (userMapRating == i - 0.5) {
