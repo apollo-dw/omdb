@@ -115,7 +115,7 @@ GROUP BY
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  htmlspecialchars(GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  safe_htmlspecialchars(GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
@@ -182,7 +182,7 @@ GROUP BY
                     echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
                     $nominatorLinks = array();
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
-                        $escapedNominatorName = htmlspecialchars($nominatorName, ENT_QUOTES);
+                        $escapedNominatorName = safe_htmlspecialchars($nominatorName, ENT_QUOTES);
                         $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'></a>
                                      <a href='/profile/$nominatorID'>$escapedNominatorName</a>";
                     }
@@ -301,7 +301,7 @@ while($row = $result->fetch_assoc()) {
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
-                <?php echo htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
+                <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
@@ -414,7 +414,7 @@ while($row = $result->fetch_assoc()) {
 				$selectStmt->execute();
 				$tags_result = $selectStmt->get_result();
 				$tags_row = $tags_result->fetch_assoc();
-				$allTags = htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
+				$allTags = safe_htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
 				$selectStmt->close();
 				?>
 				<span class="identifier" style="display: inline-block;">
@@ -532,12 +532,12 @@ while($row = $result->fetch_assoc()) {
         $stmt->close();
 
         if (count($diffs) === 1) {
-            echo "<b>[" . htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
+            echo "<b>[" . safe_htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
         } else {
             echo '<select id="similarMapsDiffSelect">';
             foreach ($diffs as $diffRow) {
                 $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
-                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
+                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . safe_htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
             }
             echo '</select>';
         }
@@ -587,7 +587,7 @@ while($row = $result->fetch_assoc()) {
             <ul>
 			<?php
 				foreach ($credits as $credit) {
-					$escapedCreditName = htmlspecialchars($credit['Username'], ENT_QUOTES);
+					$escapedCreditName = safe_htmlspecialchars($credit['Username'], ENT_QUOTES);
 					echo "<li>
 					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
@@ -632,8 +632,8 @@ while($row = $result->fetch_assoc()) {
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
                         </div>
                         <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
                         </div>
                     </div>
                     <?php
@@ -662,10 +662,10 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
@@ -721,7 +721,7 @@ while($row = $result->fetch_assoc()) {
         
 		<?php if ($loggedIn) { ?>
             <form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
-                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
+                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
                 <input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
             </form>
         <?php } ?>
@@ -772,7 +772,7 @@ while($row = $result->fetch_assoc()) {
                     foreach ($heartedUserIds as $uid) {
                         $heartedUsernames[] =
                             "<span style='white-space: nowrap;'>" .
-                            htmlspecialchars(GetUserNameFromId($uid, $conn), ENT_QUOTES) .
+                            safe_htmlspecialchars(GetUserNameFromId($uid, $conn), ENT_QUOTES) .
                             "</span>";
                     }
 
@@ -781,10 +781,10 @@ while($row = $result->fetch_assoc()) {
 					?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php

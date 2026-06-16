@@ -30,7 +30,7 @@
 
     $amntOfPages = floor($count / $limit) + 1;
 ?>
-<center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s reviews</h1></center>
+<center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s reviews</h1></center>
 
 <hr>
 
@@ -81,10 +81,10 @@
 				?>
 				<div class="flex-container flex-child commentHeader">
 					<div class="flex-child" style="height:24px;width:24px;">
-						<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+						<a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
 					</div>
 					<div class="flex-child">
-						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]}", ENT_QUOTES); ?></a>
+						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]}", ENT_QUOTES); ?></a>
 					</div>
 					<div class="flex-child" style="margin-left:auto;">
 						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>

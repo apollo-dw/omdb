@@ -53,12 +53,12 @@
                 $name = GetUserNameFromId($row["UserID"], $conn);
                 $mapsetLink = "../mapset/edit/?id={$setId}";
                 echo "<tr class='alternating-bg' onclick=\"window.open('{$mapsetLink}', '_blank');\" style=\"cursor: pointer;\">";
-                echo "<td>" . htmlspecialchars($name, ENT_QUOTES) . "</td>";
-                echo "<td>" . htmlspecialchars($title, ENT_QUOTES) . "</td>";
+                echo "<td>" . safe_htmlspecialchars($name, ENT_QUOTES) . "</td>";
+                echo "<td>" . safe_htmlspecialchars($title, ENT_QUOTES) . "</td>";
                 if ($isEditingSet) {
                     echo "<td>Mapset (general edit)</td>";
                 } else {
-                    echo "<td>" . htmlspecialchars($row["DifficultyName"], ENT_QUOTES) . "</td>";
+                    echo "<td>" . safe_htmlspecialchars($row["DifficultyName"], ENT_QUOTES) . "</td>";
                 }
                 echo "<td>{$row["Timestamp"]}</td>";
                 echo "</tr>";

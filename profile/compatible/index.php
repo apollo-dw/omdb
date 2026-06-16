@@ -36,15 +36,15 @@
     $stmt->close();
 ?>
 
-<center><h1><a href="/profile/<?php echo htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s most similar users</h1></center>
+<center><h1><a href="/profile/<?php echo safe_htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s most similar users</h1></center>
 
 <div class="flex-row-container" style="width:50%;margin:auto;">
     <?php
     while ($row = $similarUsers->fetch_assoc()) {
     ?>
         <div class="flex-container alternating-bg" style="align-items: center;">
-            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:4em;width:4em;padding:1em;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
-            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:4em;width:4em;padding:1em;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
             <span style="margin-left:auto;padding:1em;"><?php echo $row["correlation"]; ?></span>
         </div>
     <?php

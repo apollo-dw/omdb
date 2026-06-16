@@ -8,7 +8,7 @@
         die("You need to be logged in to view this page.");
     }
 
-    ?>
+?>
 
 <h1>Settings</h1>
 <hr>
@@ -31,17 +31,17 @@
                 <label>Custom rating names:</label>
             </td>
             <td>
-                <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom50Rating"], ENT_QUOTES); ?>"/> 5.0<br>
-                <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom45Rating"], ENT_QUOTES); ?>"/> 4.5<br>
-                <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom40Rating"], ENT_QUOTES); ?>"/> 4.0<br>
-                <input autocomplete="off" id="35Name" placeholder="3.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom35Rating"], ENT_QUOTES); ?>"/> 3.5<br>
-                <input autocomplete="off" id="30Name" placeholder="3.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom30Rating"], ENT_QUOTES); ?>"/> 3.0<br>
-                <input autocomplete="off" id="25Name" placeholder="2.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom25Rating"], ENT_QUOTES); ?>"/> 2.5<br>
-                <input autocomplete="off" id="20Name" placeholder="2.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom20Rating"], ENT_QUOTES); ?>"/> 2.0<br>
-                <input autocomplete="off" id="15Name" placeholder="1.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom15Rating"], ENT_QUOTES); ?>"/> 1.5<br>
-                <input autocomplete="off" id="10Name" placeholder="1.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom10Rating"], ENT_QUOTES); ?>"/> 1.0<br>
-                <input autocomplete="off" id="05Name" placeholder="0.5" maxlength="40" value="<?php echo htmlspecialchars($user["Custom05Rating"], ENT_QUOTES); ?>"/> 0.5<br>
-                <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo htmlspecialchars($user["Custom00Rating"], ENT_QUOTES); ?>"/> 0.0<br>
+                <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom50Rating"], ENT_QUOTES); ?>"/> 5.0<br>
+                <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom45Rating"], ENT_QUOTES); ?>"/> 4.5<br>
+                <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom40Rating"], ENT_QUOTES); ?>"/> 4.0<br>
+                <input autocomplete="off" id="35Name" placeholder="3.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom35Rating"], ENT_QUOTES); ?>"/> 3.5<br>
+                <input autocomplete="off" id="30Name" placeholder="3.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom30Rating"], ENT_QUOTES); ?>"/> 3.0<br>
+                <input autocomplete="off" id="25Name" placeholder="2.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom25Rating"], ENT_QUOTES); ?>"/> 2.5<br>
+                <input autocomplete="off" id="20Name" placeholder="2.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom20Rating"], ENT_QUOTES); ?>"/> 2.0<br>
+                <input autocomplete="off" id="15Name" placeholder="1.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom15Rating"], ENT_QUOTES); ?>"/> 1.5<br>
+                <input autocomplete="off" id="10Name" placeholder="1.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom10Rating"], ENT_QUOTES); ?>"/> 1.0<br>
+                <input autocomplete="off" id="05Name" placeholder="0.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom05Rating"], ENT_QUOTES); ?>"/> 0.5<br>
+                <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom00Rating"], ENT_QUOTES); ?>"/> 0.0<br>
             </td>
         </tr>
 		<tr>
@@ -49,7 +49,7 @@
                 <label>Description:</label><br>
             </td>
             <td>
-				<textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo htmlspecialchars($user["CustomDescription"], ENT_QUOTES); ?></textarea> <br><br>
+				<textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo safe_htmlspecialchars($user["CustomDescription"], ENT_QUOTES); ?></textarea> <br><br>
 				<button type="button" onclick="insertTag('img')" class="small-button">img</button>
 				<button type="button" onclick="insertTag('a')" class="small-button">link</button>
 				<button type="button" onclick="insertTag('code')" class="small-button">code</button>
@@ -105,7 +105,7 @@
     $result = $stmt->get_result();
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
-			$name = htmlspecialchars($row["Name"], ENT_QUOTES, 'UTF-8');
+			$name = safe_htmlspecialchars($row["Name"], ENT_QUOTES, 'UTF-8');
             echo "<details><summary>{$name} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
         }
     }
@@ -155,9 +155,9 @@
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
             $isCurrentSession = ($row["SessionToken"] === $sessionToken);
-            $deviceInfo = htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
-            $ip = htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
-            $lastAccessed = htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
+            $deviceInfo = safe_htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
+            $ip = safe_htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
+            $lastAccessed = safe_htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
             
             echo "<tr>";
             echo "<td style='padding: 5px 0;'>{$deviceInfo}<br>{$ip}" . ($isCurrentSession ? "<br><strong>(Current)</strong>" : "") . "</td>";

@@ -74,7 +74,7 @@
 </style>
 
 <div class="header">
-    <h1 style="margin:0;"><?php echo htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h1>
+    <h1 style="margin:0;"><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h1>
     <span class="subText"><?php echo $proposal["Status"]; ?></span>
 </div>
 
@@ -85,21 +85,21 @@
         <table>
             <tr>
                 <td class="right">Name</td>
-                <td><?php echo htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></td>
+                <td><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></td>
             </tr>
             <tr>
                 <td class="right">Description</td>
-                <td><?php echo htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></td>
+                <td><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></td>
             </tr>
             <?php if ($parentDescriptor !== null) { ?>
             <tr>
                 <td class="right">Parent descriptor</td>
-                <td><?php echo htmlspecialchars($parentDescriptor["Name"], ENT_QUOTES); ?></td>
+                <td><?php echo safe_htmlspecialchars($parentDescriptor["Name"], ENT_QUOTES); ?></td>
             </tr>
             <?php } ?>
             <tr>
                 <td class="right">Proposer</td>
-                <td><a href="/profile/<?php echo $proposal["ProposerID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($proposal["ProposerID"], $conn), ENT_QUOTES); ?></a></td>
+                <td><a href="/profile/<?php echo $proposal["ProposerID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($proposal["ProposerID"], $conn), ENT_QUOTES); ?></a></td>
             </tr>
             <tr>
                 <td class="right">Type</td>
@@ -132,7 +132,7 @@
                         Status
                     </td>
                     <td>
-                        <?php echo htmlspecialchars("{$proposal["Status"]} by {$editorName}", ENT_QUOTES); ?>
+                        <?php echo safe_htmlspecialchars("{$proposal["Status"]} by {$editorName}", ENT_QUOTES); ?>
                     </td>
                 </tr>
             <?php } ?>
@@ -190,11 +190,11 @@
                 <?php } ?>
 
                 <hr>
-                <b class="upvotes">yes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo htmlspecialchars($voteRow['upvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
+                <b class="upvotes">yes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo safe_htmlspecialchars($voteRow['upvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
                 <hr>
-                <b class="downvotes">no (<?php echo $row["downvotes"]?>): </b> <span class="user"><?php echo htmlspecialchars($voteRow['downvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
+                <b class="downvotes">no (<?php echo $row["downvotes"]?>): </b> <span class="user"><?php echo safe_htmlspecialchars($voteRow['downvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
                 <hr>
-                <b class="downvotes">hold (<?php echo $row["holds"]?>): </b> <span class="user"><?php echo htmlspecialchars($voteRow['holdUsernames'] ?? '', ENT_QUOTES); ?></span>
+                <b class="downvotes">hold (<?php echo $row["holds"]?>): </b> <span class="user"><?php echo safe_htmlspecialchars($voteRow['holdUsernames'] ?? '', ENT_QUOTES); ?></span>
             </div>
         </div>
     </div>
@@ -246,10 +246,10 @@
                 ?>
                 <div class="flex-container flex-child commentHeader">
                     <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                     </div>
                     <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                        <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                        <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         <?php if (isset($row["Vote"])) {
                             $vote = $row["Vote"];
                             $colors = [

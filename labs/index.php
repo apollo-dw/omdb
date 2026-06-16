@@ -26,8 +26,8 @@
 <div class="flex-row-container" style="gap:0.75em;max-width:60em;">
     <?php foreach ($labsPages as $labPage) { ?>
         <div class="flex-child alternating-bg" style="padding:1em;box-sizing:border-box;">
-            <h3 style="margin-top:0;margin-bottom:0.25em;"><a href="<?php echo htmlspecialchars($labPage['url'], ENT_QUOTES); ?>"><?php echo htmlspecialchars($labPage['title'], ENT_QUOTES); ?></a></h3>
-            <div class="subText"><?php echo htmlspecialchars($labPage['description'], ENT_QUOTES); ?></div>
+            <h3 style="margin-top:0;margin-bottom:0.25em;"><a href="<?php echo safe_htmlspecialchars($labPage['url'], ENT_QUOTES); ?>"><?php echo safe_htmlspecialchars($labPage['title'], ENT_QUOTES); ?></a></h3>
+            <div class="subText"><?php echo safe_htmlspecialchars($labPage['description'], ENT_QUOTES); ?></div>
         </div>
     <?php } ?>
 </div>

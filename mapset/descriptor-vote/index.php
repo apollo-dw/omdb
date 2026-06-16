@@ -17,8 +17,8 @@ $beatmap = $stmt->get_result()->fetch_assoc();
 if (is_null($beatmap))
     die("Beatmap not found");
 
-$title = htmlspecialchars($beatmap['Title'], ENT_QUOTES);
-$difficultyName = htmlspecialchars($beatmap['DifficultyName'], ENT_QUOTES);
+$title = safe_htmlspecialchars($beatmap['Title'], ENT_QUOTES);
+$difficultyName = safe_htmlspecialchars($beatmap['DifficultyName'], ENT_QUOTES);
 
 
 function generateTreeHTML($tree) {
@@ -29,7 +29,7 @@ function generateTreeHTML($tree) {
 
         $class = $isUsable ? '' : 'class="unusable"';
 
-        $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . htmlspecialchars($node['name'], ENT_QUOTES) . '</span>';
+        $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . safe_htmlspecialchars($node['name'], ENT_QUOTES) . '</span>';
         if (isset($node['children'])) {
             $html .= generateTreeHTML($node['children']);
         }
@@ -188,8 +188,8 @@ while ($voteRow = $voteResult->fetch_assoc())
 
                 ?>
                 <div class="descriptor-box" data-descriptor-id="<?php echo $row["DescriptorID"]; ?>">
-                    <h2><?php echo htmlspecialchars($row["Name"], ENT_QUOTES)?></h2>
-                    <span class="subText"><?php echo htmlspecialchars($row["ShortDescription"], ENT_QUOTES)?></span> <br>
+                    <h2><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES)?></h2>
+                    <span class="subText"><?php echo safe_htmlspecialchars($row["ShortDescription"], ENT_QUOTES)?></span> <br>
                     <?php if ($loggedIn) { ?>
                         <div class="actions">
                             <i class="icon-thumbs-up<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 1) ? ' voted' : ''; ?>"></i>
@@ -197,9 +197,9 @@ while ($voteRow = $voteResult->fetch_assoc())
                         </div>
                     <?php } ?>
                     <hr>
-                    <b class="upvotes">upvotes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo htmlspecialchars($voteRow['upvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
+                    <b class="upvotes">upvotes (<?php echo $row["upvotes"]?>): </b> <span class="user"><?php echo safe_htmlspecialchars($voteRow['upvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
                     <hr>
-                    <b class="downvotes">downvotes (<?php echo $row["downvotes"]?>): </b> <span class="user"><?php echo htmlspecialchars($voteRow['downvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
+                    <b class="downvotes">downvotes (<?php echo $row["downvotes"]?>): </b> <span class="user"><?php echo safe_htmlspecialchars($voteRow['downvoteUsernames'] ?? '', ENT_QUOTES); ?></span>
                 </div>
             <?php } ?>
         </div>

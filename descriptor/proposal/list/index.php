@@ -44,8 +44,8 @@
         <div class="proposal-box">
             <div class="proposal-content">
                 <a href="../?id=<?php echo $proposal["ProposalID"]; ?>">
-                    <h2 style="margin-bottom: 0em;"><?php echo htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h2>
-                    <span class="subText"><?php echo htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></span>
+                    <h2 style="margin-bottom: 0em;"><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h2>
+                    <span class="subText"><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></span>
                 </a>
             </div>
         </div>

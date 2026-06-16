@@ -59,7 +59,7 @@
                     <label>Descriptor name:</label><br>
                 </td>
                 <td style="width:80%;">
-                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" maxlength="40" value="<?php echo htmlspecialchars($proposal["Name"], ENT_QUOTES); ?>" required/>
+                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" maxlength="40" value="<?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?>" required/>
                 </td>
             </tr>
             <tr>
@@ -67,7 +67,7 @@
                     <label>Description:</label>
                 </td>
                 <td>
-                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></textarea>
+                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></textarea>
                 </td>
             </tr>
             <tr>

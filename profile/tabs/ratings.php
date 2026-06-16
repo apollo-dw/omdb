@@ -77,7 +77,7 @@
                 <td style="width:20%;">
                     <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"><?php echo $formattedRating; ?><br>
                         <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != ""){ ?>
-                            <span class="subText"><?php echo htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"], ENT_QUOTES); ?></span>
+                            <span class="subText"><?php echo safe_htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"], ENT_QUOTES); ?></span>
                         <?php } ?>
                     </a>
                 </td>

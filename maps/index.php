@@ -35,8 +35,8 @@
     $amntOfPages = floor($count / $limit) + 1;    $prevPage = max($page - 1, 1);
     $nextPage = min($page + 1, $amntOfPages);
 	
-	$year = htmlspecialchars($year, ENT_QUOTES, 'UTF-8');
-	$month = htmlspecialchars($month, ENT_QUOTES, 'UTF-8');
+	$year = safe_htmlspecialchars($year, ENT_QUOTES, 'UTF-8');
+	$month = safe_htmlspecialchars($month, ENT_QUOTES, 'UTF-8');
 ?>
 
 <h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . $year; ?></h1>
@@ -116,7 +116,7 @@
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
 	</div>
 	<div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo htmlspecialchars("{$row["Artist"]} - {$row["Title"]}", ENT_QUOTES); ?></a> by <a href='/profile/<?php echo $row["SetCreatorID"]; ?>'><?php echo htmlspecialchars($mapperName, ENT_QUOTES); ?></a> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a><br>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Artist"]} - {$row["Title"]}", ENT_QUOTES); ?></a> by <a href='/profile/<?php echo $row["SetCreatorID"]; ?>'><?php echo safe_htmlspecialchars($mapperName, ENT_QUOTES); ?></a> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a><br>
         <?php
             switch ($userRatedState) {
                 case 1:
