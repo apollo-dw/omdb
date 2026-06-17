@@ -103,7 +103,7 @@
 			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
 			$stmt->bind_param("ii", $setId, $seedBeatmapId);
 		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, WeightedAvg IS NULL, WeightedAvg DESC");
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, Rating IS NULL, Rating DESC, WeightedAvg IS NULL, WeightedAvg DESC");
 			$stmt->bind_param("i", $setId);
 		}
 		$stmt->execute();
@@ -249,11 +249,11 @@
 		$cRaters = "IF(COUNT(DISTINCT r.RatingID) >= {$minRaters}, COUNT(DISTINCT r.RatingID), 0)";
 
 		// COALESCE for the case where the shared raters is below minRaters (or 0)
-		$cohortLift = "(COALESCE(AVG(r.Score), b.WeightedAvg) - COALESCE(b.WeightedAvg, 0)) * ({$cRaters} / ({$cRaters} + ?))";
+		$cohortLift = "(COALESCE(AVG(r.Score), b.Rating) - COALESCE(b.Rating, 0)) * ({$cRaters} / ({$cRaters} + ?))";
 
 		// I hope I never have to write some bullshit like this ever again
-		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, COALESCE(b.WeightedAvg, 0) AS GlobalAvg, (
-				COALESCE(b.WeightedAvg, 0) * ? +
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, COALESCE(b.Rating, 0) AS GlobalAvg, (
+				COALESCE(b.Rating, 0) * ? +
 				$cohortLift * ? +
 				POW({$cRaters} / ?, ?) * ? +
 				$descriptorScoreField * ? +
