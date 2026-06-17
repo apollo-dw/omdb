@@ -34,61 +34,51 @@
     }
 
     $weights = [
-        "avgScore" => 5, // weighted avg rating from users who like the diff
+        "avgScore" => 5, // weighted avg rating from users who rated the diff
         "descriptorScore" => 1, // Overall multiplier for the descriptor scores provided in ../descriptors.json
         "monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
         "sharedNominator" => 1, // per nominator shared with the set
         "sharedMapper" => 4, // per mapper shared with the diff
-        "cohortLift" => 8, // how much higher the fans rate the diff vs everyone else
-        "cohortCoverage" => 16, // share of the fans vs everyone so big fanbases of the diff get no bump in this
-        "correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
+        "cohortLift" => 8, // how much higher the seed users rate the diff vs everyone else
+        "cohortCoverage" => 16, // share of the seed users vs everyone so big fanbases of the diff get no bump in this
+        "correlation" => 1, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
         "srProximity" => 1, // how close the diffs are in star rating
     ];
 
     $settings = [
-        "likedThreshold" => 3.5, // ratings at/above this count as "positive"
         "proximityMonths" => 24,  // abs(diff rank date - TARGET) <= window
-        "bayesMean" => 3.0, // site-wide mean for bayesian avg
-        "bayesN" => 2, // n for bayesian avg
-        "minAvgScore" => 3, // similar diffs need at least this bayesian avg rating
-        "minScoreShare" => 0.06, // min fraction of fans
-        "maxScoreShare" => 0.5, // max fraction of fans
+        "maxScoreShare" => 0.9, // max fraction of fans
         "maxScoreFloor" => 80, // avoid overfiltering cuz of the share settings
         "liftShrink" => 10, // n = u need 50% of the cohortLift value
-        "coverageFade" => 80, // diminish the effect of cohort if the fanbase is n large
-        "coverageCurve" => 2, // exponent setting so 90% fans is more than twice vs 45% fans
+        "coverageFade" => 80, // diminish the effect of cohort if the # of people rating is n large
+        "coverageCurve" => 2, // exponent setting so 90% of people rating is more than twice vs 45% fans
         "corrShrink" => 10, // similar to bayes avg, correlations are shrunk by n/(n+this)
-        "minCoRaters" => 5, // diffs need at least this many users who rated BOTH maps
+        "minRaters" => 5, // diffs need at least this many users who rated BOTH maps
         "minCorrelation" => 0, // ignore candidates correlated below this (0 = anything negatively),
         "srWindow" => 0.5, // SR diff via fraction, so 0.5 = 50% of the diff's SR as the limit
     ];
 
     $weightDescriptions = [
-        "avgScore" => "weighted avg rating from users who like the diff",
+        "avgScore" => "weighted avg rating from users who rated the diff",
         "descriptorScore" => "Overall multiplier for the descriptor scores provided in ../assets/descriptors.json",
         "monthProximity" => "when ranked within settings.proximityMonths months of the seed",
         "sharedNominator" => "per nominator shared with the set",
         "sharedMapper" => "per mapper shared with the diff",
-        "cohortLift" => "how much higher the fans rate the diff vs everyone else",
-        "cohortCoverage" => "share of the fans vs everyone so big fanbases of the diff get no bump in this",
+        "cohortLift" => "how much higher the cohort rates the diff vs everyone else",
+        "cohortCoverage" => "share of the cohort vs everyone so big playerbases get less bump",
         "correlation" => "pearson correlation of how similar users rated both diffs",
         "srProximity" => "how close the diffs are in star rating",
     ];
 
     $settingDescriptions = [
-        "likedThreshold" => "ratings at/above this count as \"positive\"",
         "proximityMonths" => "abs(diff rank date - TARGET) <= window",
-        "bayesMean" => "site-wide mean for bayesian avg which is 3 currently, change at ur own risk",
-        "bayesN" => "n for bayesian avg",
-        "minAvgScore" => "similar diffs need at least this bayesian avg rating",
-        "minScoreShare" => "min fraction of fans",
-        "maxScoreShare" => "max fraction of fans",
+        "maxScoreShare" => "max fraction of raters",
         "maxScoreFloor" => "avoid overfiltering cuz of the share settings",
         "liftShrink" => "n = u need 50% of the cohortLift value",
-        "coverageFade" => "diminish the effect of cohort if the fanbase is n large",
-        "coverageCurve" => "exponent setting so 90% fans is more than twice vs 45% fans",
+        "coverageFade" => "diminish the effect of cohort if the rater base is n large",
+        "coverageCurve" => "exponent setting so 90% shared raters is more than twice vs 45%",
         "corrShrink" => "similar to bayes avg, correlations are shrunk by n/(n+this)",
-        "minCoRaters" => "diffs need at least this many users who rated BOTH maps",
+        "minRaters" => "diffs need at least this many shared raters to use cohort math",
         "minCorrelation" => "ignore candidates correlated below this (0 = anything negatively)",
         "srWindow" => "SR diff via fraction, so 0.5 = 50% of the diff's SR as the limit",
     ];
@@ -170,19 +160,14 @@
             <div>
                 <?php
                 $settingMeta = [
-                    "likedThreshold"  => ["min" => 0,    "max" => 5,   "step" => 0.5],
                     "proximityMonths" => ["min" => 1,    "max" => 120, "step" => 1],
-                    "bayesMean"       => ["min" => 0,    "max" => 5,   "step" => 0.1],
-                    "bayesN"          => ["min" => 0,    "max" => 20,  "step" => 1],
-                    "minAvgScore"     => ["min" => 0,    "max" => 5,   "step" => 0.5],
-                    "minScoreShare"   => ["min" => 0,    "max" => 1,   "step" => 0.01],
                     "maxScoreShare"   => ["min" => 0,    "max" => 1,   "step" => 0.01],
                     "maxScoreFloor"   => ["min" => 0,    "max" => 500, "step" => 5],
                     "liftShrink"      => ["min" => 0,    "max" => 50,  "step" => 1],
                     "coverageFade"    => ["min" => 1,    "max" => 500, "step" => 5],
                     "coverageCurve"   => ["min" => 0.5,  "max" => 5,   "step" => 0.5],
                     "corrShrink"      => ["min" => 0,    "max" => 50,  "step" => 1],
-                    "minCoRaters"     => ["min" => 1,    "max" => 50,  "step" => 1],
+                    "minRaters"       => ["min" => 1,    "max" => 50,  "step" => 1],
                     "minCorrelation"  => ["min" => -1,   "max" => 1,   "step" => 0.05],
                     "srWindow"        => ["min" => 0.05, "max" => 3,   "step" => 0.05],
                 ];
@@ -211,22 +196,18 @@
         <div class="formula-container">
             <div class="math-line">
                 <strong>Pre-Filters (Candidates must pass all):</strong><br>
-                1. B &ge; <span class="var-s f_s_minAvgScore" title="Setting: minAvgScore"></span><br>
-                2. <span class="var-d" title="Data: ScoreCount (Fans who rated candidate)">n_c</span> &ge; max(2, <span class="var-s f_s_minScoreShare" title="Setting: minScoreShare"></span> &times; <span class="var-d" title="Data: Total Seed Fans">N</span>)<br>
-                3. <span class="var-d" title="Data: ScoreCount (Fans who rated candidate)">n_c</span> &le; max(<span class="var-s f_s_maxScoreFloor" title="Setting: maxScoreFloor"></span>, <span class="var-s f_s_maxScoreShare" title="Setting: maxScoreShare"></span> &times; <span class="var-d" title="Data: Total Seed Fans">N</span>)<br>
-                4. <i>FOR CORRELATION TO APPLY ONLY:</i> <span class="var-d" title="Data: CoRaters">n_co</span> &ge; <span class="var-s f_s_minCoRaters" title="Setting: minCoRaters"></span> AND R &ge; <span class="var-s f_s_minCorrelation" title="Setting: minCorrelation"></span><br>
+                1. Must share at least one: Rater, Descriptor, Nominator, Mapper, or Correlation<br>
+                2. <span class="var-d" title="Data: ScoreCount (Raters who rated candidate)">n_c</span> &le; max(<span class="var-s f_s_maxScoreFloor" title="Setting: maxScoreFloor"></span>, <span class="var-s f_s_maxScoreShare" title="Setting: maxScoreShare"></span> &times; <span class="var-d" title="Data: Total Seed Raters">N</span>)<br>
             </div>
             <hr style="border-color: #333;">
             <div class="math-line">
                 <strong>DB Variables:</strong><br>
                 Seed: The map you are looking at right now and selected above<br>
                 Candidate: The map that will potentially be suggested<br>
-                A <strong>fan</strong> is considered someone who rates the seed diff >= <span class="var-s f_s_likedThreshold" title="Setting: likedThreshold"></span>
-                <br><br>
-                <span class="var-d" title="Data: Total Seed Fans">N</span>: # of seed fans<br>
-                <span class="var-d" title="Data: ScoreCount (Fans who rated candidate)">n_c</span>: # of seed fans that rated the candidate map<br>
-                <span class="var-d" title="Data: CoRaters">n_co</span>: # of seed raters that rated the candidate map (NOT JUST FANS). Called CoRaters for Correlation calc<br>
-                <span class="var-d" title="Data: Avg Fan Score">FanAvg</span>: Average rating of the candidate map by seed fans<br>
+                <br>
+                <span class="var-d" title="Data: Total Seed Raters">N</span>: # of seed raters<br>
+                <span class="var-d" title="Data: ScoreCount (Raters who rated candidate)">n_c</span>: # of seed raters that also rated the candidate map<br>
+                <span class="var-d" title="Data: Avg Cohort Score">CohortAvg</span>: Average rating of the candidate map by the shared raters<br>
                 <span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span>: Average weighted rating of the candidate map. This is the rating you see on the charts page for a beatmap<br>
                 <span class="var-d" title="Data: Seed Rank Month">SeedMo</span>: Ranked date for the seed map<br>
                 <span class="var-d" title="Data: Cand Rank Month">CandMo</span>: Ranked date for the candidate map<br>
@@ -238,22 +219,20 @@
             </div>
             <hr style="border-color: #333;">
             <div class="math-line">
-                <strong>Base Variables:</strong><br>
-                B (Local Bayes) = ((<span class="var-d" title="Data: Avg Fan Score">FanAvg</span> &times; <span class="var-d" title="Data: ScoreCount">n_c</span>) + (<span class="var-s f_s_bayesMean" title="Setting: bayesMean"></span> &times; <span class="var-s f_s_bayesN" title="Setting: bayesN"></span>)) / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_bayesN" title="Setting: bayesN"></span>)<br>
-                L (Cohort Lift) = (<span class="var-d" title="Data: Avg Fan Score">FanAvg</span> - <span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span>) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_liftShrink" title="Setting: liftShrink"></span>))<br>
-                C<sub>base</sub> (Coverage) = (<span class="var-d" title="Data: ScoreCount">n_c</span> / <span class="var-d" title="Data: Total Seed Fans">N</span>)<sup><span class="var-s f_s_coverageCurve" title="Setting: coverageCurve"></span></sup><br>
-                W<sub>cov</sub> (Cov Weight) = max(0, 1 - (<span class="var-d" title="Data: Total Seed Fans">N</span> / <span class="var-s f_s_coverageFade" title="Setting: coverageFade"></span>))<br>
+                <strong>Base Variables (Cohort variables degrade to 0 if n_c < <span class="var-s f_s_minRaters" title="Setting: minRaters"></span>):</strong><br>
+                L (Cohort Lift) = (<span class="var-d" title="Data: Avg Cohort Score">CohortAvg</span> - <span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span>) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_liftShrink" title="Setting: liftShrink"></span>))<br>
+                C (Cohort Coverage) = max(0, 1 - (<span class="var-d" title="Data: Total Seed Raters">N</span> / <span class="var-s f_s_coverageFade" title="Setting: coverageFade"></span>)) &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / <span class="var-d" title="Data: Total Seed Raters">N</span>)<sup><span class="var-s f_s_coverageCurve" title="Setting: coverageCurve"></span></sup><br>
                 T (Time Prox.) = max(0, 1 - (|<span class="var-d" title="Data: Seed Rank Month">SeedMo</span> - <span class="var-d" title="Data: Cand Rank Month">CandMo</span>| / <span class="var-s f_s_proximityMonths" title="Setting: proximityMonths"></span>))<br>
-                Corr (Shrunk R) = <span class="var-d" title="Data: Pearson R">R</span> &times; (<span class="var-d" title="Data: CoRaters">n_co</span> / (<span class="var-d" title="Data: CoRaters">n_co</span> + <span class="var-s f_s_corrShrink" title="Setting: corrShrink"></span>))<br>
+                Corr (Shrunk R) = <span class="var-d" title="Data: Pearson R">R</span> &times; (<span class="var-d" title="Data: ScoreCount">n_c</span> / (<span class="var-d" title="Data: ScoreCount">n_c</span> + <span class="var-s f_s_corrShrink" title="Setting: corrShrink"></span>))<br>
                 P (SR Prox.) = max(0, 1 - (|<span class="var-d" title="Data: Seed SR">SeedSR</span> - <span class="var-d" title="Data: Cand SR">CandSR</span>| / (<span class="var-d" title="Data: Seed SR">SeedSR</span> &times; <span class="var-s f_s_srWindow" title="Setting: srWindow"></span>)))
             </div>
             <hr style="border-color: #333;">
             <div class="math-line">
                 <strong>Total Recommendation Score (S<sub>total</sub>):</strong><br>
                 S<sub>total</sub> = 
-                (B &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
+                (<span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span> &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
                 (L &times; <span class="var-w f_w_cohortLift" title="Weight: cohortLift"></span>) + 
-                (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C<sub>base</sub> &times; W<sub>cov</sub>) + <br>
+                (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C) + <br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Descriptor Match Score">D</span> &times; <span class="var-w f_w_descriptorScore" title="Weight: descriptorScore"></span>) + 
                 (T &times; <span class="var-w f_w_monthProximity" title="Weight: monthProximity"></span>) + 
                 (<span class="var-d" title="Data: Shared Nominators">SharedNoms</span> &times; <span class="var-w f_w_sharedNominator" title="Weight: sharedNominator"></span>) + <br>
