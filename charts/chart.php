@@ -236,7 +236,7 @@
         "<pre>" .
         $conn->error .
         "\n\n" .
-        htmlspecialchars($sql) .
+        safe_htmlspecialchars($sql) .
         "</pre>"
     );
 }
@@ -270,8 +270,8 @@
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:80px;width:80px;" onerror="this.onerror=null; this.src='INF.png';" /></a>
 				</div>
 				<div style="flex: 0 0 46%;">
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo htmlspecialchars($row['Title'], ENT_QUOTES); ?> <br></a>
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo safe_htmlspecialchars($row['Title'], ENT_QUOTES); ?> <br></a>
+					<a href="/mapset/<?php echo $row['SetID']; ?>"><b><?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?></b></a> <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
                     <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
                     <span class="subText map-descriptors">
@@ -287,7 +287,7 @@
                         </span>
                 </div>
 				<div style="flex: auto auto 0;">
-					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+					<b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>
 				<div style="flex: 0 auto 0;">
 					<b style="font-weight:900;"><?php echo $row["Score"]; ?></b>

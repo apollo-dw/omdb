@@ -50,7 +50,7 @@
     }
 ?>
 
-<h1 id="heading"><?php echo 'Highest Rated Maps of ' . htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
+<h1 id="heading"><?php echo 'Highest Rated Maps of ' . safe_htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
 
 <div style="text-align:left;">
     <div class="pagination">

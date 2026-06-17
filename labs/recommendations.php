@@ -154,11 +154,11 @@
                 <?php foreach ($weights as $key => $default): ?>
                 <div class="flex-container" style="flex-direction:column;margin:1em;">
                     <label>
-                        <b><?php echo htmlspecialchars($key, ENT_QUOTES); ?></b>
+                        <b><?php echo safe_htmlspecialchars($key, ENT_QUOTES); ?></b>
                         <span class="subText"> = </span>
                         <input type="number" id="w_<?php echo $key; ?>" min="0" max="20" step="0.5" value="<?php echo $default; ?>">
                     </label>
-                    <span class="subText"><?php echo htmlspecialchars($weightDescriptions[$key], ENT_QUOTES); ?></span>
+                    <span class="subText"><?php echo safe_htmlspecialchars($weightDescriptions[$key], ENT_QUOTES); ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -191,7 +191,7 @@
                 ?>
                 <div class="flex-container" style="flex-direction:column;margin:1em;">
                     <label>
-                        <b><?php echo htmlspecialchars($key, ENT_QUOTES); ?></b>
+                        <b><?php echo safe_htmlspecialchars($key, ENT_QUOTES); ?></b>
                         <span class="subText"> = </span>
                         <input type="number" id="s_<?php echo $key; ?>"
                             min="<?php echo $meta['min']; ?>"
@@ -199,7 +199,7 @@
                             step="<?php echo $meta['step']; ?>"
                             value="<?php echo $default; ?>">
                     </label>
-                    <span class="subText"><?php echo htmlspecialchars($settingDescriptions[$key], ENT_QUOTES); ?></span>
+                    <span class="subText"><?php echo safe_htmlspecialchars($settingDescriptions[$key], ENT_QUOTES); ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>

@@ -104,9 +104,9 @@
 <form>
     <div class="container">
         <label>List title:</label> <br>
-        <input autocomplete="off" name="ListTitle" id="ListTitle" value="<?php echo htmlspecialchars($list["Title"] ?? "", ENT_QUOTES); ?>" required/><br><br>
+        <input autocomplete="off" name="ListTitle" id="ListTitle" value="<?php echo safe_htmlspecialchars($list["Title"] ?? "", ENT_QUOTES); ?>" required/><br><br>
         <label>Description:</label>
-        <textarea name="ListDescription" id="ListDescription"><?php echo htmlspecialchars($list["Description"] ?? "", ENT_QUOTES); ?></textarea> <br><br>
+        <textarea name="ListDescription" id="ListDescription"><?php echo safe_htmlspecialchars($list["Description"] ?? "", ENT_QUOTES); ?></textarea> <br><br>
         <input type="checkbox" id="ListPrivate" <?php if (!empty($list) && !empty($list["Private"])) echo "checked"; ?> />
         <label>Private list</label>
         <br><br>
@@ -132,10 +132,10 @@
                             </div>
                             <div style="text-align: center; width: 8em;">
                                 <a href="/mapset"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../charts/INF.png';" /></a><br>
-                                <span class="subText"><?php echo htmlspecialchars($title, ENT_QUOTES); ?></span>
+                                <span class="subText"><?php echo safe_htmlspecialchars($title, ENT_QUOTES); ?></span>
                             </div>
                             <div style="flex-grow: 1; box-sizing: border-box;">
-                                <textarea class="description"><?php echo htmlspecialchars($listItem['Description'], ENT_QUOTES); ?></textarea>
+                                <textarea class="description"><?php echo safe_htmlspecialchars($listItem['Description'], ENT_QUOTES); ?></textarea>
                             </div>
                             <div>
                                 <span class="icon-remove"></span>

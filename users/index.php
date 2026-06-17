@@ -47,12 +47,12 @@
 				<td>#<?php echo $count; ?></td>
 				<td>
 					<a style="display:flex;" href="/profile/<?php echo $row["userid"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["userid"]; ?>" style="height:24px;width:24px;" title="<?php echo htmlspecialchars(GetUserNameFromId($row["userid"], $conn), ENT_QUOTES); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $row["userid"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["userid"], $conn), ENT_QUOTES); ?>"/>
                     </a>
 				</td>
 				<td>
 					<a href="/profile/<?php echo $row["userid"]; ?>">
-						<?php echo htmlspecialchars($row["username"], ENT_QUOTES); ?>
+						<?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?>
 					</a>
 				</td>
 				<td><?php echo $row["ratings_count"]; ?></td>

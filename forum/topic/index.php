@@ -71,9 +71,9 @@
     }
 </style>
 
-<h2><?php echo htmlspecialchars($topic["Name"], ENT_QUOTES); ?></h2>
+<h2><?php echo safe_htmlspecialchars($topic["Name"], ENT_QUOTES); ?></h2>
 <div>
-    <span class="subText"><?php echo htmlspecialchars($topic["Description"], ENT_QUOTES); ?></span>
+    <span class="subText"><?php echo safe_htmlspecialchars($topic["Description"], ENT_QUOTES); ?></span>
     <?php if ($loggedIn) { ?>
         <div style="float:right;"><a href="../new/?id=<?php echo $topicId; ?>">Create new post</a></div>
     <?php } ?>
@@ -85,21 +85,21 @@
         ?>
         <div class="flex-container forum-thread alternating-bg">
             <div>
-                <a href="../post/?id=<?php echo $thread["ThreadID"]; ?>"><b><?php echo htmlspecialchars($thread["Title"], ENT_QUOTES); ?></b></a> <br>
+                <a href="../post/?id=<?php echo $thread["ThreadID"]; ?>"><b><?php echo safe_htmlspecialchars($thread["Title"], ENT_QUOTES); ?></b></a> <br>
                 <span class="subText">
                     by <a href="../../profile/<?php echo $thread["ThreadUserID"]; ?>">
-                        <?php echo htmlspecialchars(GetUserNameFromId($thread["ThreadUserID"], $conn), ENT_QUOTES); ?></a>
+                        <?php echo safe_htmlspecialchars(GetUserNameFromId($thread["ThreadUserID"], $conn), ENT_QUOTES); ?></a>
                      | <?php RenderLocalTime($thread["ThreadCreatedAt"]); ?>
                 </span>
             </div>
             <div style="margin-left:auto;display:flex;align-items:center;">
                 <div style="margin-right: 6em;display:flex;align-items:center;">
                     <a href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                     <div style="margin-left: 0.5em;">
                         <a style="display:flex;" href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
-                            <?php echo htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>
+                            <?php echo safe_htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>
                         </a>
                         <span class="subText"><?php echo GetHumanTime($thread["LatestPostCreatedAt"]); ?></span>
                     </div>

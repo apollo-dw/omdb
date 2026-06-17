@@ -35,14 +35,14 @@
     $result = $stmt->get_result();
 
     while ($beatmap = $result->fetch_assoc()) {
-        $tags = htmlspecialchars($beatmap['Tags'] ?? "", ENT_QUOTES, "ISO-8859-1")
+        $tags = safe_htmlspecialchars($beatmap['Tags'] ?? "", ENT_QUOTES, "ISO-8859-1")
         ?>
         <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child">
                 <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
             </div>
             <div class="flex-child" style="flex:0 0 60%;">
-                <?php echo RenderUserRating($conn, $beatmap); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo htmlspecialchars(mb_strimwidth("{$beatmap["Title"]} [{$beatmap["DifficultyName"]}]", 0, 80, "..."), ENT_QUOTES); ?></a>
+                <?php echo RenderUserRating($conn, $beatmap); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$beatmap["Title"]} [{$beatmap["DifficultyName"]}]", 0, 80, "..."), ENT_QUOTES); ?></a>
                 <br>
                 <span class="subText"><?php echo $tags; ?></span>
             </div>

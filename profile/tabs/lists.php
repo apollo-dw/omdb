@@ -61,7 +61,7 @@
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
+                    <?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <?php if (!empty($row["Private"])) { ?>
@@ -136,7 +136,7 @@
 
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <?php echo htmlspecialchars($row["Title"], ENT_QUOTES); ?>
+                    <?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
                 <?php if (!empty($row["Private"])) { ?>

@@ -85,6 +85,14 @@
 		return $publicUrl . $path;
 	}
 
+	/**
+	 * wraps htmlspecialchars to check for null cuz php 8.1 is annoying
+	 * about that now
+	 */
+	function safe_htmlspecialchars(?string $string, int $flags = ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, ?string $encoding = null, bool $double_encode = true): string {
+		return htmlspecialchars($string ?? '', $flags, $encoding, $double_encode);
+	}
+
 	function GetBeatmapDataOsuApi(string $token, int $id){
 		$curl = curl_init();
 	
@@ -543,9 +551,9 @@
 			$mapID = $matches['id2'] ?? '';
 
 			if ($mapID != '')
-				return '<a href="' . htmlspecialchars($matches[0], ENT_QUOTES) . '">/b/' . $mapID . '</a>';
+				return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/b/' . $mapID . '</a>';
 			else
-				return '<a href="' . htmlspecialchars($matches[0], ENT_QUOTES) . '">/s/' . $setID . '</a>';
+				return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/s/' . $setID . '</a>';
 
 		}, $string);
 
@@ -560,7 +568,7 @@
 
 			if (isset($beatmap)){
 				$mapper = GetUserNameFromId($beatmap["CreatorID"], $conn);
-				return "<a href='{$matches[0]}'> " . htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})", ENT_QUOTES) . "</a>";
+				return "<a href='{$matches[0]}'> " . safe_htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})", ENT_QUOTES) . "</a>";
 			}
 
 			return $matches[0];
@@ -635,7 +643,7 @@
 		if (empty($hint))
     		return $starString;
 
-        $hint = htmlspecialchars($hint, ENT_QUOTES);
+        $hint = safe_htmlspecialchars($hint, ENT_QUOTES);
         echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
     }
 
@@ -786,7 +794,7 @@
 
 		while ($creator = $creators->fetch_assoc()){
 			$creatorName = GetUserNameFromId($creator['CreatorID'], $conn);
-			echo "<a href='/profile/{$creator['CreatorID']}'>" . htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
+			echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
 			$index++;
 			if ($index < $creatorCount - 1)
