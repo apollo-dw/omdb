@@ -79,7 +79,7 @@
 			"sharedMapper" => 4, // per mapper shared with the diff
 			"cohortLift" => 8, // how much higher the seed users rate the diff vs everyone else
 			"cohortCoverage" => 16, // share of the seed users vs everyone so big fanbases of the diff get no bump in this
-			"correlation" => 0, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
+			"correlation" => 1, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
 			"srProximity" => 1, // how close the diffs are in star rating
 		];
 
