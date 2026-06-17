@@ -310,7 +310,7 @@
                     ?>
                     <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;flex-direction:column;">
                         <div class="profileImage">
-                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/></a><br>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;" loading="lazy" /></a><br>
                             <a href="/profile/<?php echo $row["ID"]; ?>"><?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?></a>
                         </div>
                     </div>
@@ -380,7 +380,7 @@
             $stmt->close();
             ?>
             <div data-rating-count="<?php echo $topMapRatingCount; ?>" data-chart-rank="<?php echo $topMapChartRank; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
-                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
+                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" loading="lazy" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
 					<?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?> 
