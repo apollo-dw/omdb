@@ -163,7 +163,7 @@
             $params = [$userID];
 
             if ($year != -1) {
-                $query .= " AND YEAR(b.DateRanked) = ?";
+                $query .= " AND YEAR(s.DateRanked) = ?";
                 $types .= "i";
                 $params[] = $year;
             }
@@ -202,6 +202,7 @@
                     "Artist" => $row["Artist"],
                     "Title" => $row["Title"],
                     "Difficulty" => $row["DifficultyName"],
+                    "RatedAt" => $row["date"],
                 );
             }
         }
