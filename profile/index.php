@@ -403,7 +403,7 @@
                     </span>
                     <span style="display: inline-block;min-width:13em;">
                         <?php if (isset($topMap["WeightedAvg"])) { ?>
-                        <b><?php echo number_format($topMap["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes</span><br>
+                        <b><?php echo number_format((float)$topMap["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes</span><br>
                         <?php } ?>
                     </span>
                     <span class="collapse-arrow" style="display: inline-block;<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>user-select:none;margin-left:0.5em;margin-right:0.5em;width:1em;">
@@ -424,7 +424,7 @@
 
                         <div style="float:right;display: inline-block;min-width:13em;min-height:1px;text-align:right;">
                             <?php if (isset($map["ChartRank"])) { ?>
-                                <b><?php echo number_format($map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
+                                <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
                             <?php } ?>
                         </div>
 

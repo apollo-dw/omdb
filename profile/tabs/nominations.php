@@ -22,7 +22,7 @@
         $artist = safe_htmlspecialchars($row["Artist"], ENT_QUOTES);
         $title = safe_htmlspecialchars($row["Title"], ENT_QUOTES);
         $diffname = safe_htmlspecialchars($row["DifficultyName"], ENT_QUOTES);
-        $avgRating = number_format($row["Rating"], 2);
+        $avgRating = number_format((float)$row["Rating"], 2);
 
         ?>
         <div style='padding-left:0.25em;height:5em;display:flex;align-items: center;' class='alternating-bg'>
@@ -31,7 +31,7 @@
             </div>
             <div>
                 <a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo "{$artist} - {$title} [$diffname]"; ?></a> <br>
-                <?php if (!is_null($row["RatingCount"])) { ?><b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><?php } ?><?php if (!is_null($row["ChartRank"])) { ?>,
+                <?php if (!is_null($row["RatingCount"])) { ?><b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><?php } ?><?php if (!is_null($row["ChartRank"])) { ?>,
                 <b>#<?php echo $row["ChartRank"]; ?></b> <span class="subText">overall</span> <?php } ?>
             </div>
         </div>

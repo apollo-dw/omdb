@@ -266,7 +266,7 @@ while($row = $result->fetch_assoc()) {
                                         WHERE r.BeatmapID = ?;");
         $stmt->bind_param("i", $row["BeatmapID"]);
         $stmt->execute();
-        $averageRating = number_format($stmt->get_result()->fetch_assoc()["avg_score"] ?? 0, 2);
+        $averageRating = number_format((float)$stmt->get_result()->fetch_assoc()["avg_score"], 2);
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
@@ -358,7 +358,7 @@ while($row = $result->fetch_assoc()) {
 		<div class="flex-child diffBox" style="text-align:right;width:25%;">
 			<?php if (!$blackListed) { ?>
 				<?php
-				$averageRating = number_format($averageRating, 2);
+				$averageRating = number_format((float)$averageRating, 2);
 				if ($totalRatings > 0) {
 					?>
 					Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
@@ -366,7 +366,7 @@ while($row = $result->fetch_assoc()) {
 				}
 				if ($hasFriendsRatings) {
 					?>
-					Friend Rating: <b style="color:#e79ac1;"><?php echo number_format($friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
+					Friend Rating: <b style="color:#e79ac1;"><?php echo number_format((float)$friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
 					<?php
 				}
 				if($hasCharted) {

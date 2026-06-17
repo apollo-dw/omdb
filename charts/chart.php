@@ -287,7 +287,7 @@
                         </span>
                 </div>
 				<div style="flex: auto auto 0;">
-					<b><?php echo number_format($row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
+					<b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>
 				</div>
 				<div style="flex: 0 auto 0;">
 					<b style="font-weight:900;"><?php echo $row["Score"]; ?></b>

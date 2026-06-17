@@ -364,7 +364,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 </span>
                 <br><br>
                 Ranked <?php echo date("M jS, Y", strtotime($result['DateRanked'])); ?> <br>
-                <b><?php echo number_format($result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
+                <b><?php echo number_format((float)$result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
                 <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $result["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($result["ChartRank"] / 50); ?>">overall</a><br>
             </div>
             <?php } else { echo "no maps for this week :("; } ?>

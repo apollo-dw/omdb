@@ -69,7 +69,7 @@
     <table style="width:100%;">
         <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5){ ?>
             <?php
-            $formattedRating = number_format($rating, 1);
+            $formattedRating = number_format((float)$rating, 1);
             $ratingCount = $ratingCounts[$formattedRating] ?? 0;
             $ratingBarWidth = ($ratingCount / $maxRating) * 90;
             ?>
