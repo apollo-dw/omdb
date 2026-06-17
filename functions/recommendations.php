@@ -100,10 +100,10 @@
 		$settings = array_merge($settings, $overrides["settings"] ?? []);
 
 		if ($seedBeatmapId !== null) {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
 			$stmt->bind_param("ii", $setId, $seedBeatmapId);
 		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, Rating IS NULL, Rating DESC, WeightedAvg IS NULL, WeightedAvg DESC");
+			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, Rating IS NULL, Rating DESC, WeightedAvg IS NULL, WeightedAvg DESC");
 			$stmt->bind_param("i", $setId);
 		}
 		$stmt->execute();
@@ -111,6 +111,9 @@
 		$stmt->close();
 
 		if ($seed === null)
+			return [];
+
+		if ((int)$seed["RatingCount"] < 10)
 			return [];
 
 		if ($useCaching) {
@@ -371,7 +374,7 @@
 
 	function RenderSimilarMapCards($conn, $similarMaps) {
 		if (empty($similarMaps)) {
-			echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty</span>';
+			echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty; map needs >= 10 ratings</span>';
 			return;
 		}
 
