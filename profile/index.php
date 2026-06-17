@@ -460,6 +460,11 @@
 
     $(document).ready(function() {
 
+        var savedHide = localStorage.getItem('hideLessRelevantMaps');
+        if (savedHide !== null) {
+            $('#hideLessRelevantCheckbox').prop('checked', savedHide === 'true');
+        }
+
         function relevanceCheck() {
             if ($('#hideLessRelevantCheckbox').is(':checked')) {
                 var maps = $('.profile-top-map').map(function() {
@@ -502,7 +507,10 @@
         }
 
         relevanceCheck();
-        $('#hideLessRelevantCheckbox').change(relevanceCheck);
+        $('#hideLessRelevantCheckbox').change(function() {
+            localStorage.setItem('hideLessRelevantMaps', $(this).is(':checked'));
+            relevanceCheck();
+        });
 
         $('#friendButton').click(function() {
             $.ajax({
