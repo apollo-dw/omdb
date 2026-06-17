@@ -522,7 +522,7 @@ while($row = $result->fetch_assoc()) {
     if (!empty($similarMaps)) {
 ?>
 <h4 style="margin-bottom: 0;">
-    People who liked 
+    Related beatmaps to
     <?php
         $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
         $stmt->bind_param("i", $mapset_id);
@@ -541,8 +541,7 @@ while($row = $result->fetch_assoc()) {
             }
             echo '</select>';
         }
-    ?>
-    also liked:
+    ?>:
     <span class="badge">BETA</span>
     <span class="tooltip-wrapper">
         <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
