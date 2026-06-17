@@ -2,8 +2,8 @@
     $REC_DEFAULTS = [
         "weights" => [
             "avgScore" => 5, // weighted avg rating from users who rated the diff
-            "descriptorScore" => 1, // Overall multiplier for the descriptor scores provided in ../descriptors.json
-            "monthProximity" => 6, // when ranked within settings.yearWindow years of the seed
+            "descriptorScore" => 4, // Overall multiplier for the descriptor scores provided in ../descriptors.json
+            "monthProximity" => 2, // when ranked within settings.yearWindow years of the seed
             "sharedNominator" => 1, // per nominator shared with the set
             "sharedMapper" => 4, // per mapper shared with the diff
             "cohortLift" => 8, // how much higher the seed users rate the diff vs everyone else
