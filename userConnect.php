@@ -3,6 +3,7 @@
 	$isModerator = false;
 	$userId = -1;
 	$userName = "";
+	$token = "";
 
 	if (isset($_COOKIE["SessionToken"])) {
 		$sessionToken = $_COOKIE["SessionToken"];
@@ -52,6 +53,8 @@
 					return;
 				}
 			}
+
+			$token = $user['AccessToken'];
 
 			if ((time() - strtotime($row['LastAccessedAt'])) > 60) {
 				$ip = $_SERVER['HTTP_CLIENT_IP']

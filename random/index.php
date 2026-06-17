@@ -2,7 +2,7 @@
 	require '../base.php';
 	
 	if ($loggedIn && $user["DoTrueRandom"] == 0){
-	$isSupporter = GetOwnUserData($token)["is_supporter"];
+		$isSupporter = GetOwnUserData($token)["is_supporter"];
 	
 		if ($isSupporter == 1){
 			$object = GetRandomPlayedBeatmap($token);
