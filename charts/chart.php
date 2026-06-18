@@ -250,7 +250,8 @@
 				$stmt = $conn->prepare("
 					SELECT 
 						bd.DescriptorID,
-						d.Name
+						d.Name,
+						d.ShortDescription
 					FROM beatmap_descriptors bd
 					JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
 					WHERE bd.BeatmapID = ?
@@ -275,16 +276,28 @@
 					<?php echo date("M jS, Y", strtotime($row['DateRanked']));?><br>
                     <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
                     <span class="subText map-descriptors">
-                        <?php
-                            $descriptorLinks = array();
-                            while($descriptor = $descriptorResult->fetch_assoc()){
-                                $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
-                                $descriptorLinks[] = $descriptorLink;
-                            }
+						<?php
+							$descriptorLinks = array();
 
-                            echo implode(', ', $descriptorLinks);
-                            ?>
-                        </span>
+							while ($descriptor = $descriptorResult->fetch_assoc()) {
+								$name = htmlspecialchars($descriptor["Name"]);
+								$id = (int)$descriptor["DescriptorID"];
+								$shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+
+								$descriptorLink = '
+									<span class="tooltip-wrapper">
+										<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+										<span class="tooltip-box">
+											' . $shortDescription . '
+										</span>
+									</span>';
+
+								$descriptorLinks[] = $descriptorLink;
+							}
+
+							echo implode(', ', $descriptorLinks);
+							?>
+                    </span>
                 </div>
 				<div style="flex: auto auto 0;">
 					<b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes</span><br>

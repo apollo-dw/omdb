@@ -329,7 +329,8 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 					$stmt = $conn->prepare("
 						SELECT 
 							bd.DescriptorID,
-							d.Name
+							d.Name,
+                            d.ShortDescription
 						FROM beatmap_descriptors bd
 						JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
 						WHERE bd.BeatmapID = ?
@@ -353,13 +354,25 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                 by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
                 <span class="subText map-descriptors">
                     <?php
-                    $descriptorLinks = array();
-                    while($descriptor = $descriptorResult->fetch_assoc()){
-                        $descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
-                        $descriptorLinks[] = $descriptorLink;
-                    }
+                        $descriptorLinks = array();
 
-                    echo implode(', ', $descriptorLinks);
+                        while ($descriptor = $descriptorResult->fetch_assoc()) {
+                            $name = htmlspecialchars($descriptor["Name"]);
+                            $id = (int)$descriptor["DescriptorID"];
+                            $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+
+                            $descriptorLink = '
+                                <span class="tooltip-wrapper">
+                                    <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                                    <span class="tooltip-box">
+                                        ' . $shortDescription . '
+                                    </span>
+                                </span>';
+
+                            $descriptorLinks[] = $descriptorLink;
+                        }
+
+                        echo implode(', ', $descriptorLinks);
                     ?>
                 </span>
                 <br><br>

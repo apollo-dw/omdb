@@ -283,7 +283,8 @@ while($row = $result->fetch_assoc()) {
     $stmt = $conn->prepare("
 		SELECT 
 			bd.DescriptorID,
-			d.Name
+			d.Name,
+            d.ShortDescription
 		FROM beatmap_descriptors bd
 		JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
 		WHERE bd.BeatmapID = ?
@@ -387,15 +388,28 @@ while($row = $result->fetch_assoc()) {
 					<tr>
 						<th style="padding:0;">
 							<span class="subText" style="font-weight:normal;">
-								<?php
-								$descriptorLinks = array();
-								while($descriptor = $descriptorResult->fetch_assoc()){
-									$descriptorLink = '<a style="color:inherit;" href="../descriptor/?id=' . $descriptor["DescriptorID"] . '">' . $descriptor["Name"] . '</a>';
-									$descriptorLinks[] = $descriptorLink;
-								}
-								echo implode(', ', $descriptorLinks);
-								?>
-							</span>
+                                <?php
+                                    $descriptorLinks = array();
+
+                                    while ($descriptor = $descriptorResult->fetch_assoc()) {
+                                        $name = htmlspecialchars($descriptor["Name"]);
+                                        $id = (int)$descriptor["DescriptorID"];
+                                        $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+
+                                        $descriptorLink = '
+                                            <span class="tooltip-wrapper">
+                                                <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                                                <span class="tooltip-box">
+                                                    ' . $shortDescription . '
+                                                </span>
+                                            </span>';
+
+                                        $descriptorLinks[] = $descriptorLink;
+                                    }
+
+                                    echo implode(', ', $descriptorLinks);
+                                ?>
+                            </span>
 						</th>
 						<?php if ($loggedIn) { ?>
 						<th style="padding:0;padding-left:0.5em;">
