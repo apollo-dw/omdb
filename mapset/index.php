@@ -315,7 +315,12 @@ while($row = $result->fetch_assoc()) {
     <div class="flex-container difficulty-container alternating-bg" >
         <div class="flex-child diffBox" style="text-align:center;width:20%;">
             <?php if (in_array($row["BeatmapID"], $motdBeatmapIDs)) { ?>
+            <span class="tooltip-wrapper">
                 <span class="badge" style="background-color: #c6c69f;" title="Map of the Day">MOTD</span>
+                <span class="tooltip-box">
+                    Random map of the day
+                </span>
+            </span>
             <?php } ?>
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
