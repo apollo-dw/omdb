@@ -307,7 +307,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 <br>
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
-        <h2 style="margin-top:0;">Map of the Day</h2>
+        <h2 style="margin-top:0;">Random Map of the Day</h2>
         <?php
             $motd = getMapOfTheDay($conn, $mode);
         ?>
