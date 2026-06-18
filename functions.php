@@ -863,4 +863,22 @@
 			document.write(myDate.toLocaleString())
 		</script>
 	<?php }
+
+	function getMapOfTheDay($conn, $mode) {
+		$cacheKey = "motd_" . $mode;
+
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank
+			FROM cache c
+			JOIN beatmaps b ON c.Value = b.BeatmapID
+			JOIN beatmapsets s ON b.SetID = s.SetID
+			WHERE c.Attribute = ?
+		");
+		
+		$stmt->bind_param("s", $cacheKey);
+		$stmt->execute();
+		$motd = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $motd ?? null;
+	}
 ?>

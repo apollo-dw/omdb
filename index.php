@@ -305,128 +305,195 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 	?>
 </div>
 <br>
-    <div class="flex-container column-when-mobile-container">
-        <div class="flex-child column-when-mobile" style="width:50%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
-            <h2 style="margin-top:0;">Highest charting map of the week</h2>
-            <?php
-                $stmt = $conn->prepare(
-                    "SELECT b.BeatmapID, b.SetID, s.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, s.Title
-                            FROM beatmaps b
-                            JOIN cache_home_best_map c ON b.BeatmapID = c.BeatmapID
-                            JOIN beatmapsets s on b.SetID = s.SetID
-                            WHERE
-                                b.Rating IS NOT NULL
-                                AND b.Mode = ?
-                            LIMIT 1;");
-                $stmt->bind_param("i", $mode);
+<div class="flex-container column-when-mobile-container">
+    <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+        <h2 style="margin-top:0;">Random Map of the Day</h2>
+        <?php
+            $motd = getMapOfTheDay($conn, $mode);
+            if ($motd != null) {
+                $stmt = $conn->prepare("
+                    SELECT 
+                        bd.DescriptorID,
+                        d.Name,
+                        d.ShortDescription
+                    FROM beatmap_descriptors bd
+                    JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                    WHERE bd.BeatmapID = ?
+                    ORDER BY bd.Weight DESC, bd.DescriptorID
+                    LIMIT 5
+                ");
+                $stmt->bind_param("i", $motd["BeatmapID"]);
                 $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($result->num_rows >= 1) {
-                    $result = $result->fetch_assoc();
-                    $year = date("Y", strtotime($result['DateRanked']));
-					
-					$stmt = $conn->prepare("
-						SELECT 
-							bd.DescriptorID,
-							d.Name,
-                            d.ShortDescription
-						FROM beatmap_descriptors bd
-						JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
-						WHERE bd.BeatmapID = ?
-						ORDER BY bd.Weight DESC, bd.DescriptorID
-						LIMIT 5
-					");
-					$stmt->bind_param("i", $result["BeatmapID"]);
-					$stmt->execute();
-					$descriptorResult = $stmt->get_result();
-                } else {
-                    $result = null;
-                }
-
+                $motdDescriptorResult = $stmt->get_result();
                 $stmt->close();
-            ?>
-            <?php if ($result != null) { ?>
-            <div style="width:100%;text-align:center;">
-                <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
-                <br><br>
-                <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
-                by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
-                <span class="subText map-descriptors">
-                    <?php
-                        $descriptorLinks = array();
+            }
+        ?>
+        <?php if ($motd != null) { 
+            $motdYear = date("Y", strtotime($motd['DateRanked']));
+        ?>
+        <div style="width:100%;text-align:center;">
+            <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            <br><br>
+            <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
+            by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
+            <span class="subText map-descriptors">
+                <?php
+                  $motdDescriptorLinks = array();
 
-                        while ($descriptor = $descriptorResult->fetch_assoc()) {
-                            $name = htmlspecialchars($descriptor["Name"]);
-                            $id = (int)$descriptor["DescriptorID"];
-                            $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+                  while ($descriptor = $motdDescriptorResult->fetch_assoc()) {
+                    $name = htmlspecialchars($descriptor["Name"]);
+                    $id = (int)$descriptor["DescriptorID"];
+                    $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
 
-                            $descriptorLink = '
-                                <span class="tooltip-wrapper">
-                                    <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
-                                    <span class="tooltip-box">
-                                        ' . $shortDescription . '
-                                    </span>
-                                </span>';
+                    $descriptorLink = '
+                      <span class="tooltip-wrapper">
+                        <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                        <span class="tooltip-box">
+                          ' . $shortDescription . '
+                        </span>
+                      </span>';
 
-                            $descriptorLinks[] = $descriptorLink;
-                        }
+                    $motdDescriptorLinks[] = $descriptorLink;
+                  }
 
-                        echo implode(', ', $descriptorLinks);
-                    ?>
-                </span>
-                <br><br>
-                Ranked <?php echo date("M jS, Y", strtotime($result['DateRanked'])); ?> <br>
-                <b><?php echo number_format((float)$result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
-                <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $result["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($result["ChartRank"] / 50); ?>">overall</a><br>
-            </div>
-            <?php } else { echo "no maps for this week :("; } ?>
+                  echo implode(', ', $motdDescriptorLinks);
+                ?>
+            </span>
+            <br><br>
+            Ranked <?php echo date("M jS, Y", strtotime($motd['DateRanked'])); ?> <br>
+            <?php if ($motd["RatingCount"] > 0) { ?>
+                <b><?php echo number_format((float)$motd["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $motd["RatingCount"]; ?></span> votes</span><br>
+                <?php if ($motd["ChartRank"] != null) { ?>
+                    <b>#<?php echo $motd["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $motdYear;?>&p=<?php echo ceil($motd["ChartYearRank"] / 50); ?>"><?php echo $motdYear;?></a>, <b>#<?php echo $motd["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($motd["ChartRank"] / 50); ?>">overall</a><br>
+                <?php } ?>
+            <?php } else { ?>
+                <span class="subText" style="color:white;">No ratings yet! Be the first!</span><br>
+            <?php } ?>
         </div>
-        <div class="flex-child column-when-mobile" style="width:50%;height:40em;">
-            <?php
-            $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
-                                          FROM beatmaps b
-                                          JOIN beatmapsets s on b.SetID = s.SetID
-                                          INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
-                                          WHERE r.date >= NOW() - INTERVAL 1 WEEK
-                                          AND b.Mode = ? AND b.blacklisted = 0
-                                          GROUP BY b.BeatmapID
-                                          ORDER BY num_ratings DESC
-                                          LIMIT 25;");
+        <?php } else { echo "No maps found?! :("; } ?>
+    </div>
+
+    <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+        <h2 style="margin-top:0;">Highest charting map of the week</h2>
+        <?php
+            $stmt = $conn->prepare(
+                "SELECT b.BeatmapID, b.SetID, s.DateRanked, b.DifficultyName, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank, s.Title
+                        FROM beatmaps b
+                        JOIN cache_home_best_map c ON b.BeatmapID = c.BeatmapID
+                        JOIN beatmapsets s on b.SetID = s.SetID
+                        WHERE
+                            b.Rating IS NOT NULL
+                            AND b.Mode = ?
+                        LIMIT 1;");
             $stmt->bind_param("i", $mode);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $usedSets = array();
-
-            while($row = $result->fetch_assoc()) {
-                if (in_array($row["SetID"], $usedSets))
-                    continue;
-                ?>
-                <div class="flex-container ratingContainer alternating-bg" style="height:4em;">
-                    <div class="flex-child" style="min-width:2em;text-align:center;">
-                        #<?php echo sizeof($usedSets) + 1; ?>
-                    </div>
-                    <div class="flex-child">
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
-                    </div>
-                    <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
-                    </div>
-                    <div class="flex-child" style="margin-left: auto;text-align:right;min-width:6em;">
-                        <?php echo $row["num_ratings"];?> ratings
-                    </div>
-                </div>
-                <?php
-                if (sizeof($usedSets) == 9)
-                    break;
-
-                $usedSets[] = $row["SetID"];
+            if ($result->num_rows >= 1) {
+                $result = $result->fetch_assoc();
+                $year = date("Y", strtotime($result['DateRanked']));
+                
+                $stmt = $conn->prepare("
+                    SELECT 
+                        bd.DescriptorID,
+                        d.Name,
+						            d.ShortDescription
+                    FROM beatmap_descriptors bd
+                    JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                    WHERE bd.BeatmapID = ?
+                    ORDER BY bd.Weight DESC, bd.DescriptorID
+                    LIMIT 5
+                ");
+                $stmt->bind_param("i", $result["BeatmapID"]);
+                $stmt->execute();
+                $descriptorResult = $stmt->get_result();
+            } else {
+                $result = null;
             }
+
             $stmt->close();
-            ?>
+        ?>
+        <?php if ($result != null) { ?>
+        <div style="width:100%;text-align:center;">
+            <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            <br><br>
+            <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
+            by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
+            <span class="subText map-descriptors">
+                <?php
+                  $descriptorLinks = array();
+
+                  while ($descriptor = $descriptorResult->fetch_assoc()) {
+                    $name = htmlspecialchars($descriptor["Name"]);
+                    $id = (int)$descriptor["DescriptorID"];
+                    $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+
+                    $descriptorLink = '
+                      <span class="tooltip-wrapper">
+                        <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                        <span class="tooltip-box">
+                          ' . $shortDescription . '
+                        </span>
+                      </span>';
+
+                    $descriptorLinks[] = $descriptorLink;
+                  }
+
+                  echo implode(', ', $descriptorLinks);
+                ?>
+            </span>
+            <br><br>
+            Ranked <?php echo date("M jS, Y", strtotime($result['DateRanked'])); ?> <br>
+            <b><?php echo number_format((float)$result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
+            <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $result["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($result["ChartRank"] / 50); ?>">overall</a><br>
         </div>
+        <?php } else { echo "no maps for this week :("; } ?>
     </div>
+    <div class="flex-child column-when-mobile" style="width:34%;height:40em;">
+        <?php
+        $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
+                                        FROM beatmaps b
+                                        JOIN beatmapsets s on b.SetID = s.SetID
+                                        INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
+                                        WHERE r.date >= NOW() - INTERVAL 1 WEEK
+                                        AND b.Mode = ? AND b.blacklisted = 0
+                                        GROUP BY b.BeatmapID
+                                        ORDER BY num_ratings DESC
+                                        LIMIT 25;");
+        $stmt->bind_param("i", $mode);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $usedSets = array();
+
+        while($row = $result->fetch_assoc()) {
+            if (in_array($row["SetID"], $usedSets))
+                continue;
+            ?>
+            <div class="flex-container ratingContainer alternating-bg" style="height:4em;">
+                <div class="flex-child" style="min-width:2em;text-align:center;">
+                    #<?php echo sizeof($usedSets) + 1; ?>
+                </div>
+                <div class="flex-child">
+                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                </div>
+                <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
+                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
+                </div>
+                <div class="flex-child" style="margin-left: auto;text-align:right;min-width:6em;">
+                    <?php echo $row["num_ratings"];?> ratings
+                </div>
+            </div>
+            <?php
+            if (sizeof($usedSets) == 9)
+                break;
+
+            $usedSets[] = $row["SetID"];
+        }
+        $stmt->close();
+        ?>
+    </div>
+</div>
 <?php
 require 'footer.php';
 ?>

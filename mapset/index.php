@@ -201,6 +201,23 @@ GROUP BY
 <hr style="margin-bottom:1em;">
 
 <?php
+$motdBeatmapIDs = array();
+if (!empty($sampleRow['DateRanked']) && strtotime($sampleRow['DateRanked']) < strtotime('-3 months')) {
+    $modesToCheck = array();
+    while ($row = $result->fetch_assoc()) {
+        $modesToCheck[$row['Mode']] = true;
+    }
+
+    mysqli_data_seek($result, 0);
+
+    foreach (array_keys($modesToCheck) as $m) {
+        $motdForMode = getMapOfTheDay($conn, $m);
+        if ($motdForMode) {
+            $motdBeatmapIDs[] = $motdForMode['BeatmapID'];
+        }
+    }
+}
+
 while($row = $result->fetch_assoc()) {
     $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `BeatmapID` = ? AND `UserID` = ?");
     $stmt->bind_param("ii", $row["BeatmapID"], $userId);
@@ -298,13 +315,21 @@ while($row = $result->fetch_assoc()) {
 
     <div class="flex-container difficulty-container alternating-bg" >
         <div class="flex-child diffBox" style="text-align:center;width:20%;">
+            <?php if (in_array($row["BeatmapID"], $motdBeatmapIDs)) { ?>
+            <span class="tooltip-wrapper">
+                <span class="badge" style="background-color: #c6c69f;" title="Map of the Day">MOTD</span>
+                <span class="tooltip-box">
+                    Random map of the day
+                </span>
+            </span>
+            <?php } ?>
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
-            <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
+            <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
             <br>
             <?php
