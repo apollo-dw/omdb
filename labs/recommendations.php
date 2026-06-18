@@ -169,7 +169,7 @@
                 <span class="var-d" title="Data: Seed SR">SeedSR</span>: Seed map's star rating<br>
                 <span class="var-d" title="Data: Cand SR">CandSR</span>: Candidate map's star rating<br>
                 <span class="var-d" title="Data: Shared Nominators">SharedNoms</span>: # of nominators that are the same between the seed and candidate map<br>
-                <span class="var-d" title="Data: Shared Mappers">SharedMappers</span>: # of mappers that are the same between the seed and candidate map<br>
+                <span class="var-d" title="Data: Shared Mappers">SharedMappers</span>: The overlap of mappers between the seed and candidate maps<br>(SharedMappers / (SeedTotalMappers + CandTotalMappers - SharedMappers))<br>
                 <span class="var-d" title="Data: Descriptor Match Score">D</span>: A sum of the weights of matching descriptors, or 0 if a diametrically opposed descriptor is found in the candidate map
             </div>
             <hr style="border-color: #333;">
