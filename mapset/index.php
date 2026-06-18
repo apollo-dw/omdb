@@ -323,7 +323,7 @@ while($row = $result->fetch_assoc()) {
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
                 <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
-            <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a>
+            <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>
             <br>
             <?php
