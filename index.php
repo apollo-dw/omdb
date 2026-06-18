@@ -306,7 +306,50 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 </div>
 <br>
     <div class="flex-container column-when-mobile-container">
-        <div class="flex-child column-when-mobile" style="width:50%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+        <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+            <h2 style="margin-top:0;">Map of the Day</h2>
+            <?php
+                $seed = intval(date('Ymd'));
+                
+                $stmt = $conn->prepare("
+                    SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank
+                    FROM beatmaps b
+                    JOIN beatmapsets s ON b.SetID = s.SetID
+                    WHERE s.DateRanked < NOW() - INTERVAL 3 MONTH
+                      AND b.Mode = ?
+                      AND b.Blacklisted = 0
+                    ORDER BY RAND(?)
+                    LIMIT 1;
+                ");
+                $stmt->bind_param("ii", $mode, $seed);
+                $stmt->execute();
+                $motdResult = $stmt->get_result();
+                $motd = $motdResult->fetch_assoc();
+                $stmt->close();
+            ?>
+            <?php if ($motd != null) { 
+                $motdYear = date("Y", strtotime($motd['DateRanked']));
+            ?>
+            <div style="width:100%;text-align:center;">
+                <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                <br><br>
+                <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
+                by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
+                <br><br>
+                Ranked <?php echo date("M jS, Y", strtotime($motd['DateRanked'])); ?> <br>
+                <?php if ($motd["RatingCount"] > 0) { ?>
+                    <b><?php echo number_format((float)$motd["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $motd["RatingCount"]; ?></span> votes</span><br>
+                    <?php if ($motd["ChartRank"] != null) { ?>
+                        <b>#<?php echo $motd["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $motdYear;?>&p=<?php echo ceil($motd["ChartYearRank"] / 50); ?>"><?php echo $motdYear;?></a>, <b>#<?php echo $motd["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($motd["ChartRank"] / 50); ?>">overall</a><br>
+                    <?php } ?>
+                <?php } else { ?>
+                    <span class="subText" style="color:white;">No ratings yet! Be the first!</span><br>
+                <?php } ?>
+            </div>
+            <?php } else { echo "No maps found?! :("; } ?>
+        </div>
+
+        <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
             <h2 style="margin-top:0;">Highest charting map of the week</h2>
             <?php
                 $stmt = $conn->prepare(
@@ -369,7 +412,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             </div>
             <?php } else { echo "no maps for this week :("; } ?>
         </div>
-        <div class="flex-child column-when-mobile" style="width:50%;height:40em;">
+        <div class="flex-child column-when-mobile" style="width:34%;height:40em;">
             <?php
             $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
                                           FROM beatmaps b
