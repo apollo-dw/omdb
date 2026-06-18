@@ -871,7 +871,7 @@
 			FROM cache c
 			JOIN beatmaps b ON c.Value = b.BeatmapID
 			JOIN beatmapsets s ON b.SetID = s.SetID
-			WHERE c.Key = ?
+			WHERE c.Attribute = ?
 		");
 		
 		$stmt->bind_param("s", $cacheKey);
