@@ -201,9 +201,9 @@
                     COUNT(b.BeatmapID) AS RatedMapCount
                 FROM beatmap_creators bc
                 JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+                WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
             ");
-            $stmt->bind_param("i", $profileId);
+            $stmt->bind_param("ii", $profileId, $mode);
             $stmt->execute();
             $mapStats = $stmt->get_result()->fetch_assoc();
             $stmt->close();
@@ -216,7 +216,7 @@
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
-                    WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
                     ORDER BY b.Rating DESC, b.BeatmapID DESC
                     LIMIT 1)
                     
@@ -226,12 +226,12 @@
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
-                    WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
                     ORDER BY b.Rating ASC, b.BeatmapID DESC
                     LIMIT 1)
                 ");
                 
-                $stmt->bind_param("ii", $profileId, $profileId);
+                $stmt->bind_param("iiii", $profileId, $mode, $profileId, $mode);
                 $stmt->execute();
                 $extremes = $stmt->get_result();
                 
