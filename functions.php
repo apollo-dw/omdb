@@ -863,4 +863,40 @@
 			document.write(myDate.toLocaleString())
 		</script>
 	<?php }
+
+	function getMapOfTheDay($conn, $mode) {
+		$countStmt = $conn->prepare("SELECT COUNT(b.BeatmapID) as total 
+			FROM beatmaps b 
+			JOIN beatmapsets s ON b.SetID = s.SetID 
+			WHERE s.DateRanked < NOW() - INTERVAL 3 MONTH 
+			AND b.Mode = ? 
+			AND b.Blacklisted = 0
+		");
+		$countStmt->bind_param("i", $mode);
+		$countStmt->execute();
+		$totalMaps = $countStmt->get_result()->fetch_assoc()['total'];
+		$countStmt->close();
+
+		if ($totalMaps == 0) {
+			return null;
+		}
+
+		mt_srand(intval(date('Ymd')) + $mode);
+		$randomOffset = mt_rand(0, $totalMaps - 1);
+
+		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank
+			FROM beatmaps b
+			JOIN beatmapsets s ON b.SetID = s.SetID
+			WHERE s.DateRanked < NOW() - INTERVAL 3 MONTH
+			AND b.Mode = ?
+			AND b.Blacklisted = 0
+			LIMIT 1 OFFSET ?;
+		");
+		$stmt->bind_param("ii", $mode, $randomOffset);
+		$stmt->execute();
+		$motd = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $motd;
+	}
 ?>

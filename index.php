@@ -309,23 +309,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
     <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
         <h2 style="margin-top:0;">Map of the Day</h2>
         <?php
-            $seed = intval(date('Ymd'));
-            
-            $stmt = $conn->prepare("
-                SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank
-                FROM beatmaps b
-                JOIN beatmapsets s ON b.SetID = s.SetID
-                WHERE s.DateRanked < NOW() - INTERVAL 3 MONTH
-                    AND b.Mode = ?
-                    AND b.Blacklisted = 0
-                ORDER BY RAND(?)
-                LIMIT 1;
-            ");
-            $stmt->bind_param("ii", $mode, $seed);
-            $stmt->execute();
-            $motdResult = $stmt->get_result();
-            $motd = $motdResult->fetch_assoc();
-            $stmt->close();
+            $motd = getMapOfTheDay($conn, $mode);
         ?>
         <?php if ($motd != null) { 
             $motdYear = date("Y", strtotime($motd['DateRanked']));
