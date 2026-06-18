@@ -195,6 +195,58 @@
             $mapsetCount = $stats["mapsetCount"];
             $approvedEditCount = $stats["approvedEditCount"];
             $descriptorVoteCount = $stats["descriptorVoteCount"];
+
+            $stmt = $conn->prepare("SELECT
+                    AVG(b.Rating) AS AvgRating,
+                    COUNT(b.BeatmapID) AS RatedMapCount
+                FROM beatmap_creators bc
+                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+            ");
+            $stmt->bind_param("i", $profileId);
+            $stmt->execute();
+            $mapStats = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
+            if ($hasRatedMaps) {
+                // This bullshit doesnt show syntax highlighting if u start with a bracket dude
+                $stmt = $conn->prepare("
+                    (SELECT b.BeatmapID, s.SetID, s.Title, b.DifficultyName, b.WeightedAvg, 'highest' AS Type
+                    FROM beatmap_creators bc
+                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                    JOIN beatmapsets s ON b.SetID = s.SetID
+                    WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+                    ORDER BY b.Rating DESC, b.BeatmapID DESC
+                    LIMIT 1)
+                    
+                    UNION ALL
+                    
+                    (SELECT b.BeatmapID, s.SetID, s.Title, b.DifficultyName, b.WeightedAvg, 'lowest' AS Type
+                    FROM beatmap_creators bc
+                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                    JOIN beatmapsets s ON b.SetID = s.SetID
+                    WHERE bc.CreatorID = ? AND b.Rating IS NOT NULL
+                    ORDER BY b.Rating ASC, b.BeatmapID DESC
+                    LIMIT 1)
+                ");
+                
+                $stmt->bind_param("ii", $profileId, $profileId);
+                $stmt->execute();
+                $extremes = $stmt->get_result();
+                
+                $highestMap = null;
+                $lowestMap = null;
+            
+                while ($row = $extremes->fetch_assoc()) {
+                    if ($row['Type'] === 'highest') {
+                        $highestMap = $row;
+                    } elseif ($row['Type'] === 'lowest') {
+                        $lowestMap = $row;
+                    }
+                }
+                $stmt->close();
+            }
         ?>
 
         <div class="profileStats">
@@ -219,6 +271,32 @@
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
 
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
+
+            <?php if ($hasRatedMaps) { ?>
+                <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
+                <b>Avg Map Rating:</b>
+                <br>
+                <?php echo number_format((float)$mapStats['AvgRating'], 2); ?> <span class="subText">(from <?php echo $mapStats['RatedMapCount']; ?> diffs)</span><br>
+                
+                <?php if ($highestMap) { ?>
+                    <b>Highest Rated:</b> 
+                    <br>
+                    <a href="/mapset/<?php echo $highestMap['SetID']; ?>">
+                        <?php echo safe_htmlspecialchars($highestMap['Title'] . " [" . $highestMap['DifficultyName'] . "]", ENT_QUOTES); ?>
+                    </a> 
+                    (<?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?>)<br>
+                <?php } ?>
+                
+                <?php if ($lowestMap) { ?>
+                    <b>Lowest Rated:</b> 
+                    <br>
+                    <a href="/mapset/<?php echo $lowestMap['SetID']; ?>">
+                        <?php echo safe_htmlspecialchars($lowestMap['Title'] . " [" . $lowestMap['DifficultyName'] . "]", ENT_QUOTES); ?>
+                    </a> 
+                    (<?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?>)<br>
+                <?php } ?>
+            <?php } ?>
+            <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
         </div>
 
 		<?php if ($isValidUser){ ?>
