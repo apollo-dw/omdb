@@ -310,6 +310,23 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         <h2 style="margin-top:0;">Random Map of the Day</h2>
         <?php
             $motd = getMapOfTheDay($conn, $mode);
+            if ($motd != null) {
+                $stmt = $conn->prepare("
+                    SELECT 
+                        bd.DescriptorID,
+                        d.Name,
+                        d.ShortDescription
+                    FROM beatmap_descriptors bd
+                    JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                    WHERE bd.BeatmapID = ?
+                    ORDER BY bd.Weight DESC, bd.DescriptorID
+                    LIMIT 5
+                ");
+                $stmt->bind_param("i", $motd["BeatmapID"]);
+                $stmt->execute();
+                $motdDescriptorResult = $stmt->get_result();
+                $stmt->close();
+            }
         ?>
         <?php if ($motd != null) { 
             $motdYear = date("Y", strtotime($motd['DateRanked']));
@@ -319,6 +336,29 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <br><br>
             <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
+            <span class="subText map-descriptors">
+                <?php
+                  $motdDescriptorLinks = array();
+
+                  while ($descriptor = $motdDescriptorResult->fetch_assoc()) {
+                    $name = htmlspecialchars($descriptor["Name"]);
+                    $id = (int)$descriptor["DescriptorID"];
+                    $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+
+                    $descriptorLink = '
+                      <span class="tooltip-wrapper">
+                        <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                        <span class="tooltip-box">
+                          ' . $shortDescription . '
+                        </span>
+                      </span>';
+
+                    $motdDescriptorLinks[] = $descriptorLink;
+                  }
+
+                  echo implode(', ', $motdDescriptorLinks);
+                ?>
+            </span>
             <br><br>
             Ranked <?php echo date("M jS, Y", strtotime($motd['DateRanked'])); ?> <br>
             <?php if ($motd["RatingCount"] > 0) { ?>
