@@ -10,7 +10,7 @@
 		static $nullifiedBy = null;
 
 		if ($descriptorData === null || $nullifiedBy === null) {
-			$descriptorJSON = __DIR__ . "/../assets/descriptors.json";
+			$descriptorJSON = __DIR__ . "/../../assets/descriptors.json";
 			$descriptorData = file_exists($descriptorJSON) ? json_decode(file_get_contents($descriptorJSON), true) : [];
 
 			$stmt = $conn->prepare("SELECT DescriptorID, ParentID FROM descriptors");
