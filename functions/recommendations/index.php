@@ -239,7 +239,7 @@
 				$descriptorScoreField * ? +
 				GREATEST(0, 1 - ABS(TIMESTAMPDIFF(MONTH, ?, b.Timestamp)) / ?) * ? +
 				COUNT(DISTINCT bn.NominatorID) * ? +
-				COUNT(DISTINCT bc.CreatorID) * ? +
+				(COUNT(DISTINCT bc.CreatorID) / GREATEST(1, ? + (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.BeatmapID) - COUNT(DISTINCT bc.CreatorID))) * ? +
 				COALESCE(corr.Correlation, 0) * (COALESCE(corr.CoRaters, 0) / (COALESCE(corr.CoRaters, 0) + ?)) * ? +
 				GREATEST(0, 1 - ABS(b.SR - ?) / (? * ?)) * ?
 			) AS RecScore
@@ -294,12 +294,12 @@
 			$weights["descriptorScore"],
 			$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"],
 			$weights["sharedNominator"],
-			$weights["sharedMapper"],
+			count($creatorIDs), $weights["sharedMapper"],
 			$settings["corrShrink"], $weights["correlation"],
 			$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
 		];
 
-		$types = "dididddsidddiddddd"
+		$types = "dididddsiddididdddd"
 			. str_repeat('i', count($userIDs))
 			. str_repeat('i', count($nominatorIDs))
 			. str_repeat('i', count($creatorIDs))
