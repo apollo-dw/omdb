@@ -98,12 +98,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const rect = tooltip.getBoundingClientRect();
 
       const parentY = getClippingParent(tooltip, "y");
-      if (rect.top < parentY.getBoundingClientRect().top || rect.top < 10) {
+      if (rect.top < Math.max(parentY.getBoundingClientRect().top, 10)) {
         tooltip.classList.add("flip");
       }
 
       const parentX = getClippingParent(tooltip, "x");
-      if (rect.left < parentX.getBoundingClientRect().left || rect.left < 10) {
+      if (rect.left < Math.max(parentX.getBoundingClientRect().left, 10)) {
         tooltip.classList.add("flip-right");
       }
     });
