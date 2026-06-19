@@ -228,7 +228,7 @@
             $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
             $stmt->close();
 
-            $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
+            $hasRatedMaps = $mapStats['RatedMapCount'] >= 5;
             if ($hasRatedMaps) {
                 // This bullshit doesnt show syntax highlighting if u start with a bracket dude
                 $stmt = $conn->prepare("
