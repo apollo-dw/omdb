@@ -408,9 +408,9 @@
     <h2>Map Statistics</h2>
     <div class="flex-container" style="background-color:#203838; justify-content:space-around; align-items:center; border-radius:4px;">
         <div class="flex-child" style="width:33%; text-align:center;">
-            <h3>Highest Rated</h3>
+            <h3 style="margin:0;">Highest Rated</h3>
             <?php if ($highestMap) { ?>
-                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
                 <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
@@ -486,9 +486,9 @@
         </div>
 
         <div class="flex-child" style="width:33%; text-align:center;">
-            <h3>Lowest Rated</h3>
+            <h3 style="margin:0;">Lowest Rated</h3>
             <?php if ($lowestMap) { ?>
-                <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $lowestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
+                <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $lowestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
                     <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$lowestMap["Artist"]} - {$lowestMap["Title"]} [{$lowestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
                     <b><?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
