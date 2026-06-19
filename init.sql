@@ -889,3 +889,9 @@ CREATE TABLE `beatmap_recommendations` (
   PRIMARY KEY (`RecommendationID`),
   KEY `idx_mapid_processdate` (`MapID`,`ProcessDate`)
 ) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `cache` (
+  `Attribute` varchar(64) NOT NULL,
+  `Value` varchar(255) NOT NULL,
+  PRIMARY KEY (`Attribute`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

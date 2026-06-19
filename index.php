@@ -7,6 +7,8 @@
 welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
 <span style="color:grey;">
     <?php
+	$motd = getMapOfTheDay($conn, $mode);
+	
     $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
     $stmt->execute();
     $result = $stmt->get_result();
@@ -93,6 +95,16 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     <?php
                         echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
                     ?>
+					<span>
+						<?php if ($motd['BeatmapID'] == $row["BeatmapID"]) { ?>
+						<span class="tooltip-wrapper">
+							<span class="badge" style="background-color: #c6c69f;" title="Map of the Day">MOTD</span>
+							<span class="tooltip-box">
+								Random map of the day
+							</span>
+						</span>
+						<?php } ?>
+					</span>
                 </div>
 			</div>
 		  <?php
@@ -309,7 +321,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
     <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
         <h2 style="margin-top:0;">Random Map of the Day</h2>
         <?php
-            $motd = getMapOfTheDay($conn, $mode);
             if ($motd != null) {
                 $stmt = $conn->prepare("
                     SELECT 
