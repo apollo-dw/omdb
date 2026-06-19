@@ -200,7 +200,8 @@
                     AVG(b.Rating) AS AvgRating,
                     AVG(b.SR) AS AvgSR,
                     AVG(b.controversy) AS AvgControversy,
-                    COUNT(b.BeatmapID) AS RatedMapCount
+                    COUNT(b.BeatmapID) AS RatedMapCount,
+                    COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
                 FROM beatmap_creators bc
                 JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                 WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
@@ -431,6 +432,7 @@
             <hr style="margin: 1em 0; width: 60%; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
             
             <div>
+                <b>Total Ratings on User's Maps:</b> <?php echo $mapStats['TotalRatings']; ?><br>
                 <b>Avg. Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
                 <?php if ($activeYear) { ?>
                     <b>Most Active Year:</b> <?php echo $activeYear; ?>
