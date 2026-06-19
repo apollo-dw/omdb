@@ -441,7 +441,7 @@
 
             <br>
 
-            <b>Top 3 Descriptors</b>
+            <b>Top 6 Descriptors</b>
             <span class="subText">
                 <?php
                     $descStmt = $conn->prepare("SELECT
@@ -455,7 +455,7 @@
                         WHERE bc.CreatorID = ?
                         GROUP BY d.DescriptorID
                         ORDER BY TotalWeight DESC
-                        LIMIT 3
+                        LIMIT 6
                     ");
                     
                     $descStmt->bind_param("i", $profileId);
