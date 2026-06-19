@@ -70,7 +70,7 @@ function openTab(name) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const overflowParams = ["scroll", "auto", "hidden", "clip"];
+  const overflowParams = new Set(["scroll", "auto", "hidden", "clip"]);
   function getClippingParent(el, axis) {
     const prop = axis === "y" ? "overflowY" : "overflowX";
     let parent = el.parentElement;
@@ -78,8 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
     while (parent) {
       const { overflow, [prop]: axisProp } = window.getComputedStyle(parent);
       if (
-        overflowParams.includes(axisProp) ||
-        overflowParams.includes(overflow)
+        overflowParams.has(axisProp) ||
+        overflowParams.has(overflow)
       )
         return parent;
 
