@@ -132,7 +132,7 @@
     }
 
     const initialTab = $(".tabbed-container-nav button.active").data("tab");
-    if (initialTab !== undefined) {
+    if (initialTab) {
         showTab(initialTab, true);
     }
 </script>
