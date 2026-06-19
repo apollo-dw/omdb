@@ -232,7 +232,7 @@
             if ($hasRatedMaps) {
                 // This bullshit doesnt show syntax highlighting if u start with a bracket dude
                 $stmt = $conn->prepare("
-                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, 'highest' AS Type
+                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, 'highest' AS Type
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
@@ -242,7 +242,7 @@
                     
                     UNION ALL
                     
-                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, 'lowest' AS Type
+                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, 'lowest' AS Type
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
@@ -412,7 +412,7 @@
             <?php if ($highestMap) { ?>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
-                <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
+                <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $highestMap["RatingCount"]; ?> votes</span>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
         </div>
 
@@ -490,7 +490,7 @@
             <?php if ($lowestMap) { ?>
                 <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $lowestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
                     <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$lowestMap["Artist"]} - {$lowestMap["Title"]} [{$lowestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
-                    <b><?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
+                    <b><?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $lowestMap["RatingCount"]; ?> votes</span>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
         </div>
     </div>
