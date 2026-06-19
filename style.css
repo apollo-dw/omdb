@@ -833,6 +833,11 @@ ol.star-rating-list > li {
   border-color: transparent transparent #203838 transparent;
 }
 
+.tooltip-box.flip-right {
+  left: 0;
+  right: auto;
+}
+
 @media only screen and (max-width: 680px) {
   .topBar {
     padding-left: 1%;
