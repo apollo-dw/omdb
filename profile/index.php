@@ -198,6 +198,8 @@
 
             $stmt = $conn->prepare("SELECT
                     AVG(b.Rating) AS AvgRating,
+                    AVG(b.SR) AS AvgSR,
+                    AVG(b.controversy) AS AvgControversy,
                     COUNT(b.BeatmapID) AS RatedMapCount
                 FROM beatmap_creators bc
                 JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
@@ -208,11 +210,28 @@
             $mapStats = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
+            $stmt = $conn->prepare("SELECT
+                    YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
+                    COUNT(*) as YearCount
+                FROM beatmap_creators bc
+                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                WHERE bc.CreatorID = ? AND b.Mode = ?
+                GROUP BY ActiveYear
+                ORDER BY YearCount DESC
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $profileId, $mode);
+            $stmt->execute();
+            $activeYearResult = $stmt->get_result()->fetch_assoc();
+            $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
+            $stmt->close();
+
             $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
             if ($hasRatedMaps) {
                 // This bullshit doesnt show syntax highlighting if u start with a bracket dude
                 $stmt = $conn->prepare("
-                    (SELECT b.BeatmapID, s.SetID, s.Title, b.DifficultyName, b.WeightedAvg, 'highest' AS Type
+                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, 'highest' AS Type
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
@@ -222,7 +241,7 @@
                     
                     UNION ALL
                     
-                    (SELECT b.BeatmapID, s.SetID, s.Title, b.DifficultyName, b.WeightedAvg, 'lowest' AS Type
+                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, 'lowest' AS Type
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
@@ -271,31 +290,6 @@
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
 
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
-
-            <?php if ($hasRatedMaps) { ?>
-                <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
-                <b>Avg Map Rating:</b>
-                <br>
-                <?php echo number_format((float)$mapStats['AvgRating'], 2); ?> <span class="subText">(from <?php echo $mapStats['RatedMapCount']; ?> diffs)</span><br>
-                
-                <?php if ($highestMap) { ?>
-                    <b>Highest Rated:</b> 
-                    <br>
-                    <a href="/mapset/<?php echo $highestMap['SetID']; ?>">
-                        <?php echo safe_htmlspecialchars($highestMap['Title'] . " [" . $highestMap['DifficultyName'] . "]", ENT_QUOTES); ?>
-                    </a> 
-                    (<?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?>)<br>
-                <?php } ?>
-                
-                <?php if ($lowestMap) { ?>
-                    <b>Lowest Rated:</b> 
-                    <br>
-                    <a href="/mapset/<?php echo $lowestMap['SetID']; ?>">
-                        <?php echo safe_htmlspecialchars($lowestMap['Title'] . " [" . $lowestMap['DifficultyName'] . "]", ENT_QUOTES); ?>
-                    </a> 
-                    (<?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?>)<br>
-                <?php } ?>
-            <?php } ?>
             <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
         </div>
 
@@ -403,6 +397,103 @@
              echo "<br><a href='friends/?id={$profileId}'><div style='float:right;'>...view more!</div></a>";
          }
          echo "<br />";
+    }
+?>
+
+<?php
+    if($hasRatedMaps) {
+?>
+    <hr>
+    <h2>Map Statistics</h2>
+    <div class="flex-container" style="background-color:#203838; justify-content:space-around; align-items:center; border-radius:4px;">
+        <div class="flex-child" style="width:33%; text-align:center;">
+            <h3>Highest Rated</h3>
+            <?php if ($highestMap) { ?>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
+                <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
+            <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
+        </div>
+
+        <div class="flex-child" style="width:34%; text-align:center; display:inline-flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div class="flex-container" style="justify-content:space-around; align-items:center;">
+                <div class="flex-child" style="margin:0.5em;">
+                    <h3 style="margin:0.25em;">Average Rating</h3>
+                    <div style="font-size:2.5em; font-weight:bold; line-height:1;"><?php echo number_format((float)$mapStats['AvgRating'], 2); ?></div>
+                </div>   
+                <div class="flex-child" style="margin:0.5em;">                 
+                    <h3 style="margin:0.25em;">Average Controversy</h3>
+                    <div style="font-size:2.5em; font-weight:bold; line-height:1;"><?php echo number_format((float)$mapStats['AvgControversy'], 2); ?></div>
+                </div>
+            </div>
+            <span class="subText">from <?php echo $mapStats['RatedMapCount']; ?> rated diffs</span>
+            
+            <hr style="margin: 1em 0; width: 60%; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
+            
+            <div>
+                <b>Avg. Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
+                <?php if ($activeYear) { ?>
+                    <b>Most Active Year:</b> <?php echo $activeYear; ?>
+                <?php } ?>
+            </div>
+
+            <br>
+
+            <b>Top 3 Descriptors</b>
+            <span class="subText">
+                <?php
+                    $descStmt = $conn->prepare("SELECT
+                            bd.DescriptorID,
+                            d.Name,
+                            d.ShortDescription,
+                            SUM(bd.Weight) as TotalWeight
+                        FROM beatmap_creators bc
+                        JOIN beatmap_descriptors bd ON bc.BeatmapID = bd.BeatmapID
+                        JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                        WHERE bc.CreatorID = ?
+                        GROUP BY d.DescriptorID
+                        ORDER BY TotalWeight DESC
+                        LIMIT 3
+                    ");
+                    
+                    $descStmt->bind_param("i", $profileId);
+                    $descStmt->execute();
+                    $descResult = $descStmt->get_result();
+
+                    if ($descResult->num_rows > 0) {
+                        $descriptors = [];
+                        while ($descriptor = $descResult->fetch_assoc()) {
+                            $name = safe_htmlspecialchars($descriptor["Name"]);
+                            $id = (int)$descriptor["DescriptorID"];
+                            $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                            $descriptors[] = '
+                                            <span class="tooltip-wrapper">
+                                                <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                                                <span class="tooltip-box">
+                                                    ' . $shortDescription . '
+                                                </span>
+                                            </span>';
+                        }
+                        echo implode(", ", $descriptors);
+                    } else {
+                        echo "<i>None yet</i>";
+                    }
+                    $descStmt->close();
+                ?>
+            </span>
+        </div>
+
+        <div class="flex-child" style="width:33%; text-align:center;">
+            <h3>Lowest Rated</h3>
+            <?php if ($lowestMap) { ?>
+                <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $lowestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
+                    <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$lowestMap["Artist"]} - {$lowestMap["Title"]} [{$lowestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
+                    <b><?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00</span>
+            <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
+        </div>
+    </div>
+    <br />
+<?php
     }
 ?>
 
