@@ -78,7 +78,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const rect = tooltip.getBoundingClientRect();
 
-      if (rect.top < 10) {
+      let parent = tooltip.parentElement;
+      while (parent) {
+        const style = window.getComputedStyle(parent);
+        if (
+          style.overflowY === "scroll" ||
+          style.overflowY === "auto" ||
+          style.overflow ===  "scroll" ||
+          style.overflow === "auto"
+        )
+          break;
+        parent = parent.parentElement;
+      }
+      if (!parent)
+        parent = document.body;
+      const parentRect = parent.getBoundingClientRect();
+
+      if (rect.top < parentRect.top || rect.top < 10) {
         tooltip.classList.add("flip");
       }
     });
