@@ -441,7 +441,7 @@
 
             <br>
 
-            <b>Top 6 Descriptors</b>
+            <b>Top Descriptors</b>
             <span class="subText">
                 <?php
                     $descStmt = $conn->prepare("SELECT
