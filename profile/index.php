@@ -19,6 +19,7 @@
 
 	$ratingCounts = array();
 
+    $isBlacklisted = false;
     if ($isValidUser) {
         $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
                         FROM `ratings` r
@@ -46,6 +47,12 @@
         $stmt->execute();
         $mutuals = $stmt->get_result();
         $mutualCount = $mutuals->num_rows;
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT 1 FROM blacklist WHERE UserID = ?");
+        $stmt->bind_param("i", $profileId);
+        $stmt->execute();
+        $isBlacklisted = $stmt->get_result()->num_rows > 0;
         $stmt->close();
     }
 	
@@ -196,70 +203,73 @@
             $approvedEditCount = $stats["approvedEditCount"];
             $descriptorVoteCount = $stats["descriptorVoteCount"];
 
-            $stmt = $conn->prepare("SELECT
-                    AVG(b.SR) AS AvgSR,
-                    COUNT(b.BeatmapID) AS RatedMapCount,
-                    COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
-                FROM beatmap_creators bc
-                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
-            ");
-            $stmt->bind_param("ii", $profileId, $mode);
-            $stmt->execute();
-            $mapStats = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
+            $hasRatedMaps = false;
+            if ($isValidUser && !$isBlacklisted) {
+                $stmt = $conn->prepare("SELECT
+                        AVG(b.SR) AS AvgSR,
+                        COUNT(b.BeatmapID) AS RatedMapCount,
+                        COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
+                    FROM beatmap_creators bc
+                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+                ");
+                $stmt->bind_param("ii", $profileId, $mode);
+                $stmt->execute();
+                $mapStats = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
 
-            $stmt = $conn->prepare("SELECT
-                    YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
-                    COUNT(*) as YearCount
-                FROM beatmap_creators bc
-                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                JOIN beatmapsets s ON b.SetID = s.SetID
-                WHERE bc.CreatorID = ? AND b.Mode = ?
-                GROUP BY ActiveYear
-                ORDER BY YearCount DESC
-                LIMIT 1
-            ");
-            $stmt->bind_param("ii", $profileId, $mode);
-            $stmt->execute();
-            $activeYearResult = $stmt->get_result()->fetch_assoc();
-            $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
-            $stmt->close();
-
-            $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
-            if ($hasRatedMaps) {
-                $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
+                $stmt = $conn->prepare("SELECT
+                        YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
+                        COUNT(*) as YearCount
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
-                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
-                    ORDER BY b.Rating DESC, b.BeatmapID DESC
+                    WHERE bc.CreatorID = ? AND b.Mode = ?
+                    GROUP BY ActiveYear
+                    ORDER BY YearCount DESC
                     LIMIT 1
                 ");
-                
                 $stmt->bind_param("ii", $profileId, $mode);
                 $stmt->execute();
-                $extremes = $stmt->get_result();
-                
-                $highestMap = $extremes->fetch_assoc();
+                $activeYearResult = $stmt->get_result()->fetch_assoc();
+                $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
                 $stmt->close();
 
-                $highestMapDescriptors = array();
-                if ($highestMap) {
-                    $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
-                        FROM beatmap_descriptors bd
-                        JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
-                        WHERE bd.BeatmapID = ?
-                        ORDER BY bd.Weight DESC, bd.DescriptorID
-                        LIMIT 5
+                $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
+                if ($hasRatedMaps) {
+                    $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
+                        FROM beatmap_creators bc
+                        JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                        JOIN beatmapsets s ON b.SetID = s.SetID
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+                        ORDER BY b.Rating DESC, b.BeatmapID DESC
+                        LIMIT 1
                     ");
-                    $stmt->bind_param("i", $highestMap["BeatmapID"]);
+                    
+                    $stmt->bind_param("ii", $profileId, $mode);
                     $stmt->execute();
-                    $highestMapDescResult = $stmt->get_result();
-                    while ($descriptor = $highestMapDescResult->fetch_assoc()) {
-                        $highestMapDescriptors[] = $descriptor;
-                    }
+                    $extremes = $stmt->get_result();
+                    
+                    $highestMap = $extremes->fetch_assoc();
                     $stmt->close();
+
+                    $highestMapDescriptors = array();
+                    if ($highestMap) {
+                        $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
+                            FROM beatmap_descriptors bd
+                            JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                            WHERE bd.BeatmapID = ?
+                            ORDER BY bd.Weight DESC, bd.DescriptorID
+                            LIMIT 5
+                        ");
+                        $stmt->bind_param("i", $highestMap["BeatmapID"]);
+                        $stmt->execute();
+                        $highestMapDescResult = $stmt->get_result();
+                        while ($descriptor = $highestMapDescResult->fetch_assoc()) {
+                            $highestMapDescriptors[] = $descriptor;
+                        }
+                        $stmt->close();
+                    }
                 }
             }
         ?>
