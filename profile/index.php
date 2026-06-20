@@ -228,7 +228,7 @@
 
             $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
             if ($hasRatedMaps) {
-                $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`
+                $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
@@ -243,6 +243,24 @@
                 
                 $highestMap = $extremes->fetch_assoc();
                 $stmt->close();
+
+                $highestMapDescriptors = array();
+                if ($highestMap) {
+                    $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
+                        FROM beatmap_descriptors bd
+                        JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                        WHERE bd.BeatmapID = ?
+                        ORDER BY bd.Weight DESC, bd.DescriptorID
+                        LIMIT 5
+                    ");
+                    $stmt->bind_param("i", $highestMap["BeatmapID"]);
+                    $stmt->execute();
+                    $highestMapDescResult = $stmt->get_result();
+                    while ($descriptor = $highestMapDescResult->fetch_assoc()) {
+                        $highestMapDescriptors[] = $descriptor;
+                    }
+                    $stmt->close();
+                }
             }
         ?>
 
@@ -386,11 +404,40 @@
     <div class="flex-container" style="justify-content:space-around; align-items:stretch; gap:5%;">
         <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
-            <?php if ($highestMap) { ?>
+            <?php if ($highestMap) { 
+                $highestMapYear = date("Y", strtotime($highestMap['DateRanked']));
+            ?>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
-                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a>
+                <b><a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a></b>
+                
+                <span class="subText map-descriptors">
+                    <?php
+                    $highestMapDescLinks = array();
+                    foreach ($highestMapDescriptors as $descriptor) {
+                        $name = safe_htmlspecialchars($descriptor["Name"]);
+                        $id = (int)$descriptor["DescriptorID"];
+                        $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+
+                        $highestMapDescLinks[] = '
+                          <span class="tooltip-wrapper">
+                            <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                            <span class="tooltip-box">
+                              ' . $shortDescription . '
+                            </span>
+                          </span>';
+                    }
+                    echo implode(', ', $highestMapDescLinks);
+                    ?>
+                </span>
+                <br>
                 <div>
-                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $highestMap["RatingCount"]; ?> votes</span>
+                    Ranked <?php echo date("M jS, Y", strtotime($highestMap['DateRanked'])); ?>
+                    <br>
+                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $highestMap["RatingCount"]; ?></span> votes</span>
+                    <br>
+                    <?php if ($highestMap["ChartRank"] != null) { ?>
+                        <b>#<?php echo $highestMap["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $highestMapYear;?>&p=<?php echo ceil($highestMap["ChartYearRank"] / 50); ?>"><?php echo $highestMapYear;?></a>, <b>#<?php echo $highestMap["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($highestMap["ChartRank"] / 50); ?>">overall</a>
+                    <?php } ?>
                 </div>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
         </div>
