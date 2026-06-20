@@ -410,7 +410,7 @@ while($row = $result->fetch_assoc()) {
 			<span class="map-descriptors">
 				<table style="margin-left: auto;">
 					<tr>
-						<th style="padding:0;">
+						<th style="padding: 0;display: inline;">
 							<span class="subText" style="font-weight:normal;">
                                 <?php
                                     $descriptorLinks = array();

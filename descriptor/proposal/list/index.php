@@ -28,18 +28,17 @@
 </style>
 
 <?php
-    $stmt = $conn->prepare("SELECT * FROM `descriptor_proposals` WHERE Status = 'pending';");
+    $stmt = $conn->prepare("SELECT ProposalID, Name, ShortDescription FROM `descriptor_proposals` WHERE Status = 'pending';");
     $stmt->execute();
-    $proposals = $stmt->get_result();
+    $activeProposals = $stmt->get_result();
     $stmt->close();
 ?>
-
 
 <center><h1>Descriptor proposals</h1></center>
 
 <div class="flex-row-container" style="justify-content: center;">
     <?php
-    while ($proposal = $proposals->fetch_assoc()) {
+    while ($proposal = $activeProposals->fetch_assoc()) {
     ?>
         <div class="proposal-box">
             <div class="proposal-content">
@@ -53,10 +52,34 @@
     }
     ?>
 </div>
-
+<a href="../new/">Create new descriptor proposal</a>
 <hr>
 
-<a href="../new/">Create new descriptor proposal</a>
+<center><h2>History</h2></center>
+
+<?php
+    $stmt = $conn->prepare("SELECT ProposalID, Name, ProposerID, status, timestamp FROM `descriptor_proposals` WHERE Status != 'pending' ORDER BY timestamp DESC;");
+    $stmt->execute();
+    $historicalProposals = $stmt->get_result();
+    $stmt->close();
+?>
+
+<?php
+    while ($proposal = $historicalProposals->fetch_assoc()) {
+    ?>
+		<div class="alternating-bg" style="padding:1em;">
+			<span style="display: inline-block; width: 8em; text-align: center; margin-right: 1em; center; border-right: 1px solid white;">
+				<b style="color: <?php echo $proposal['status'] === 'approved' ? '#85C1A2' : ($proposal['status'] === 'denied' ? '#E5B7B7' : 'inherit'); ?>;">
+					<?php echo htmlspecialchars($proposal['status']); ?>
+				</b>
+			</span>
+			<a href="../?id=<?php echo $proposal["ProposalID"]; ?>"><b><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></b></a>
+			<span class="subText">by <b><?php echo GetUsernameFromID($proposal['ProposerID'], $conn); ?></b></span>
+			<span style="float:right;"><?php echo $proposal["timestamp"]; ?></span>
+		</div>
+    <?php
+    }
+    ?>
 
 <?php
     require '../../../footer.php';

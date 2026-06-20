@@ -23,7 +23,7 @@ error_reporting(E_ALL);
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
 		<link rel="stylesheet" type="text/css" href="/style.css?v=40" />
-        <script src="/script.js?v=4"></script>
+    <script src="/script.js?v=5"></script>
 	</head>
 	<body>
 		<div class="topBar">
