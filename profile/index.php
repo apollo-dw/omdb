@@ -197,9 +197,7 @@
             $descriptorVoteCount = $stats["descriptorVoteCount"];
 
             $stmt = $conn->prepare("SELECT
-                    AVG(b.Rating) AS AvgRating,
                     AVG(b.SR) AS AvgSR,
-                    AVG(b.controversy) AS AvgControversy,
                     COUNT(b.BeatmapID) AS RatedMapCount,
                     COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
                 FROM beatmap_creators bc
