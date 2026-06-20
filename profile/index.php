@@ -204,7 +204,7 @@
             $descriptorVoteCount = $stats["descriptorVoteCount"];
 
             $hasRatedMaps = false;
-            if ($isValidUser && !$isBlacklisted) {
+            if (!$isBlacklisted) {
                 $stmt = $conn->prepare("SELECT
                         AVG(b.SR) AS AvgSR,
                         COUNT(b.BeatmapID) AS RatedMapCount,
