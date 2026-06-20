@@ -509,17 +509,40 @@
 
         <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:20em;">
             <?php
-                $stmt = $conn->prepare("
-                    SELECT r.*, b.DifficultyName, b.SetID 
-                    FROM `ratings` r 
-                    INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
-                    INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
-                    INNER JOIN `users` u ON r.UserID = u.UserID 
-                    WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
-                    ORDER BY r.date DESC 
-                    LIMIT 60
-                ");
-                $stmt->bind_param("ii", $profileId, $mode);
+                if ($loggedIn) {
+                    $stmt = $conn->prepare("
+                        SELECT r.*, b.DifficultyName, b.SetID 
+                        FROM `ratings` r 
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                          AND (
+                              (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                              OR r.UserID IN (
+                                  SELECT UserIDTo 
+                                  FROM user_relations 
+                                  WHERE UserIDFrom = ? AND type = 1
+                              )
+                              OR r.UserID = ?
+                          )
+                        ORDER BY r.date DESC 
+                        LIMIT 60
+                    ");
+                    $stmt->bind_param("iiiii", $profileId, $mode, $userId, $userId, $userId);
+                } else {
+                    $stmt = $conn->prepare("
+                        SELECT r.*, b.DifficultyName, b.SetID 
+                        FROM `ratings` r 
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                        ORDER BY r.date DESC 
+                        LIMIT 60
+                    ");
+                    $stmt->bind_param("ii", $profileId, $mode);
+                }
                 $stmt->execute();
                 $recentRatingsResult = $stmt->get_result();
 
