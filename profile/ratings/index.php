@@ -6,6 +6,11 @@
     $language = $_GET['lang'] ?? "";
     $country = $_GET['c'] ?? "";
     $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
+    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
+
+    if (!isset($selectedDescriptors)) {
+        $selectedDescriptors = json_decode($descriptorsJSON, true);
+    }
 
     $PageTitle = "Ratings";
 
@@ -78,6 +83,22 @@
         $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country = ?)";
         $filterTypes .= "s";
         $filterValues[] = $country;
+    }
+
+    if (!empty($selectedDescriptors)) {
+        $descriptorClauses = [];
+        foreach ($selectedDescriptors as $descriptor) {
+            $descriptorId = (int)$descriptor['id'];
+            $descriptorClauses[] = "
+                EXISTS (
+                    SELECT 1
+                    FROM beatmap_descriptors bd
+                    WHERE bd.BeatmapID = b.BeatmapID
+                        AND bd.DescriptorID = {$descriptorId}
+                )
+            ";
+        }
+        $filterConditions .= "AND (" . implode(" AND ", $descriptorClauses) . ")";
     }
 
     if ($tagArgument != "") {
@@ -168,64 +189,7 @@
     ?>
 </select> <br>
 
-<label for="genre">Genre</label>
-<select id="genre" name="genre" onchange="changePage(1)">
-    <option value=''>Any</option>
-    <?php
-        for ($i = 0; $i <= 14; $i++) {
-            $genreString = getGenre($i);
-            if (is_null($genreString))
-                continue;
-            $selected = $genre !== "" && intval($genre) === $i ? " selected='selected'" : "";
-            echo "<option value='{$i}'{$selected}>" . safe_htmlspecialchars($genreString, ENT_QUOTES) . "</option>";
-        }
-    ?>
-</select> <br>
-
-<label for="language">Language</label>
-<select id="language" name="language" onchange="changePage(1)">
-    <option value=''>Any</option>
-    <?php
-        for ($i = 0; $i <= 14; $i++) {
-            $languageString = getLanguage($i);
-            if (is_null($languageString))
-                continue;
-            $selected = $language !== "" && intval($language) === $i ? " selected='selected'" : "";
-            echo "<option value='{$i}'{$selected}>" . safe_htmlspecialchars($languageString, ENT_QUOTES) . "</option>";
-        }
-    ?>
-</select> <br>
-
-<label for="country">Country</label>
-<select id="country" name="country" onchange="changePage(1)">
-    <option value=''>Any</option>
-    <?php
-        $stmt = $conn->prepare("
-            SELECT DISTINCT mn.Country FROM ratings r
-            JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
-            JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
-            JOIN mappernames mn ON bc.CreatorID = mn.UserID
-            WHERE r.UserID = ? AND mn.Country IS NOT NULL;");
-        $stmt->bind_param('i', $profileId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $countryOptions = array();
-        while ($row = $result->fetch_assoc()) {
-            $name = getFullCountryName($row["Country"]);
-            if ($name == "")
-                continue;
-            $countryOptions[$row["Country"]] = $name;
-        }
-        $stmt->close();
-        asort($countryOptions);
-
-        foreach ($countryOptions as $code => $name) {
-            $selected = $country === strval($code) ? " selected='selected'" : "";
-            echo "<option value='" . safe_htmlspecialchars($code, ENT_QUOTES) . "'{$selected}>" . safe_htmlspecialchars($name, ENT_QUOTES) . "</option>";
-        }
-    ?>
-</select> <br>
+<?php include "../../functions/filter.php"; ?><br>
 
 <label for="tag">Tag</label>
 <select id="tag" name="tag" onchange="changePage(1)">
@@ -331,15 +295,33 @@
 </div>
 
 <script>
+    let currentFilters = [];
+
+    $(document).on('omdbFiltersUpdated', function(event, activeFilters) {
+        currentFilters = activeFilters;
+        changePage(1);
+    });
+
     function changePage(page, changed) {
         var order = document.getElementById("order").value;
         var rating = document.getElementById("rating").value;
         var tag = document.getElementById("tag").value;
         var year = document.getElementById("year").value;
         var sr = document.getElementById("sr").value;
-        var genre = document.getElementById("genre").value;
-        var language = document.getElementById("language").value;
-        var country = document.getElementById("country").value;
+
+        var genre = 0;
+        var language = 0;
+        var country = 0;
+        var mappedDescriptors = [];
+
+        currentFilters.forEach(function(filter) {
+            if (filter.type === 'genre') genre = filter.id;
+            if (filter.type === 'language') language = filter.id;
+            if (filter.type === 'country') country = filter.id;
+            if (filter.type === 'descriptor') mappedDescriptors.push({ id: filter.id, name: filter.name });
+        });
+
+        var descriptorsJSON = JSON.stringify(mappedDescriptors);
 
         // Prio which is changed (specific rating vs rating ordering)
         if (changed === "rating" && rating !== "" && (order == 2 || order == 3))
@@ -347,7 +329,7 @@
         else if (order == 2 || order == 3)
             rating = "";
 
-        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page + "&y=" + year + "&sr=" + sr + "&g=" + genre + "&lang=" + language + "&c=" + encodeURIComponent(country);
+        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page + "&y=" + year + "&sr=" + sr + "&g=" + genre + "&lang=" + language + "&c=" + encodeURIComponent(country) + "&descriptors=" + encodeURIComponent(descriptorsJSON);
     }
 </script>
 

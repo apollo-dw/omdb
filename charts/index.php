@@ -98,128 +98,7 @@
                     }
                 ?>
 			</select><br><br>
-            <label>Genre:</label>
-            <select name="genre" id="genre" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-                    for ($i = 1; $i <= 14; $i++) {
-                        $genre = getGenre($i);
-                        if (is_null($genre))
-                            continue;
-
-                        echo "<option value='{$i}'>$genre</option>";
-                    }
-                ?>
-            </select><br>
-            <label>Language:</label>
-            <select name="language" id="language" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-                for ($i = 1; $i <= 14; $i++) {
-                    $language = getLanguage($i);
-                    if (is_null($language))
-                        continue;
-
-                    echo "<option value='{$i}'>$language</option>";
-                }
-                ?>
-            </select><br>
-
-            <label>Country:</label>
-            <select name="country" id="country" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-			
-                $result = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Username IS NOT NULL AND Country IS NOT NULL;");
-
-                while ($row = $result->fetch_assoc()) {
-                    $countryCode = $row["Country"];
-                    $fullName = getFullCountryName($countryCode);
-                    $options[] = array('code' => $countryCode, 'name' => $fullName);
-                }
-
-                usort($options, function($a, $b) {
-                    return strcmp($a['name'], $b['name']);
-                });
-
-                foreach ($options as $option) {
-					if (is_null($option['name']))
-						continue;
-					
-                    echo "<option value=\"{$option['code']}\">{$option['name']}</option>";
-                }
-                ?>
-            </select>
-            <br><br>
-
-            <style>
-                .popover {
-                    display: none;
-                    position: absolute;
-                    background-color: darkslategray;
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                    z-index: 1000;
-                    font-size: 12px;
-                    overflow-y: auto;
-                    max-height: 30em;
-                    margin: 0.5em;
-                }
-
-                .popover ul {
-                    padding: 0;
-                    margin: 0;
-                }
-
-                .popover ul li {
-                    margin-left: 1em;
-                }
-
-                .descriptor span{
-                    cursor: pointer;
-                    color: white;
-                }
-
-                .descriptor span:hover{
-                    text-decoration: underline;
-                }
-
-                .unusable {
-                    color: grey !important;
-                    cursor: revert !important;
-                }
-
-                .unusable:hover {
-                    text-decoration: none !important;
-                }
-
-                .descriptor-item {
-                    padding: 0.5em;
-                    margin: 0.25em;
-                    box-sizing: border-box;
-                    background-color: DarkSlateGrey;
-                    cursor: pointer;
-                }
-
-                .descriptor-item:hover {
-                    background-color: #203838;
-                }
-            </style>
-
-            <label for="descriptor-input">Descriptors:</label><br>
-            <input type="text" id="searchInput" placeholder="Search...">
-            <div id="descriptorTreePopover" class="popover">
-                <?php
-                $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $descriptors = $result->fetch_all(MYSQLI_ASSOC);
-
-                $tree = buildTree($descriptors);
-                echo generateTreeHTML($tree);
-                ?>
-            </div>
-            <div id="current-descriptors" class="flex-row-container"></div>
+            <?php include "../functions/filter.php"; ?>
             <br>
 
             <?php if ($loggedIn) { ?>
@@ -262,157 +141,84 @@
     const cronInterval = 24 * 60 * 60 * 1000; // 1 day
     var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
 
-    var selectedDescriptors = [];
-    <?php foreach ($selectedDescriptors as $descriptor): ?>
-    selectedDescriptors.push({ id: <?php echo (int)$descriptor['id']; ?>, name: <?php echo json_encode($descriptor['name']); ?> });
-    <?php endforeach; ?>
+    var currentFilters = [];
 
-    var genres = {
-        0 : "",
-        2 : "Video Game",
-        3 : "Anime",
-        4 : "Rock",
-        5 : "Pop",
-        6 : "Other Genre",
-        7 : "Novelty",
-        9 : "Hip Hop",
-        10 : "Electronic",
-        11 : "Metal",
-        12 : "Classical",
-        13 : "Folk",
-        14 : "Jazz",
-    }
-
-    var languages = {
-        0: "",
-        2: "English",
-        3: "Japanese",
-        4: "Chinese",
-        5: "Instrumental",
-        6: "Korean",
-        7: "French",
-        8: "German",
-        9: "Swedish",
-        10: "Spanish",
-        11: "Italian",
-        12: "Russian",
-        13: "Polish",
-        14: "Other Language"
-    };
-
-    $(document).ready(function() {
-        updateCurrentDescriptors();
-
-        $('#searchInput').on('focus', function () {
-            $('#descriptorTreePopover').show();
-        });
-
-        $(document).on('click', function (event) {
-            if (!$(event.target).closest('#descriptorTreePopover').length && !$(event.target).is('#searchInput')) {
-                $('#descriptorTreePopover').hide();
-            }
-        });
-
-        $('#searchInput').on('input', function () {
-            const searchKeyword = $(this).val().toLowerCase();
-            console.log(searchKeyword);
-            $('#descriptorTreePopover li').each(function () {
-                const text = $(this).text().toLowerCase();
-                if (text.includes(searchKeyword)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-
-        $(document).on("click", ".descriptor", function(event) {
-            if ($(this).find('.unusable').length > 0) {
-                event.stopPropagation();
-                return;
-            }
-
-            var descriptor = $($(this).contents()[0]).text();
-            var descriptorID = $(this).data('descriptor-id');
-            selectedDescriptors.push({ id: descriptorID, name: descriptor });
-            updateCurrentDescriptors();
-            $("#descriptor-input").val("");
-            $("#descriptor-suggestions").empty();
-            updateChart()
-            event.stopPropagation();
-        });
-
-        $(document).on("click", ".descriptor-item", function() {
-            var index = $(this).data("index");
-            selectedDescriptors.splice(index, 1);
-            updateCurrentDescriptors();
-            updateChart()
-        });
-
-        function updateCurrentDescriptors() {
-            $("#current-descriptors").empty();
-            selectedDescriptors.forEach(function(descriptor, index) {
-                $("#current-descriptors").append(
-                    $("<span>").addClass("descriptor-item").text(descriptor.name)
-                );
-            });
-        }
+    $(document).on('omdbFiltersUpdated', function(event, activeFilters) {
+        currentFilters = activeFilters;
+        page = 1; // Reset to page 1 whenever a filter is added/removed
+        updateChart(); 
     });
 
-	function changePage(newPage) {
-		var nextPage = parseInt(newPage, 10);
-		page = Math.max(Math.min(nextPage, 9), 1);
-		updateChart();
-	}
+    function changePage(newPage) {
+        var nextPage = parseInt(newPage, 10);
+        page = Math.max(Math.min(nextPage, 9), 1);
+        updateChart();
+    }
 
-	function resetPaginationDisplay() {
+    function resetPaginationDisplay() {
         $("#chart-container").removeClass("faded");
-		$(".pageLink").removeClass("active");
+        $(".pageLink").removeClass("active");
 
-		var pageLink = '.page' + page;
-		$(pageLink).addClass("active");
+        var pageLink = '.page' + page;
+        $(pageLink).addClass("active");
 
-		var year = document.getElementById("year").value;
-		var order = document.getElementById("order").value;
-        var genre = document.getElementById("genre").value;
-        var language = document.getElementById("language").value;
+        var year = document.getElementById("year").value;
+        var order = document.getElementById("order").value;
 
         var orderString = 'Highest Rated ';
-        if (order == 2)
-            orderString = 'Lowest Rated ';
-        else if (order == 3)
-            orderString = 'Most Rated ';
-        else if (order == 4)
-            orderString = 'Most Controversial ';
-        else if (order == 5)
-            orderString = 'Most Underrated ';
-        var genreString = " " + genres[genre] + "   ";
-        var languageString = " " + languages[language] + "   ";
-        var yearString = year == "all-time" ? 'All Time' : year;
+        if (order == 2) orderString = 'Lowest Rated ';
+        else if (order == 3) orderString = 'Most Rated ';
+        else if (order == 4) orderString = 'Most Controversial ';
+        else if (order == 5) orderString = 'Most Underrated ';
 
-        var descriptorUrlArg = "";
-        if (selectedDescriptors.length > 0) {
-            descriptorUrlArg = "&descriptors=" + selectedDescriptors.map((descriptor) => {
-                return descriptor.name;
-            }).join(',');
-        }
+        var g = 0, l = 0, c = 0;
+        var genreName = "", languageName = "";
+        var descriptorNames = [];
 
-        window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page + descriptorUrlArg);
+        currentFilters.forEach(function(filter) {
+            if (filter.type === 'genre') { g = filter.id; genreName = filter.name + "   "; }
+            if (filter.type === 'language') { l = filter.id; languageName = filter.name + "   "; }
+            if (filter.type === 'country') { c = filter.id; }
+            if (filter.type === 'descriptor') descriptorNames.push(filter.name);
+        });
 
-        $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
-	    window.scrollTo({top: 0, behavior: 'smooth'});
-	}
+        var yearString = year === "all-time" ? 'All Time' : year;
 
-	function updateChart() {
+        var urlParams = new URLSearchParams();
+        urlParams.set('y', year);
+        urlParams.set('p', page);
+
+        if (g > 0) urlParams.set('g', g);
+        if (l > 0) urlParams.set('l', l);
+        if (c !== 0 && c !== "") urlParams.set('c', c);
+        if (descriptorNames.length > 0) urlParams.set('descriptors', descriptorNames.join(','));
+
+        window.history.replaceState({}, document.title, "?" + urlParams.toString());
+
+        $('#heading').html(orderString + languageName + genreName + 'Maps of ' + yearString);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function updateChart() {
         $("#chart-container").addClass("faded");
-		var year = document.getElementById("year").value;
-		var order = document.getElementById("order").value;
-        var genre = document.getElementById("genre").value;
-        var language = document.getElementById("language").value;
-        var country = document.getElementById("country").value;
+        
+        var year = document.getElementById("year").value;
+        var order = document.getElementById("order").value;
+
+        var genre = 0;
+        var language = 0;
+        var country = 0;
+        var mappedDescriptors = [];
+
+        currentFilters.forEach(function(filter) {
+            if (filter.type === 'genre') genre = filter.id;
+            if (filter.type === 'language') language = filter.id;
+            if (filter.type === 'country') country = filter.id;
+            if (filter.type === 'descriptor') mappedDescriptors.push({ id: filter.id, name: filter.name });
+        });
 
         var friendsElement = document.getElementById("friends");
-		var onlyFriends = friendsElement ? friendsElement.checked : false;
+        var onlyFriends = friendsElement ? friendsElement.checked : false;
 
         var hideRatedElement = document.getElementById("hideRated");
         var hideRated = hideRatedElement ? hideRatedElement.checked : false;
@@ -422,19 +228,19 @@
 
         var excludeLovedElement = document.getElementById("excludeLoved");
         var excludeLoved = excludeLovedElement ? excludeLovedElement.checked : false;
-		
-		var excludeRankedElement = document.getElementById("excludeRanked");
+        
+        var excludeRankedElement = document.getElementById("excludeRanked");
         var excludeRanked = excludeRankedElement ? excludeRankedElement.checked : false;
 
-        var descriptorsJSON = JSON.stringify(selectedDescriptors);
+        var descriptorsJSON = JSON.stringify(mappedDescriptors);
 
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange=function() {
-			if (this.readyState==4 && this.status==200) {
-				document.getElementById("chart-container").innerHTML=this.responseText;
-				resetPaginationDisplay();
-			}
-		}
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange=function() {
+            if (this.readyState==4 && this.status==200) {
+                document.getElementById("chart-container").innerHTML=this.responseText;
+                resetPaginationDisplay();
+            }
+        }
 
         xmlhttp.open("POST", "chart.php", true);
         xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -451,7 +257,7 @@
             "&excludeGraveyard=" + String(excludeGraveyard) +
             "&excludeRanked=" + String(excludeRanked);
         xmlhttp.send(params);
-	}
+    }
 
     function displayTimeRemaining() {
         const currentTime = new Date().getTime();
@@ -466,7 +272,10 @@
         const minutesText = minutesRemaining === 1 ? 'minute' : 'minutes';
         const secondsText = secondsRemaining === 1 ? 'second' : 'seconds';
 
-        document.getElementById('updateText').textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
+        const updateTextElement = document.getElementById('updateText');
+        if (updateTextElement) {
+            updateTextElement.textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
+        }
     }
 
     displayTimeRemaining();
