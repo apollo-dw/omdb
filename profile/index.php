@@ -517,19 +517,24 @@
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
                         INNER JOIN `users` u ON r.UserID = u.UserID 
                         WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
-                          AND (
-                              (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                              OR r.UserID IN (
-                                  SELECT UserIDTo 
-                                  FROM user_relations 
-                                  WHERE UserIDFrom = ? AND type = 1
-                              )
-                              OR r.UserID = ?
-                          )
+                        AND r.UserID NOT IN (
+                            SELECT UserIDTo 
+                            FROM user_relations 
+                            WHERE UserIDFrom = ? AND type = 2
+                        )
+                        AND (
+                            (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                            OR r.UserID IN (
+                                SELECT UserIDTo 
+                                FROM user_relations 
+                                WHERE UserIDFrom = ? AND type = 1
+                            )
+                            OR r.UserID = ?
+                        )
                         ORDER BY r.date DESC 
                         LIMIT 60
                     ");
-                    $stmt->bind_param("iiiii", $profileId, $mode, $userId, $userId, $userId);
+                    $stmt->bind_param("iiiiii", $profileId, $mode, $userId, $userId, $userId, $userId);
                 } else {
                     $stmt = $conn->prepare("
                         SELECT r.*, b.DifficultyName, b.SetID 
