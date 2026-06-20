@@ -228,43 +228,22 @@
             $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
             $stmt->close();
 
-            $hasRatedMaps = $mapStats['RatedMapCount'] >= 5;
+            $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
             if ($hasRatedMaps) {
-                // This bullshit doesnt show syntax highlighting if u start with a bracket dude
-                $stmt = $conn->prepare("
-                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, 'highest' AS Type
+                $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                     JOIN beatmapsets s ON b.SetID = s.SetID
                     WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
                     ORDER BY b.Rating DESC, b.BeatmapID DESC
-                    LIMIT 1)
-                    
-                    UNION ALL
-                    
-                    (SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, 'lowest' AS Type
-                    FROM beatmap_creators bc
-                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                    JOIN beatmapsets s ON b.SetID = s.SetID
-                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
-                    ORDER BY b.Rating ASC, b.BeatmapID DESC
-                    LIMIT 1)
+                    LIMIT 1
                 ");
                 
-                $stmt->bind_param("iiii", $profileId, $mode, $profileId, $mode);
+                $stmt->bind_param("ii", $profileId, $mode);
                 $stmt->execute();
                 $extremes = $stmt->get_result();
                 
-                $highestMap = null;
-                $lowestMap = null;
-            
-                while ($row = $extremes->fetch_assoc()) {
-                    if ($row['Type'] === 'highest') {
-                        $highestMap = $row;
-                    } elseif ($row['Type'] === 'lowest') {
-                        $lowestMap = $row;
-                    }
-                }
+                $highestMap = $extremes->fetch_assoc();
                 $stmt->close();
             }
         ?>
@@ -405,35 +384,23 @@
     if($hasRatedMaps) {
 ?>
     <hr>
-    <h2>Map Statistics</h2>
-    <div class="flex-container" style="background-color:#203838; justify-content:space-around; align-items:center; border-radius:4px;">
-        <div class="flex-child" style="width:33%; text-align:center;">
+    <h2>Mapping Overview</h2>
+    <div class="flex-container" style="justify-content:space-around; align-items:stretch; gap:5%;">
+        <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
             <?php if ($highestMap) { ?>
-                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
-                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
-                <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $highestMap["RatingCount"]; ?> votes</span>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a>
+                <div>
+                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $highestMap["RatingCount"]; ?> votes</span>
+                </div>
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
         </div>
 
-        <div class="flex-child" style="width:34%; text-align:center; display:inline-flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="flex-container" style="justify-content:space-around; align-items:center;">
-                <div class="flex-child" style="margin:0.5em;">
-                    <h3 style="margin:0.25em;">Average Rating</h3>
-                    <div style="font-size:2.5em; font-weight:bold; line-height:1;"><?php echo number_format((float)$mapStats['AvgRating'], 2); ?></div>
-                </div>   
-                <div class="flex-child" style="margin:0.5em;">                 
-                    <h3 style="margin:0.25em;">Average Controversy</h3>
-                    <div style="font-size:2.5em; font-weight:bold; line-height:1;"><?php echo number_format((float)$mapStats['AvgControversy'], 2); ?></div>
-                </div>
-            </div>
-            <span class="subText">from <?php echo $mapStats['RatedMapCount']; ?> rated diffs</span>
-            
-            <hr style="margin: 1em 0; width: 60%; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
-            
+        <div style="background-color:#203838; flex:1; text-align:center; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; padding:0.25em;">
             <div>
-                <b>Total Ratings on User's Maps:</b> <?php echo $mapStats['TotalRatings']; ?><br>
-                <b>Avg. Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
+                <b>Total Ratings Received:</b> <?php echo $mapStats['TotalRatings']; ?><br>
+                <b>Average Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
                 <?php if ($activeYear) { ?>
                     <b>Most Active Year:</b> <?php echo $activeYear; ?>
                 <?php } ?>
@@ -455,7 +422,7 @@
                         WHERE bc.CreatorID = ?
                         GROUP BY d.DescriptorID
                         ORDER BY TotalWeight DESC
-                        LIMIT 6
+                        LIMIT 10
                     ");
                     
                     $descStmt->bind_param("i", $profileId);
@@ -485,13 +452,50 @@
             </span>
         </div>
 
-        <div class="flex-child" style="width:33%; text-align:center;">
-            <h3 style="margin:0;">Lowest Rated</h3>
-            <?php if ($lowestMap) { ?>
-                <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $lowestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a><br>
-                    <a href="/mapset/<?php echo $lowestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$lowestMap["Artist"]} - {$lowestMap["Title"]} [{$lowestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
-                    <b><?php echo number_format((float)$lowestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <?php echo $lowestMap["RatingCount"]; ?> votes</span>
-            <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
+        <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:20em;">
+            <?php
+                $stmt = $conn->prepare("
+                    SELECT r.*, b.DifficultyName, b.SetID 
+                    FROM `ratings` r 
+                    INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                    INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                    INNER JOIN `users` u ON r.UserID = u.UserID 
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                    ORDER BY r.date DESC 
+                    LIMIT 60
+                ");
+                $stmt->bind_param("ii", $profileId, $mode);
+                $stmt->execute();
+                $recentRatingsResult = $stmt->get_result();
+
+                if ($recentRatingsResult->num_rows > 0) {
+                    while($row = $recentRatingsResult->fetch_assoc()) {
+            ?>
+                <div class="flex-container ratingContainer alternating-bg">
+                    <div class="flex-child" style="margin-left:0.5em;">
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                    </div>
+                    <div class="flex-child">
+                        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                        </a>
+                    </div>
+                    <div class="flex-child" style="flex:0 0 66%;">
+                        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                            <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+                        </a>
+                        <?php
+                            echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
+                        ?>
+                    </div>
+                </div>
+            <?php
+                    }
+                } else {
+                    echo "<div style='height:100%; display:flex; align-items:center; justify-content:center;'><span class='subText'>No ratings yet</span></div>";
+                }
+                $stmt->close();
+            ?>
         </div>
     </div>
     <br />

@@ -551,6 +551,7 @@ td input {
   white-space: nowrap;
   width: 5em;
   padding-right: 0.25em;
+  position: relative;
 }
 
 .starRatingDisplay .icon-star {
