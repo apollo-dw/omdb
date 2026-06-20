@@ -132,5 +132,7 @@
     }
 
     const initialTab = $(".tabbed-container-nav button.active").data("tab");
-    showTab(initialTab, true);
+    if (initialTab) {
+        showTab(initialTab, true);
+    }
 </script>

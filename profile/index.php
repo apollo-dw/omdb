@@ -195,6 +195,73 @@
             $mapsetCount = $stats["mapsetCount"];
             $approvedEditCount = $stats["approvedEditCount"];
             $descriptorVoteCount = $stats["descriptorVoteCount"];
+
+            $stmt = $conn->prepare("SELECT
+                    AVG(b.SR) AS AvgSR,
+                    COUNT(b.BeatmapID) AS RatedMapCount,
+                    COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
+                FROM beatmap_creators bc
+                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+            ");
+            $stmt->bind_param("ii", $profileId, $mode);
+            $stmt->execute();
+            $mapStats = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            $stmt = $conn->prepare("SELECT
+                    YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
+                    COUNT(*) as YearCount
+                FROM beatmap_creators bc
+                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                WHERE bc.CreatorID = ? AND b.Mode = ?
+                GROUP BY ActiveYear
+                ORDER BY YearCount DESC
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $profileId, $mode);
+            $stmt->execute();
+            $activeYearResult = $stmt->get_result()->fetch_assoc();
+            $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
+            $stmt->close();
+
+            $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
+            if ($hasRatedMaps) {
+                $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
+                    FROM beatmap_creators bc
+                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                    JOIN beatmapsets s ON b.SetID = s.SetID
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+                    ORDER BY b.Rating DESC, b.BeatmapID DESC
+                    LIMIT 1
+                ");
+                
+                $stmt->bind_param("ii", $profileId, $mode);
+                $stmt->execute();
+                $extremes = $stmt->get_result();
+                
+                $highestMap = $extremes->fetch_assoc();
+                $stmt->close();
+
+                $highestMapDescriptors = array();
+                if ($highestMap) {
+                    $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
+                        FROM beatmap_descriptors bd
+                        JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                        WHERE bd.BeatmapID = ?
+                        ORDER BY bd.Weight DESC, bd.DescriptorID
+                        LIMIT 5
+                    ");
+                    $stmt->bind_param("i", $highestMap["BeatmapID"]);
+                    $stmt->execute();
+                    $highestMapDescResult = $stmt->get_result();
+                    while ($descriptor = $highestMapDescResult->fetch_assoc()) {
+                        $highestMapDescriptors[] = $descriptor;
+                    }
+                    $stmt->close();
+                }
+            }
         ?>
 
         <div class="profileStats">
@@ -219,6 +286,7 @@
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
 
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
+            <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
         </div>
 
 		<?php if ($isValidUser){ ?>
@@ -325,6 +393,158 @@
              echo "<br><a href='friends/?id={$profileId}'><div style='float:right;'>...view more!</div></a>";
          }
          echo "<br />";
+    }
+?>
+
+<?php
+    if($hasRatedMaps) {
+?>
+    <hr>
+    <h2>Mapping Overview</h2>
+    <div class="flex-container" style="justify-content:space-around; align-items:stretch; gap:5%;">
+        <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
+            <h3 style="margin:0;">Highest Rated</h3>
+            <?php if ($highestMap) { 
+                $highestMapYear = date("Y", strtotime($highestMap['DateRanked']));
+            ?>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
+                <b><a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a></b>
+                
+                <span class="subText map-descriptors">
+                    <?php
+                    $highestMapDescLinks = array();
+                    foreach ($highestMapDescriptors as $descriptor) {
+                        $name = safe_htmlspecialchars($descriptor["Name"]);
+                        $id = (int)$descriptor["DescriptorID"];
+                        $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+
+                        $highestMapDescLinks[] = '
+                          <span class="tooltip-wrapper">
+                            <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                            <span class="tooltip-box">
+                              ' . $shortDescription . '
+                            </span>
+                          </span>';
+                    }
+                    echo implode(', ', $highestMapDescLinks);
+                    ?>
+                </span>
+                <br>
+                <div>
+                    Ranked <?php echo date("M jS, Y", strtotime($highestMap['DateRanked'])); ?>
+                    <br>
+                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $highestMap["RatingCount"]; ?></span> votes</span>
+                    <br>
+                    <?php if ($highestMap["ChartRank"] != null) { ?>
+                        <b>#<?php echo $highestMap["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $highestMapYear;?>&p=<?php echo ceil($highestMap["ChartYearRank"] / 50); ?>"><?php echo $highestMapYear;?></a>, <b>#<?php echo $highestMap["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($highestMap["ChartRank"] / 50); ?>">overall</a>
+                    <?php } ?>
+                </div>
+            <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
+        </div>
+
+        <div style="background-color:#203838; flex:1; text-align:center; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; padding:0.25em;">
+            <div>
+                <b>Total Ratings Received:</b> <?php echo $mapStats['TotalRatings']; ?><br>
+                <b>Average Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
+                <?php if ($activeYear) { ?>
+                    <b>Most Active Year:</b> <?php echo $activeYear; ?>
+                <?php } ?>
+            </div>
+
+            <br>
+
+            <b>Top Descriptors</b>
+            <span class="subText">
+                <?php
+                    $descStmt = $conn->prepare("SELECT
+                            bd.DescriptorID,
+                            d.Name,
+                            d.ShortDescription,
+                            SUM(bd.Weight) as TotalWeight
+                        FROM beatmap_creators bc
+                        JOIN beatmap_descriptors bd ON bc.BeatmapID = bd.BeatmapID
+                        JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                        WHERE bc.CreatorID = ?
+                        GROUP BY d.DescriptorID
+                        ORDER BY TotalWeight DESC
+                        LIMIT 10
+                    ");
+                    
+                    $descStmt->bind_param("i", $profileId);
+                    $descStmt->execute();
+                    $descResult = $descStmt->get_result();
+
+                    if ($descResult->num_rows > 0) {
+                        $descriptors = [];
+                        while ($descriptor = $descResult->fetch_assoc()) {
+                            $name = safe_htmlspecialchars($descriptor["Name"]);
+                            $id = (int)$descriptor["DescriptorID"];
+                            $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                            $descriptors[] = '
+                                            <span class="tooltip-wrapper">
+                                                <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
+                                                <span class="tooltip-box">
+                                                    ' . $shortDescription . '
+                                                </span>
+                                            </span>';
+                        }
+                        echo implode(", ", $descriptors);
+                    } else {
+                        echo "<i>None yet</i>";
+                    }
+                    $descStmt->close();
+                ?>
+            </span>
+        </div>
+
+        <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:20em;">
+            <?php
+                $stmt = $conn->prepare("
+                    SELECT r.*, b.DifficultyName, b.SetID 
+                    FROM `ratings` r 
+                    INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                    INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                    INNER JOIN `users` u ON r.UserID = u.UserID 
+                    WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                    ORDER BY r.date DESC 
+                    LIMIT 60
+                ");
+                $stmt->bind_param("ii", $profileId, $mode);
+                $stmt->execute();
+                $recentRatingsResult = $stmt->get_result();
+
+                if ($recentRatingsResult->num_rows > 0) {
+                    while($row = $recentRatingsResult->fetch_assoc()) {
+            ?>
+                <div class="flex-container ratingContainer alternating-bg">
+                    <div class="flex-child" style="margin-left:0.5em;">
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                    </div>
+                    <div class="flex-child">
+                        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                        </a>
+                    </div>
+                    <div class="flex-child" style="flex:0 0 66%;">
+                        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                            <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+                        </a>
+                        <?php
+                            echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
+                        ?>
+                    </div>
+                </div>
+            <?php
+                    }
+                } else {
+                    echo "<div style='height:100%; display:flex; align-items:center; justify-content:center;'><span class='subText'>No ratings yet</span></div>";
+                }
+                $stmt->close();
+            ?>
+        </div>
+    </div>
+    <br />
+<?php
     }
 ?>
 
