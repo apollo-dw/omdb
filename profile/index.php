@@ -411,7 +411,7 @@
 ?>
     <hr>
     <h2>Mapping Overview</h2>
-    <div class="flex-container" style="justify-content:space-around; align-items:stretch; gap:5%;">
+    <div class="flex-container column-when-mobile-container" style="justify-content:space-around; align-items:stretch; gap:67px;">
         <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
             <?php if ($highestMap) { 
