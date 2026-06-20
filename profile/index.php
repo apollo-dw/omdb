@@ -726,12 +726,12 @@
             }
 
             // Cba changing the alternating BG css just for this so this is to override that
-            $('.profile-top-map').css('background-color', '');
+            $('.profile-top-map').css('background-color', '').find('.starBackground').css('color', '');
             $('.profile-top-map:visible').each(function(index) {
                 if (index % 2 === 0) {
-                    $(this).css('background-color', '#203838');
+                    $(this).css('background-color', '#203838').find('.starBackground').css('color', 'darkslategray');
                 } else {
-                    $(this).css('background-color', 'darkslategray');
+                    $(this).css('background-color', 'darkslategray').find('.starBackground').css('color', '#203838');
                 }
             });
         }
