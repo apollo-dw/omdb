@@ -204,7 +204,7 @@
             $descriptorVoteCount = $stats["descriptorVoteCount"];
 
             $hasRatedMaps = false;
-            if ($isValidUser && !$isBlacklisted) {
+            if (!$isBlacklisted) {
                 $stmt = $conn->prepare("SELECT
                         AVG(b.SR) AS AvgSR,
                         COUNT(b.BeatmapID) AS RatedMapCount,
@@ -411,7 +411,7 @@
 ?>
     <hr>
     <h2>Mapping Overview</h2>
-    <div class="flex-container" style="justify-content:space-around; align-items:stretch; gap:5%;">
+    <div class="flex-container column-when-mobile-container" style="justify-content:space-around; align-items:stretch; gap:67px;">
         <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
             <?php if ($highestMap) { 
@@ -509,17 +509,45 @@
 
         <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:20em;">
             <?php
-                $stmt = $conn->prepare("
-                    SELECT r.*, b.DifficultyName, b.SetID 
-                    FROM `ratings` r 
-                    INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
-                    INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
-                    INNER JOIN `users` u ON r.UserID = u.UserID 
-                    WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
-                    ORDER BY r.date DESC 
-                    LIMIT 60
-                ");
-                $stmt->bind_param("ii", $profileId, $mode);
+                if ($loggedIn) {
+                    $stmt = $conn->prepare("
+                        SELECT r.*, b.DifficultyName, b.SetID 
+                        FROM `ratings` r 
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                        AND r.UserID NOT IN (
+                            SELECT UserIDTo 
+                            FROM user_relations 
+                            WHERE UserIDFrom = ? AND type = 2
+                        )
+                        AND (
+                            (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                            OR r.UserID IN (
+                                SELECT UserIDTo 
+                                FROM user_relations 
+                                WHERE UserIDFrom = ? AND type = 1
+                            )
+                            OR r.UserID = ?
+                        )
+                        ORDER BY r.date DESC 
+                        LIMIT 60
+                    ");
+                    $stmt->bind_param("iiiiii", $profileId, $mode, $userId, $userId, $userId, $userId);
+                } else {
+                    $stmt = $conn->prepare("
+                        SELECT r.*, b.DifficultyName, b.SetID 
+                        FROM `ratings` r 
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                        ORDER BY r.date DESC 
+                        LIMIT 60
+                    ");
+                    $stmt->bind_param("ii", $profileId, $mode);
+                }
                 $stmt->execute();
                 $recentRatingsResult = $stmt->get_result();
 
@@ -726,12 +754,12 @@
             }
 
             // Cba changing the alternating BG css just for this so this is to override that
-            $('.profile-top-map').css('background-color', '');
+            $('.profile-top-map').css('background-color', '').find('.starBackground').css('color', '');
             $('.profile-top-map:visible').each(function(index) {
                 if (index % 2 === 0) {
-                    $(this).css('background-color', '#203838');
+                    $(this).css('background-color', '#203838').find('.starBackground').css('color', 'darkslategray');
                 } else {
-                    $(this).css('background-color', 'darkslategray');
+                    $(this).css('background-color', 'darkslategray').find('.starBackground').css('color', '#203838');
                 }
             });
         }
