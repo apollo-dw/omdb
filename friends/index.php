@@ -326,14 +326,14 @@
             case 'rating':
                 echo RenderRating($extra["Score"]);
                 echo ' on ';
-                echo '<a href="/beatmap/' . intval($extra["BeatmapID"]) . '">';
+                echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
 
             case 'review':
                 echo 'reviewed ';
-                echo '<a href="/mapset/' . intval($row["ObjectID"]) . '">';
+                echo '<a href="/mapset/' . intval($row["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 if (!empty($extra["Review"])) {
@@ -386,7 +386,7 @@
 
             case 'ranked_map':
                 echo 'had a difficulty ranked: ';
-                echo '<a href="/beatmap/' . intval($row["ObjectID"]) . '">';
+                echo '<a href="/beatmap/' . intval($row["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
