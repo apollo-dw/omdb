@@ -170,7 +170,7 @@
             ========================== */
             SELECT
                 'review_like',
-                rv.date,
+                rh.CreatedAt,
                 u.UserID,
                 u.Username,
                 rh.HeartID,
@@ -193,7 +193,7 @@
 
             WHERE fr.UserIDFrom = ?
             AND fr.type = 1
-            AND rv.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+            AND rh.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
         )
         UNION ALL
         (
@@ -202,7 +202,7 @@
             ========================== */
             SELECT
                 'list_like',
-                l.CreatedAt,
+                lh.CreatedAt,
                 u.UserID,
                 u.Username,
                 lh.HeartID,
@@ -221,7 +221,7 @@
             WHERE fr.UserIDFrom = ?
             AND fr.type = 1
             AND l.Private = 0
-            AND l.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+            AND lh.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
         )
         UNION ALL
         (
@@ -275,8 +275,6 @@
         /* Thumbnail */
         echo '<div class="flex-child" style="margin-left:0.5em;">';
 
-        $setID = $extra["SetID"] ?? $row["SetID"];
-
         switch ($row["ActivityType"])
         {
             case 'rating':
@@ -284,9 +282,9 @@
             case 'comment':
             case 'review_like':
             case 'ranked_map':
-                if (!empty($setID)) {
-                    echo '<a href="/mapset/' . intval($setID) . '">';
-                    echo '<img src="https://b.ppy.sh/thumb/' . intval($setID) . 'l.jpg"
+                if (!empty($extra["SetID"])) {
+                    echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
+                    echo '<img src="https://b.ppy.sh/thumb/' . intval($extra["SetID"]) . 'l.jpg"
                             class="diffThumb"
                             onerror="this.onerror=null; this.src=\'/charts/INF.png\';"/>';
                     echo '</a>';
@@ -366,28 +364,28 @@
 
             case 'list':
                 echo 'created list ';
-                echo '<a href="/list/' . intval($row["ObjectID"]) . '">';
+                echo '<a href="/list/?id=' . intval($row["ObjectID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
 
             case 'review_like':
                 echo 'liked a review for ';
-                echo '<a href="/review/' . intval($extra["ReviewID"]) . '">';
+                echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
 
             case 'list_like':
                 echo 'liked list ';
-                echo '<a href="/list/' . intval($row["ObjectID"]) . '">';
+                echo '<a href="/list/?id=' . intval($row["ObjectID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
 
             case 'ranked_map':
                 echo 'had a difficulty ranked: ';
-                echo '<a href="/beatmap/' . intval($extra["SetID"]) . '">';
+                echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
