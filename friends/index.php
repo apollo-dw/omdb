@@ -13,7 +13,9 @@
 
     $friends = [];
     while ($row = $result->fetch_assoc()) {
-        $friends[] = $row["UserID"];
+        if (!is_null($row["UserID"])) {
+            $friends[] = $row["UserID"];
+        }
     }
 
     $stmt_check->close();
@@ -30,7 +32,7 @@
 ?>
 
 <div class="flex-container">
-    <div style="flex: 0 0 60%;">
+    <div style="flex: 0 0 60%; width: 60%;">
 
     <?php
         $feed_query = $conn->prepare("
@@ -258,7 +260,7 @@
             AND fr.type = 1
             AND bs.DateRanked >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
         )
-        ORDER BY ActivityDate DESC LIMIT 50;");
+        ORDER BY ActivityDate DESC LIMIT 500;");
         
         $feed_query->bind_param("iiiiiii", $userId, $userId, $userId, $userId, $userId, $userId, $userId);
         $feed_query->execute();
@@ -267,7 +269,7 @@
     while ($row = $result->fetch_assoc()) {
         $extra = json_decode($row["ExtraData"], true);
 
-        echo '<div class="flex-container ratingContainer alternating-bg">';
+        echo '<div class="flex-container ratingContainer alternating-bg" style="overflow:hidden;">';
 
         /* Thumbnail */
         echo '<div class="flex-child" style="margin-left:0.5em;">';
