@@ -333,7 +333,7 @@
 
             case 'review':
                 echo 'reviewed ';
-                echo '<a href="/mapset/' . intval($row["SetID"]) . '">';
+                echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 if (!empty($extra["Review"])) {
