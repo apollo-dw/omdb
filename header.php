@@ -38,6 +38,7 @@ error_reporting(E_ALL);
 				</div>
 			</div>
             <a href="/lists/"><div class="topBarLink">lists</div></a>
+			<a href="/friends/"><div class="topBarLink">friends</div></a>
 			
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
