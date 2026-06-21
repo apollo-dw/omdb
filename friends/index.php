@@ -177,7 +177,8 @@
                 rv.ReviewID,
                 CONCAT(bs.Artist, ' - ', bs.Title),
                 JSON_OBJECT(
-                    'ReviewID', rv.ReviewID
+                    'ReviewID', rv.ReviewID,
+                    'SetID', bs.SetID
                 )
 
             FROM user_relations fr
