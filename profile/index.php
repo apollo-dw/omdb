@@ -242,6 +242,7 @@
                         JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
                         JOIN beatmapsets s ON b.SetID = s.SetID
                         WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+                        AND (SELECT COUNT(*) FROM beatmap_creators WHERE BeatmapID = b.BeatmapID) <= 3
                         ORDER BY b.Rating DESC, b.BeatmapID DESC
                         LIMIT 1
                     ");
@@ -414,6 +415,7 @@
     <div class="flex-container column-when-mobile-container" style="justify-content:space-around; align-items:stretch; gap:67px;">
         <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
+            <span class="subText">Excl. collabs with 4+ mappers</span>
             <?php if ($highestMap) { 
                 $highestMapYear = date("Y", strtotime($highestMap['DateRanked']));
             ?>
@@ -507,7 +509,7 @@
             </span>
         </div>
 
-        <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:20em;">
+        <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:23em;">
             <?php
                 if ($loggedIn) {
                     $stmt = $conn->prepare("
