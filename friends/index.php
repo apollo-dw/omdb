@@ -6,7 +6,7 @@
         die("You have to be logged in to view this page!");
     }
 
-    $stmt_check = $conn->prepare("SELECT u.Username, u.UserID FROM user_relations r LEFT JOIN Users u ON r.UserIDTo = u.UserID WHERE UserIDFrom = ? AND type = 1 ORDER BY u.LastAccessedSite DESC;");
+    $stmt_check = $conn->prepare("SELECT u.Username, u.UserID FROM user_relations r LEFT JOIN users u ON r.UserIDTo = u.UserID WHERE UserIDFrom = ? AND type = 1 ORDER BY u.LastAccessedSite DESC;");
     $stmt_check->bind_param("i", $userId);
     $stmt_check->execute();
     $result = $stmt_check->get_result();
@@ -60,7 +60,7 @@
                 ) AS ExtraData
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN ratings r
                 ON r.UserID = u.UserID
@@ -92,7 +92,7 @@
                 )
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN reviews rv
                 ON rv.UserID = u.UserID
@@ -122,7 +122,7 @@
                 )
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN comments c
                 ON c.UserID = u.UserID
@@ -151,7 +151,7 @@
                 )
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN lists l
                 ON l.UserID = u.UserID
@@ -179,7 +179,7 @@
                 )
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN review_hearts rh
                 ON rh.UserID = u.UserID
@@ -208,7 +208,7 @@
                 JSON_OBJECT()
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
             JOIN list_hearts lh
                 ON lh.UserID = u.UserID
@@ -242,7 +242,7 @@
                 )
 
             FROM user_relations fr
-            JOIN Users u
+            JOIN users u
                 ON u.UserID = fr.UserIDTo
 
             JOIN beatmap_creators bc
