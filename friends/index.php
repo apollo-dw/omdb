@@ -386,7 +386,7 @@
 
             case 'ranked_map':
                 echo 'had a difficulty ranked: ';
-                echo '<a href="/beatmap/' . intval($row["SetID"]) . '">';
+                echo '<a href="/beatmap/' . intval($extra["SetID"]) . '">';
                 echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                 echo '</a>';
                 break;
