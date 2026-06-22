@@ -135,79 +135,7 @@
 
 <hr>
 
-<label for="rating">Rating</label>
-<select id="rating" name="rating" onchange="changePage(1, 'rating')">
-    <?php
-        $selected = $rating == "" ? " selected='selected'" : "";
-        echo "<option value='' {$selected}>All</option>";
-        for ($i = 0; $i <= 5; $i+= 0.5) {
-            echo '<option value="' . $i . '"';
-            if ($rating === strval($i))
-                echo " selected='selected'";
-            echo '>' . $i . '</option>';
-        }
-    ?>
-</select> <br>
-
-<label for="order">Order</label>
-<select id="order" name="order" onchange="changePage(1, 'order')">
-    <option value="0" <?php if ($order == 0) echo "selected='selected'"; ?>>Latest</option>
-    <option value="1" <?php if ($order == 1) echo "selected='selected'"; ?>>Oldest</option>
-    <option value="2" <?php if ($order == 2) echo "selected='selected'"; ?>>Highest rated</option>
-    <option value="3" <?php if ($order == 3) echo "selected='selected'"; ?>>Lowest rated</option>
-</select> <br>
-
-<label for="year">Year</label>
-<select name="year" id="year" autocomplete="off" onchange="changePage(1);">
-    <?php
-    echo '<option value="all-time"';
-    if ($year == -1) {
-        echo ' selected="selected"';
-    }
-    echo '>All Time</option>';
-
-    for ($i = 2007; $i <= date('Y'); $i++) {
-        echo '<option value="' . $i . '"';
-        if ($year == $i) {
-            echo ' selected="selected"';
-        }
-        echo '>' . $i . '</option>';
-    }
-    ?>
-</select> <br>
-
-<label for="sr">Star rating</label>
-<select id="sr" name="sr" onchange="changePage(1)">
-    <option value=''>All</option>
-    <?php
-        for ($i = 0; $i < 12; $i++) {
-            $selected = $starRating !== "" && intval($starRating) === $i ? " selected='selected'" : "";
-            echo "<option value='{$i}'{$selected}>{$i}&#9733; - " .  ($i + 1) . "&#9733;</option>";
-        }
-        $selected = $starRating !== "" && intval($starRating) >= 12 ? " selected='selected'" : "";
-        echo "<option value='12'{$selected}>12&#9733;+</option>";
-    ?>
-</select> <br>
-
 <?php include "../../functions/filter.php"; ?><br>
-
-<label for="tag">Tag</label>
-<select id="tag" name="tag" onchange="changePage(1)">
-    <option value=''>Any</option>
-    <?php
-        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
-        $stmt->bind_param('i', $profileId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        while ($row = $result->fetch_assoc()) {
-            $tag = safe_htmlspecialchars($row["Tag"], ENT_QUOTES, "ISO-8859-1");
-            $encodedTag = urlencode($row["Tag"]);
-            $selected = $tagArgument == $row["Tag"] ? " selected='selected'" : "";
-            echo "<option value='{$encodedTag}' {$selected}>{$tag} ({$row["TagCount"]})</option>";
-        }
-    ?>
-</select>
 
 <div style="text-align:center;">
     <div class="pagination">
@@ -295,42 +223,40 @@
 </div>
 
 <script>
-    let currentFilters = [];
-
-    $(document).on('omdbFiltersUpdated', function(event, activeFilters) {
-        currentFilters = activeFilters;
-        changePage(1);
-    });
-
-    function changePage(page, changed) {
-        var order = document.getElementById("order").value;
-        var rating = document.getElementById("rating").value;
-        var tag = document.getElementById("tag").value;
-        var year = document.getElementById("year").value;
-        var sr = document.getElementById("sr").value;
-
-        var genre = 0;
-        var language = 0;
-        var country = 0;
+    function changePage(page) {
+        if (page < 1) page = 1;
+        var payload = window.getOmdbFilterPayload();
+        
+        var genre = 0, language = 0, country = 0;
         var mappedDescriptors = [];
 
-        currentFilters.forEach(function(filter) {
-            if (filter.type === 'genre') genre = filter.id;
-            if (filter.type === 'language') language = filter.id;
-            if (filter.type === 'country') country = filter.id;
-            if (filter.type === 'descriptor') mappedDescriptors.push({ id: filter.id, name: filter.name });
+        payload.tokens.forEach(function(t) {
+            if (t.type === 'genre') genre = t.id;
+            if (t.type === 'language') language = t.id;
+            if (t.type === 'country') country = t.id;
+            if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
         });
 
-        var descriptorsJSON = JSON.stringify(mappedDescriptors);
-
-        // Prio which is changed (specific rating vs rating ordering)
-        if (changed === "rating" && rating !== "" && (order == 2 || order == 3))
-            order = "0";
-        else if (order == 2 || order == 3)
-            rating = "";
-
-        window.location.href = "?id=<?php echo $profileId; ?>&r=" + rating + "&o=" + order + "&t=" + tag + "&p=" + page + "&y=" + year + "&sr=" + sr + "&g=" + genre + "&lang=" + language + "&c=" + encodeURIComponent(country) + "&descriptors=" + encodeURIComponent(descriptorsJSON);
+        window.location.href = "?id=<?php echo $profileId; ?>" +
+            "&r=" + payload.rating + 
+            "&o=" + payload.order + 
+            "&t=" + payload.tag + 
+            "&p=" + page + 
+            "&y=" + payload.year + 
+            "&sr=" + payload.sr + 
+            "&g=" + genre + 
+            "&lang=" + language + 
+            "&c=" + encodeURIComponent(country) + 
+            "&descriptors=" + encodeURIComponent(JSON.stringify(mappedDescriptors)) +
+            "&f=" + String(payload.friends) +
+            "&excludeLoved=" + String(payload.exLoved) +
+            "&excludeGraveyard=" + String(payload.exGraveyard) +
+            "&excludeRanked=" + String(payload.exRanked);
     }
+
+    $(document).on('omdbFiltersSubmitted', function() {
+        changePage(1);
+    });
 </script>
 
 <?php

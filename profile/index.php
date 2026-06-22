@@ -1,5 +1,19 @@
 <?php
-	require "../base.php";
+    require "../base.php";
+    $profileId = GetIntParam('id', -1, "Invalid page bro");
+    
+    // Map list filter catching
+    $order = $_GET['o'] ?? "0";
+    $starRating = $_GET['sr'] ?? "";
+    $genre = $_GET['g'] ?? "";
+    $language = $_GET['lang'] ?? "";
+    $country = $_GET['c'] ?? "";
+    $year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
+    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
+    $selectedDescriptors = json_decode($descriptorsJSON, true);
+    $excludeLoved = ($_GET['excludeLoved'] ?? "false") == "true";
+    $excludeGraveyard = ($_GET['excludeGraveyard'] ?? "false") == "true";
+    $excludeRanked = ($_GET['excludeRanked'] ?? "false") == "true";
 
 	$profileId = GetIntParam('id', -1, "Invalid page bro");
 
@@ -330,6 +344,7 @@
 
 <hr>
 <div style="margin-bottom: 1em;">
+    <?php include '../functions/filter.php'; ?>
     <label>
         <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
     </label>
@@ -547,6 +562,35 @@
                     }
                 });
             }
+        });
+
+        function changePage(page) {
+            var payload = window.getOmdbFilterPayload();
+            var genre = 0, language = 0, country = 0;
+            var mappedDescriptors = [];
+
+            payload.tokens.forEach(function(t) {
+                if (t.type === 'genre') genre = t.id;
+                if (t.type === 'language') language = t.id;
+                if (t.type === 'country') country = t.id;
+                if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
+            });
+
+            window.location.href = "?id=<?php echo $profileId; ?>" +
+                "&o=" + payload.order + 
+                "&y=" + payload.year + 
+                "&sr=" + payload.sr + 
+                "&g=" + genre + 
+                "&lang=" + language + 
+                "&c=" + encodeURIComponent(country) + 
+                "&descriptors=" + encodeURIComponent(JSON.stringify(mappedDescriptors)) +
+                "&excludeLoved=" + String(payload.exLoved) +
+                "&excludeGraveyard=" + String(payload.exGraveyard) +
+                "&excludeRanked=" + String(payload.exRanked);
+        }
+
+        $(document).on('omdbFiltersSubmitted', function() {
+            changePage(1);
         });
     });
 </script>

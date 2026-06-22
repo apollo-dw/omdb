@@ -71,53 +71,8 @@
 	</div>
 
 	<div style="padding-top:0.5em;" class="flex-item">
-		<span>Filters</span>
-		<hr>
-		<form onsubmit="return false">
-			<select name="order" id="order" autocomplete="off" onchange="updateChart();">
-				<option value="1" selected="selected">Highest Rated</option>
-				<option value="2">Lowest Rated</option>
-                <option value="3">Most Rated</option>
-                <option value="4">Most Controversial</option>
-                <option value="5">Most Underrated</option>
-			</select> maps of
-			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
-                <?php
-                    echo '<option value="all-time"';
-                    if ($year == -1) {
-                        echo ' selected="selected"';
-                    }
-                    echo '>All Time</option>';
-
-                    for ($i = 2007; $i <= date('Y'); $i++) {
-                        echo '<option value="' . $i . '"';
-                        if ($year == $i) {
-                            echo ' selected="selected"';
-                        }
-                        echo '>' . $i . '</option>';
-                    }
-                ?>
-			</select><br><br>
-            <?php include "../functions/filter.php"; ?>
-            <br>
-
-            <?php if ($loggedIn) { ?>
-            <input type="checkbox" id="hideRated" name="hideRated" onchange="updateChart();">
-            <label for="hideRated">Hide already rated maps</label>
-            <br>
-            <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
-            <label for="friends">Only include friend ratings<br></label>
-            <?php } ?> <br>
-
-            Exclude: <br>
-            <input type="checkbox" id="excludeLoved" name="excludeLoved" onchange="updateChart();">
-            <label for="excludeLoved">Loved maps</label> <br>
-            <input type="checkbox" id="excludeGraveyard" name="excludeGraveyard" onchange="updateChart();">
-            <label for="excludeGraveyard">Graveyard maps</label> <br>
-			<input type="checkbox" id="excludeRanked" name="excludeRanked" onchange="updateChart();">
-            <label for="excludeRanked">Ranked maps</label>
-
-        </form><br><br>
+        <?php include "../functions/filter.php"; ?>
+        <br><br>
 		<span>Info</span>
 		<hr>
 		The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
@@ -139,20 +94,12 @@
 
 <script>
     const cronInterval = 24 * 60 * 60 * 1000; // 1 day
-    var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
-
-    var currentFilters = [];
-
-    $(document).on('omdbFiltersUpdated', function(event, activeFilters) {
-        currentFilters = activeFilters;
-        page = 1; // Reset to page 1 whenever a filter is added/removed
-        updateChart(); 
-    });
+    var page = <?php echo $page; ?>;
 
     function changePage(newPage) {
         var nextPage = parseInt(newPage, 10);
         page = Math.max(Math.min(nextPage, 9), 1);
-        updateChart();
+        updateChart(window.getOmdbFilterPayload(), page);
     }
 
     function resetPaginationDisplay() {
@@ -199,63 +146,76 @@
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function updateChart() {
+    $(document).on('omdbFiltersSubmitted', function(event, payload) {
+        page = 1;
+        updateChart(payload, page);
+    });
+
+    function updateChart(payload, page) {
         $("#chart-container").addClass("faded");
         
-        var year = document.getElementById("year").value;
-        var order = document.getElementById("order").value;
-
         var genre = 0;
         var language = 0;
         var country = 0;
         var mappedDescriptors = [];
 
-        currentFilters.forEach(function(filter) {
-            if (filter.type === 'genre') genre = filter.id;
-            if (filter.type === 'language') language = filter.id;
-            if (filter.type === 'country') country = filter.id;
-            if (filter.type === 'descriptor') mappedDescriptors.push({ id: filter.id, name: filter.name });
+        payload.tokens.forEach(function(t) {
+            if (t.type === 'genre') genre = t.id;
+            if (t.type === 'language') language = t.id;
+            if (t.type === 'country') country = t.id;
+            if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
         });
 
-        var friendsElement = document.getElementById("friends");
-        var onlyFriends = friendsElement ? friendsElement.checked : false;
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('y', payload.year);
+        urlParams.set('p', page);
+        urlParams.set('o', payload.order);
+        if (genre > 0)
+            urlParams.set('g', genre);
+        else
+            urlParams.delete('g');
 
-        var hideRatedElement = document.getElementById("hideRated");
-        var hideRated = hideRatedElement ? hideRatedElement.checked : false;
+        if (language > 0)
+            urlParams.set('l', language);
+        else
+            urlParams.delete('l');
 
-        var excludeGraveyardElement = document.getElementById("excludeGraveyard");
-        var excludeGraveyard = excludeGraveyardElement ? excludeGraveyardElement.checked : false;
+        if (country !== 0 && country !== "")
+            urlParams.set('c', country);
+        else
+            urlParams.delete('c');
 
-        var excludeLovedElement = document.getElementById("excludeLoved");
-        var excludeLoved = excludeLovedElement ? excludeLovedElement.checked : false;
-        
-        var excludeRankedElement = document.getElementById("excludeRanked");
-        var excludeRanked = excludeRankedElement ? excludeRankedElement.checked : false;
+        if (mappedDescriptors.length > 0)
+            urlParams.set('descriptors', mappedDescriptors.map(d => d.name).join(','));
+        else
+            urlParams.delete('descriptors');
+
+        window.history.replaceState({}, document.title, "?" + urlParams.toString());
 
         var descriptorsJSON = JSON.stringify(mappedDescriptors);
 
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange=function() {
-            if (this.readyState==4 && this.status==200) {
-                document.getElementById("chart-container").innerHTML=this.responseText;
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("chart-container").innerHTML = this.responseText;
                 resetPaginationDisplay();
             }
         }
 
         xmlhttp.open("POST", "chart.php", true);
         xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = "y=" + year +
+        var params = "y=" + payload.year +
             "&p=" + page +
-            "&o=" + order +
+            "&o=" + payload.order +
             "&g=" + genre +
             "&l=" + language +
-            "&c=" + country +
-            "&f=" + String(onlyFriends) +
+            "&c=" + encodeURIComponent(country) +
+            "&f=" + String(payload.friends) +
             "&descriptors=" + encodeURIComponent(descriptorsJSON) +
-            "&alreadyRated=" + String(hideRated) +
-            "&excludeLoved=" + String(excludeLoved) +
-            "&excludeGraveyard=" + String(excludeGraveyard) +
-            "&excludeRanked=" + String(excludeRanked);
+            "&alreadyRated=" + String(payload.hideRated) +
+            "&excludeLoved=" + String(payload.exLoved) +
+            "&excludeGraveyard=" + String(payload.exGraveyard) +
+            "&excludeRanked=" + String(payload.exRanked);
         xmlhttp.send(params);
     }
 
