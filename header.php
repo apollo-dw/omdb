@@ -22,8 +22,8 @@ error_reporting(E_ALL);
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-		<link rel="stylesheet" type="text/css" href="/style.css?v=39" />
-        <script src="/script.js?v=4"></script>
+		<link rel="stylesheet" type="text/css" href="/style.css?v=40" />
+    <script src="/script.js?v=5"></script>
 	</head>
 	<body>
 		<div class="topBar">
@@ -38,6 +38,7 @@ error_reporting(E_ALL);
 				</div>
 			</div>
             <a href="/lists/"><div class="topBarLink">lists</div></a>
+			<a href="/friends/"><div class="topBarLink">friends</div></a>
 			
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">

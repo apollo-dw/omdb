@@ -551,6 +551,7 @@ td input {
   white-space: nowrap;
   width: 5em;
   padding-right: 0.25em;
+  position: relative;
 }
 
 .starRatingDisplay .icon-star {
@@ -831,6 +832,11 @@ ol.star-rating-list > li {
   top: auto;
 
   border-color: transparent transparent #203838 transparent;
+}
+
+.tooltip-box.flip-right {
+  left: 0;
+  right: auto;
 }
 
 @media only screen and (max-width: 680px) {

@@ -70,32 +70,41 @@ function openTab(name) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const overflowParams = new Set(["scroll", "auto", "hidden", "clip"]);
+  function getClippingParent(el, axis) {
+    const prop = axis === "y" ? "overflowY" : "overflowX";
+    let parent = el.parentElement;
+
+    while (parent) {
+      const { overflow, [prop]: axisProp } = window.getComputedStyle(parent);
+      if (
+        overflowParams.has(axisProp) ||
+        overflowParams.has(overflow)
+      )
+        return parent;
+
+      parent = parent.parentElement;
+    }
+
+    return document.body;
+  }
+
   document.querySelectorAll(".tooltip-wrapper").forEach((wrapper) => {
     const tooltip = wrapper.querySelector(".tooltip-box");
 
     wrapper.addEventListener("mouseenter", () => {
-      tooltip.classList.remove("flip");
+      tooltip.classList.remove("flip", "flip-right");
 
       const rect = tooltip.getBoundingClientRect();
 
-      let parent = tooltip.parentElement;
-      while (parent) {
-        const style = window.getComputedStyle(parent);
-        if (
-          style.overflowY === "scroll" ||
-          style.overflowY === "auto" ||
-          style.overflow ===  "scroll" ||
-          style.overflow === "auto"
-        )
-          break;
-        parent = parent.parentElement;
-      }
-      if (!parent)
-        parent = document.body;
-      const parentRect = parent.getBoundingClientRect();
-
-      if (rect.top < parentRect.top || rect.top < 10) {
+      const parentY = getClippingParent(tooltip, "y");
+      if (rect.top < Math.max(parentY.getBoundingClientRect().top, 10)) {
         tooltip.classList.add("flip");
+      }
+
+      const parentX = getClippingParent(tooltip, "x");
+      if (rect.left < Math.max(parentX.getBoundingClientRect().left, 10)) {
+        tooltip.classList.add("flip-right");
       }
     });
   });

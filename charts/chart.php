@@ -280,9 +280,9 @@
 							$descriptorLinks = array();
 
 							while ($descriptor = $descriptorResult->fetch_assoc()) {
-								$name = htmlspecialchars($descriptor["Name"]);
+								$name = safe_htmlspecialchars($descriptor["Name"]);
 								$id = (int)$descriptor["DescriptorID"];
-								$shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+								$shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
 
 								$descriptorLink = '
 									<span class="tooltip-wrapper">

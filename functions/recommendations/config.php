@@ -1,15 +1,15 @@
 <?php
     $REC_DEFAULTS = [
         "weights" => [
-            "avgScore" => 5, // weighted avg rating from users who rated the diff
+            "avgScore" => 3, // weighted avg rating from users who rated the diff
             "descriptorScore" => 4, // Overall multiplier for the descriptor scores provided in ../descriptors.json
-            "monthProximity" => 2, // when ranked within settings.yearWindow years of the seed
-            "sharedNominator" => 1, // per nominator shared with the set
-            "sharedMapper" => 4, // per mapper shared with the diff
-            "cohortLift" => 8, // how much higher the seed users rate the diff vs everyone else
+            "monthProximity" => 0, // when ranked within settings.yearWindow years of the seed
+            "sharedNominator" => 0, // per nominator shared with the set
+            "sharedMapper" => 2, // per mapper shared with the diff
+            "cohortLift" => 10, // how much higher the seed users rate the diff vs everyone else
             "cohortCoverage" => 16, // share of the seed users vs everyone so big fanbases of the diff get no bump in this
-            "correlation" => 1, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
-            "srProximity" => 1, // how close the diffs are in star rating
+            "correlation" => 10, // how the similar users rated both diffs generally (PEARSON CORRELATION COEFF)
+            "srProximity" => 0, // how close the diffs are in star rating
         ],
 
         "settings" => [

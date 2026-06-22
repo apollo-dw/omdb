@@ -93,8 +93,7 @@
     </div>
 
 <script>
-    const cronInterval = 24 * 60 * 60 * 1000; // 1 day
-    var page = <?php echo $page; ?>;
+    var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
 
     function changePage(newPage) {
         var nextPage = parseInt(newPage, 10);
@@ -220,11 +219,16 @@
     }
 
     function displayTimeRemaining() {
-        const currentTime = new Date().getTime();
-        const timeSinceLastCronJob = currentTime % cronInterval;
-        const timeRemaining = cronInterval - timeSinceLastCronJob;
+        const now = new Date();
+        let nextReset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
 
-        const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+        if (now.getTime() >= nextReset.getTime()) {
+            nextReset.setUTCDate(nextReset.getUTCDate() + 1);
+        }
+
+        const timeRemaining = nextReset.getTime() - now.getTime();
+
+        const hoursRemaining = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24);
         const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
         const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
 
@@ -232,9 +236,9 @@
         const minutesText = minutesRemaining === 1 ? 'minute' : 'minutes';
         const secondsText = secondsRemaining === 1 ? 'second' : 'seconds';
 
-        const updateTextElement = document.getElementById('updateText');
-        if (updateTextElement) {
-            updateTextElement.textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
+        const textElement = document.getElementById('updateText');
+        if (textElement) {
+            textElement.textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
         }
     }
 

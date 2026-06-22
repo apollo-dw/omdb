@@ -352,9 +352,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                   $motdDescriptorLinks = array();
 
                   while ($descriptor = $motdDescriptorResult->fetch_assoc()) {
-                    $name = htmlspecialchars($descriptor["Name"]);
+                    $name = safe_htmlspecialchars($descriptor["Name"]);
                     $id = (int)$descriptor["DescriptorID"];
-                    $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+                    $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
 
                     $descriptorLink = '
                       <span class="tooltip-wrapper">
@@ -380,6 +380,8 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             <?php } else { ?>
                 <span class="subText" style="color:white;">No ratings yet! Be the first!</span><br>
             <?php } ?>
+            <br>
+            <span class="subText">Resets in <span id="updateText"></span></span>
         </div>
         <?php } else { echo "No maps found?! :("; } ?>
     </div>
@@ -435,9 +437,9 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                   $descriptorLinks = array();
 
                   while ($descriptor = $descriptorResult->fetch_assoc()) {
-                    $name = htmlspecialchars($descriptor["Name"]);
+                    $name = safe_htmlspecialchars($descriptor["Name"]);
                     $id = (int)$descriptor["DescriptorID"];
-                    $shortDescription = htmlspecialchars($descriptor["ShortDescription"]);
+                    $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
 
                     $descriptorLink = '
                       <span class="tooltip-wrapper">
@@ -505,6 +507,35 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         ?>
     </div>
 </div>
+
+<script>
+    function displayTimeRemaining() {
+        const now = new Date();
+        let nextReset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 6, 0, 0, 0));
+
+        if (now.getTime() >= nextReset.getTime()) {
+            nextReset.setUTCDate(nextReset.getUTCDate() + 1);
+        }
+
+        const timeRemaining = nextReset.getTime() - now.getTime();
+
+        const hoursRemaining = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24);
+        const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
+        const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
+
+        const hoursText = hoursRemaining === 1 ? 'hour' : 'hours';
+        const minutesText = minutesRemaining === 1 ? 'minute' : 'minutes';
+        const secondsText = secondsRemaining === 1 ? 'second' : 'seconds';
+
+        const textElement = document.getElementById('updateText');
+        if (textElement) {
+            textElement.textContent = `${hoursRemaining} ${hoursText}, ${minutesRemaining} ${minutesText}, ${secondsRemaining} ${secondsText}`;
+        }
+    }
+
+    displayTimeRemaining();
+    setInterval(displayTimeRemaining, 1000);
+</script>
 <?php
 require 'footer.php';
 ?>
