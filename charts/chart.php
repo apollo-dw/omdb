@@ -183,7 +183,7 @@
             b.*,
             s.*,
             {$ratingField} AS WeightedAvg,
-            {$countField} S RatingCount,
+            {$countField} AS RatingCount,
             {$bayesField} AS BayesianAverage,
             r_user.Score
         FROM beatmaps b
