@@ -12,7 +12,14 @@
 
     $countryQuery = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Country IS NOT NULL AND Country != '' ORDER BY Country ASC");
     while ($cRow = $countryQuery->fetch_assoc()) {
-        $allFilters[] = ['type' => 'country', 'id' => $cRow['Country'], 'name' => $cRow['Country'], 'label' => "Country: " . $cRow['Country']];
+        $code = $cRow['Country'];
+        $fullName = getFullCountryName($code) ?? $code;
+        $allFilters[] = [
+            'type' => 'country',
+            'id' => $code,
+            'name' => $fullName,
+            'label' => "Country: $fullName",
+        ];
     }
 
     $stmt = $conn->prepare("SELECT descriptorID, name FROM descriptors WHERE Usable = 1");
@@ -21,6 +28,13 @@
     while ($row = $descResult->fetch_assoc()) {
         $allFilters[] = ['type' => 'descriptor', 'id' => $row['descriptorID'], 'name' => $row['name'], 'label' => $row['name']];
     }
+
+    usort($allFilters, function($a, $b) {
+        if ($a['type'] === 'country' && $b['type'] === 'country') {
+            return strcmp($a['name'], $b['name']);
+        }
+        return 0;
+    });
 
     $allFiltersJSON = json_encode($allFilters);
 
@@ -152,7 +166,7 @@
                 <?php endfor; ?>
                 <option value="12">12★+</option>
             </select>
-            
+
             <select id="filter-tag" style="flex-grow: 1;">
                 <option value="">Any Tag</option>
                 <?php
@@ -174,19 +188,15 @@
         <?php if ($loggedIn): ?>
             <label><input type="checkbox" id="filter-friends"> Only include friend ratings</label>
         <?php endif; ?>
-        
+
         <?php if (!$showExtraFilters && $loggedIn): ?>
             <label><input type="checkbox" id="filter-hide-rated"> Hide already rated maps</label>
         <?php endif; ?>
-        
+
         <br><span>Exclude:</span><br>
         <label><input type="checkbox" id="filter-ex-loved"> Loved maps</label>
         <label><input type="checkbox" id="filter-ex-graveyard"> Graveyard maps</label>
         <label><input type="checkbox" id="filter-ex-ranked"> Ranked maps</label>
-    </div>
-
-    <div style="text-align: right;">
-        <button type="button" id="filter-submit-trigger">Update</button>
     </div>
 </div>
 
@@ -194,6 +204,7 @@
     $(document).ready(function() {
         const lookupMatrix = <?php echo $allFiltersJSON; ?>;
         let activeTokens = [];
+        let debounceTimer = null;
 
         const $input = $('#filter-input');
         const $popover = $('#filter-popover');
@@ -201,14 +212,18 @@
         const $wrapper = $('#filter-search-wrapper');
 
         $wrapper.on('click', function(e) {
-            if(e.target === this || e.target === $chipsContainer[0]) $input.focus();
+            if (e.target === this || e.target === $chipsContainer[0]) $input.focus();
         });
 
         const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.get('g')) pushToken(lookupMatrix.find(f => f.type === 'genre' && f.id == urlParams.get('g')));
-        if(urlParams.get('l')) pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == urlParams.get('l')));
-        if(urlParams.get('c')) pushToken(lookupMatrix.find(f => f.type === 'country' && f.id === decodeURIComponent(urlParams.get('c'))));
-        
+
+        if (urlParams.get('g'))
+            pushToken(lookupMatrix.find(f => f.type === 'genre'    && f.id == urlParams.get('g')));
+        if (urlParams.get('l'))
+            pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == urlParams.get('l')));
+        if (urlParams.get('c'))
+            pushToken(lookupMatrix.find(f => f.type === 'country'  && f.id === decodeURIComponent(urlParams.get('c'))));
+
         const descParam = urlParams.get('descriptors');
         if (descParam) {
             descParam.split(',').forEach(name => {
@@ -216,39 +231,57 @@
             });
         }
 
-        if(urlParams.get('o')) $('#filter-order').val(urlParams.get('o'));
-        if(urlParams.get('y')) $('#filter-year').val(urlParams.get('y'));
-        if(urlParams.get('r')) $('#filter-rating').val(urlParams.get('r'));
-        if(urlParams.get('sr')) $('#filter-sr').val(urlParams.get('sr'));
-        if(urlParams.get('t')) $('#filter-tag').val(urlParams.get('t'));
-        if(urlParams.get('f') === 'true') $('#filter-friends').prop('checked', true);
-        if(urlParams.get('alreadyRated') === 'true') $('#filter-hide-rated').prop('checked', true);
-        if(urlParams.get('excludeLoved') === 'true') $('#filter-ex-loved').prop('checked', true);
-        if(urlParams.get('excludeGraveyard') === 'true') $('#filter-ex-graveyard').prop('checked', true);
-        if(urlParams.get('excludeRanked') === 'true') $('#filter-ex-ranked').prop('checked', true);
+        if (urlParams.get('o'))
+            $('#filter-order').val(urlParams.get('o'));
+        if (urlParams.get('y'))
+            $('#filter-year').val(urlParams.get('y'));
+        if (urlParams.get('r'))
+            $('#filter-rating').val(urlParams.get('r'));
+        if (urlParams.get('sr'))
+            $('#filter-sr').val(urlParams.get('sr'));
+        if (urlParams.get('t'))
+            $('#filter-tag').val(urlParams.get('t'));
+        if (urlParams.get('f') === 'true')
+            $('#filter-friends').prop('checked', true);
+        if (urlParams.get('alreadyRated') === 'true')
+            $('#filter-hide-rated').prop('checked', true);
+        if (urlParams.get('excludeLoved') === 'true')
+            $('#filter-ex-loved').prop('checked', true);
+        if (urlParams.get('excludeGraveyard') === 'true')
+            $('#filter-ex-graveyard').prop('checked', true);
+        if (urlParams.get('excludeRanked') === 'true')
+            $('#filter-ex-ranked').prop('checked', true);
 
         renderChips();
 
         function pushToken(obj) {
-            if(obj && !activeTokens.some(t => t.type === obj.type && t.id === obj.id)) activeTokens.push(obj);
+            if (obj && !activeTokens.some(t => t.type === obj.type && t.id === obj.id))
+                activeTokens.push(obj);
+        }
+
+        function fireUpdate() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                $(document).trigger('omdbFiltersSubmitted', [window.getOmdbFilterPayload()]);
+            }, 100);
         }
 
         $input.on('input', function() {
             const query = $(this).val().toLowerCase().trim();
             $popover.empty().hide();
-            if(!query) return;
+            if (!query) return;
 
-            const dynamicMatches = lookupMatrix.filter(f => 
-                f.label.toLowerCase().includes(query) && 
+            const dynamicMatches = lookupMatrix.filter(f =>
+                f.label.toLowerCase().includes(query) &&
                 !activeTokens.some(t => t.id === f.id && t.type === f.type)
             ).slice(0, 20);
 
-            if(dynamicMatches.length > 0) {
+            if (dynamicMatches.length > 0) {
                 const groups = { genre: [], descriptor: [], language: [], country: [] };
                 dynamicMatches.forEach(m => groups[m.type]?.push(m));
 
                 Object.keys(groups).forEach(cat => {
-                    if(groups[cat].length > 0) {
+                    if (groups[cat].length > 0) {
                         $popover.append(`<div class="popover-category-header">${cat.charAt(0).toUpperCase() + cat.slice(1)}s</div>`);
                         groups[cat].forEach(item => {
                             const $el = $(`<div class="popover-item">${item.name}</div>`);
@@ -258,6 +291,7 @@
                                 $input.val('');
                                 $popover.hide();
                                 renderChips();
+                                fireUpdate();
                             });
                             $popover.append($el);
                         });
@@ -275,6 +309,7 @@
             if (e.key === 'Backspace' && $(this).val() === '' && activeTokens.length > 0) {
                 activeTokens.pop();
                 renderChips();
+                fireUpdate();
             }
         });
 
@@ -282,21 +317,31 @@
             $chipsContainer.find('.filter-chip').remove();
             activeTokens.forEach((tok, idx) => {
                 const $chip = $(`<span class="filter-chip"><span>${tok.name}</span></span>`);
-                const $rem = $(`<span class="remove">&times;</span>`).on('click', function(e) {
+                const $rem  = $(`<span class="remove">&times;</span>`).on('click', function(e) {
                     e.stopPropagation();
                     activeTokens.splice(idx, 1);
                     renderChips();
+                    fireUpdate();
                 });
                 $chip.append($rem);
                 $chipsContainer.append($chip);
             });
         }
 
+        $(document).on('change',
+            '#filter-order, #filter-year, #filter-rating, #filter-sr, #filter-tag, ' +
+            '#filter-friends, #filter-hide-rated, ' +
+            '#filter-ex-loved, #filter-ex-graveyard, #filter-ex-ranked',
+            function() {
+                fireUpdate();
+            }
+        );
+
         window.getOmdbFilterPayload = function() {
             return {
                 order: $('#filter-order').val(),
                 year: $('#filter-year').val(),
-                rating: $('#filter-rating').val() || "",
+                rating: $('#filter-rating').val() | "",
                 sr: $('#filter-sr').val() || "",
                 tag: $('#filter-tag').val() || "",
                 friends: $('#filter-friends').is(':checked'),
@@ -307,9 +352,5 @@
                 tokens: activeTokens
             };
         };
-
-        $('#filter-submit-trigger').on('click', function() {
-            $(document).trigger('omdbFiltersSubmitted', [window.getOmdbFilterPayload()]);
-        });
     });
 </script>

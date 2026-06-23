@@ -1,19 +1,20 @@
 <?php
     $PageTitle = "Charts";
-	require "../base.php";
-    require '../header.php';
+    require "../base.php";
+    require "../header.php";
 
     $year = ($_GET["y"] ?? "") === "all-time" ? "all-time" : GetIntParam("y", 2026, "NOO");
-    $page = GetIntParam('p', 1, "NOO");
-    $yearString = $year == "all-time" ? 'All Time' : $year;
+    $page = GetIntParam("p", 1, "NOO");
+    $yearString = $year == "all-time" ? "All Time" : $year;
 
     $result = $conn->query("SELECT DescriptorID, Name FROM descriptors WHERE Usable = 1");
     $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 
-    $requestedDescriptors = isset($_GET['descriptors']) ? explode(',', $_GET['descriptors']) : [];
+    $requestedDescriptors = isset($_GET["descriptors"]) ? explode(",", $_GET["descriptors"]) : [];
+    $selectedDescriptors = [];
     foreach ($descriptors as $descriptor) {
-        if (in_array($descriptor['Name'], $requestedDescriptors)) {
-            $selectedDescriptors[] = ['id' => $descriptor['DescriptorID'], 'name' => $descriptor['Name']];
+        if (in_array($descriptor["Name"], $requestedDescriptors)) {
+            $selectedDescriptors[] = ["id" => $descriptor["DescriptorID"], "name" => $descriptor["Name"]];
         }
     }
 
@@ -50,7 +51,7 @@
     }
 ?>
 
-<h1 id="heading"><?php echo 'Highest Rated Maps of ' . safe_htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
+<h1 id="heading"><?php echo "Highest Rated Maps of " . safe_htmlspecialchars($yearString, ENT_QUOTES, "UTF-8"); ?></h1>
 
 <div style="text-align:left;">
     <div class="pagination">
@@ -61,7 +62,6 @@
         <span onClick="changePage(page+1)">&raquo;</span>
     </div>
 </div>
-
 
 <div class="flex-container">
 	<div id="chart-container" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
@@ -95,100 +95,88 @@
 <script>
     var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
 
+    var orderLabels = {
+        "1": "Highest Rated ",
+        "2": "Lowest Rated ",
+        "3": "Most Rated ",
+        "4": "Most Controversial ",
+        "5": "Most Underrated "
+    };
+
+    var currentPayload = null;
+
     function changePage(newPage) {
         var nextPage = parseInt(newPage, 10);
         page = Math.max(Math.min(nextPage, 9), 1);
-        updateChart(window.getOmdbFilterPayload(), page);
+        var payload = currentPayload || window.getOmdbFilterPayload();
+        updateChart(payload, page);
     }
 
-    function resetPaginationDisplay() {
+    function resetPaginationDisplay(payload) {
         $("#chart-container").removeClass("faded");
         $(".pageLink").removeClass("active");
+        $(".page" + page).addClass("active");
 
-        var pageLink = '.page' + page;
-        $(pageLink).addClass("active");
+        var year = payload ? String(payload.year) : "all-time";
+        var order = payload ? String(payload.order) : "1";
+        var tokens = payload ? payload.tokens : [];
 
-        var year = document.getElementById("year").value;
-        var order = document.getElementById("order").value;
-
-        var orderString = 'Highest Rated ';
-        if (order == 2) orderString = 'Lowest Rated ';
-        else if (order == 3) orderString = 'Most Rated ';
-        else if (order == 4) orderString = 'Most Controversial ';
-        else if (order == 5) orderString = 'Most Underrated ';
-
-        var g = 0, l = 0, c = 0;
-        var genreName = "", languageName = "";
+        var orderString = orderLabels[order] || "Highest Rated ";
+        var genreName = "";
+        var languageName = "";
         var descriptorNames = [];
 
-        currentFilters.forEach(function(filter) {
-            if (filter.type === 'genre') { g = filter.id; genreName = filter.name + "   "; }
-            if (filter.type === 'language') { l = filter.id; languageName = filter.name + "   "; }
-            if (filter.type === 'country') { c = filter.id; }
-            if (filter.type === 'descriptor') descriptorNames.push(filter.name);
+        tokens.forEach(function(t) {
+            if (t.type === "genre")
+                genreName = t.name + "";
+            if (t.type === "language")
+                languageName = t.name + "";
+            if (t.type === "descriptor")
+                descriptorNames.push(t.name);
         });
 
-        var yearString = year === "all-time" ? 'All Time' : year;
+        var yearString = (year === "all-time") ? "All Time" : year;
+        $("#heading").html(orderString + languageName + genreName + "Maps of " + yearString);
 
-        var urlParams = new URLSearchParams();
-        urlParams.set('y', year);
-        urlParams.set('p', page);
-
-        if (g > 0) urlParams.set('g', g);
-        if (l > 0) urlParams.set('l', l);
-        if (c !== 0 && c !== "") urlParams.set('c', c);
-        if (descriptorNames.length > 0) urlParams.set('descriptors', descriptorNames.join(','));
-
-        window.history.replaceState({}, document.title, "?" + urlParams.toString());
-
-        $('#heading').html(orderString + languageName + genreName + 'Maps of ' + yearString);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    $(document).on('omdbFiltersSubmitted', function(event, payload) {
+    $(document).on("omdbFiltersSubmitted", function(event, payload) {
+        currentPayload = payload;
         page = 1;
         updateChart(payload, page);
     });
 
-    function updateChart(payload, page) {
+    function updateChart(payload, currentPage) {
         $("#chart-container").addClass("faded");
         
         var genre = 0;
         var language = 0;
-        var country = 0;
+        var country = "";
         var mappedDescriptors = [];
 
         payload.tokens.forEach(function(t) {
-            if (t.type === 'genre') genre = t.id;
-            if (t.type === 'language') language = t.id;
-            if (t.type === 'country') country = t.id;
-            if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
+            if (t.type === "genre")
+                genre = t.id;
+            if (t.type === "language")
+                language = t.id;
+            if (t.type === "country")
+                country = t.id;
+            if (t.type === "descriptor") mappedDescriptors.push({ id: t.id, name: t.name });
         });
 
-        var urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('y', payload.year);
-        urlParams.set('p', page);
-        urlParams.set('o', payload.order);
-        if (genre > 0)
-            urlParams.set('g', genre);
-        else
-            urlParams.delete('g');
-
-        if (language > 0)
-            urlParams.set('l', language);
-        else
-            urlParams.delete('l');
-
-        if (country !== 0 && country !== "")
-            urlParams.set('c', country);
-        else
-            urlParams.delete('c');
-
+        var urlParams = new URLSearchParams();
+        urlParams.set("y", payload.year);
+        urlParams.set("p", currentPage);
+        urlParams.set("o", payload.order);
+        if (genre)
+            urlParams.set("g", genre);
+        if (language)
+            urlParams.set("l", language);
+        if (country)
+            urlParams.set("c", country);
         if (mappedDescriptors.length > 0)
-            urlParams.set('descriptors', mappedDescriptors.map(d => d.name).join(','));
-        else
-            urlParams.delete('descriptors');
-
+            urlParams.set("descriptors", mappedDescriptors.map(d => d.name).join(","));
         window.history.replaceState({}, document.title, "?" + urlParams.toString());
 
         var descriptorsJSON = JSON.stringify(mappedDescriptors);
@@ -197,15 +185,15 @@
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 document.getElementById("chart-container").innerHTML = this.responseText;
-                resetPaginationDisplay();
+                resetPaginationDisplay(payload);
             }
         }
 
         xmlhttp.open("POST", "chart.php", true);
         xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = "y=" + payload.year +
-            "&p=" + page +
-            "&o=" + payload.order +
+        var params = "y=" + encodeURIComponent(payload.year) +
+            "&p=" + currentPage +
+            "&o=" + encodeURIComponent(payload.order) +
             "&g=" + genre +
             "&l=" + language +
             "&c=" + encodeURIComponent(country) +
