@@ -4,7 +4,7 @@
 
     $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
-    $MAX_PROPOSAL_COUNT = 3;
+    $MAX_PROPOSAL_COUNT = 9;
     $activeProposalCount = $conn->query("SELECT * FROM `descriptor_proposals` WHERE Status = 'pending';")->num_rows;
 ?>
 
