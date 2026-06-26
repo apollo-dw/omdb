@@ -52,7 +52,7 @@
         <input type="checkbox" id="list_likes" name="list_likes" value="list_likes" checked>
         <label for="list_likes">List likes</label><br>
         <input type="checkbox" id="ranked_maps" name="ranked_maps" value="ranked_maps" checked>
-        <label for="ranked_maps">Ranked maps</label><br><br>
+        <label for="ranked_maps">Ranked maps</label><br>
         <input type="checkbox" id="comments" name="comments" value="comments" checked>
         <label for="comments">Comments</label><br><br>
         <hr>
