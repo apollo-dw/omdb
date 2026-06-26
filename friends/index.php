@@ -111,7 +111,7 @@
     const debouncedUpdateFeed = debounce(updateFeed, 1000);
 
     $(document).ready(function() {
-        $('#ratings, #reviews, #review_likes, #lists, #list_likes, #ranked_maps').on('change', function() {
+        $('#ratings, #reviews, #review_likes, #lists, #list_likes, #ranked_maps, #comments').on('change', function() {
             $("#activity-listing").addClass("faded");
             debouncedUpdateFeed();
         });
