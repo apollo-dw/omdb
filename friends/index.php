@@ -53,6 +53,8 @@
         <label for="list_likes">List likes</label><br>
         <input type="checkbox" id="ranked_maps" name="ranked_maps" value="ranked_maps" checked>
         <label for="ranked_maps">Ranked maps</label><br><br>
+        <input type="checkbox" id="comments" name="comments" value="comments" checked>
+        <label for="comments">Comments</label><br><br>
         <hr>
         <b>Your friends</b> <br>
         <?php
@@ -84,6 +86,7 @@
         var lists = document.getElementById("lists").checked;
         var list_likes = document.getElementById("list_likes").checked;
         var ranked_maps = document.getElementById("ranked_maps").checked;
+        var comments = document.getElementById("comments").checked;
 
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
@@ -100,7 +103,8 @@
             "&review_likes=" + review_likes +
             "&lists=" + lists +
             "&list_likes=" + list_likes +
-            "&ranked_maps=" + ranked_maps;
+            "&ranked_maps=" + ranked_maps +
+            "&comments=" + comments;
         xmlhttp.send(params);
 	}
 
