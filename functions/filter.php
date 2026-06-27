@@ -1,47 +1,78 @@
 <?php
+    // Default Config used by /charts
+    $defaultFilterConfig = [
+        'sortOptions' => [
+            '1' => 'Highest Rated',
+            '2' => 'Lowest Rated',
+            '3' => 'Most Rated',
+            '4' => 'Most Controversial',
+            '5' => 'Most Underrated'
+        ],
+        'showYear' => true,
+        'showRating' => false,
+        'showSR' => false,
+        'showTag' => false,
+        'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta'],
+        'customTokens' => []
+    ];
+
+    $filterConfig = array_merge($defaultFilterConfig, $filterConfig ?? []);
+
     $allFilters = [];
-    for ($i = 1; $i <= 14; $i++) {
-        $genre = getGenre($i);
-        if ($genre) $allFilters[] = ['type' => 'genre', 'id' => $i, 'name' => $genre, 'label' => "Genre: $genre"];
+
+    if (in_array('genre', $filterConfig['categories'])) {
+        for ($i = 1; $i <= 14; $i++) {
+            $genre = getGenre($i);
+            if ($genre) $allFilters[] = ['type' => 'genre', 'id' => $i, 'name' => $genre, 'label' => "Genre: $genre"];
+        }
     }
 
-    for ($i = 1; $i <= 14; $i++) {
-        $language = getLanguage($i);
-        if ($language) $allFilters[] = ['type' => 'language', 'id' => $i, 'name' => $language, 'label' => "Language: $language"];
+    if (in_array('language', $filterConfig['categories'])) {
+        for ($i = 1; $i <= 14; $i++) {
+            $language = getLanguage($i);
+            if ($language) $allFilters[] = ['type' => 'language', 'id' => $i, 'name' => $language, 'label' => "Language: $language"];
+        }
     }
 
-    $countryQuery = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Country IS NOT NULL AND Country != '' ORDER BY Country ASC");
-    while ($cRow = $countryQuery->fetch_assoc()) {
-        $code = $cRow['Country'];
-        $fullName = getFullCountryName($code) ?? $code;
-        $allFilters[] = [
-            'type' => 'country',
-            'id' => $code,
-            'name' => $fullName,
-            'label' => "Country: $fullName",
-        ];
+    if (in_array('country', $filterConfig['categories'])) {
+        $countryQuery = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Country IS NOT NULL AND Country != '' ORDER BY Country ASC");
+        while ($cRow = $countryQuery->fetch_assoc()) {
+            $code = $cRow['Country'];
+            $fullName = getFullCountryName($code) ?? $code;
+            $allFilters[] = ['type' => 'country', 'id' => $code, 'name' => $fullName, 'label' => "Country: $fullName"];
+        }
     }
 
-    $stmt = $conn->prepare("SELECT DescriptorID AS descriptorID, Name AS name, ParentID AS parentID, Usable AS usable FROM descriptors");
-    $stmt->execute();
-    $descResult = $stmt->get_result();
-    while ($row = $descResult->fetch_assoc()) {
-        $allFilters[] = [
-            'type' => 'descriptor',
-            'id' => $row['descriptorID'],
-            'name' => $row['name'],
-            'label' => $row['name'],
-            'parentID' => $row['parentID'],
-            'usable' => $row['usable'] == 1
-        ];
+    if (in_array('descriptor', $filterConfig['categories'])) {
+        $stmt = $conn->prepare("SELECT DescriptorID AS descriptorID, Name AS name, ParentID AS parentID, Usable AS usable FROM descriptors");
+        $stmt->execute();
+        $descResult = $stmt->get_result();
+        while ($row = $descResult->fetch_assoc()) {
+            $allFilters[] = [
+                'type' => 'descriptor',
+                'id' => $row['descriptorID'],
+                'name' => $row['name'],
+                'label' => $row['name'],
+                'parentID' => $row['parentID'],
+                'usable' => $row['usable'] == 1
+            ];
+        }
     }
 
-    $allFilters[] = ['type' => 'meta', 'id' => 'friends', 'name' => 'Friend Ratings', 'label' => 'System: Friend Ratings'];
-    $allFilters[] = ['type' => 'meta', 'id' => 'alreadyRated', 'name' => 'Already Rated Maps', 'label' => 'System: Already Rated Maps'];
+    if (in_array('meta', $filterConfig['categories'])) {
+        $allFilters[] = ['type' => 'meta', 'id' => 'friends', 'name' => 'Friend Ratings', 'label' => 'System: Friend Ratings'];
+        $allFilters[] = ['type' => 'meta', 'id' => 'alreadyRated', 'name' => 'Already Rated Maps', 'label' => 'System: Already Rated Maps'];
+    }
 
-    $allFilters[] = ['type' => 'status', 'id' => '4', 'name' => 'Loved Maps', 'label' => 'Status: Loved Maps'];
-    $allFilters[] = ['type' => 'status', 'id' => '-2', 'name' => 'Graveyard Maps', 'label' => 'Status: Graveyard Maps'];
-    $allFilters[] = ['type' => 'status', 'id' => '1,2', 'name' => 'Ranked Maps', 'label' => 'Status: Ranked Maps'];
+    if (in_array('status', $filterConfig['categories'])) {
+        $allFilters[] = ['type' => 'status', 'id' => '4', 'name' => 'Loved Maps', 'label' => 'Status: Loved Maps'];
+        $allFilters[] = ['type' => 'status', 'id' => '-2', 'name' => 'Graveyard Maps', 'label' => 'Status: Graveyard Maps'];
+        $allFilters[] = ['type' => 'status', 'id' => '1,2', 'name' => 'Ranked Maps', 'label' => 'Status: Ranked Maps'];
+    }
+
+    if (!empty($filterConfig['customTokens'])) {
+        $allFilters = array_merge($allFilters, $filterConfig['customTokens']);
+    }
 
     usort($allFilters, function($a, $b) {
         if ($a['type'] === 'country' && $b['type'] === 'country') {
@@ -51,11 +82,6 @@
     });
 
     $allFiltersJSON = json_encode($allFilters);
-
-    $uri = $_SERVER['REQUEST_URI'];
-    $isRatingsPage = strpos($uri, 'ratings') !== false;
-    $isProfilePage = strpos($uri, 'profile') !== false && !$isRatingsPage;
-    $showExtraFilters = $isRatingsPage || $isProfilePage;
 ?>
 
 <style>
@@ -117,28 +143,25 @@
 <div>
     <b>Filters</b>
     <hr>
+    
     <div class="filter-section flex-row-container" style="align-items: center;">
-        <select id="filter-order" autocomplete="off">
-            <?php if ($showExtraFilters): ?>
-                <option value="0">Latest</option>
-                <option value="1">Oldest</option>
-                <option value="2">Highest rated</option>
-                <option value="3">Lowest rated</option>
-            <?php else: ?>
-                <option value="1">Highest Rated</option>
-                <option value="2">Lowest Rated</option>
-                <option value="3">Most Rated</option>
-                <option value="4">Most Controversial</option>
-                <option value="5">Most Underrated</option>
-            <?php endif; ?>
-        </select>
-        <span> maps of </span>
-        <select id="filter-year" autocomplete="off">
-            <option value="all-time">All Time</option>
-            <?php for ($i = 2007; $i <= date('Y'); $i++): ?>
-                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-            <?php endfor; ?>
-        </select>
+        <?php if (!empty($filterConfig['sortOptions'])): ?>
+            <select id="filter-order" autocomplete="off">
+                <?php foreach ($filterConfig['sortOptions'] as $val => $label): ?>
+                    <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
+                <?php endforeach; ?>
+            </select>
+        <?php endif; ?>
+
+        <?php if ($filterConfig['showYear']): ?>
+            <span> maps of </span>
+            <select id="filter-year" autocomplete="off">
+                <option value="all-time">All Time</option>
+                <?php for ($i = 2007; $i <= date('Y'); $i++): ?>
+                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                <?php endfor; ?>
+            </select>
+        <?php endif; ?>
     </div>
 
     <div class="filter-section">
@@ -149,37 +172,43 @@
         </div>
     </div>
 
-    <?php if ($showExtraFilters): ?>
+    <?php if ($filterConfig['showRating'] || $filterConfig['showSR'] || $filterConfig['showTag']): ?>
         <div class="filter-section flex-row-container">
-            <select id="filter-rating">
-                <option value="">All Scores</option>
-                <?php for ($i = 0; $i <= 5; $i += 0.5): ?>
-                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-                <?php endfor; ?>
-            </select>
+            <?php if ($filterConfig['showRating']): ?>
+                <select id="filter-rating">
+                    <option value="">All Scores</option>
+                    <?php for ($i = 0; $i <= 5; $i += 0.5): ?>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                    <?php endfor; ?>
+                </select>
+            <?php endif; ?>
 
-            <select id="filter-sr">
-                <option value="">All Star Ratings</option>
-                <?php for ($i = 0; $i < 12; $i++): ?>
-                    <option value="<?php echo $i; ?>"><?php echo $i; ?>★ - <?php echo ($i + 1); ?>★</option>
-                <?php endfor; ?>
-                <option value="12">12★+</option>
-            </select>
+            <?php if ($filterConfig['showSR']): ?>
+                <select id="filter-sr">
+                    <option value="">All Star Ratings</option>
+                    <?php for ($i = 0; $i < 12; $i++): ?>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?>★ - <?php echo ($i + 1); ?>★</option>
+                    <?php endfor; ?>
+                    <option value="12">12★+</option>
+                </select>
+            <?php endif; ?>
 
-            <select id="filter-tag" style="flex-grow: 1;">
-                <option value="">Any Tag</option>
-                <?php
-                    if (isset($profileId)) {
-                        $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
-                        $stmt->bind_param('i', $profileId);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<option value='".urlencode($row["Tag"])."'>".htmlspecialchars($row["Tag"])." ({$row["TagCount"]})</option>";
+            <?php if ($filterConfig['showTag']): ?>
+                <select id="filter-tag" style="flex-grow: 1;">
+                    <option value="">Any Tag</option>
+                    <?php
+                        if (isset($profileId)) {
+                            $stmt = $conn->prepare("SELECT Tag, COUNT(*) AS TagCount FROM rating_tags WHERE UserID = ? GROUP BY Tag ORDER BY TagCount DESC;");
+                            $stmt->bind_param('i', $profileId);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<option value='".urlencode($row["Tag"])."'>".htmlspecialchars($row["Tag"])." ({$row["TagCount"]})</option>";
+                            }
                         }
-                    }
-                ?>
-            </select>
+                    ?>
+                </select>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>
@@ -294,17 +323,71 @@
                 const catNames = {
                     status: 'Statuses',
                     meta: 'System Options',
+                    descriptor: 'Descriptors',
                     genre: 'Genres',
                     language: 'Languages',
-                    descriptor: 'Descriptors',
                     country: 'Countries'
                 };
 
-                const displayOrder = ['status', 'meta', 'genre', 'language', 'descriptor', 'country'];
+                const displayOrder = ['status', 'meta', 'descriptor', 'genre', 'language', 'country'];
                 let addedSomething = false;
 
                 displayOrder.forEach(cat => {
-                    if (groups[cat] && groups[cat].length > 0) {
+                    // Below is basically:
+                    // If there's no search query and current cat is descriptor, render desc tree
+                    // else render them normally
+                    if (cat === 'descriptor' && !query) {
+                        addedSomething = true;
+                        $popover.append(`<div class="popover-category-header">Descriptors Tree</div>`);
+                        
+                        const allDescriptors = lookupMatrix.filter(f => f.type === 'descriptor');
+                        
+                        function buildTree(parentID, depth) {
+                            let html = '';
+                            const children = allDescriptors
+                                .filter(d => d.parentID == parentID || (!d.parentID && !parentID))
+                                .sort((a, b) => a.name.localeCompare(b.name));
+
+                            children.forEach(child => {
+                                const isSelected = activeTokens.some(t => t.type === 'descriptor' && t.id == child.id);
+                                
+                                let style = `padding: 0.4em 1em 0.4em ${1 + depth * 1.5}em;`;
+                                let classes = 'desc-tree-node';
+                                
+                                if (!child.usable) {
+                                    style += ' color: #888; font-style: italic; cursor: default;';
+                                } else if (isSelected) {
+                                    style += ' color: #555; background-color: #112222; text-decoration: line-through; cursor: default;';
+                                } else {
+                                    classes += ' popover-item';
+                                }
+
+                                html += `<div class="${classes}" style="${style}" data-id="${child.id}">${child.name}</div>`;
+                                
+                                html += buildTree(child.id, depth + 1);
+                            });
+                            return html;
+                        }
+
+                        const treeHTML = buildTree(null, 0);
+                        const $treeContainer = $(`<div>${treeHTML}</div>`);
+                        
+                        $treeContainer.find('.popover-item').on('click', function(e) {
+                            e.stopPropagation();
+                            const id = $(this).data('id');
+                            const item = allDescriptors.find(d => d.id == id);
+                            if (item && item.usable) {
+                                pushToken(item, false);
+                                $input.val('');
+                                $popover.hide();
+                                renderChips();
+                                fireUpdate();
+                                $input.focus();
+                            }
+                        });
+
+                        $popover.append($treeContainer);
+                    } else if (groups[cat] && groups[cat].length > 0) {
                         addedSomething = true;
                         $popover.append(`<div class="popover-category-header">${catNames[cat]}</div>`);
                         groups[cat].forEach(item => {
@@ -322,60 +405,6 @@
                         });
                     }
                 });
-
-                if (!query) {
-                    addedSomething = true;
-                    $popover.append(`<div class="popover-category-header">Descriptors Tree</div>`);
-                    
-                    const allDescriptors = lookupMatrix.filter(f => f.type === 'descriptor');
-                    
-                    function buildTree(parentID, depth) {
-                        let html = '';
-                        const children = allDescriptors
-                            .filter(d => d.parentID == parentID || (!d.parentID && !parentID))
-                            .sort((a, b) => a.name.localeCompare(b.name));
-
-                        children.forEach(child => {
-                            const isSelected = activeTokens.some(t => t.type === 'descriptor' && t.id == child.id);
-                            
-                            let style = `padding: 0.4em 1em 0.4em ${1 + depth * 1.5}em;`;
-                            let classes = 'desc-tree-node';
-                            
-                            if (!child.usable) {
-                                style += ' color: #888; font-style: italic; cursor: default;';
-                            } else if (isSelected) {
-                                style += ' color: #555; background-color: #112222; text-decoration: line-through; cursor: default;';
-                            } else {
-                                classes += ' popover-item';
-                            }
-
-                            html += `<div class="${classes}" style="${style}" data-id="${child.id}">${child.name}</div>`;
-                            
-                            html += buildTree(child.id, depth + 1);
-                        });
-                        return html;
-                    }
-
-                    const treeHTML = buildTree(null, 0);
-                    const $treeContainer = $(`<div>${treeHTML}</div>`);
-                    
-                    // Only attach click events to items that were flagged as usable/unselected
-                    $treeContainer.find('.popover-item').on('click', function(e) {
-                        e.stopPropagation();
-                        const id = $(this).data('id');
-                        const item = allDescriptors.find(d => d.id == id);
-                        if (item && item.usable) {
-                            pushToken(item, false);
-                            $input.val('');
-                            $popover.hide();
-                            renderChips();
-                            fireUpdate();
-                            $input.focus();
-                        }
-                    });
-
-                    $popover.append($treeContainer);
-                }
 
                 if (addedSomething) {
                     $popover.show();
