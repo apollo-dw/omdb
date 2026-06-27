@@ -7,25 +7,13 @@
     $page = GetIntParam("p", 1, "NOO");
     $yearString = $year == "all-time" ? "All Time" : $year;
 
-    $result = $conn->query("SELECT DescriptorID, Name FROM descriptors WHERE Usable = 1");
-    $descriptors = $result->fetch_all(MYSQLI_ASSOC);
-
-    $requestedDescriptors = isset($_GET["descriptors"]) ? explode(",", $_GET["descriptors"]) : [];
-    $selectedDescriptors = [];
-    foreach ($descriptors as $descriptor) {
-        if (in_array($descriptor["Name"], $requestedDescriptors)) {
-            $selectedDescriptors[] = ["id" => $descriptor["DescriptorID"], "name" => $descriptor["Name"]];
-        }
-    }
-
+    // Notice we removed descriptor preprocessing here. chart.php parses it cleaner.
     function generateTreeHTML($tree) {
         $html = '<ul>';
         foreach ($tree as $node) {
             $descriptorID = $node['descriptorID'];
             $isUsable = $node['Usable'];
-
             $class = $isUsable ? '' : 'class="unusable"';
-
             $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . $node['name'] . '</span>';
             if (isset($node['children'])) {
                 $html .= generateTreeHTML($node['children']);
@@ -65,9 +53,7 @@
 
 <div class="flex-container">
 	<div id="chart-container" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
-		<?php
-			include 'chart.php';
-		?>
+		<?php include 'chart.php'; ?>
 	</div>
 
 	<div style="padding-top:0.5em;" class="flex-item">
@@ -79,7 +65,6 @@
 		The next update will happen in <span id="updateText">---</span><br><br>
         Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
-
 </div>
 
     <div style="text-align:left;">
@@ -124,15 +109,10 @@
         var orderString = orderLabels[order] || "Highest Rated ";
         var genreName = "";
         var languageName = "";
-        var descriptorNames = [];
 
         tokens.forEach(function(t) {
-            if (t.type === "genre")
-                genreName = t.name + "";
-            if (t.type === "language")
-                languageName = t.name + "";
-            if (t.type === "descriptor")
-                descriptorNames.push(t.name);
+            if (t.type === "genre" && !t.exclude) genreName = t.name + " ";
+            if (t.type === "language" && !t.exclude) languageName = t.name + " ";
         });
 
         var yearString = (year === "all-time") ? "All Time" : year;
@@ -149,37 +129,19 @@
 
     function updateChart(payload, currentPage) {
         $("#chart-container").addClass("faded");
-        
-        var genre = 0;
-        var language = 0;
-        var country = "";
-        var mappedDescriptors = [];
 
-        payload.tokens.forEach(function(t) {
-            if (t.type === "genre")
-                genre = t.id;
-            if (t.type === "language")
-                language = t.id;
-            if (t.type === "country")
-                country = t.id;
-            if (t.type === "descriptor") mappedDescriptors.push({ id: t.id, name: t.name });
-        });
+        var tokensJSON = JSON.stringify(payload.tokens);
 
         var urlParams = new URLSearchParams();
         urlParams.set("y", payload.year);
         urlParams.set("p", currentPage);
         urlParams.set("o", payload.order);
-        if (genre)
-            urlParams.set("g", genre);
-        if (language)
-            urlParams.set("l", language);
-        if (country)
-            urlParams.set("c", country);
-        if (mappedDescriptors.length > 0)
-            urlParams.set("descriptors", mappedDescriptors.map(d => d.name).join(","));
+        
+        if (payload.tokens.length > 0) {
+            urlParams.set("tokens", tokensJSON); 
+        }
+        
         window.history.replaceState({}, document.title, "?" + urlParams.toString());
-
-        var descriptorsJSON = JSON.stringify(mappedDescriptors);
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
@@ -194,15 +156,7 @@
         var params = "y=" + encodeURIComponent(payload.year) +
             "&p=" + currentPage +
             "&o=" + encodeURIComponent(payload.order) +
-            "&g=" + genre +
-            "&l=" + language +
-            "&c=" + encodeURIComponent(country) +
-            "&f=" + String(payload.friends) +
-            "&descriptors=" + encodeURIComponent(descriptorsJSON) +
-            "&alreadyRated=" + String(payload.hideRated) +
-            "&excludeLoved=" + String(payload.exLoved) +
-            "&excludeGraveyard=" + String(payload.exGraveyard) +
-            "&excludeRanked=" + String(payload.exRanked);
+            "&tokens=" + encodeURIComponent(tokensJSON);
         xmlhttp.send(params);
     }
 
@@ -215,7 +169,6 @@
         }
 
         const timeRemaining = nextReset.getTime() - now.getTime();
-
         const hoursRemaining = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24);
         const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
         const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
@@ -234,6 +187,4 @@
     setInterval(displayTimeRemaining, 1000);
 </script>
 
-<?php
-    require '../footer.php';
-?>
+<?php require '../footer.php'; ?>

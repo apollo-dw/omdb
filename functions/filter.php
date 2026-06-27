@@ -22,12 +22,26 @@
         ];
     }
 
-    $stmt = $conn->prepare("SELECT descriptorID, name FROM descriptors WHERE Usable = 1");
+    $stmt = $conn->prepare("SELECT DescriptorID AS descriptorID, Name AS name, ParentID AS parentID, Usable AS usable FROM descriptors");
     $stmt->execute();
     $descResult = $stmt->get_result();
     while ($row = $descResult->fetch_assoc()) {
-        $allFilters[] = ['type' => 'descriptor', 'id' => $row['descriptorID'], 'name' => $row['name'], 'label' => $row['name']];
+        $allFilters[] = [
+            'type' => 'descriptor',
+            'id' => $row['descriptorID'],
+            'name' => $row['name'],
+            'label' => $row['name'],
+            'parentID' => $row['parentID'],
+            'usable' => $row['usable'] == 1
+        ];
     }
+
+    $allFilters[] = ['type' => 'meta', 'id' => 'friends', 'name' => 'Friend Ratings', 'label' => 'System: Friend Ratings'];
+    $allFilters[] = ['type' => 'meta', 'id' => 'alreadyRated', 'name' => 'Already Rated Maps', 'label' => 'System: Already Rated Maps'];
+
+    $allFilters[] = ['type' => 'status', 'id' => '4', 'name' => 'Loved Maps', 'label' => 'Status: Loved Maps'];
+    $allFilters[] = ['type' => 'status', 'id' => '-2', 'name' => 'Graveyard Maps', 'label' => 'Status: Graveyard Maps'];
+    $allFilters[] = ['type' => 'status', 'id' => '1,2', 'name' => 'Ranked Maps', 'label' => 'Status: Ranked Maps'];
 
     usort($allFilters, function($a, $b) {
         if ($a['type'] === 'country' && $b['type'] === 'country') {
@@ -45,9 +59,7 @@
 ?>
 
 <style>
-    .filter-section {
-        margin-bottom: 1em;
-    }
+    .filter-section { margin-bottom: 1em; }
     .filter-search-box {
         position: relative;
         background-color: #203838;
@@ -87,32 +99,19 @@
         font-weight: bold;
         font-size: 0.85em;
     }
-    .popover-item {
-        padding: 0.4em 1em;
-        cursor: pointer;
-    }
-    .popover-item:hover {
-        background-color: #203838;
-    }
+    .popover-item { padding: 0.4em 1em; cursor: pointer; }
+    .popover-item:hover { background-color: #203838; }
+    
     .filter-chip {
-        background-color: DarkSlateGrey;
-        border: 1px solid white;
         padding: 0.1em 0.4em;
         display: inline-flex;
         align-items: center;
         gap: 0.4em;
         font-size: 0.9em;
+        border: 1px solid;
     }
-    .filter-chip .remove {
-        cursor: pointer;
-        color: #ff6666;
-        font-weight: bold;
-    }
-    .filter-checkbox-group label {
-        display: block;
-        margin-bottom: 0.25em;
-        cursor: pointer;
-    }
+    .filter-chip .remove { cursor: pointer; font-weight: bold; }
+    .filter-chip .remove:hover { color: #ff9999; }
 </style>
 
 <div>
@@ -145,7 +144,7 @@
     <div class="filter-section">
         <div class="filter-search-box" id="filter-search-wrapper">
             <div id="filter-chips-container" style="display: contents;"></div>
-            <input type="text" id="filter-input" placeholder="Search genres, descriptors, countries..." autocomplete="off">
+            <input type="text" id="filter-input" placeholder="Search genres, descriptors, statuses, friends..." autocomplete="off">
             <div class="filter-popover" id="filter-popover" style="display: none;"></div>
         </div>
     </div>
@@ -183,27 +182,24 @@
             </select>
         </div>
     <?php endif; ?>
-
-    <div class="filter-section filter-checkbox-group">
-        <?php if ($loggedIn): ?>
-            <label><input type="checkbox" id="filter-friends"> Only include friend ratings</label>
-        <?php endif; ?>
-
-        <?php if (!$showExtraFilters && $loggedIn): ?>
-            <label><input type="checkbox" id="filter-hide-rated"> Hide already rated maps</label>
-        <?php endif; ?>
-
-        <br><span>Exclude:</span><br>
-        <label><input type="checkbox" id="filter-ex-loved"> Loved maps</label>
-        <label><input type="checkbox" id="filter-ex-graveyard"> Graveyard maps</label>
-        <label><input type="checkbox" id="filter-ex-ranked"> Ranked maps</label>
-    </div>
 </div>
 
 <script>
+    let activeTokens = [];
+
+    window.getOmdbFilterPayload = function() {
+        return {
+            order: $('#filter-order').val(),
+            year: $('#filter-year').val(),
+            rating: $('#filter-rating').val() || "",
+            sr: $('#filter-sr').val() || "",
+            tag: $('#filter-tag').val() || "",
+            tokens: activeTokens 
+        };
+    };
+
     $(document).ready(function() {
         const lookupMatrix = <?php echo $allFiltersJSON; ?>;
-        let activeTokens = [];
         let debounceTimer = null;
 
         const $input = $('#filter-input');
@@ -217,46 +213,47 @@
 
         const urlParams = new URLSearchParams(window.location.search);
 
-        if (urlParams.get('g'))
-            pushToken(lookupMatrix.find(f => f.type === 'genre'    && f.id == urlParams.get('g')));
-        if (urlParams.get('l'))
-            pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == urlParams.get('l')));
-        if (urlParams.get('c'))
-            pushToken(lookupMatrix.find(f => f.type === 'country'  && f.id === decodeURIComponent(urlParams.get('c'))));
+        const tokensString = urlParams.get('tokens');
+        if (tokensString) {
+            try {
+                let decoded = tokensString;
+                if (decoded.includes('%')) decoded = decodeURIComponent(decoded); 
+                activeTokens = JSON.parse(decoded);
+            } catch(e) { console.error("Could not parse tokens from URL", e); }
+        } else {
+            if (urlParams.get('g')) urlParams.get('g').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'genre' && f.id == id)));
+            if (urlParams.get('eg')) urlParams.get('eg').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'genre' && f.id == id), true));
+            if (urlParams.get('l')) urlParams.get('l').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == id)));
+            if (urlParams.get('el')) urlParams.get('el').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == id), true));
+            if (urlParams.get('c')) urlParams.get('c').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'country' && f.id === decodeURIComponent(id))));
+            if (urlParams.get('ec')) urlParams.get('ec').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'country' && f.id === decodeURIComponent(id)), true));
 
-        const descParam = urlParams.get('descriptors');
-        if (descParam) {
-            descParam.split(',').forEach(name => {
-                pushToken(lookupMatrix.find(f => f.type === 'descriptor' && f.name === name));
-            });
+            const descParam = urlParams.get('descriptors');
+            if (descParam) {
+                descParam.split(',').forEach(name => {
+                    const isExclude = name.startsWith('-');
+                    const cleanName = isExclude ? name.substring(1) : name;
+                    pushToken(lookupMatrix.find(f => f.type === 'descriptor' && f.name === cleanName), isExclude);
+                });
+            }
         }
 
-        if (urlParams.get('o'))
-            $('#filter-order').val(urlParams.get('o'));
-        if (urlParams.get('y'))
-            $('#filter-year').val(urlParams.get('y'));
-        if (urlParams.get('r'))
-            $('#filter-rating').val(urlParams.get('r'));
-        if (urlParams.get('sr'))
-            $('#filter-sr').val(urlParams.get('sr'));
-        if (urlParams.get('t'))
-            $('#filter-tag').val(urlParams.get('t'));
-        if (urlParams.get('f') === 'true')
-            $('#filter-friends').prop('checked', true);
-        if (urlParams.get('alreadyRated') === 'true')
-            $('#filter-hide-rated').prop('checked', true);
-        if (urlParams.get('excludeLoved') === 'true')
-            $('#filter-ex-loved').prop('checked', true);
-        if (urlParams.get('excludeGraveyard') === 'true')
-            $('#filter-ex-graveyard').prop('checked', true);
-        if (urlParams.get('excludeRanked') === 'true')
-            $('#filter-ex-ranked').prop('checked', true);
+        $('#filter-order').val(urlParams.get('o') || "1");
+        $('#filter-year').val("<?php echo isset($year) ? $year : 2026; ?>");
+        $('#filter-rating').val(urlParams.get('r') || "");
+        $('#filter-sr').val(urlParams.get('sr') || "");
+        $('#filter-tag').val(urlParams.get('t') || "");
 
         renderChips();
 
-        function pushToken(obj) {
-            if (obj && !activeTokens.some(t => t.type === obj.type && t.id === obj.id))
-                activeTokens.push(obj);
+        if (typeof resetPaginationDisplay === 'function') {
+            resetPaginationDisplay(window.getOmdbFilterPayload());
+        }
+
+        function pushToken(obj, exclude = false) {
+            if (obj && !activeTokens.some(t => t.type === obj.type && t.id == obj.id)) {
+                activeTokens.push({...obj, exclude: exclude});
+            }
         }
 
         function fireUpdate() {
@@ -266,40 +263,127 @@
             }, 100);
         }
 
-        $input.on('input', function() {
-            const query = $(this).val().toLowerCase().trim();
+        function renderPopover() {
+            const query = $input.val().toLowerCase().trim();
             $popover.empty().hide();
-            if (!query) return;
 
-            const dynamicMatches = lookupMatrix.filter(f =>
-                f.label.toLowerCase().includes(query) &&
-                !activeTokens.some(t => t.id === f.id && t.type === f.type)
-            ).slice(0, 20);
+            let matches = lookupMatrix.filter(f => {
+                // If actively typing, we ONLY want to search for 'usable' descriptors
+                // otherwise the tree is drawn later instead
+                if (f.type === 'descriptor' && !f.usable) return false;
+                
+                return (!query || f.label.toLowerCase().includes(query)) &&
+                       !activeTokens.some(t => t.id == f.id && t.type === f.type);
+            });
 
-            if (dynamicMatches.length > 0) {
-                const groups = { genre: [], descriptor: [], language: [], country: [] };
-                dynamicMatches.forEach(m => groups[m.type]?.push(m));
+            if (matches.length > 0 || !query) {
+                const groups = { status: [], meta: [], genre: [], language: [], descriptor: [], country: [] };
+                
+                matches.forEach(m => {
+                    if (groups[m.type]) groups[m.type].push(m);
+                });
 
-                Object.keys(groups).forEach(cat => {
-                    if (groups[cat].length > 0) {
-                        $popover.append(`<div class="popover-category-header">${cat.charAt(0).toUpperCase() + cat.slice(1)}s</div>`);
+                if (!query) {
+                    groups.descriptor = [];
+                } else {
+                    Object.keys(groups).forEach(k => {
+                        groups[k] = groups[k].slice(0, 15);
+                    });
+                }
+
+                const catNames = {
+                    status: 'Statuses',
+                    meta: 'System Options',
+                    genre: 'Genres',
+                    language: 'Languages',
+                    descriptor: 'Descriptors',
+                    country: 'Countries'
+                };
+
+                const displayOrder = ['status', 'meta', 'genre', 'language', 'descriptor', 'country'];
+                let addedSomething = false;
+
+                displayOrder.forEach(cat => {
+                    if (groups[cat] && groups[cat].length > 0) {
+                        addedSomething = true;
+                        $popover.append(`<div class="popover-category-header">${catNames[cat]}</div>`);
                         groups[cat].forEach(item => {
                             const $el = $(`<div class="popover-item">${item.name}</div>`);
                             $el.on('click', function(e) {
                                 e.stopPropagation();
-                                activeTokens.push(item);
+                                pushToken(item, false);
                                 $input.val('');
                                 $popover.hide();
                                 renderChips();
                                 fireUpdate();
+                                $input.focus(); 
                             });
                             $popover.append($el);
                         });
                     }
                 });
-                $popover.show();
+
+                if (!query) {
+                    addedSomething = true;
+                    $popover.append(`<div class="popover-category-header">Descriptors Tree</div>`);
+                    
+                    const allDescriptors = lookupMatrix.filter(f => f.type === 'descriptor');
+                    
+                    function buildTree(parentID, depth) {
+                        let html = '';
+                        const children = allDescriptors
+                            .filter(d => d.parentID == parentID || (!d.parentID && !parentID))
+                            .sort((a, b) => a.name.localeCompare(b.name));
+
+                        children.forEach(child => {
+                            const isSelected = activeTokens.some(t => t.type === 'descriptor' && t.id == child.id);
+                            
+                            let style = `padding: 0.4em 1em 0.4em ${1 + depth * 1.5}em;`;
+                            let classes = 'desc-tree-node';
+                            
+                            if (!child.usable) {
+                                style += ' color: #888; font-style: italic; cursor: default;';
+                            } else if (isSelected) {
+                                style += ' color: #555; background-color: #112222; text-decoration: line-through; cursor: default;';
+                            } else {
+                                classes += ' popover-item';
+                            }
+
+                            html += `<div class="${classes}" style="${style}" data-id="${child.id}">${child.name}</div>`;
+                            
+                            html += buildTree(child.id, depth + 1);
+                        });
+                        return html;
+                    }
+
+                    const treeHTML = buildTree(null, 0);
+                    const $treeContainer = $(`<div>${treeHTML}</div>`);
+                    
+                    // Only attach click events to items that were flagged as usable/unselected
+                    $treeContainer.find('.popover-item').on('click', function(e) {
+                        e.stopPropagation();
+                        const id = $(this).data('id');
+                        const item = allDescriptors.find(d => d.id == id);
+                        if (item && item.usable) {
+                            pushToken(item, false);
+                            $input.val('');
+                            $popover.hide();
+                            renderChips();
+                            fireUpdate();
+                            $input.focus();
+                        }
+                    });
+
+                    $popover.append($treeContainer);
+                }
+
+                if (addedSomething) {
+                    $popover.show();
+                }
             }
-        });
+        }
+
+        $input.on('input focus click', renderPopover);
 
         $(document).on('click', function(e) {
             if (!$(e.target).closest('#filter-search-wrapper').length) $popover.hide();
@@ -310,47 +394,52 @@
                 activeTokens.pop();
                 renderChips();
                 fireUpdate();
+                renderPopover(); 
             }
         });
 
         function renderChips() {
             $chipsContainer.find('.filter-chip').remove();
             activeTokens.forEach((tok, idx) => {
-                const $chip = $(`<span class="filter-chip"><span>${tok.name}</span></span>`);
-                const $rem  = $(`<span class="remove">&times;</span>`).on('click', function(e) {
+                const bg = tok.exclude ? '#402020' : 'DarkSlateGrey';
+                const border = tok.exclude ? '#ff6666' : 'white';
+                
+                let prefix = tok.exclude ? '<b>NOT</b> ' : '';
+                let displayText = tok.name;
+
+                if (tok.type === 'meta') {
+                    prefix = ''; 
+                    if (tok.id === 'friends') {
+                        displayText = tok.exclude ? '<b>Exclude</b> Friends\' Ratings' : '<b>Only</b> Friends\' Ratings';
+                    } else if (tok.id === 'alreadyRated') {
+                        displayText = tok.exclude ? '<b>Hide</b> Already Rated Maps' : '<b>Only</b> Already Rated Maps';
+                    }
+                }
+
+                const $chip = $(`<span class="filter-chip" style="background-color: ${bg}; border-color: ${border};">
+                    <span class="chip-text" style="cursor:pointer;" title="Click to toggle include/exclude">${prefix}${displayText}</span>
+                </span>`);
+                
+                $chip.find('.chip-text').on('click', function(e) {
+                    e.stopPropagation();
+                    tok.exclude = !tok.exclude;
+                    renderChips();
+                    fireUpdate();
+                });
+
+                const $rem  = $(`<span class="remove" style="color:${tok.exclude ? '#ff9999' : '#ff6666'};">&times;</span>`).on('click', function(e) {
                     e.stopPropagation();
                     activeTokens.splice(idx, 1);
                     renderChips();
                     fireUpdate();
+                    renderPopover(); 
                 });
+                
                 $chip.append($rem);
                 $chipsContainer.append($chip);
             });
         }
 
-        $(document).on('change',
-            '#filter-order, #filter-year, #filter-rating, #filter-sr, #filter-tag, ' +
-            '#filter-friends, #filter-hide-rated, ' +
-            '#filter-ex-loved, #filter-ex-graveyard, #filter-ex-ranked',
-            function() {
-                fireUpdate();
-            }
-        );
-
-        window.getOmdbFilterPayload = function() {
-            return {
-                order: $('#filter-order').val(),
-                year: $('#filter-year').val(),
-                rating: $('#filter-rating').val() | "",
-                sr: $('#filter-sr').val() || "",
-                tag: $('#filter-tag').val() || "",
-                friends: $('#filter-friends').is(':checked'),
-                hideRated: $('#filter-hide-rated').is(':checked'),
-                exLoved: $('#filter-ex-loved').is(':checked'),
-                exGraveyard: $('#filter-ex-graveyard').is(':checked'),
-                exRanked: $('#filter-ex-ranked').is(':checked'),
-                tokens: activeTokens
-            };
-        };
+        $(document).on('change', 'select', function() { fireUpdate(); });
     });
 </script>

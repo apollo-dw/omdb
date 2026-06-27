@@ -5,7 +5,7 @@
     function postOrGet(string $key, $default = null) {
         if (isset($_POST[$key]) && $_POST[$key] !== '')
 			return $_POST[$key];
-        if (isset($_GET[$key]) && $_GET[$key]  !== '')
+        if (isset($_GET[$key]) && $_GET[$key] !== '')
 			return $_GET[$key];
         return $default;
     }
@@ -15,119 +15,153 @@
 
     $page = (int)(postOrGet('p', 1));
     $order = (int)(postOrGet('o', 1));
-    $genre = (int)(postOrGet('g', 0));
-    $language = (int)(postOrGet('l', 0));
-    $country = postOrGet('c', ''); 
-
-    $onlyFriends = postOrGet('f', 'false') === 'true';
-    $hideAlreadyRated = postOrGet('alreadyRated', 'false') === 'true';
-    $excludeGraveyard = postOrGet('excludeGraveyard', 'false') === 'true';
-    $excludeLoved = postOrGet('excludeLoved', 'false') === 'true';
-    $excludeRanked = postOrGet('excludeRanked', 'false') === 'true';
 
     $minSR = (float)(postOrGet('minSR', 0));
     $maxSR = (float)(postOrGet('maxSR', -1));
 
-    if (!isset($selectedDescriptors)) {
-        $descriptorsRaw = postOrGet('descriptors', '');
-        if ($descriptorsRaw === '' || $descriptorsRaw === '[]') {
-            $selectedDescriptors = [];
-        } elseif ($descriptorsRaw[0] === '[') {
-            $selectedDescriptors = json_decode($descriptorsRaw, true) ?? [];
-        } else {
-            $names = array_filter(array_map('trim', explode(',', $descriptorsRaw)));
-            $selectedDescriptors = [];
-            if (!empty($names)) {
-                $placeholders = implode(',', array_fill(0, count($names), '?'));
-                $stmt = $conn->prepare("SELECT DescriptorID AS id, Name AS name FROM descriptors WHERE Name IN ($placeholders) AND Usable = 1");
-                $types = str_repeat('s', count($names));
-                $stmt->bind_param($types, ...$names);
-                $stmt->execute();
-                $selectedDescriptors = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-            }
+    $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
+    if (!is_array($tokensRaw)) $tokensRaw = [];
+
+    $friendsStatus = 'any';
+    $ratedStatus = 'any';
+    $statusFilters = [];
+    $selectedDescriptors = [];
+    $genres = []; $exGenres = [];
+    $languages = []; $exLanguages = [];
+    $countries = []; $exCountries = [];
+
+    foreach ($tokensRaw as $t) {
+        $type = $t['type'];
+        $id = $t['id'];
+        $exclude = isset($t['exclude']) && $t['exclude'];
+
+        if ($type === 'meta') {
+            if ($id === 'friends') $friendsStatus = $exclude ? 'exclude' : 'only';
+            if ($id === 'alreadyRated') $ratedStatus = $exclude ? 'exclude' : 'only';
+        } elseif ($type === 'status') {
+            $statusFilters[] = ['id' => $id, 'exclude' => $exclude];
+        } elseif ($type === 'descriptor') {
+            $selectedDescriptors[] = $t;
+        } elseif ($type === 'genre') {
+            if ($exclude) $exGenres[] = (int)$id; else $genres[] = (int)$id;
+        } elseif ($type === 'language') {
+            if ($exclude) $exLanguages[] = (int)$id; else $languages[] = (int)$id;
+        } elseif ($type === 'country') {
+            if ($exclude) $exCountries[] = $id; else $countries[] = $id;
         }
     }
 ?>
 
 <div class="flex-item" style="padding:0.5em;">
     <?php
-        $types = "ii";
-        $params = [$userId, $mode];
-
         $lim = 50;
         $offset = ($page > 1) ? ($page - 1) * $lim : 0;
         $counter = $offset;
         $pageString = ($page > 1) ? "LIMIT {$offset}, {$lim}" : "LIMIT {$lim}";
         $orderString = ($order == 2) ? "ASC" : "DESC";
 
-        $yearString = "";
-        if ($year !== "all-time") {
-            $yearString = "AND YEAR(s.DateRanked) = ?";
-            $types .= "s";
-            $params[] = (string)$year;
-        }
+        $baseTypes = "i"; 
+        $baseParams = [$userId];
 
-        $genreString = "";
-        if ($genre > 0) {
-            $genreString = "AND s.Genre = ?";
-            $types .= "i";
-            $params[] = $genre;
-        }
-
-        $languageString = "";
-        if ($language > 0) {
-            $languageString = "AND s.Lang = ?";
-            $types .= "i";
-            $params[] = $language;
-        }
-
-        $countryString = "";
-        if ($country !== '' && $country !== '0' && $country !== 0) {
-            $countryString = "
-                AND b.BeatmapID IN (
-                    SELECT bc.BeatmapID
-                    FROM beatmap_creators bc
-                    JOIN mappernames mn ON mn.UserID = bc.CreatorID
-                    GROUP BY bc.BeatmapID
-                    HAVING COUNT(DISTINCT mn.Country) = 1
-                       AND MAX(mn.Country = ?) = 1
-                )";
-            $types .= "s";
-            $params[] = $country;
-        }
-
-        $descriptorString = "";
-        if (!empty($selectedDescriptors)) {
-            $clauses = [];
-            foreach ($selectedDescriptors as $descriptor) {
-                $id = (int)$descriptor['id'];
-                $clauses[] = "
-                    EXISTS (
-                        SELECT 1 FROM beatmap_descriptors bd
-                        WHERE bd.BeatmapID = b.BeatmapID
-                          AND bd.DescriptorID = {$id}
-                    )";
-            }
-            $descriptorString = "AND (" . implode(" AND ", $clauses) . ")";
-        }
-
-        $hideAlreadyRatedString = $hideAlreadyRated ? "AND r_user.Score IS NULL" : "";
-        $excludeLovedString = $excludeLoved ? "AND b.Status != 4" : "";
-        $excludeGraveyardString = $excludeGraveyard ? "AND b.Status != -2"  : "";
-        $excludeRankedString = $excludeRanked ? "AND b.Status NOT IN (1,2)" : "";
-
-        $srRangeString = "";
-        if ($minSR > 0)
-			$srRangeString .= " AND b.SR >= " . (float)$minSR;
-        if ($maxSR > 0)
-			$srRangeString .= " AND b.SR <= " . (float)$maxSR;
-
-        $statsJoin = "";
-        $priorJoin = "";
         $statsTypes = "";
         $statsParams = [];
 
-        if ($onlyFriends) {
+        $whereTypes = "i"; 
+        $whereParams = [$mode];
+
+        $sqlFilters = [];
+
+        if ($year !== "all-time") {
+            $sqlFilters[] = "YEAR(s.DateRanked) = ?";
+            $whereTypes .= "s";
+            $whereParams[] = (string)$year;
+        }
+
+        if (!empty($genres)) {
+            $placeholders = implode(',', array_fill(0, count($genres), '?'));
+            $sqlFilters[] = "s.Genre IN ($placeholders)";
+            $whereTypes .= str_repeat('i', count($genres));
+            $whereParams = array_merge($whereParams, $genres);
+        }
+
+        if (!empty($exGenres)) {
+            $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
+            $sqlFilters[] = "s.Genre NOT IN ($placeholders)";
+            $whereTypes .= str_repeat('i', count($exGenres));
+            $whereParams = array_merge($whereParams, $exGenres);
+        }
+
+        if (!empty($languages)) {
+            $placeholders = implode(',', array_fill(0, count($languages), '?'));
+            $sqlFilters[] = "s.Lang IN ($placeholders)";
+            $whereTypes .= str_repeat('i', count($languages));
+            $whereParams = array_merge($whereParams, $languages);
+        }
+
+        if (!empty($exLanguages)) {
+            $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
+            $sqlFilters[] = "s.Lang NOT IN ($placeholders)";
+            $whereTypes .= str_repeat('i', count($exLanguages));
+            $whereParams = array_merge($whereParams, $exLanguages);
+        }
+
+        if (!empty($countries)) {
+            $placeholders = implode(',', array_fill(0, count($countries), '?'));
+            $sqlFilters[] = "b.BeatmapID IN (
+                SELECT bc.BeatmapID FROM beatmap_creators bc
+                JOIN mappernames mn ON mn.UserID = bc.CreatorID
+                GROUP BY bc.BeatmapID
+                HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country IN ($placeholders)) = 1
+            )";
+            $whereTypes .= str_repeat('s', count($countries));
+            $whereParams = array_merge($whereParams, $countries);
+        }
+
+        if (!empty($exCountries)) {
+            $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
+            $sqlFilters[] = "b.BeatmapID NOT IN (
+                SELECT bc.BeatmapID FROM beatmap_creators bc
+                JOIN mappernames mn ON mn.UserID = bc.CreatorID
+                GROUP BY bc.BeatmapID
+                HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country IN ($placeholders)) = 1
+            )";
+            $whereTypes .= str_repeat('s', count($exCountries));
+            $whereParams = array_merge($whereParams, $exCountries);
+        }
+
+        if (!empty($selectedDescriptors)) {
+            foreach ($selectedDescriptors as $descriptor) {
+                $id = (int)$descriptor['id'];
+                $exists = (isset($descriptor['exclude']) && $descriptor['exclude']) ? "NOT EXISTS" : "EXISTS";
+                $sqlFilters[] = "{$exists} (
+                    SELECT 1 FROM beatmap_descriptors bd
+                    WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = {$id}
+                )";
+            }
+        }
+
+        foreach ($statusFilters as $sf) {
+            $operator = $sf['exclude'] ? "NOT IN" : "IN";
+            $safeIds = array_filter(array_map('intval', explode(',', $sf['id'])));
+            $idString = implode(',', $safeIds);
+            if (!empty($idString)) {
+                $sqlFilters[] = "b.Status {$operator} ({$idString})";
+            }
+        }
+
+        if ($ratedStatus === 'exclude') $sqlFilters[] = "r_user.Score IS NULL";
+        if ($ratedStatus === 'only')    $sqlFilters[] = "r_user.Score IS NOT NULL";
+
+        if ($minSR > 0) $sqlFilters[] = "b.SR >= " . (float)$minSR;
+        if ($maxSR > 0) $sqlFilters[] = "b.SR <= " . (float)$maxSR;
+
+        $statsJoin = "";
+        $priorJoin = "";
+
+        if ($friendsStatus !== 'any') {
+            $relationCondition = ($friendsStatus === 'only') ? "IN" : "NOT IN";
+            $selfCondition = ($friendsStatus === 'only') ? "OR r.UserID = ?" : "AND r.UserID != ?";
+
             $statsJoin = "
                 INNER JOIN (
                     SELECT
@@ -136,10 +170,10 @@
                         COUNT(*) AS RatingCount,
                         AVG(r.Score) AS WeightedAvg,
                         STDDEV_POP(r.Score) * SQRT(COUNT(*)) AS Controversy
-                    FROM user_relations ur
-                    JOIN ratings r ON r.UserID = ur.UserIDTo
-                    WHERE ur.UserIDFrom = ?
-                      AND ur.Type = 1
+                    FROM ratings r
+                    WHERE (r.UserID {$relationCondition} (
+                        SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1
+                    ) {$selfCondition})
                     GROUP BY r.BeatmapID
                 ) friend_stats ON friend_stats.BeatmapID = b.BeatmapID";
 
@@ -149,14 +183,15 @@
                     FROM ratings
                 ) prior";
 
-            $statsTypes = "i";
+            $statsTypes = "ii";
+            $statsParams[] = $userId;
             $statsParams[] = $userId;
         }
 
-        if ($onlyFriends) {
+        if ($friendsStatus !== 'any') {
             $ratingField = "friend_stats.WeightedAvg";
             $countField = "friend_stats.RatingCount";
-            $bayesField = "(prior.prior_rating * prior.prior_count + friend_stats.TotalScore) / (prior.prior_count + friend_stats.RatingCount)";
+            $bayesField = "((prior.prior_rating * prior.prior_count) + friend_stats.TotalScore) / (prior.prior_count + friend_stats.RatingCount)";
         } else {
             $ratingField = "b.WeightedAvg";
             $countField = "b.RatingCount";
@@ -168,15 +203,18 @@
                 $columnString = $countField;
                 break;
             case 4:
-                $columnString = $onlyFriends ? "friend_stats.Controversy" : "b.controversy";
+                $columnString = ($friendsStatus !== 'any') ? "friend_stats.Controversy" : "b.controversy";
                 break;
             case 5:
-                $columnString = $onlyFriends ? "(friend_stats.WeightedAvg - b.Rating) * SQRT(friend_stats.RatingCount)" : "(b.WeightedAvg - b.Rating) * SQRT(b.RatingCount)";
+                $columnString = ($friendsStatus !== 'any') ? "(friend_stats.WeightedAvg - b.Rating) * SQRT(friend_stats.RatingCount)" : "(b.WeightedAvg - b.Rating) * SQRT(b.RatingCount)";
                 break;
             default:
                 $columnString = "BayesianAverage";
                 break;
         }
+
+        $whereClause = !empty($sqlFilters) ? "AND " . implode("\nAND ", $sqlFilters) : "";
+        $nullRatingClause = ($friendsStatus === 'any') ? "AND b.Rating IS NOT NULL" : "";
 
         $sql = "
         SELECT
@@ -196,24 +234,15 @@
         {$priorJoin}
         WHERE
             b.Mode = ?
-            " . (!$onlyFriends ? "AND b.Rating IS NOT NULL" : "") . "
-            {$genreString}
-            {$languageString}
-            {$yearString}
-            {$countryString}
-            {$descriptorString}
-            {$hideAlreadyRatedString}
-            {$excludeLovedString}
-            {$excludeGraveyardString}
-            {$excludeRankedString}
-            {$srRangeString}
+            {$nullRatingClause}
+            {$whereClause}
         ORDER BY
             {$columnString} {$orderString},
             b.BeatmapID
         {$pageString}";
 
-        $finalTypes = $statsTypes . $types;
-        $finalParams = array_merge($statsParams, $params);
+        $finalTypes = $baseTypes . $statsTypes . $whereTypes;
+        $finalParams = array_merge($baseParams, $statsParams, $whereParams);
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
@@ -290,7 +319,5 @@
                 <b style="font-weight:900;"><?php echo $row["Score"]; ?></b>
             </div>
         </div>
-        <?php
-        }
-    ?>
+        <?php } ?>
 </div>
