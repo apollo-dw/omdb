@@ -255,15 +255,14 @@
 		$stmt->bind_param("i", $id);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		if ($result->num_rows >= 1) {
-			$row = $result->fetch_row();
-			$stmt->close();
-			if (!is_null($row[0])) {
-				$cache[$id] = $row[0];
-				return $row[0];
-			}
+		$row = $result->fetch_row();
+		$stmt->close();
+
+		if ($row && !is_null($row[0])) {
+			$cache[$id] = $row[0];
+			return $row[0];
 		}
-		
+
 		$username = "ID => " . strval($id);
 		try {
 			$userData = GetUserDataOsuApi($id);

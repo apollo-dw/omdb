@@ -47,10 +47,11 @@
 		<?php
 		  if ($userId !== -1) {
 				$stmt = $conn->prepare("
-					SELECT r.*, b.DifficultyName, b.SetID 
+					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
 					INNER JOIN `users` u ON r.UserID = u.UserID 
+                    LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ? 
 					  AND b.blacklisted = 0 
 					  AND u.HideRatings = 0
@@ -69,10 +70,11 @@
 				$stmt->bind_param("iiii", $mode, $userId, $userId, $userId);
 			} else {
 				$stmt = $conn->prepare("
-					SELECT r.*, b.DifficultyName, b.SetID 
+					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
 					INNER JOIN `users` u ON r.UserID = u.UserID 
+                    LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ? 
 					  AND b.blacklisted = 0 
 					  AND u.HideRatings = 0
@@ -92,12 +94,12 @@
 			    </div>
                 <div class="flex-child">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                 </div>
                 <div class="flex-child" style="flex:0 0 66%;">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+                        <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
                     </a>
                     <?php
                         echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
@@ -132,9 +134,10 @@
 
         $stmt = $conn->prepare("
             (
-                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM comments c
                 JOIN beatmapsets bs ON bs.SetID = c.SetID
+                LEFT JOIN mappernames m ON m.UserID = c.UserID
                 WHERE NOT EXISTS (
                     SELECT 1 
                     FROM user_relations r 
@@ -157,16 +160,18 @@
             )
             UNION ALL
             (
-                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title
+                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title, m.Username
                 FROM descriptor_proposal_comments dpc
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                LEFT JOIN mappernames m ON m.UserID = dpc.UserID
                 WHERE 1
             )
             UNION ALL
             (
-                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM reviews r
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
+                LEFT JOIN mappernames m ON m.UserID = r.UserID
                 WHERE NOT EXISTS (
                     SELECT 1 
                     FROM user_relations ur 
@@ -188,7 +193,7 @@
                 )
             )
             ORDER BY date DESC
-            LIMIT 40;");
+            LIMIT 40; ");
 
         $stmt->bind_param("iiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
@@ -219,8 +224,8 @@
                         <a href="/profile/<?php echo $row["UserID"]; ?>">
                             <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
                                 style="height:24px;width:24px;"
-                                title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
-                            <span><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span>
+                                title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                            <span><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span>
                         </a>
 
                         <span>
@@ -256,7 +261,7 @@
 	<br>
 	<?php
         $usedSets = array();
-		$stmt = $conn->prepare("SELECT * FROM cache_home_recent_maps WHERE Mode = ? ORDER BY Timestamp DESC;");
+		$stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
         $stmt->bind_param("i", $mode);
         $stmt->execute();
 		$result = $stmt->get_result();
@@ -267,7 +272,7 @@
             if (sizeof($usedSets) >= 8)
                 break;
 
-			$artist = GetUserNameFromId($row["CreatorID"], $conn);
+			$artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
