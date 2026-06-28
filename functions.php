@@ -783,7 +783,7 @@
 	}
 
 	function RenderBeatmapCreators($beatmapID, $conn) {
-		$stmt = $conn->prepare("SELECT `CreatorID` FROM `beatmap_creators` WHERE BeatmapID = ?");
+		$stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
 		$stmt->bind_param('i', $beatmapID);
 		$stmt->execute();
 		$creators = $stmt->get_result();
@@ -792,7 +792,7 @@
 		$index = 0;
 
 		while ($creator = $creators->fetch_assoc()){
-			$creatorName = GetUserNameFromId($creator['CreatorID'], $conn);
+			$creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
 			echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
 			$index++;
