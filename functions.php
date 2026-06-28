@@ -536,6 +536,14 @@
         return $countries[$code] ?? null;
     }
 
+	function postOrGet(string $key, $default = null) {
+        if (isset($_POST[$key]) && $_POST[$key] !== '')
+			return $_POST[$key];
+        if (isset($_GET[$key]) && $_GET[$key] !== '')
+			return $_GET[$key];
+        return $default;
+    }
+
 	function ParseCommentLinks($conn, $string) {
 		$string = bbcode_to_html($string);
 

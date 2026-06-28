@@ -1,14 +1,5 @@
 <?php
-    include_once '../base.php';
-
-    // read from POST first, then GET, with a fallback default
-    function postOrGet(string $key, $default = null) {
-        if (isset($_POST[$key]) && $_POST[$key] !== '')
-			return $_POST[$key];
-        if (isset($_GET[$key]) && $_GET[$key] !== '')
-			return $_GET[$key];
-        return $default;
-    }
+    include '../base.php';
 
     $year = postOrGet('y', 2026);
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
