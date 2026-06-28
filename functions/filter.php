@@ -10,7 +10,6 @@
         ],
         'showYear' => true,
         'showRating' => false,
-        'showSR' => false,
         'showTag' => false,
         'showRelevanceToggle' => false,
         'showActivityToggles' => false,
@@ -196,7 +195,7 @@
         </div>
     </div>
 
-    <?php if ($filterConfig['showRating'] || $filterConfig['showSR'] || $filterConfig['showTag']): ?>
+    <?php if ($filterConfig['showRating'] || $filterConfig['showTag']): ?>
         <div class="filter-section flex-row-container">
             <?php if ($filterConfig['showRating']): ?>
                 <select id="filter-rating">
@@ -204,16 +203,6 @@
                     <?php for ($i = 0; $i <= 5; $i += 0.5): ?>
                         <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                     <?php endfor; ?>
-                </select>
-            <?php endif; ?>
-
-            <?php if ($filterConfig['showSR']): ?>
-                <select id="filter-sr">
-                    <option value="">All Star Ratings</option>
-                    <?php for ($i = 0; $i < 12; $i++): ?>
-                        <option value="<?php echo $i; ?>"><?php echo $i; ?>★ - <?php echo ($i + 1); ?>★</option>
-                    <?php endfor; ?>
-                    <option value="12">12★+</option>
                 </select>
             <?php endif; ?>
 
