@@ -433,7 +433,7 @@
             <?php if ($highestMap) { 
                 $highestMapYear = date("Y", strtotime($highestMap['DateRanked']));
             ?>
-                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
+                <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"></a>
                 <b><a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a></b>
                 
                 <span class="subText map-descriptors">
@@ -572,7 +572,7 @@
             ?>
                 <div class="flex-container ratingContainer alternating-bg">
                     <div class="flex-child" style="margin-left:0.5em;">
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
                     </div>
                     <div class="flex-child">
                         <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
@@ -655,7 +655,7 @@
             $stmt->close();
             ?>
             <div data-rating-count="<?php echo $topMapRatingCount; ?>" data-chart-rank="<?php echo $topMapChartRank; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
-                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" loading="lazy" /></a>
+                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" loading="lazy" /></a>
                 <div>
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
 					<?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?> 

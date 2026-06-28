@@ -181,7 +181,7 @@
                     echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                     echo '<img src="https://b.ppy.sh/thumb/' . intval($extra["SetID"]) . 'l.jpg"
                             class="diffThumb"
-                            onerror="this.onerror=null; this.src=\'/charts/INF.png\';"/>';
+                            onerror="this.onerror=null; this.src=\'/assets/img/missing-map-thumbnail.png\';"/>';
                     echo '</a>';
                 }
                 break;

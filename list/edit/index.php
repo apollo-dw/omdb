@@ -131,7 +131,7 @@
                                 #<?php echo $index + 1; ?>
                             </div>
                             <div style="text-align: center; width: 8em;">
-                                <a href="/mapset"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../charts/INF.png';" /></a><br>
+                                <a href="/mapset"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../assets/img/missing-map-thumbnail.png';" /></a><br>
                                 <span class="subText"><?php echo safe_htmlspecialchars($title, ENT_QUOTES); ?></span>
                             </div>
                             <div style="flex-grow: 1; box-sizing: border-box;">
@@ -203,7 +203,7 @@
                     #${container.childElementCount + 1}
                 </div>
                 <div style="text-align:center;width:8em;">
-                    <img src="${data.imageUrl}" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../charts/INF.png';" /><br>
+                    <img src="${data.imageUrl}" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../assets/img/missing-map-thumbnail.png';" /><br>
                     <span class="subText">${data.itemTitle}</span>
                 </div>
                 <div style="flex-grow: 1; box-sizing: border-box;">

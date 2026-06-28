@@ -4,36 +4,43 @@
     require 'header.php';
 ?>
 
-welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
-<span style="color:grey;">
-    <?php
-	$motd = getMapOfTheDay($conn, $mode);
-	
-    $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_row();
-	$usersCount = $row[0];
-	$usersOnlineCount = $row[1];
-    $stmt->close();
+<div style="display: flex;">
+    <div style="margin-right: 8px;">
+        <img src="/assets/img/omdb-32x32.png" />
+    </div>
+        <div>
+        welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
+        <span style="color:grey;">
+            <?php
+            $motd = getMapOfTheDay($conn, $mode);
+            
+            $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_row();
+            $usersCount = $row[0];
+            $usersOnlineCount = $row[1];
+            $stmt->close();
 
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $ratingsCount = $result->fetch_row()[0];
-    $stmt->close();
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $ratingsCount = $result->fetch_row()[0];
+            $stmt->close();
 
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments`");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $commentsCount = $result->fetch_row()[0];
-    $stmt->close();
-    ?>
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments`");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $commentsCount = $result->fetch_row()[0];
+            $stmt->close();
+            ?>
 
-    <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
-    <?php echo $ratingsCount; ?> ratings,
-    <?php echo $commentsCount; ?> comments
-</span>
+            <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
+            <?php echo $ratingsCount; ?> ratings,
+            <?php echo $commentsCount; ?> comments
+        </span>
+    </div>  
+</div>
 <hr>
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
@@ -81,7 +88,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		  ?>
 			<div class="flex-container ratingContainer alternating-bg">
 			    <div class="flex-child" style="margin-left:0.5em;">
-				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
 			    </div>
                 <div class="flex-child">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
@@ -113,108 +120,77 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 		?>
 	</div>
     <div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
-        <?php
+    <?php
+        $onlyFriends = 0;
         if ($userId !== -1) {
-            // Logged-in user: apply OnlyFriendsOnFrontPage logic
-            $stmt = $conn->prepare("
-                (
-                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM comments c
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations r 
-                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = c.SetID AND b.Mode = ?
-                    )
-                    AND (
-                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                        OR c.UserID IN (
-                            SELECT UserIDTo
-                            FROM user_relations
-                            WHERE UserIDFrom = ? AND type = 1
-                        )
-                        OR c.UserID = ?
-                    )
-                )
-                UNION ALL
-                (
-                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-                    FROM descriptor_proposal_comments dpc
-                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-                    WHERE 1
-                )
-                UNION ALL
-                (
-                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM reviews r
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations ur 
-                        WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = r.SetID AND b.Mode = ?
-                    )
-                    AND (
-                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                        OR r.UserID IN (
-                            SELECT UserIDTo
-                            FROM user_relations
-                            WHERE UserIDFrom = ? AND type = 1
-                        )
-                        OR r.UserID = ?
-                    )
-                )
-                ORDER BY date DESC
-                LIMIT 40;
-            ");
-            $stmt->bind_param("iiiiiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode, $userId, $userId, $userId);
-        } else {
-            // Logged-out user: skip OnlyFriendsOnFrontPage logic
-            $stmt = $conn->prepare("
-                (
-                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM comments c
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations r 
-                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = c.SetID AND b.Mode = ?
-                    )
-                )
-                UNION ALL
-                (
-                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-                    FROM descriptor_proposal_comments dpc
-                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-                    WHERE 1
-                )
-                UNION ALL
-                (
-                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM reviews r
-                    WHERE EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = r.SetID AND b.Mode = ?
-                    )
-                )
-                ORDER BY date DESC
-                LIMIT 40;
-            ");
-            $stmt->bind_param("iii", $userId, $mode, $mode);
+            $stmt = $conn->prepare("SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID=?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $onlyFriends = (int)$stmt->get_result()->fetch_row()[0];
+            $stmt->close();
         }
 
+        $stmt = $conn->prepare("
+            (
+                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                FROM comments c
+                JOIN beatmapsets bs ON bs.SetID = c.SetID
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations r 
+                    WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM beatmaps b
+                    WHERE b.SetID = c.SetID AND b.Mode = ?
+                )
+                AND (
+                    ? = 0
+                    OR c.UserID IN (
+                        SELECT UserIDTo
+                        FROM user_relations
+                        WHERE UserIDFrom = ? AND type = 1
+                    )
+                    OR c.UserID = ?
+                )
+            )
+            UNION ALL
+            (
+                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title
+                FROM descriptor_proposal_comments dpc
+                LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                WHERE 1
+            )
+            UNION ALL
+            (
+                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                FROM reviews r
+                JOIN beatmapsets bs ON bs.SetID = r.SetID
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations ur 
+                    WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM beatmaps b
+                    WHERE b.SetID = r.SetID AND b.Mode = ?
+                )
+                AND (
+                    ? = 0
+                    OR r.UserID IN (
+                        SELECT UserIDTo
+                        FROM user_relations
+                        WHERE UserIDFrom = ? AND type = 1
+                    )
+                    OR r.UserID = ?
+                )
+            )
+            ORDER BY date DESC
+            LIMIT 40;");
+
+        $stmt->bind_param("iiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -222,14 +198,6 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             $linkID = $row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review'
                 ? "/mapset/{$row["SetID"]}"
                 : "/descriptor/proposal/?id={$row["ProposalID"]}";
-
-            if ($row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review') {
-                $stmt = $conn->prepare("SELECT * FROM `beatmapsets` WHERE `SetID` = ?;");
-                $stmt->bind_param("i", $row["SetID"]);
-                $stmt->execute();
-                $beatmapset = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
-            }
         ?>
             <div class="flex-container ratingContainer alternating-bg">
                 <div class="flex-child" style="margin-left:0.5em;">
@@ -237,7 +205,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                         <a href="/mapset/<?php echo $row["SetID"]; ?>">
                             <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
                                 class="diffThumb"
-                                onerror="this.onerror=null; this.src='/charts/INF.png';"/>
+                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"/>
                         </a>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
@@ -259,7 +227,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
                                 on <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?> descriptor</a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
-                                reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($beatmapset["Artist"] . " - " . $beatmapset["Title"], ENT_QUOTES); ?></a>
+                                reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Artist"] . " - " . $row["Title"], ENT_QUOTES); ?></a>
                             <?php } ?>
                         </span>
                     </div>
@@ -302,7 +270,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
 			$artist = GetUserNameFromId($row["CreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a><br>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
 		<span class="subText">
 			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
             by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
@@ -343,7 +311,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
             $motdYear = date("Y", strtotime($motd['DateRanked']));
         ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
             <br><br>
             <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
@@ -428,7 +396,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
         ?>
         <?php if ($result != null) { ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+            <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
             <br><br>
             <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
@@ -488,7 +456,7 @@ welcome to OMDB - a place to rate maps! discover new maps, check out people's ra
                     #<?php echo sizeof($usedSets) + 1; ?>
                 </div>
                 <div class="flex-child">
-                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
                 </div>
                 <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
                     <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>

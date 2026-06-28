@@ -85,7 +85,7 @@
                         <div class='recommendation alternating-bg'>
                             <div class="flex-container">
                                 <div style="margin-right: 0.5em;">
-                                    <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='../charts/INF.png';" /></a>
+                                    <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" /></a>
                                 </div>
                                 <div>
                                     <a href="/mapset/<?php echo $beatmap['SetID']; ?>"><?php echo $beatmap['Artist']; ?> - <?php echo safe_htmlspecialchars($beatmap['Title'], ENT_QUOTES); ?> <a href="https://osu.ppy.sh/b/<?php echo $beatmap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a><br></a>
@@ -126,7 +126,7 @@
             const imgSrc = "https://b.ppy.sh/thumb/" + set.id + "l.jpg"; // Replace with the actual image source
             const imgElement = $("<img>").attr("src", imgSrc).addClass("diffThumb").css({ height: "42px", width: "42px" }).on("error", function () {
                 this.onerror = null;
-                this.src = "/charts/INF.png";
+                this.src = "/assets/img/missing-map-thumbnail.png";
             });
 
             const imageLinkElement = $("<a>").attr("href", "../mapset/" + set.id);
