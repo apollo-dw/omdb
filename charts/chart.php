@@ -171,7 +171,7 @@
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
                     <img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg"
                          class="diffThumb" style="height:80px;width:80px;"
-                         onerror="this.onerror=null; this.src='INF.png';" />
+                         onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" />
                 </a>
             </div>
             <div style="flex: 0 0 46%;">
