@@ -867,18 +867,45 @@
 	function getMapOfTheDay($conn, $mode) {
 		$cacheKey = "motd_" . $mode;
 
-		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.WeightedAvg, b.RatingCount, b.ChartRank, b.ChartYearRank
+		$stmt = $conn->prepare("
+			SELECT
+				b.BeatmapID,
+				b.SetID,
+				s.Title,
+				b.DifficultyName,
+				s.DateRanked,
+				ROUND(ratings.WeightedAvg, 2) AS WeightedAvg,
+				COALESCE(ratings.RatingCount, 0) AS RatingCount,
+				b.ChartRank,
+				b.ChartYearRank
 			FROM cache c
 			JOIN beatmaps b ON c.Value = b.BeatmapID
 			JOIN beatmapsets s ON b.SetID = s.SetID
+			LEFT JOIN (
+				SELECT
+					r.BeatmapID,
+					COUNT(*) AS RatingCount,
+					SUM(r.Score * u.Weight) / SUM(u.Weight) AS WeightedAvg
+				FROM ratings r
+				JOIN users u ON r.UserID = u.UserID
+				GROUP BY r.BeatmapID
+			) ratings ON ratings.BeatmapID = b.BeatmapID
 			WHERE c.Attribute = ?
 		");
-		
+
 		$stmt->bind_param("s", $cacheKey);
 		$stmt->execute();
+
 		$motd = $stmt->get_result()->fetch_assoc();
+
 		$stmt->close();
 
-		return $motd ?? null;
+		if ($motd) {
+			$motd['WeightedAvg'] = $motd['WeightedAvg'] !== null
+				? number_format((float)$motd['WeightedAvg'], 2)
+				: null;
+		}
+
+		return $motd ?: null;
 	}
 ?>
