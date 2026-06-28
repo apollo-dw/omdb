@@ -14,30 +14,25 @@
             <?php
             $motd = getMapOfTheDay($conn, $mode);
             
-            $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
+            $query = "
+                SELECT 
+                    COUNT(*) AS total_users,
+                    SUM(CASE WHEN `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR THEN 1 ELSE 0 END) AS online_users,
+                    (SELECT COUNT(*) FROM `ratings`) AS total_ratings,
+                    (SELECT COUNT(*) FROM `comments`) AS total_comments
+                FROM `users`
+            ";
+            
+            $stmt = $conn->prepare($query);
             $stmt->execute();
             $result = $stmt->get_result();
-            $row = $result->fetch_row();
-            $usersCount = $row[0];
-            $usersOnlineCount = $row[1];
-            $stmt->close();
-
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $ratingsCount = $result->fetch_row()[0];
-            $stmt->close();
-
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments`");
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $commentsCount = $result->fetch_row()[0];
+            $stats = $result->fetch_assoc();
             $stmt->close();
             ?>
 
-            <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
-            <?php echo $ratingsCount; ?> ratings,
-            <?php echo $commentsCount; ?> comments
+            <span title='<?php echo (int)$stats["online_users"]; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_users"]; ?> users</span>,
+            <?php echo (int)$stats["total_ratings"]; ?> ratings,
+            <?php echo (int)$stats["total_comments"]; ?> comments
         </span>
     </div>  
 </div>
