@@ -268,7 +268,13 @@
 					<b><?php echo "#" . strval($counter); ?></b>
 				</div>
 				<div style="flex: 0 0 0;">
-					<a href="/mapset/<?php echo $row['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:80px;width:80px;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" /></a>
+					<a href="/mapset/<?php echo $row['SetID']; ?>">
+						<img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" 
+						class="diffThumb" 
+						style="height:80px;width:80px;" 
+						onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" 
+						loading="lazy" />
+					</a>
 				</div>
 				<div style="flex: 0 0 46%;">
 					<a href="/mapset/<?php echo $row['SetID']; ?>"><?php echo $row['Artist']; ?> - <?php echo safe_htmlspecialchars($row['Title'], ENT_QUOTES); ?> <br></a>

@@ -205,7 +205,8 @@
                         <a href="/mapset/<?php echo $row["SetID"]; ?>">
                             <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
                                 class="diffThumb"
-                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"/>
+                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"
+                                loading="lazy"/>
                         </a>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
@@ -219,7 +220,8 @@
                         <a href="/profile/<?php echo $row["UserID"]; ?>">
                             <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
                                 style="height:24px;width:24px;"
-                                title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                                title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"
+                                loading="lazy"/>
                             <span><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span>
                         </a>
 
@@ -270,7 +272,13 @@
 			$artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>">
+            <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+            class="diffThumb" 
+            style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
+            onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+            loading="lazy" />
+        </a><br>
 		<span class="subText">
 			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
             by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
@@ -311,7 +319,12 @@
             $motdYear = date("Y", strtotime($motd['DateRanked']));
         ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+            <a href="/mapset/<?php echo $motd["SetID"]; ?>">
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" 
+                style="width:100%;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a>
             <br><br>
             <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
@@ -396,7 +409,12 @@
         ?>
         <?php if ($result != null) { ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+            <a href="/mapset/<?php echo $result["SetID"]; ?>">
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" 
+                style="width:100%;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a>
             <br><br>
             <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
@@ -456,7 +474,12 @@
                     #<?php echo sizeof($usedSets) + 1; ?>
                 </div>
                 <div class="flex-child">
-                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+                    <a href="/mapset/<?php echo $row["SetID"]; ?>">
+                        <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+                        class="diffThumb" 
+                        onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                        loading="lazy" />
+                    </a>
                 </div>
                 <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
                     <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
