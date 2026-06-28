@@ -1,21 +1,150 @@
 <?php
     require "../base.php";
-    $profileId = GetIntParam('id', -1, "Invalid page bro");
-    
-    // Map list filter catching
-    $order = $_GET['o'] ?? "0";
-    $starRating = $_GET['sr'] ?? "";
-    $genre = $_GET['g'] ?? "";
-    $language = $_GET['lang'] ?? "";
-    $country = $_GET['c'] ?? "";
-    $year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
-    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
-    $selectedDescriptors = json_decode($descriptorsJSON, true);
-    $excludeLoved = ($_GET['excludeLoved'] ?? "false") == "true";
-    $excludeGraveyard = ($_GET['excludeGraveyard'] ?? "false") == "true";
-    $excludeRanked = ($_GET['excludeRanked'] ?? "false") == "true";
 
-	$profileId = GetIntParam('id', -1, "Invalid page bro");
+    $profileId = GetIntParam('id', -1, "Invalid page bro");
+
+    $order = $_GET['o'] ?? '1';
+    $year = ($_GET['y'] ?? 'all-time') === 'all-time' ? 'all-time' : (int)$_GET['y'];
+    $rating = $_GET['r'] ?? '';
+
+    $tokensRaw = json_decode(urldecode($_GET['tokens'] ?? '[]'), true);
+    if (!is_array($tokensRaw)) $tokensRaw = [];
+
+    $parsedTokens = parseFilterTokens($tokensRaw);
+
+    $genres = $parsedTokens['genres'];
+    $exGenres = $parsedTokens['exGenres'];
+    $languages = $parsedTokens['languages'];
+    $exLanguages = $parsedTokens['exLanguages'];
+    $countries = $parsedTokens['countries'];
+    $exCountries = $parsedTokens['exCountries'];
+    $statuses = $parsedTokens['statuses'];
+    $exStatuses = $parsedTokens['exStatuses'];
+    $descriptors = $parsedTokens['descriptors'];
+    $exDescriptors = $parsedTokens['exDescriptors'];
+    $srFilters = $parsedTokens['srFilters'];
+
+    $filterConditions = "";
+    $filterTypes = "";
+    $filterValues = [];
+
+    if ($year !== 'all-time') {
+        $filterConditions .= " AND YEAR(s.DateRanked) = ?";
+        $filterTypes .= "i";
+        $filterValues[] = (int)$year;
+    }
+
+    if ($rating !== '' && $loggedIn) {
+        $filterConditions .= " AND EXISTS (
+            SELECT 1 FROM ratings r_filter
+            WHERE r_filter.BeatmapID = b.BeatmapID
+            AND r_filter.UserID = ?
+            AND r_filter.Score = ?
+        )";
+        $filterTypes .= "id";
+        $filterValues[] = $userId;
+        $filterValues[] = (float)$rating;
+    }
+
+    if (!empty($genres)) {
+        $placeholders = implode(',', array_fill(0, count($genres), '?'));
+        $filterConditions .= " AND s.Genre IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($genres));
+        $filterValues = array_merge($filterValues, $genres);
+    }
+
+    if (!empty($exGenres)) {
+        $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
+        $filterConditions .= " AND s.Genre NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exGenres));
+        $filterValues = array_merge($filterValues, $exGenres);
+    }
+
+    if (!empty($languages)) {
+        $placeholders = implode(',', array_fill(0, count($languages), '?'));
+        $filterConditions .= " AND s.Lang IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($languages));
+        $filterValues = array_merge($filterValues, $languages);
+    }
+
+    if (!empty($exLanguages)) {
+        $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
+        $filterConditions .= " AND s.Lang NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exLanguages));
+        $filterValues = array_merge($filterValues, $exLanguages);
+    }
+
+    if (!empty($countries)) {
+        $placeholders = implode(',', array_fill(0, count($countries), '?'));
+        $filterConditions .= " AND EXISTS (
+            SELECT 1 FROM beatmap_creators bc2
+            JOIN mappernames mn ON bc2.CreatorID = mn.UserID
+            WHERE bc2.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders)
+        )";
+        $filterTypes .= str_repeat('s', count($countries));
+        $filterValues = array_merge($filterValues, $countries);
+    }
+
+    if (!empty($exCountries)) {
+        $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
+        $filterConditions .= " AND NOT EXISTS (
+            SELECT 1 FROM beatmap_creators bc2
+            JOIN mappernames mn ON bc2.CreatorID = mn.UserID
+            WHERE bc2.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders)
+        )";
+        $filterTypes .= str_repeat('s', count($exCountries));
+        $filterValues = array_merge($filterValues, $exCountries);
+    }
+
+    if (!empty($statuses)) {
+        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
+        $filterConditions .= " AND b.Status IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($statuses));
+        $filterValues = array_merge($filterValues, $statuses);
+    }
+
+    if (!empty($exStatuses)) {
+        $placeholders = implode(',', array_fill(0, count($exStatuses), '?'));
+        $filterConditions .= " AND b.Status NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exStatuses));
+        $filterValues = array_merge($filterValues, $exStatuses);
+    }
+
+    if (!empty($descriptors)) {
+        foreach ($descriptors as $dId) {
+            $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
+            $filterTypes .= "i";
+            $filterValues[] = $dId;
+        }
+    }
+
+    if (!empty($exDescriptors)) {
+        foreach ($exDescriptors as $dId) {
+            $filterConditions .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
+            $filterTypes .= "i";
+            $filterValues[] = $dId;
+        }
+    }
+
+    if (!empty($srFilters)) {
+        foreach ($srFilters as $cond) {
+            $filterConditions .= " AND $cond";
+        }
+    }
+
+    switch ($order) {
+        case '2':
+            $orderSQL = "s.Timestamp ASC";
+            break;
+        case '3':
+            $orderSQL = "b.WeightedAvg DESC";
+            break;
+        case '4':
+            $orderSQL = "b.WeightedAvg ASC";
+            break;
+        default:
+            $orderSQL = "s.Timestamp DESC";
+    }
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
@@ -23,16 +152,12 @@
     $result = $stmt->get_result();
     $profile = $result->fetch_assoc();
     $stmt->close();
-	$isValidUser = true;
+    $isValidUser = $profile !== NULL;
 
-	if ($profile == NULL)
-		$isValidUser = false;
-
-    $PageTitle = $profile != NULL ? GetUserNameFromId($profileId, $conn) : "Profile";
+    $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
     require '../header.php';
 
-	$ratingCounts = array();
-
+    $ratingCounts = [];
     $isBlacklisted = false;
     if ($isValidUser) {
         $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
@@ -49,14 +174,14 @@
         }
         $stmt->close();
 
-        $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 2;
+        $maxRating = count($ratingCounts) >= 1 ? max($ratingCounts) : 2;
 
         $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
-                           JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
-                           JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
-                           WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
-                           AND ur1.type = 1 AND ur2.type = 1
-                           ORDER BY LastAccessedSite DESC, ID");
+            JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+            JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+            WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
+            AND ur1.type = 1 AND ur2.type = 1
+            ORDER BY LastAccessedSite DESC, ID");
         $stmt->bind_param("ii", $profileId, $profileId);
         $stmt->execute();
         $mutuals = $stmt->get_result();
@@ -69,7 +194,7 @@
         $isBlacklisted = $stmt->get_result()->num_rows > 0;
         $stmt->close();
     }
-	
+
     $is_friend = $is_blocked = $is_friended = 0;
     if ($loggedIn) {
         $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
@@ -92,7 +217,7 @@
         $stmt_relation_to_profile_user->close();
         $stmt_relation_from_profile_user->close();
 
-        if ($profileId != $userId){
+        if ($profileId != $userId) {
             $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
                         FROM `ratings` r1
                         JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
@@ -260,15 +385,13 @@
                         ORDER BY b.Rating DESC, b.BeatmapID DESC
                         LIMIT 1
                     ");
-                    
+
                     $stmt->bind_param("ii", $profileId, $mode);
                     $stmt->execute();
-                    $extremes = $stmt->get_result();
-                    
-                    $highestMap = $extremes->fetch_assoc();
+                    $highestMap = $stmt->get_result()->fetch_assoc();
                     $stmt->close();
 
-                    $highestMapDescriptors = array();
+                    $highestMapDescriptors = [];
                     if ($highestMap) {
                         $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
                             FROM beatmap_descriptors bd
@@ -604,56 +727,90 @@
 
 <hr>
 <div style="margin-bottom: 1em;">
-    <?php include '../functions/filter.php'; ?>
+    <?php
+        $filterConfig = [
+            'showYear' => true,
+            'showSR' => true,
+            'showRating' => $loggedIn,
+            'showTag' => false,
+            'sortOptions' => [
+                '1' => 'Latest',
+                '2' => 'Oldest',
+                '3' => 'Highest rated',
+                '4' => 'Lowest rated',
+            ],
+            'categories' => ['genre', 'language', 'country', 'descriptor', 'status'],
+        ];
+        require "../functions/filter.php";
+    ?>
     <label>
         <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
     </label>
 </div>
 <div id="beatmaps">
     <?php
-        $stmt = $conn->prepare("SELECT s.SetID, s.CreatorID, s.Artist, s.Title
-                           FROM beatmap_creators c
-                           LEFT JOIN beatmaps b ON b.BeatmapID = c.BeatmapID
-                           LEFT JOIN beatmapsets s on b.SetID = s.SetID
-                           WHERE c.`CreatorID` = ? 
-                           GROUP BY s.SetID
-                           ORDER BY s.`Timestamp` DESC;");
-        $stmt->bind_param("s", $profileId);
+        $setsQuery = "SELECT s.SetID, s.CreatorID, s.Artist, s.Title
+            FROM beatmap_creators c
+            LEFT JOIN beatmaps b ON b.BeatmapID = c.BeatmapID
+            LEFT JOIN beatmapsets s ON b.SetID = s.SetID
+            WHERE c.CreatorID = ?
+            {$filterConditions}
+            GROUP BY s.SetID
+            ORDER BY {$orderSQL}";
+
+        $stmt = $conn->prepare($setsQuery);
+        if (!empty($filterTypes)) {
+            $allTypes = "i" . $filterTypes;
+            $allValues = array_merge([$profileId], $filterValues);
+            $stmt->bind_param($allTypes, ...$allValues);
+        } else {
+            $stmt->bind_param("i", $profileId);
+        }
+
         $stmt->execute();
         $setsResult = $stmt->get_result();
         $stmt->close();
 
-        while($set = $setsResult->fetch_assoc()) {
+        while ($set = $setsResult->fetch_assoc()) {
 			if ($set['SetID'] == null)
 				continue;
-			
-            $stmt = $conn->prepare("SELECT b.`BeatmapID`, s.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
-                       (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
-                       FROM beatmaps b
-                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                       INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
-                       LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
-                       WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
-                       ORDER BY b.`ChartRank` IS NULL, b.`ChartRank` ASC, b.`RatingCount` DESC");
 
+            $stmt = $conn->prepare("SELECT
+                b.`BeatmapID`,
+                s.`DateRanked`,
+                b.`DifficultyName`,
+                b.`WeightedAvg`,
+                b.`RatingCount`,
+                b.`SR`,
+                b.`ChartRank`,
+                r.`Score`,
+                (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
+                FROM beatmaps b
+                LEFT JOIN beatmapsets s ON b.SetID = s.SetID
+                INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
+                LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
+                WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
+                ORDER BY b.`ChartRank` IS NULL, b.`ChartRank` ASC, b.`RatingCount` DESC
+            ");
             $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
             $stmt->execute();
             $difficultyResult = $stmt->get_result();
 
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM comments WHERE SetID = ?");
-            $stmt->bind_param("i", $set["SetID"]);
-            $stmt->execute();
-            $commentCount = $stmt->get_result()->fetch_row()[0];
+            $stmt2 = $conn->prepare("SELECT COUNT(*) FROM comments WHERE SetID = ?");
+            $stmt2->bind_param("i", $set["SetID"]);
+            $stmt2->execute();
+            $commentCount = $stmt2->get_result()->fetch_row()[0];
+            $stmt2->close();
 
             $topMap = $difficultyResult->fetch_assoc();
             $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
             $topMapIsGD = $set["CreatorID"] != $profileId;
             $topMapIsCollab = $topMap["NumCreators"] > 1;
-            $topMapRatingCount = isset($topMap["RatingCount"]) ? $topMap["RatingCount"] : 0;
-            $topMapChartRank = isset($topMap["ChartRank"]) ? $topMap["ChartRank"] : "";
+            $topMapRatingCount = $topMap["RatingCount"] ?? 0;
+            $topMapChartRank = $topMap["ChartRank"] ?? "";
 
             $stmt->close();
-            ?>
+    ?>
             <div data-rating-count="<?php echo $topMapRatingCount; ?>" data-chart-rank="<?php echo $topMapChartRank; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
                 <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" loading="lazy" /></a>
                 <div>
@@ -667,7 +824,7 @@
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
                 </div>
                 <div style="margin-left:auto;">
-                    <span style="display: inline-block;margin-right:1em;"">
+                    <span style="display: inline-block;margin-right:1em;">
                         <?php
                             if (isset($topMap["Score"]))
                                 echo RenderRating($topMap["Score"]);
@@ -763,8 +920,8 @@
 
                 maps.forEach(function(map, index) {
                     if (index < 10 || map.count >= threshold) {
-                    $(map.el).show();
-                }
+                        $(map.el).show();
+                    }
                 });
             } else {
                 $('.profile-top-map').show();
@@ -824,37 +981,17 @@
             }
         });
 
-        function changePage(page) {
-            var payload = window.getOmdbFilterPayload();
-            var genre = 0, language = 0, country = 0;
-            var mappedDescriptors = [];
-
-            payload.tokens.forEach(function(t) {
-                if (t.type === 'genre') genre = t.id;
-                if (t.type === 'language') language = t.id;
-                if (t.type === 'country') country = t.id;
-                if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
-            });
-
-            window.location.href = "?id=<?php echo $profileId; ?>" +
-                "&o=" + payload.order + 
-                "&y=" + payload.year + 
-                "&sr=" + payload.sr + 
-                "&g=" + genre + 
-                "&lang=" + language + 
-                "&c=" + encodeURIComponent(country) + 
-                "&descriptors=" + encodeURIComponent(JSON.stringify(mappedDescriptors)) +
-                "&excludeLoved=" + String(payload.exLoved) +
-                "&excludeGraveyard=" + String(payload.exGraveyard) +
-                "&excludeRanked=" + String(payload.exRanked);
-        }
-
-        $(document).on('omdbFiltersSubmitted', function() {
-            changePage(1);
+        $(document).on('omdbFiltersSubmitted', function(event, payload) {
+            var params = new URLSearchParams();
+            params.set('y', payload.year);
+            params.set('o', payload.order);
+            params.set('r', payload.rating);
+            if (payload.tokens.length > 0) {
+                params.set('tokens', JSON.stringify(payload.tokens));
+            }
+            window.location.href = '?' + params.toString();
         });
     });
 </script>
 
-<?php
-    require '../footer.php';
-?>
+<?php require '../footer.php'; ?>
