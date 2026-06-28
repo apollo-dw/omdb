@@ -7,7 +7,7 @@
     $page = (int)(postOrGet('p', 1));
     $order = (int)(postOrGet('o', 1));
 
-    $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
+    $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);

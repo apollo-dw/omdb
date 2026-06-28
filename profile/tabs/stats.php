@@ -125,7 +125,7 @@
                             ]
                         ];
                     }
-                    $tokensParam = urlencode(json_encode($srTokens));
+                    $tokensParam = encodeTokens($srTokens);
                     echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;'>" . $label . "</span></div>";
                     echo "</a>";
@@ -189,7 +189,7 @@
                             "name" => $genreName
                         ]
                     ];
-                    $tokensParam = urlencode(json_encode($genreTokens));
+                    $tokensParam = encodeTokens($genreTokens);
                     echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$genreString}</span></div>";
                     echo "</a>";
@@ -256,7 +256,7 @@
                             "name" => $langName
                         ]
                     ];
-                    $tokensParam = urlencode(json_encode($langTokens));
+                    $tokensParam = encodeTokens($langTokens);
                     echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$languageString}</span></div>";
                     echo "</a>";
@@ -317,7 +317,7 @@
                             "name" => $countryFullName
                         ]
                     ];
-                    $tokensParam = urlencode(json_encode($countryTokens));
+                    $tokensParam = encodeTokens($countryTokens);
                     echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$country["Name"]}</span></div>";
                     echo "</a>";

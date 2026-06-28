@@ -9,7 +9,7 @@
     $ranked_maps  = filter_var($_POST['ranked_maps'] ?? true, FILTER_VALIDATE_BOOLEAN);
     $comments     = filter_var($_POST['comments'] ?? true, FILTER_VALIDATE_BOOLEAN);
 
-    $tokensRaw = json_decode(urldecode($_POST['tokens'] ?? '[]'), true);
+    $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);

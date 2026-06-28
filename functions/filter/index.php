@@ -239,6 +239,176 @@
 </div>
 
 <script>
+    // JS versions of the encode/decode funcs in helpers.php
+    function encodeTokens(tokens) {
+        const parts = [];
+        for (const t of tokens) {
+            const ex = t.exclude ? '-' : '';
+            switch (t.type) {
+                case 'genre':
+                    parts.push(`g${ex}${t.id}`);
+                    break;
+                case 'language':
+                    parts.push(`l${ex}${t.id}`);
+                    break;
+                case 'descriptor':
+                    parts.push(`d${ex}${t.id}`);
+                    break;
+                case 'status':
+                    parts.push(`s${ex}${String(t.id).replace(/,/g, '~')}`);
+                    break;
+                case 'country':
+                    parts.push(`c${ex}${t.id}`);
+                    break;
+                case 'meta':
+                    parts.push(`m${ex}${t.id}`);
+                    break;
+                case 'sr':
+                    if (t.ops && t.ops.length > 0) {
+                        const opStr = t.ops.map(o => o.op + o.val).join('');
+                        parts.push(`r${ex}${opStr}`);
+                    }
+                    break;
+            }
+        }
+        return parts.join(',');
+    }
+
+    function decodeTokens(encoded) {
+        if (!encoded)
+            return [];
+        const tokens = [];
+        for (const part of encoded.split(',')) {
+            const trimmed = part.trim();
+            if (!trimmed)
+                continue;
+            const prefix = trimmed[0];
+
+            let rest = trimmed.slice(1);
+            let exclude = false;
+            if (rest.startsWith('-')) {
+                exclude = true;
+                rest = rest.slice(1);
+            }
+
+            switch (prefix) {
+                case 'g':
+                    tokens.push({
+                        type: 'genre',
+                        id: parseInt(rest, 10),
+                        exclude
+                    });
+                    break;
+                case 'l':
+                    tokens.push({
+                        type: 'language',
+                        id: parseInt(rest, 10),
+                        exclude
+                    });
+                    break;
+                case 'd':
+                    tokens.push({
+                        type: 'descriptor',
+                        id: parseInt(rest, 10),
+                        exclude
+                    });
+                    break;
+                case 's':
+                    tokens.push({
+                        type: 'status',
+                        id: rest.replace(/~/g, ','),
+                        exclude
+                    });
+                    break;
+                case 'c':
+                    tokens.push({
+                        type: 'country',
+                        id: rest,
+                        exclude
+                    });
+                    break;
+                case 'm':
+                    tokens.push({
+                        type: 'meta',
+                        id: rest,
+                        exclude
+                    });
+                    break;
+                case 'r': {
+                    const ops = [];
+                    let rem = rest;
+                    const opRx = /^(>=|<=|>|<|=)(\d+(?:\.\d+)?)/;
+                    while (rem.length > 0) {
+                        const m = rem.match(opRx);
+                        if (!m)
+                            break;
+
+                        ops.push({
+                            op: m[1],
+                            val: parseFloat(m[2])
+                        });
+
+                        rem = rem.slice(m[0].length);
+                    }
+
+                    if (ops.length > 0) {
+                        let lower = null;
+                        let upper = null;
+                        const flip = {
+                            '>': '<',
+                            '>=': '<=',
+                            '<': '>',
+                            '<=': '>=',
+                            '=': '='
+                        };
+
+                        for (const op of ops) {
+                            switch (op.op) {
+                                case '>':
+                                case '>=':
+                                    lower = op;
+                                    break;
+
+                                case '<':
+                                case '<=':
+                                    upper = op;
+                                    break;
+
+                                case '=':
+                                    lower = upper = op;
+                                    break;
+                            }
+                        }
+
+                        let idStr = '';
+
+                        if (lower && upper) {
+                            if (lower.op === '=' && upper.op === '=') {
+                                idStr = `sr=${lower.val}`;
+                            } else {
+                                idStr = `${lower.val}${flip[lower.op]}sr${upper.op}${upper.val}`;
+                            }
+                        } else if (lower) {
+                            idStr = `sr${lower.op}${lower.val}`;
+                        } else if (upper) {
+                            idStr = `sr${upper.op}${upper.val}`;
+                        }
+
+                        tokens.push({
+                            type: 'sr',
+                            id: idStr,
+                            name: 'SR: ' + idStr,
+                            ops,
+                            exclude
+                        });
+                    }
+                    break;
+                }
+            }
+        }
+        return tokens;
+    }
+
     let activeTokens = [];
 
     window.getOmdbFilterPayload = function() {
@@ -278,27 +448,16 @@
 
         const tokensString = urlParams.get('tokens');
         if (tokensString) {
-            try {
-                let decoded = tokensString;
-                if (decoded.includes('%')) decoded = decodeURIComponent(decoded); 
-                activeTokens = JSON.parse(decoded);
-            } catch(e) { console.error("Could not parse tokens from URL", e); }
-        } else {
-            if (urlParams.get('g')) urlParams.get('g').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'genre' && f.id == id)));
-            if (urlParams.get('eg')) urlParams.get('eg').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'genre' && f.id == id), true));
-            if (urlParams.get('l')) urlParams.get('l').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == id)));
-            if (urlParams.get('el')) urlParams.get('el').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'language' && f.id == id), true));
-            if (urlParams.get('c')) urlParams.get('c').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'country' && f.id === decodeURIComponent(id))));
-            if (urlParams.get('ec')) urlParams.get('ec').split(',').forEach(id => pushToken(lookupMatrix.find(f => f.type === 'country' && f.id === decodeURIComponent(id)), true));
-
-            const descParam = urlParams.get('descriptors');
-            if (descParam) {
-                descParam.split(',').forEach(name => {
-                    const isExclude = name.startsWith('-');
-                    const cleanName = isExclude ? name.substring(1) : name;
-                    pushToken(lookupMatrix.find(f => f.type === 'descriptor' && f.name === cleanName), isExclude);
-                });
-            }
+            const raw = decodeTokens(tokensString);
+            activeTokens = raw.map(t => {
+                if (t.type === 'sr')
+                    return t; // SR has name already
+                const match = lookupMatrix.find(f => f.type === t.type && f.id == t.id);
+                return match ? {
+                    ...match,
+                    exclude: t.exclude
+                } : t;
+            }).filter(Boolean);
         }
 
         $('#filter-order').val(urlParams.get('o') || "1");
@@ -315,7 +474,10 @@
 
         function pushToken(obj, exclude = false) {
             if (obj && !activeTokens.some(t => t.type === obj.type && t.id == obj.id)) {
-                activeTokens.push({...obj, exclude: exclude});
+                activeTokens.push({
+                    ...obj,
+                    exclude
+                });
             }
         }
 

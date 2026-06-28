@@ -10,7 +10,7 @@
     $year = postOrGet('y', 'all-time');
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 
-    $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
+    $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);

@@ -727,7 +727,7 @@
             if (payload.rating)
                 params.set('r', payload.rating);
             if (payload.tokens && payload.tokens.length > 0)
-                params.set('tokens', JSON.stringify(payload.tokens));
+                params.set('tokens', encodeTokens(payload.tokens));
 
             var url = '?' + params.toString();
             history.replaceState(null, '', url);

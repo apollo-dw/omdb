@@ -61,7 +61,7 @@
         if (payload.year)
             params.set('y', payload.year);
         if (payload.tokens && payload.tokens.length > 0)
-            params.set('tokens', JSON.stringify(payload.tokens));
+            params.set('tokens', encodeTokens(payload.tokens));
         return params;
     }
     

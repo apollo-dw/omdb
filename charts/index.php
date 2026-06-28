@@ -133,7 +133,7 @@
     function updateChart(payload, currentPage) {
         $("#chart-container").addClass("faded");
 
-        var tokensJSON = JSON.stringify(payload.tokens);
+        var tokensJSON = encodeTokens(payload.tokens);
 
         var urlParams = new URLSearchParams();
         urlParams.set("y", payload.year);

@@ -99,7 +99,7 @@
             "&ranked_maps=" + payload.ranked_maps +
             "&comments=" + payload.comments +
             "&year=" + encodeURIComponent(payload.year) +
-            "&tokens=" + encodeURIComponent(JSON.stringify(payload.tokens));
+            "&tokens=" + encodeURIComponent(encodeTokens(payload.tokens));
 
         xmlhttp.send(params);
     }

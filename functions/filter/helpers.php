@@ -1,4 +1,194 @@
 <?php
+    function encodeTokens(array $tokens): string {
+        $parts = [];
+
+        foreach ($tokens as $t) {
+            $type = $t['type'] ?? '';
+            $id = $t['id'] ?? '';
+            $exclude = !empty($t['exclude']);
+            $ex = $exclude ? '-' : '';
+
+            switch ($type) {
+                case 'genre':
+                    $parts[] = "g{$ex}{$id}";
+                    break;
+
+                case 'language':
+                    $parts[] = "l{$ex}{$id}";
+                    break;
+
+                case 'descriptor':
+                    $parts[] = "d{$ex}{$id}";
+                    break;
+
+                case 'status':
+                    // Replace commas in multi-value status IDs with ~
+                    $encoded = str_replace(',', '~', $id);
+                    $parts[] = "s{$ex}{$encoded}";
+                    break;
+
+                case 'country':
+                    $parts[] = "c{$ex}{$id}";
+                    break;
+
+                case 'meta':
+                    $parts[] = "m{$ex}{$id}";
+                    break;
+
+                case 'sr':
+                    if (!empty($t['ops'])) {
+                        $opStr = '';
+                        foreach ($t['ops'] as $op) {
+                            $opStr .= ($op['op'] ?? '') . ($op['val'] ?? '');
+                        }
+                        $parts[] = "r{$ex}{$opStr}";
+                    }
+                    break;
+            }
+        }
+
+        return implode(',', $parts);
+    }
+
+    function decodeTokens(string $encoded): array {
+        if ($encoded === '')
+            return [];
+
+        $tokens = [];
+        foreach (explode(',', $encoded) as $part) {
+            $part = trim($part);
+            if ($part === '')
+                continue;
+
+            $prefix = $part[0];
+            $rest = substr($part, 1);
+
+            $exclude = false;
+            if ($rest !== '' && $rest[0] === '-') {
+                $exclude = true;
+                $rest = substr($rest, 1);
+            }
+
+            switch ($prefix) {
+                case 'g':
+                    $tokens[] = [
+                        'type' => 'genre',
+                        'id' => (int)$rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'l':
+                    $tokens[] = [
+                        'type' => 'language',
+                        'id' => (int)$rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'd':
+                    $tokens[] = [
+                        'type' => 'descriptor',
+                        'id' => (int)$rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 's':
+                    // Restore commas from ~
+                    $statusId = str_replace('~', ',', $rest);
+                    $tokens[] = [
+                        'type' => 'status',
+                        'id' => $statusId,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'c':
+                    $tokens[] = [
+                        'type' => 'country',
+                        'id' => $rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'm':
+                    $tokens[] = [
+                        'type' => 'meta',
+                        'id' => $rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'r':
+                    $ops = [];
+                    $remaining = $rest;
+                    while ($remaining !== '') {
+                        if (preg_match('/^(>=|<=|>|<|=)(\d+(?:\.\d+)?)(.*)$/s', $remaining, $m)) {
+                            $ops[]     = ['op' => $m[1], 'val' => (float)$m[2]];
+                            $remaining = $m[3];
+                        } else {
+                            break; // fucked
+                        }
+                    }
+                    if (!empty($ops)) {
+                        $idStr = '';
+                        $lower = null;
+                        $upper = null;
+                        $flip = [
+                            '>' => '<',
+                            '>=' => '<=',
+                            '<' => '>',
+                            '<=' => '>=',
+                            '=' => '=',
+                        ];
+                        foreach ($ops as $op) {
+                            switch ($op['op']) {
+                                case '>':
+                                case '>=':
+                                    $lower = $op;
+                                    break;
+
+                                case '<':
+                                case '<=':
+                                    $upper = $op;
+                                    break;
+
+                                case '=':
+                                    $lower = $upper = $op;
+                                    break;
+                            }
+                        }
+                        if ($lower && $upper) {
+                            if ($lower['op'] === '=' && $upper['op'] === '=') {
+                                $idStr = 'sr=' . $lower['val'];
+                            } else {
+                                $idStr = $lower['val']
+                                    . $flip[$lower['op']]
+                                    . 'sr'
+                                    . $upper['op']
+                                    . $upper['val'];
+                            }
+                        } elseif ($lower) {
+                            $idStr = 'sr' . $lower['op'] . $lower['val'];
+                        } elseif ($upper) {
+                            $idStr = 'sr' . $upper['op'] . $upper['val'];
+                        }
+                        $tokens[] = [
+                            'type' => 'sr',
+                            'id' => $idStr,
+                            'name' => 'SR: ' . $idStr,
+                            'ops' => $ops,
+                            'exclude' => $exclude,
+                        ];
+                    }
+                    break;
+            }
+        }
+
+        return $tokens;
+    }
+
     function parseFilterTokens($tokensRaw) {
 		$parsed = [
 			'friendsStatus' => 'any',
