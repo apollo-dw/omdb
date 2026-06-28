@@ -1,4 +1,10 @@
 <?php
+    $PageTitle = "Ratings";
+
+    require "../../base.php";
+    require '../../header.php';
+
+    
     $order = $_GET['o'] ?? "0";
     $rating = $_GET['r'] ?? "";
     $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
@@ -6,58 +12,22 @@
     $tokensRaw = json_decode(urldecode($_GET['tokens'] ?? '[]'), true);
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
-    $genres = []; $exGenres = [];
-    $languages = []; $exLanguages = [];
-    $countries = []; $exCountries = [];
-    $statuses = []; $exStatuses = [];
-    $descriptors = []; $exDescriptors = [];
-    $srFilters = [];
+    $parsedTokens = parseFilterTokens($tokensRaw);
 
-    foreach ($tokensRaw as $t) {
-        $type = $t['type'] ?? '';
-        $id = $t['id'] ?? '';
-        $exclude = !empty($t['exclude']);
+    $genres = $parsedTokens['genres'];
+    $exGenres = $parsedTokens['exGenres'];
+    $languages = $parsedTokens['languages'];
+    $exLanguages = $parsedTokens['exLanguages'];
+    $countries = $parsedTokens['countries'];
+    $exCountries = $parsedTokens['exCountries'];
+    $statuses = $parsedTokens['statuses'];
+    $exStatuses = $parsedTokens['exStatuses'];
+    $descriptors = $parsedTokens['descriptors'];
+    $exDescriptors = $parsedTokens['exDescriptors'];
 
-        if ($type === 'genre') {
-            if ($exclude) $exGenres[] = (int)$id; else $genres[] = (int)$id;
-        }
-        if ($type === 'language') {
-            if ($exclude) $exLanguages[] = (int)$id; else $languages[] = (int)$id;
-        }
-        if ($type === 'country') {
-            if ($exclude) $exCountries[] = $id; else $countries[] = $id;
-        }
-        if ($type === 'descriptor') {
-            if ($exclude) $exDescriptors[] = (int)$id; else $descriptors[] = (int)$id;
-        }
-        if ($type === 'status') {
-            foreach (explode(',', $id) as $sv) {
-                if ($exclude) $exStatuses[] = (int)$sv; else $statuses[] = (int)$sv;
-            }
-        }
-
-        if ($type === 'sr' && !empty($t['ops'])) {
-            $srConds = [];
-            foreach ($t['ops'] as $opData) {
-                $op = $opData['op'] ?? '';
-                $val = (float)($opData['val'] ?? 0);
-                
-                // only allow valid operators to prevent SQL injection
-                if (in_array($op, ['<', '<=', '>', '>=', '='])) {
-                    $srConds[] = "b.SR {$op} {$val}";
-                }
-            }
-            if (!empty($srConds)) {
-                $srCond = implode(" AND ", $srConds);
-                $srFilters[] = $exclude ? " AND NOT ({$srCond})" : " AND ({$srCond})";
-            }
-        }
-    }
-
-    $PageTitle = "Ratings";
-
-    require "../../base.php";
-    require '../../header.php';
+    $srFilters = array_map(function($cond) {
+        return " AND " . $cond;
+    }, $parsedTokens['srFilters']);
 	
 	$profileId = GetIntParam('id', null, "Invalid page bro");
 	$page = GetIntParam('p', 1, "Invalid page bro");
@@ -220,10 +190,10 @@
 <?php
     $filterConfig = [
         'sortOptions' => [
-            '0' => 'Latest',
-            '1' => 'Oldest',
-            '2' => 'Highest rated',
-            '3' => 'Lowest rated'
+            '1' => 'Latest',
+            '2' => 'Oldest',
+            '3' => 'Highest rated',
+            '4' => 'Lowest rated'
         ],
         'showRating' => true,
         'showTag' => true,
@@ -254,16 +224,16 @@
             $queryParameterValues = array_merge(array($profileId, $mode), $filterValues);
 
             switch($order) {
-                case "1":
+                case "2":
                     $orderString = "ORDER BY r.DATE ASC";
                     break;
-                case "2":
+                case "3":
                     $orderString = "ORDER BY r.SCORE DESC, r.DATE ASC";
                     break;
-                case "3":
+                case "4":
                     $orderString = "ORDER BY r.SCORE ASC, r.DATE ASC";
                     break;
-                case "0":
+                case "1":
                 default:
                     $orderString = "ORDER BY r.DATE DESC";
             }

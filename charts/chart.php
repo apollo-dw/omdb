@@ -22,49 +22,19 @@
     $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
-    $friendsStatus = 'any';
-    $ratedStatus = 'any';
-    $statusFilters = [];
-    $selectedDescriptors = [];
-    $genres = []; $exGenres = [];
-    $languages = []; $exLanguages = [];
-    $countries = []; $exCountries = [];
-    $srFilters = [];
-
-    foreach ($tokensRaw as $t) {
-        $type = $t['type'];
-        $id = $t['id'];
-        $exclude = isset($t['exclude']) && $t['exclude'];
-
-        if ($type === 'meta') {
-            if ($id === 'friends') $friendsStatus = $exclude ? 'exclude' : 'only';
-            if ($id === 'alreadyRated') $ratedStatus = $exclude ? 'exclude' : 'only';
-        } elseif ($type === 'status') {
-            $statusFilters[] = ['id' => $id, 'exclude' => $exclude];
-        } elseif ($type === 'descriptor') {
-            $selectedDescriptors[] = $t;
-        } elseif ($type === 'genre') {
-            if ($exclude) $exGenres[] = (int)$id; else $genres[] = (int)$id;
-        } elseif ($type === 'language') {
-            if ($exclude) $exLanguages[] = (int)$id; else $languages[] = (int)$id;
-        } elseif ($type === 'country') {
-            if ($exclude) $exCountries[] = $id; else $countries[] = $id;
-        } elseif ($type === 'sr' && !empty($t['ops'])) {
-            $srConds = [];
-            foreach ($t['ops'] as $opData) {
-                $op = $opData['op'] ?? '';
-                $val = (float)($opData['val'] ?? 0);
-                
-                if (in_array($op, ['<', '<=', '>', '>=', '='])) {
-                    $srConds[] = "b.SR {$op} {$val}";
-                }
-            }
-            if (!empty($srConds)) {
-                $srCond = implode(" AND ", $srConds);
-                $srFilters[] = $exclude ? "NOT ({$srCond})" : "({$srCond})";
-            }
-        }
-    }
+    $parsedTokens = parseFilterTokens($tokensRaw);
+    
+    $friendsStatus = $parsedTokens['friendsStatus'];
+    $ratedStatus = $parsedTokens['ratedStatus'];
+    $statusFilters = $parsedTokens['statusFilters'];
+    $selectedDescriptors = $parsedTokens['selectedDescriptors'];
+    $genres = $parsedTokens['genres'];
+    $exGenres = $parsedTokens['exGenres'];
+    $languages = $parsedTokens['languages'];
+    $exLanguages = $parsedTokens['exLanguages'];
+    $countries = $parsedTokens['countries'];
+    $exCountries = $parsedTokens['exCountries'];
+    $srFilters = $parsedTokens['srFilters'];
 ?>
 
 <div class="flex-item" style="padding:0.5em;">
