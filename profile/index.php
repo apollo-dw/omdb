@@ -11,18 +11,7 @@
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-
-    $genres = $parsedTokens['genres'];
-    $exGenres = $parsedTokens['exGenres'];
-    $languages = $parsedTokens['languages'];
-    $exLanguages = $parsedTokens['exLanguages'];
-    $countries = $parsedTokens['countries'];
-    $exCountries = $parsedTokens['exCountries'];
-    $statuses = $parsedTokens['statuses'];
-    $exStatuses = $parsedTokens['exStatuses'];
-    $descriptors = $parsedTokens['descriptors'];
-    $exDescriptors = $parsedTokens['exDescriptors'];
-    $srFilters = $parsedTokens['srFilters'];
+    $filter = buildBeatmapFilterSQL($parsedTokens);
 
     $filterConditions = "";
     $filterTypes = "";
@@ -46,91 +35,9 @@
         $filterValues[] = (float)$rating;
     }
 
-    if (!empty($genres)) {
-        $placeholders = implode(',', array_fill(0, count($genres), '?'));
-        $filterConditions .= " AND s.Genre IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($genres));
-        $filterValues = array_merge($filterValues, $genres);
-    }
-
-    if (!empty($exGenres)) {
-        $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
-        $filterConditions .= " AND s.Genre NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exGenres));
-        $filterValues = array_merge($filterValues, $exGenres);
-    }
-
-    if (!empty($languages)) {
-        $placeholders = implode(',', array_fill(0, count($languages), '?'));
-        $filterConditions .= " AND s.Lang IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($languages));
-        $filterValues = array_merge($filterValues, $languages);
-    }
-
-    if (!empty($exLanguages)) {
-        $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
-        $filterConditions .= " AND s.Lang NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exLanguages));
-        $filterValues = array_merge($filterValues, $exLanguages);
-    }
-
-    if (!empty($countries)) {
-        $placeholders = implode(',', array_fill(0, count($countries), '?'));
-        $filterConditions .= " AND EXISTS (
-            SELECT 1 FROM beatmap_creators bc2
-            JOIN mappernames mn ON bc2.CreatorID = mn.UserID
-            WHERE bc2.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders)
-        )";
-        $filterTypes .= str_repeat('s', count($countries));
-        $filterValues = array_merge($filterValues, $countries);
-    }
-
-    if (!empty($exCountries)) {
-        $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
-        $filterConditions .= " AND NOT EXISTS (
-            SELECT 1 FROM beatmap_creators bc2
-            JOIN mappernames mn ON bc2.CreatorID = mn.UserID
-            WHERE bc2.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders)
-        )";
-        $filterTypes .= str_repeat('s', count($exCountries));
-        $filterValues = array_merge($filterValues, $exCountries);
-    }
-
-    if (!empty($statuses)) {
-        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
-        $filterConditions .= " AND b.Status IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($statuses));
-        $filterValues = array_merge($filterValues, $statuses);
-    }
-
-    if (!empty($exStatuses)) {
-        $placeholders = implode(',', array_fill(0, count($exStatuses), '?'));
-        $filterConditions .= " AND b.Status NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exStatuses));
-        $filterValues = array_merge($filterValues, $exStatuses);
-    }
-
-    if (!empty($descriptors)) {
-        foreach ($descriptors as $dId) {
-            $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $dId;
-        }
-    }
-
-    if (!empty($exDescriptors)) {
-        foreach ($exDescriptors as $dId) {
-            $filterConditions .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $dId;
-        }
-    }
-
-    if (!empty($srFilters)) {
-        foreach ($srFilters as $cond) {
-            $filterConditions .= " AND $cond";
-        }
-    }
+    $filterConditions .= $filter['sql'];
+    $filterTypes .= $filter['types'];
+    $filterValues = array_merge($filterValues, $filter['values']);
 
     switch ($order) {
         case '2':
@@ -741,7 +648,7 @@
             ],
             'categories' => ['genre', 'language', 'country', 'descriptor', 'status'],
         ];
-        require "../functions/filter.php";
+        require "../functions/filter/index.php";
     ?>
     <label>
         <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>

@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    include_once '../base.php';
 
     $year = postOrGet('y', 2026);
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
@@ -7,25 +7,13 @@
     $page = (int)(postOrGet('p', 1));
     $order = (int)(postOrGet('o', 1));
 
-    $minSR = (float)(postOrGet('minSR', 0));
-    $maxSR = (float)(postOrGet('maxSR', -1));
-
     $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-    
+    $filter = buildBeatmapFilterSQL($parsedTokens);
     $friendsStatus = $parsedTokens['friendsStatus'];
     $ratedStatus = $parsedTokens['ratedStatus'];
-    $statusFilters = $parsedTokens['statusFilters'];
-    $selectedDescriptors = $parsedTokens['selectedDescriptors'];
-    $genres = $parsedTokens['genres'];
-    $exGenres = $parsedTokens['exGenres'];
-    $languages = $parsedTokens['languages'];
-    $exLanguages = $parsedTokens['exLanguages'];
-    $countries = $parsedTokens['countries'];
-    $exCountries = $parsedTokens['exCountries'];
-    $srFilters = $parsedTokens['srFilters'];
 ?>
 
 <div class="flex-item" style="padding:0.5em;">
@@ -53,87 +41,14 @@
             $whereParams[] = (string)$year;
         }
 
-        if (!empty($genres)) {
-            $placeholders = implode(',', array_fill(0, count($genres), '?'));
-            $sqlFilters[] = "s.Genre IN ($placeholders)";
-            $whereTypes .= str_repeat('i', count($genres));
-            $whereParams = array_merge($whereParams, $genres);
-        }
-
-        if (!empty($exGenres)) {
-            $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
-            $sqlFilters[] = "s.Genre NOT IN ($placeholders)";
-            $whereTypes .= str_repeat('i', count($exGenres));
-            $whereParams = array_merge($whereParams, $exGenres);
-        }
-
-        if (!empty($languages)) {
-            $placeholders = implode(',', array_fill(0, count($languages), '?'));
-            $sqlFilters[] = "s.Lang IN ($placeholders)";
-            $whereTypes .= str_repeat('i', count($languages));
-            $whereParams = array_merge($whereParams, $languages);
-        }
-
-        if (!empty($exLanguages)) {
-            $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
-            $sqlFilters[] = "s.Lang NOT IN ($placeholders)";
-            $whereTypes .= str_repeat('i', count($exLanguages));
-            $whereParams = array_merge($whereParams, $exLanguages);
-        }
-
-        if (!empty($countries)) {
-            $placeholders = implode(',', array_fill(0, count($countries), '?'));
-            $sqlFilters[] = "b.BeatmapID IN (
-                SELECT bc.BeatmapID FROM beatmap_creators bc
-                JOIN mappernames mn ON mn.UserID = bc.CreatorID
-                GROUP BY bc.BeatmapID
-                HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country IN ($placeholders)) = 1
-            )";
-            $whereTypes .= str_repeat('s', count($countries));
-            $whereParams = array_merge($whereParams, $countries);
-        }
-
-        if (!empty($exCountries)) {
-            $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
-            $sqlFilters[] = "b.BeatmapID NOT IN (
-                SELECT bc.BeatmapID FROM beatmap_creators bc
-                JOIN mappernames mn ON mn.UserID = bc.CreatorID
-                GROUP BY bc.BeatmapID
-                HAVING COUNT(DISTINCT mn.Country) = 1 AND MAX(mn.Country IN ($placeholders)) = 1
-            )";
-            $whereTypes .= str_repeat('s', count($exCountries));
-            $whereParams = array_merge($whereParams, $exCountries);
-        }
-
-        if (!empty($selectedDescriptors)) {
-            foreach ($selectedDescriptors as $descriptor) {
-                $id = (int)$descriptor['id'];
-                $exists = (isset($descriptor['exclude']) && $descriptor['exclude']) ? "NOT EXISTS" : "EXISTS";
-                $sqlFilters[] = "{$exists} (
-                    SELECT 1 FROM beatmap_descriptors bd
-                    WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = {$id}
-                )";
-            }
-        }
-
-        if (!empty($srFilters)) {
-            $sqlFilters = array_merge($sqlFilters, $srFilters);
-        }
-
-        foreach ($statusFilters as $sf) {
-            $operator = $sf['exclude'] ? "NOT IN" : "IN";
-            $safeIds = array_filter(array_map('intval', explode(',', $sf['id'])));
-            $idString = implode(',', $safeIds);
-            if (!empty($idString)) {
-                $sqlFilters[] = "b.Status {$operator} ({$idString})";
-            }
+        if ($filter['sql'] !== '') {
+            $sqlFilters[] = preg_replace('/^\s*AND\s+/i', '', trim($filter['sql']));
+            $whereTypes .= $filter['types'];
+            $whereParams = array_merge($whereParams, $filter['values']);
         }
 
         if ($ratedStatus === 'exclude') $sqlFilters[] = "r_user.Score IS NULL";
         if ($ratedStatus === 'only')    $sqlFilters[] = "r_user.Score IS NOT NULL";
-
-        if ($minSR > 0) $sqlFilters[] = "b.SR >= " . (float)$minSR;
-        if ($maxSR > 0) $sqlFilters[] = "b.SR <= " . (float)$maxSR;
 
         $statsJoin = "";
         $priorJoin = "";
@@ -233,21 +148,19 @@
         $stmt->execute();
         $result = $stmt->get_result();
 
+        $descStmt = $conn->prepare("SELECT
+                bd.DescriptorID,
+                d.Name,
+                d.ShortDescription
+            FROM beatmap_descriptors bd
+            JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+            WHERE bd.BeatmapID = ?
+            ORDER BY bd.Weight DESC, bd.DescriptorID
+            LIMIT 10");
         while ($row = $result->fetch_assoc()) {
-            $stmt2 = $conn->prepare("
-                SELECT
-                    bd.DescriptorID,
-                    d.Name,
-                    d.ShortDescription
-                FROM beatmap_descriptors bd
-                JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
-                WHERE bd.BeatmapID = ?
-                ORDER BY bd.Weight DESC, bd.DescriptorID
-                LIMIT 10");
-            $stmt2->bind_param("i", $row["BeatmapID"]);
-            $stmt2->execute();
-            $descriptorResult = $stmt2->get_result();
-
+            $descStmt->bind_param("i", $row["BeatmapID"]);
+            $descStmt->execute();
+            $descriptorResult = $descStmt->get_result();
             $counter++;
         ?>
         <div class="flex-container chart-container alternating-bg">

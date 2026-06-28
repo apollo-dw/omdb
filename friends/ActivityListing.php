@@ -14,110 +14,13 @@
 
     $parsedTokens = parseFilterTokens($tokensRaw);
 
-    $genres = $parsedTokens['genres'];
-    $exGenres = $parsedTokens['exGenres'];
-    $languages = $parsedTokens['languages'];
-    $exLanguages = $parsedTokens['exLanguages'];
-    $countries = $parsedTokens['countries'];
-    $exCountries = $parsedTokens['exCountries'];
-    $statuses = $parsedTokens['statuses'];
-    $exStatuses = $parsedTokens['exStatuses'];
-    $descriptors = $parsedTokens['descriptors'];
-    $exDescriptors = $parsedTokens['exDescriptors'];
-    $srFilters = $parsedTokens['srFilters'];
-
     $year = $_POST['year'] ?? 'all-time';
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 
-    $beatmapFilterSQL = "";
-    $beatmapFilterTypes = "";
-    $beatmapFilterValues = [];
-
-    if (!empty($genres)) {
-        $ph = implode(',', array_fill(0, count($genres), '?'));
-        $beatmapFilterSQL .= " AND s.Genre IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($genres));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $genres);
-    }
-
-    if (!empty($exGenres)) {
-        $ph = implode(',', array_fill(0, count($exGenres), '?'));
-        $beatmapFilterSQL .= " AND s.Genre NOT IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($exGenres));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $exGenres);
-    }
-
-    if (!empty($languages)) {
-        $ph = implode(',', array_fill(0, count($languages), '?'));
-        $beatmapFilterSQL .= " AND s.Lang IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($languages));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $languages);
-    }
-
-    if (!empty($exLanguages)) {
-        $ph = implode(',', array_fill(0, count($exLanguages), '?'));
-        $beatmapFilterSQL .= " AND s.Lang NOT IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($exLanguages));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $exLanguages);
-    }
-
-    if (!empty($countries)) {
-        $ph = implode(',', array_fill(0, count($countries), '?'));
-        $beatmapFilterSQL .= " AND EXISTS (
-            SELECT 1 FROM beatmap_creators bc_f
-            JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID
-            WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph)
-        )";
-        $beatmapFilterTypes .= str_repeat('s', count($countries));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $countries);
-    }
-
-    if (!empty($exCountries)) {
-        $ph = implode(',', array_fill(0, count($exCountries), '?'));
-        $beatmapFilterSQL .= " AND NOT EXISTS (
-            SELECT 1 FROM beatmap_creators bc_f
-            JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID
-            WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph)
-        )";
-        $beatmapFilterTypes .= str_repeat('s', count($exCountries));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $exCountries);
-    }
-
-    if (!empty($statuses)) {
-        $ph = implode(',', array_fill(0, count($statuses), '?'));
-        $beatmapFilterSQL .= " AND b.Status IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($statuses));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $statuses);
-    }
-
-    if (!empty($exStatuses)) {
-        $ph = implode(',', array_fill(0, count($exStatuses), '?'));
-        $beatmapFilterSQL .= " AND b.Status NOT IN ($ph)";
-        $beatmapFilterTypes .= str_repeat('i', count($exStatuses));
-        $beatmapFilterValues = array_merge($beatmapFilterValues, $exStatuses);
-    }
-
-    if (!empty($descriptors)) {
-        foreach ($descriptors as $dId) {
-            $beatmapFilterSQL .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd_f WHERE bd_f.BeatmapID = b.BeatmapID AND bd_f.DescriptorID = ?)";
-            $beatmapFilterTypes .= "i";
-            $beatmapFilterValues[] = $dId;
-        }
-    }
-
-    if (!empty($exDescriptors)) {
-        foreach ($exDescriptors as $dId) {
-            $beatmapFilterSQL .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd_f WHERE bd_f.BeatmapID = b.BeatmapID AND bd_f.DescriptorID = ?)";
-            $beatmapFilterTypes .= "i";
-            $beatmapFilterValues[] = $dId;
-        }
-    }
-
-    if (!empty($srFilters)) {
-        foreach ($srFilters as $cond) {
-            $beatmapFilterSQL .= " AND $cond";
-        }
-    }
+    $filter = buildBeatmapFilterSQL($parsedTokens);
+    $beatmapFilterSQL = $filter['sql'];
+    $beatmapFilterTypes = $filter['types'];
+    $beatmapFilterValues = $filter['values'];
 
     $yearCond = function(string $col) use ($year): string {
         return ($year !== 'all-time') ? " AND YEAR($col) = ?" : "";

@@ -93,21 +93,13 @@
 
         if (!empty($parsed['countries'])) {
             $ph = implode(',', array_fill(0, count($parsed['countries']), '?'));
-            $sql .= " AND EXISTS (
-                SELECT 1 FROM beatmap_creators bc_f
-                JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID
-                WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph)
-            )";
+            $sql .= " AND EXISTS (SELECT 1 FROM beatmap_creators bc_f JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph))";
             $types .= str_repeat('s', count($parsed['countries']));
             $values = array_merge($values, $parsed['countries']);
         }
         if (!empty($parsed['exCountries'])) {
             $ph = implode(',', array_fill(0, count($parsed['exCountries']), '?'));
-            $sql .= " AND NOT EXISTS (
-                SELECT 1 FROM beatmap_creators bc_f
-                JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID
-                WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph)
-            )";
+            $sql .= " AND NOT EXISTS (SELECT 1 FROM beatmap_creators bc_f JOIN mappernames mn_f ON bc_f.CreatorID = mn_f.UserID WHERE bc_f.BeatmapID = b.BeatmapID AND mn_f.Country IN ($ph))";
             $types .= str_repeat('s', count($parsed['exCountries']));
             $values = array_merge($values, $parsed['exCountries']);
         }

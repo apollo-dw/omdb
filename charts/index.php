@@ -59,7 +59,7 @@
 	<div style="padding-top:0.5em;" class="flex-item">
         <?php
             $filterConfig = [];
-            require "../functions/filter.php";
+            require "../functions/filter/index.php";
         ?>
         <br><br>
 		<span>Info</span>

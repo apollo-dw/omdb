@@ -13,18 +13,8 @@
     $tokensRaw = json_decode(urldecode(postOrGet('tokens', '[]')), true);
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
-    $parsedTokens  = parseFilterTokens($tokensRaw);
-    $genres = $parsedTokens['genres'];
-    $exGenres = $parsedTokens['exGenres'];
-    $languages = $parsedTokens['languages'];
-    $exLanguages = $parsedTokens['exLanguages'];
-    $countries = $parsedTokens['countries'];
-    $exCountries = $parsedTokens['exCountries'];
-    $statuses = $parsedTokens['statuses'];
-    $exStatuses = $parsedTokens['exStatuses'];
-    $descriptors = $parsedTokens['descriptors'];
-    $exDescriptors = $parsedTokens['exDescriptors'];
-    $srFilters = $parsedTokens['srFilters'];
+    $parsedTokens = parseFilterTokens($tokensRaw);
+    $filter = buildBeatmapFilterSQL($parsedTokens);
 
     $isSelf = $loggedIn && ($profileId === $userId);
     $hideBlacklistedMapsCondition = $isSelf ? "" : "AND b.Blacklisted = 0";
@@ -49,90 +39,9 @@
         $filterValues[] = (int)$year;
     }
 
-    if (!empty($genres)) {
-        $ph = implode(',', array_fill(0, count($genres), '?'));
-        $filterConditions .= " AND s.Genre IN ($ph)";
-        $filterTypes .= str_repeat('i', count($genres));
-        $filterValues = array_merge($filterValues, $genres);
-    }
-
-    if (!empty($exGenres)) {
-        $ph = implode(',', array_fill(0, count($exGenres), '?'));
-        $filterConditions .= " AND s.Genre NOT IN ($ph)";
-        $filterTypes .= str_repeat('i', count($exGenres));
-        $filterValues = array_merge($filterValues, $exGenres);
-    }
-
-    if (!empty($languages)) {
-        $ph = implode(',', array_fill(0, count($languages), '?'));
-        $filterConditions .= " AND s.Lang IN ($ph)";
-        $filterTypes .= str_repeat('i', count($languages));
-        $filterValues = array_merge($filterValues, $languages);
-    }
-
-    if (!empty($exLanguages)) {
-        $ph = implode(',', array_fill(0, count($exLanguages), '?'));
-        $filterConditions .= " AND s.Lang NOT IN ($ph)";
-        $filterTypes .= str_repeat('i', count($exLanguages));
-        $filterValues = array_merge($filterValues, $exLanguages);
-    }
-
-    if (!empty($countries)) {
-        $ph = implode(',', array_fill(0, count($countries), '?'));
-        $filterConditions .= " AND EXISTS (
-            SELECT 1 FROM beatmap_creators bc
-            JOIN mappernames mn ON bc.CreatorID = mn.UserID
-            WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($ph)
-        )";
-        $filterTypes .= str_repeat('s', count($countries));
-        $filterValues = array_merge($filterValues, $countries);
-    }
-    if (!empty($exCountries)) {
-        $ph = implode(',', array_fill(0, count($exCountries), '?'));
-        $filterConditions .= " AND NOT EXISTS (
-            SELECT 1 FROM beatmap_creators bc
-            JOIN mappernames mn ON bc.CreatorID = mn.UserID
-            WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($ph)
-        )";
-        $filterTypes .= str_repeat('s', count($exCountries));
-        $filterValues = array_merge($filterValues, $exCountries);
-    }
-
-    if (!empty($statuses)) {
-        $ph = implode(',', array_fill(0, count($statuses), '?'));
-        $filterConditions .= " AND b.Status IN ($ph)";
-        $filterTypes .= str_repeat('i', count($statuses));
-        $filterValues = array_merge($filterValues, $statuses);
-    }
-    if (!empty($exStatuses)) {
-        $ph = implode(',', array_fill(0, count($exStatuses), '?'));
-        $filterConditions .= " AND b.Status NOT IN ($ph)";
-        $filterTypes .= str_repeat('i', count($exStatuses));
-        $filterValues = array_merge($filterValues, $exStatuses);
-    }
-
-    if (!empty($descriptors)) {
-        $clauses = [];
-        foreach ($descriptors as $dId) {
-            $clauses[]= "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $dId;
-        }
-        $filterConditions .= " AND (" . implode(" AND ", $clauses) . ")";
-    }
-    if (!empty($exDescriptors)) {
-        $clauses = [];
-        foreach ($exDescriptors as $dId) {
-            $clauses[] = "NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $dId;
-        }
-        $filterConditions .= " AND (" . implode(" AND ", $clauses) . ")";
-    }
-
-    foreach ($srFilters as $cond) {
-        $filterConditions .= " AND $cond";
-    }
+    $filterConditions .= $filter['sql'];
+    $filterTypes .= $filter['types'];
+    $filterValues = array_merge($filterValues, $filter['values']);
 
     if ($tagArgument !== '') {
         $baseTable = "`rating_tags` rt

@@ -3,34 +3,19 @@
 
     require "../../base.php";
     require '../../header.php';
-    
+
+    $profileId = GetIntParam('id', null, "Invalid page bro");
+    $page = GetIntParam('p', 1, "Invalid page bro");
     $order = $_GET['o'] ?? "0";
     $rating = $_GET['r'] ?? "";
+    $year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
     $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
 
     $tokensRaw = json_decode(urldecode($_GET['tokens'] ?? '[]'), true);
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-
-    $genres = $parsedTokens['genres'];
-    $exGenres = $parsedTokens['exGenres'];
-    $languages = $parsedTokens['languages'];
-    $exLanguages = $parsedTokens['exLanguages'];
-    $countries = $parsedTokens['countries'];
-    $exCountries = $parsedTokens['exCountries'];
-    $statuses = $parsedTokens['statuses'];
-    $exStatuses = $parsedTokens['exStatuses'];
-    $descriptors = $parsedTokens['descriptors'];
-    $exDescriptors = $parsedTokens['exDescriptors'];
-
-    $srFilters = array_map(function($cond) {
-        return " AND " . $cond;
-    }, $parsedTokens['srFilters']);
-	
-	$profileId = GetIntParam('id', null, "Invalid page bro");
-	$page = GetIntParam('p', 1, "Invalid page bro");
-	$year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
+    $filter = buildBeatmapFilterSQL($parsedTokens);
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
@@ -72,91 +57,14 @@
         $filterValues[] = intval($year);
     }
 
-    if (!empty($genres)) {
-        $placeholders = implode(',', array_fill(0, count($genres), '?'));
-        $filterConditions .= " AND s.Genre IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($genres));
-        $filterValues = array_merge($filterValues, $genres);
-    }
-
-    if (!empty($languages)) {
-        $placeholders = implode(',', array_fill(0, count($languages), '?'));
-        $filterConditions .= " AND s.Lang IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($languages));
-        $filterValues = array_merge($filterValues, $languages);
-    }
-
-    if (!empty($countries)) {
-        $placeholders = implode(',', array_fill(0, count($countries), '?'));
-        $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders))";
-        $filterTypes .= str_repeat('s', count($countries));
-        $filterValues = array_merge($filterValues, $countries);
-    }
-
-    if (!empty($statuses)) {
-        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
-        $filterConditions .= " AND b.Status IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($statuses));
-        $filterValues = array_merge($filterValues, $statuses);
-    }
-
-    if (!empty($descriptors)) {
-        $descriptorClauses = [];
-        foreach ($descriptors as $descriptorId) {
-            $descriptorClauses[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $descriptorId;
-        }
-        $filterConditions .= " AND (" . implode(" AND ", $descriptorClauses) . ")";
-    }
-
-    if (!empty($exGenres)) {
-        $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
-        $filterConditions .= " AND s.Genre NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exGenres));
-        $filterValues = array_merge($filterValues, $exGenres);
-    }
-
-    if (!empty($exLanguages)) {
-        $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
-        $filterConditions .= " AND s.Lang NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exLanguages));
-        $filterValues = array_merge($filterValues, $exLanguages);
-    }
-
-    if (!empty($exCountries)) {
-        $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
-        $filterConditions .= " AND NOT EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders))";
-        $filterTypes .= str_repeat('s', count($exCountries));
-        $filterValues = array_merge($filterValues, $exCountries);
-    }
-
-    if (!empty($exStatuses)) {
-        $placeholders = implode(',', array_fill(0, count($exStatuses), '?'));
-        $filterConditions .= " AND b.Status NOT IN ($placeholders)";
-        $filterTypes .= str_repeat('i', count($exStatuses));
-        $filterValues = array_merge($filterValues, $exStatuses);
-    }
-
-    if (!empty($exDescriptors)) {
-        $exDescriptorClauses = [];
-        foreach ($exDescriptors as $descriptorId) {
-            $exDescriptorClauses[] = "NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $filterTypes .= "i";
-            $filterValues[] = $descriptorId;
-        }
-        $filterConditions .= " AND (" . implode(" AND ", $exDescriptorClauses) . ")";
-    }
-
-    if (!empty($srFilters)) {
-        $filterConditions .= implode("", $srFilters);
-    }
+    $filterConditions .= $filter['sql'];
+    $filterTypes .= $filter['types'];
+    $filterValues = array_merge($filterValues, $filter['values']);
 
     if ($tagArgument != "") {
-        // Change the foundation to rating_tags so we can include unrated maps
         $baseTable = "`rating_tags` rt 
-                      JOIN `beatmaps` b ON rt.BeatmapID = b.BeatmapID 
-                      LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = rt.UserID";
+                    JOIN `beatmaps` b ON rt.BeatmapID = b.BeatmapID 
+                    LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = rt.UserID";
         $userCondition = "rt.UserID = ?";
         $filterConditions .= " AND rt.Tag = ?";
         $filterTypes .= "s";
@@ -166,10 +74,10 @@
     $hideBlacklistedMapsCondition = $isSelf ? "" : "AND b.Blacklisted = 0";
 
     $countSql = "SELECT COUNT(*)
-                 FROM {$baseTable}
-                 LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                 {$filterJoins}
-                 WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}";
+        FROM {$baseTable}
+        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
+        {$filterJoins}
+        WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}";
     $stmt = $conn->prepare($countSql);
     $countTypes = "ii" . $filterTypes;
     $countValues = array_merge(array($profileId, $mode), $filterValues);
@@ -198,7 +106,7 @@
         'showTag' => true,
         'categories' => ['status', 'descriptor', 'genre', 'language', 'country'] 
     ];
-    require "../../functions/filter.php";
+    require "../../functions/filter/index.php";
 ?><br>
 
 <div id="ratings-list">

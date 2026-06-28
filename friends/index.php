@@ -49,7 +49,7 @@
                 'sortOptions' => [],
                 'categories' => ['genre', 'language', 'country', 'descriptor', 'status'],
             ];
-            require "../functions/filter.php";
+            require "../functions/filter/index.php";
         ?>
 
         <hr>
