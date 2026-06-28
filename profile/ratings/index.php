@@ -3,7 +3,6 @@
 
     require "../../base.php";
     require '../../header.php';
-
     
     $order = $_GET['o'] ?? "0";
     $rating = $_GET['r'] ?? "";
@@ -312,13 +311,11 @@
         };
     }
 
-    function changePage(page) {
-        if (page < 1) page = 1;
+    function buildRatingsParams(page) {
         var payload = window.getOmdbFilterPayload();
-        
-        var params = new URLSearchParams();
+        var params  = new URLSearchParams();
         params.set('id', <?php echo $profileId; ?>);
-        params.set('p', page);
+        params.set('p',  page);
         if (payload.rating)
             params.set('r', payload.rating);
         if (payload.order)
@@ -327,43 +324,49 @@
             params.set('t', payload.tag);
         if (payload.year)
             params.set('y', payload.year);
-        if (payload.sr)
-            params.set('sr', payload.sr);
         if (payload.tokens && payload.tokens.length > 0)
             params.set('tokens', JSON.stringify(payload.tokens));
-        var url = "?" + params.toString();
-        history.replaceState(null, '', url);
-        
-        var container = document.getElementById('ratings-list');
-        container.style.opacity = '0.5';
-
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(this.responseText, "text/html");
-                var newContent = doc.getElementById('ratings-list');
-                
-                if (newContent) {
-                    container.innerHTML = newContent.innerHTML;
-                    container.style.opacity = '1';
-                } else {
-                    // Fallback if parsing fails
-                    location.reload();
-                }
-            }
+        return params;
+    }
+    
+    function loadRatings(page) {
+        var params = buildRatingsParams(page);
+        history.replaceState(null, '', '?' + params.toString());
+    
+        var $list = $('#ratings-list');
+        $list.css('opacity', 0.5);
+    
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (this.readyState !== 4 || this.status !== 200)
+                return;
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(this.responseText, 'text/html');
+            var newDiv = doc.getElementById('ratings-list');
+            if (newDiv)
+                $list.replaceWith(newDiv);
+            else
+                location.reload();
+            $('#ratings-list').css('opacity', 1);
         };
-
-        xmlhttp.open("GET", url, true);
-        xmlhttp.send();
+    
+        xhr.open('POST', 'RatingsListing.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(params.toString());
     }
 
-    const debouncedChangePage = debounce(function() {
-        changePage(1);
+    function changePage(page) {
+        if (page < 1)
+            page = 1;
+        loadRatings(page);
+    }
+    
+    const debouncedLoadRatings = debounce(function() {
+        loadRatings(1);
     }, 100);
-
+    
     $(document).on('omdbFiltersSubmitted', function() {
-        debouncedChangePage();
+        debouncedLoadRatings();
     });
 </script>
 

@@ -874,16 +874,6 @@
 </div>
 
 <script>
-    function debounce(func, delay) {
-        let timeoutId;
-        return function (...args) {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                func.apply(this, args);
-            }, delay);
-        };
-    }
-
     var coll = document.getElementsByClassName("profile-top-map");
 
     for (let i = 0; i < coll.length; i++) {
@@ -991,7 +981,7 @@
             }
         });
 
-        function debouncedUpdateProfile(payload) {
+        $(document).on('omdbFiltersSubmitted', function(event, payload) {
             var params = new URLSearchParams();
             if (payload.year)
                 params.set('y', payload.year);
@@ -1004,36 +994,30 @@
 
             var url = '?' + params.toString();
             history.replaceState(null, '', url);
-
-            var container = document.getElementById('maps-container');
-            if (container) {
-                container.style.opacity = '0.5';
-            }
-
-            $('#maps-container').css('opacity', 0.5);
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
+        
+            var $beatmaps = $('#beatmaps');
+            $beatmaps.css('opacity', 0.5);
+        
+            params.set('id', <?php echo $profileId; ?>);
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
                     var parser = new DOMParser();
                     var doc = parser.parseFromString(this.responseText, "text/html");
-                    var newContent = doc.getElementById('maps-container');
-                    
-                    if (newContent && container) {
-                        container.innerHTML = newContent.innerHTML;
-                        container.style.opacity = '1';
+                    var newContent = doc.getElementById('beatmaps');
+                    if (newContent) {
+                        $beatmaps.replaceWith(newContent);
+                        attachCollapseHandlers();
+                        relevanceCheck();
                     } else {
-                        // Fallback if parsing fails
                         location.reload();
                     }
+                    $('#beatmaps').css('opacity', 1);
                 }
             };
-
-            xmlhttp.open("GET", url, true);
-            xmlhttp.send();
-        }
-
-        $(document).on('omdbFiltersSubmitted', function(event, payload) {
-            debouncedUpdateProfile(payload);
+            xhr.open('POST', 'MapsListing.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send(params.toString());
         });
     });
 </script>
