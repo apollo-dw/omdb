@@ -302,7 +302,7 @@
         }
 
         $('#filter-order').val(urlParams.get('o') || "1");
-        $('#filter-year').val("<?php echo isset($year) ? $year : 2026; ?>");
+        $('#filter-year').val("<?php echo isset($year) ? $year : 'all-time'; ?>");
         $('#filter-rating').val(urlParams.get('r') || "");
         $('#filter-sr').val(urlParams.get('sr') || "");
         $('#filter-tag').val(urlParams.get('t') || "");

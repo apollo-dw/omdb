@@ -1,93 +1,18 @@
 <?php
     $PageTitle = "Ratings";
-
     require "../../base.php";
     require '../../header.php';
 
     $profileId = GetIntParam('id', null, "Invalid page bro");
-    $page = GetIntParam('p', 1, "Invalid page bro");
-    $order = $_GET['o'] ?? "0";
-    $rating = $_GET['r'] ?? "";
-    $year = ($_GET['y'] ?? "all-time") === "all-time" ? "all-time" : GetIntParam('y', null, "Invalid page bro");
-    $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
-
-    $tokensRaw = json_decode(urldecode($_GET['tokens'] ?? '[]'), true);
-    if (!is_array($tokensRaw)) $tokensRaw = [];
-
-    $parsedTokens = parseFilterTokens($tokensRaw);
-    $filter = buildBeatmapFilterSQL($parsedTokens);
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $profile = $result->fetch_assoc();
+    $profile = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $isUser = true;
 
     if ($profile == NULL)
         die("Can't view this bros friends cuz they aint an OMDB user");
-	
-	$isSelf = false;
-	if ($loggedIn)
-		$isSelf = $profileId == $userId;
-
-	$limit = 25;
-	$prevPage = $page - 1;
-	$nextPage = $page + 1;
-
-    // Filter Building <3
-    $filterJoins = "";
-    $filterConditions = "";
-    $filterTypes = "";
-    $filterValues = array();
-
-    $baseTable = "`ratings` r JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID";
-    $userCondition = "r.UserID = ?";
-
-    if ($rating != "") {
-        $filterConditions .= " AND r.Score = ?";
-        $filterTypes .= "d";
-        $filterValues[] = floatval($rating);
-    }
-
-    if ($year != "all-time") {
-        $filterConditions .= " AND YEAR(s.DateRanked) = ?";
-        $filterTypes .= "i";
-        $filterValues[] = intval($year);
-    }
-
-    $filterConditions .= $filter['sql'];
-    $filterTypes .= $filter['types'];
-    $filterValues = array_merge($filterValues, $filter['values']);
-
-    if ($tagArgument != "") {
-        $baseTable = "`rating_tags` rt 
-                    JOIN `beatmaps` b ON rt.BeatmapID = b.BeatmapID 
-                    LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = rt.UserID";
-        $userCondition = "rt.UserID = ?";
-        $filterConditions .= " AND rt.Tag = ?";
-        $filterTypes .= "s";
-        $filterValues[] = $tagArgument;
-    }
-
-    $hideBlacklistedMapsCondition = $isSelf ? "" : "AND b.Blacklisted = 0";
-
-    $countSql = "SELECT COUNT(*)
-        FROM {$baseTable}
-        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-        {$filterJoins}
-        WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}";
-    $stmt = $conn->prepare($countSql);
-    $countTypes = "ii" . $filterTypes;
-    $countValues = array_merge(array($profileId, $mode), $filterValues);
-    $stmt->bind_param($countTypes, ...$countValues);
-    $stmt->execute();
-    $stmt->bind_result($count);
-    $stmt->fetch();
-    $stmt->close();
-
-    $amntOfPages = floor($count / $limit) + 1;
 ?>
 
 <center><h1><a href="/profile/<?php echo safe_htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s ratings</h1></center>
@@ -109,104 +34,7 @@
     require "../../functions/filter/index.php";
 ?><br>
 
-<div id="ratings-list">
-    <div style="text-align:center;">
-        <div class="pagination">
-            <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
-            <span id="page"><?php echo $page; ?></span>
-            <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
-        </div>
-    </div>
-
-    <div class="flex-container">
-        <div class="flex-child" style="width:100%;">
-            <?php
-                $pageString = "LIMIT {$limit}";
-
-                if ($page > 1) {
-                    $lower = ($page - 1) * $limit;
-                    $pageString = "LIMIT {$lower}, {$limit}";
-                }
-
-                $queryParameterTypes = "ii" . $filterTypes;
-                $queryParameterValues = array_merge(array($profileId, $mode), $filterValues);
-
-                switch($order) {
-                    case "2":
-                        $orderString = "ORDER BY r.DATE ASC";
-                        break;
-                    case "3":
-                        $orderString = "ORDER BY r.SCORE DESC, r.DATE ASC";
-                        break;
-                    case "4":
-                        $orderString = "ORDER BY r.SCORE ASC, r.DATE ASC";
-                        break;
-                    case "1":
-                    default:
-                        $orderString = "ORDER BY r.DATE DESC";
-                }
-
-                $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted, b.BeatmapID
-                        FROM {$baseTable}
-                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                        {$filterJoins}
-                        WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}
-                        {$orderString} {$pageString};";
-
-                $stmt = $conn->prepare($stmt);
-
-                $stmt->bind_param($queryParameterTypes, ...$queryParameterValues);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                while ($row = $result->fetch_assoc()) {
-                    $stmt2 = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS Tags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?;");
-                    $stmt2->bind_param('ii', $profileId, $row["BeatmapID"]);
-                    $stmt2->execute();
-                    $tags = $stmt2->get_result()->fetch_assoc()["Tags"];
-                    $tags = safe_htmlspecialchars($tags ?? "", ENT_QUOTES, "ISO-8859-1");
-            ?>
-                <div class="flex-container ratingContainer alternating-bg">
-                    <div class="flex-child">
-                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../assets/img/missing-map-thumbnail.png';"></a>
-                    </div>
-                    <div class="flex-child" style="flex:0 0 60%;">
-                        <?php echo isset($row["Score"]) ? RenderUserRating($conn, $row) . " on" : ""; ?> <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
-                        <br> <span class="subText"><?php echo $tags; ?></span>
-                    </div>
-                    <div class="flex-child" style="width:100%;text-align:right;">
-                        <?php if ($row["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
-                        <?php echo isset($row["date"]) ? GetHumanTime($row["date"]) : ""; ?>
-                    </div>
-                </div>
-            <?php
-                    $stmt2->close();
-                }
-                $stmt->close();
-            ?>
-        </div>
-    </div>
-
-    <div style="text-align:center;">
-        <div class="pagination">
-            <b><span>
-                <?php
-                    if($page > 1) {
-                        echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>";
-                    }
-                ?>
-            </span></b>
-            <span id="page"><?php echo $page; ?></span>
-            <b><span>
-                <?php
-                    if($page < $amntOfPages) {
-                        echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>";
-                    }
-                ?>
-            </span></b>
-        </div>
-    </div>
-</div>
+<?php include 'RatingsListing.php'; ?>
 
 <script>
     function debounce(func, delay) {

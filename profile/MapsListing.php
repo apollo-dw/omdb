@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    include_once '../base.php';
 
     $profileId = (int)(postOrGet('id', -1));
 
