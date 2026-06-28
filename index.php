@@ -50,6 +50,11 @@
 					WHERE b.Mode = ? 
 					  AND b.blacklisted = 0 
 					  AND u.HideRatings = 0
+                      AND NOT EXISTS (
+                        SELECT 1 
+                        FROM user_relations ur 
+                        WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                    )
 					  AND (
 						  (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
 						  OR r.UserID IN (
@@ -62,7 +67,7 @@
 					ORDER BY r.date DESC 
 					LIMIT 100
 				");
-				$stmt->bind_param("iiii", $mode, $userId, $userId, $userId);
+				$stmt->bind_param("iiiii", $mode, $userId, $userId, $userId, $userId);
 			} else {
 				$stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
@@ -159,7 +164,11 @@
                 FROM descriptor_proposal_comments dpc
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
                 LEFT JOIN mappernames m ON m.UserID = dpc.UserID
-                WHERE 1
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations r 
+                    WHERE dpc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                )
             )
             UNION ALL
             (
@@ -190,7 +199,7 @@
             ORDER BY date DESC
             LIMIT 40; ");
 
-        $stmt->bind_param("iiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
+        $stmt->bind_param("iiiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
         $result = $stmt->get_result();
 
