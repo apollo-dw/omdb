@@ -569,12 +569,17 @@
                         const treeHTML = buildTree(null, 0);
                         const $treeContainer = $(`<div>${treeHTML}</div>`);
                         
-                        $treeContainer.find('.popover-item').on('click', function(e) {
+                        $treeContainer.find('.popover-item').attr('title', 'Left-click to include, Right-click to exclude');
+                        $treeContainer.find('.popover-item').on('click contextmenu', function(e) {
+                            e.preventDefault(); 
                             e.stopPropagation();
+                            
+                            const isExclude = e.type === 'contextmenu';
                             const id = $(this).data('id');
                             const item = allDescriptors.find(d => d.id == id);
+                            
                             if (item && item.usable) {
-                                pushToken(item, false);
+                                pushToken(item, isExclude);
                                 $input.val('');
                                 $popover.hide();
                                 renderChips();
@@ -588,10 +593,14 @@
                         addedSomething = true;
                         $popover.append(`<div class="popover-category-header">${catNames[cat]}</div>`);
                         groups[cat].forEach(item => {
-                            const $el = $(`<div class="popover-item">${item.name}</div>`);
-                            $el.on('click', function(e) {
+                            const $el = $(`<div class="popover-item" title="Left-click to include, Right-click to exclude">${item.name}</div>`);
+                            $el.on('click contextmenu', function(e) {
+                                e.preventDefault();
                                 e.stopPropagation();
-                                pushToken(item, false);
+                                
+                                const isExclude = e.type === 'contextmenu';
+                                
+                                pushToken(item, isExclude);
                                 $input.val('');
                                 $popover.hide();
                                 renderChips();
