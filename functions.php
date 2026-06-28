@@ -873,23 +873,17 @@
 				s.Title,
 				b.DifficultyName,
 				s.DateRanked,
-				ROUND(ratings.WeightedAvg, 2) AS WeightedAvg,
-				COALESCE(ratings.RatingCount, 0) AS RatingCount,
+				ROUND(SUM(r.Score * u.Weight) / SUM(u.Weight), 2) AS WeightedAvg,
+				COUNT(r.BeatmapID) AS RatingCount,
 				b.ChartRank,
 				b.ChartYearRank
 			FROM cache c
 			JOIN beatmaps b ON c.Value = b.BeatmapID
 			JOIN beatmapsets s ON b.SetID = s.SetID
-			LEFT JOIN (
-				SELECT
-					r.BeatmapID,
-					COUNT(*) AS RatingCount,
-					SUM(r.Score * u.Weight) / SUM(u.Weight) AS WeightedAvg
-				FROM ratings r
-				JOIN users u ON r.UserID = u.UserID
-				GROUP BY r.BeatmapID
-			) ratings ON ratings.BeatmapID = b.BeatmapID
+			LEFT JOIN ratings r ON r.BeatmapID = b.BeatmapID
+			LEFT JOIN users u ON r.UserID = u.UserID
 			WHERE c.Attribute = ?
+			GROUP BY b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.ChartRank, b.ChartYearRank
 		");
 
 		$stmt->bind_param("s", $cacheKey);
@@ -899,10 +893,8 @@
 
 		$stmt->close();
 
-		if ($motd) {
-			$motd['WeightedAvg'] = $motd['WeightedAvg'] !== null
-				? number_format((float)$motd['WeightedAvg'], 2)
-				: null;
+		if ($motd && $motd['WeightedAvg'] !== null) {
+			$motd['WeightedAvg'] = number_format((float)$motd['WeightedAvg'], 2);
 		}
 
 		return $motd ?: null;
