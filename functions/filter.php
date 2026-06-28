@@ -176,7 +176,7 @@
         <div class="filter-section flex-row-container">
             <?php if ($filterConfig['showRating']): ?>
                 <select id="filter-rating">
-                    <option value="">All Scores</option>
+                    <option value="">All Ratings</option>
                     <?php for ($i = 0; $i <= 5; $i += 0.5): ?>
                         <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                     <?php endfor; ?>
@@ -463,7 +463,7 @@
                 const bg = tok.exclude ? '#402020' : 'DarkSlateGrey';
                 const border = tok.exclude ? '#ff6666' : 'white';
                 
-                let prefix = tok.exclude ? '<b>NOT</b> ' : '';
+                let prefix = tok.exclude ? '<b>Exclude</b> ' : '<b>Only</b> ';
                 let displayText = tok.name;
 
                 if (tok.type === 'meta') {
