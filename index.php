@@ -120,108 +120,77 @@
 		?>
 	</div>
     <div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
-        <?php
+    <?php
+        $onlyFriends = 0;
         if ($userId !== -1) {
-            // Logged-in user: apply OnlyFriendsOnFrontPage logic
-            $stmt = $conn->prepare("
-                (
-                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM comments c
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations r 
-                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = c.SetID AND b.Mode = ?
-                    )
-                    AND (
-                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                        OR c.UserID IN (
-                            SELECT UserIDTo
-                            FROM user_relations
-                            WHERE UserIDFrom = ? AND type = 1
-                        )
-                        OR c.UserID = ?
-                    )
-                )
-                UNION ALL
-                (
-                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-                    FROM descriptor_proposal_comments dpc
-                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-                    WHERE 1
-                )
-                UNION ALL
-                (
-                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM reviews r
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations ur 
-                        WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = r.SetID AND b.Mode = ?
-                    )
-                    AND (
-                        (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                        OR r.UserID IN (
-                            SELECT UserIDTo
-                            FROM user_relations
-                            WHERE UserIDFrom = ? AND type = 1
-                        )
-                        OR r.UserID = ?
-                    )
-                )
-                ORDER BY date DESC
-                LIMIT 40;
-            ");
-            $stmt->bind_param("iiiiiiiiii", $userId, $mode, $userId, $userId, $userId, $userId, $mode, $userId, $userId, $userId);
-        } else {
-            // Logged-out user: skip OnlyFriendsOnFrontPage logic
-            $stmt = $conn->prepare("
-                (
-                    SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM comments c
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations r 
-                        WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
-                    )
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = c.SetID AND b.Mode = ?
-                    )
-                )
-                UNION ALL
-                (
-                    SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID
-                    FROM descriptor_proposal_comments dpc
-                    LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
-                    WHERE 1
-                )
-                UNION ALL
-                (
-                    SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID
-                    FROM reviews r
-                    WHERE EXISTS (
-                        SELECT 1
-                        FROM beatmaps b
-                        WHERE b.SetID = r.SetID AND b.Mode = ?
-                    )
-                )
-                ORDER BY date DESC
-                LIMIT 40;
-            ");
-            $stmt->bind_param("iii", $userId, $mode, $mode);
+            $stmt = $conn->prepare("SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID=?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $onlyFriends = (int)$stmt->get_result()->fetch_row()[0];
+            $stmt->close();
         }
 
+        $stmt = $conn->prepare("
+            (
+                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                FROM comments c
+                JOIN beatmapsets bs ON bs.SetID = c.SetID
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations r 
+                    WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM beatmaps b
+                    WHERE b.SetID = c.SetID AND b.Mode = ?
+                )
+                AND (
+                    ? = 0
+                    OR c.UserID IN (
+                        SELECT UserIDTo
+                        FROM user_relations
+                        WHERE UserIDFrom = ? AND type = 1
+                    )
+                    OR c.UserID = ?
+                )
+            )
+            UNION ALL
+            (
+                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title
+                FROM descriptor_proposal_comments dpc
+                LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                WHERE 1
+            )
+            UNION ALL
+            (
+                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                FROM reviews r
+                JOIN beatmapsets bs ON bs.SetID = r.SetID
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations ur 
+                    WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM beatmaps b
+                    WHERE b.SetID = r.SetID AND b.Mode = ?
+                )
+                AND (
+                    ? = 0
+                    OR r.UserID IN (
+                        SELECT UserIDTo
+                        FROM user_relations
+                        WHERE UserIDFrom = ? AND type = 1
+                    )
+                    OR r.UserID = ?
+                )
+            )
+            ORDER BY date DESC
+            LIMIT 40;");
+
+        $stmt->bind_param("iiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -229,14 +198,6 @@
             $linkID = $row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review'
                 ? "/mapset/{$row["SetID"]}"
                 : "/descriptor/proposal/?id={$row["ProposalID"]}";
-
-            if ($row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review') {
-                $stmt = $conn->prepare("SELECT * FROM `beatmapsets` WHERE `SetID` = ?;");
-                $stmt->bind_param("i", $row["SetID"]);
-                $stmt->execute();
-                $beatmapset = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
-            }
         ?>
             <div class="flex-container ratingContainer alternating-bg">
                 <div class="flex-child" style="margin-left:0.5em;">
@@ -266,7 +227,7 @@
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
                                 on <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?> descriptor</a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
-                                reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($beatmapset["Artist"] . " - " . $beatmapset["Title"], ENT_QUOTES); ?></a>
+                                reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Artist"] . " - " . $row["Title"], ENT_QUOTES); ?></a>
                             <?php } ?>
                         </span>
                     </div>
