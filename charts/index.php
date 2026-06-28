@@ -1,30 +1,19 @@
 <?php
     $PageTitle = "Charts";
-	require "../base.php";
-    require '../header.php';
+    require "../base.php";
+    require "../header.php";
 
     $year = ($_GET["y"] ?? "") === "all-time" ? "all-time" : GetIntParam("y", 2026, "NOO");
-    $page = GetIntParam('p', 1, "NOO");
-    $yearString = $year == "all-time" ? 'All Time' : $year;
+    $page = GetIntParam("p", 1, "NOO");
+    $yearString = $year == "all-time" ? "All Time" : $year;
 
-    $result = $conn->query("SELECT DescriptorID, Name FROM descriptors WHERE Usable = 1");
-    $descriptors = $result->fetch_all(MYSQLI_ASSOC);
-
-    $requestedDescriptors = isset($_GET['descriptors']) ? explode(',', $_GET['descriptors']) : [];
-    foreach ($descriptors as $descriptor) {
-        if (in_array($descriptor['Name'], $requestedDescriptors)) {
-            $selectedDescriptors[] = ['id' => $descriptor['DescriptorID'], 'name' => $descriptor['Name']];
-        }
-    }
-
+    // Notice we removed descriptor preprocessing here. chart.php parses it cleaner.
     function generateTreeHTML($tree) {
         $html = '<ul>';
         foreach ($tree as $node) {
             $descriptorID = $node['descriptorID'];
             $isUsable = $node['Usable'];
-
             $class = $isUsable ? '' : 'class="unusable"';
-
             $html .= '<li class="descriptor" data-descriptor-id="' . $descriptorID . '"><span ' . $class . ' >' . $node['name'] . '</span>';
             if (isset($node['children'])) {
                 $html .= generateTreeHTML($node['children']);
@@ -50,7 +39,7 @@
     }
 ?>
 
-<h1 id="heading"><?php echo 'Highest Rated Maps of ' . safe_htmlspecialchars($yearString, ENT_QUOTES, 'UTF-8'); ?></h1>
+<h1 id="heading"><?php echo "Highest Rated Maps of " . safe_htmlspecialchars($yearString, ENT_QUOTES, "UTF-8"); ?></h1>
 
 <div style="text-align:left;">
     <div class="pagination">
@@ -62,190 +51,25 @@
     </div>
 </div>
 
-
 <div class="flex-container">
 	<div id="chart-container" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
-		<?php
-			include 'chart.php';
-		?>
+		<?php include 'chart.php'; ?>
 	</div>
 
 	<div style="padding-top:0.5em;" class="flex-item">
-		<span>Filters</span>
-		<hr>
-		<form onsubmit="return false">
-			<select name="order" id="order" autocomplete="off" onchange="updateChart();">
-				<option value="1" selected="selected">Highest Rated</option>
-				<option value="2">Lowest Rated</option>
-                <option value="3">Most Rated</option>
-                <option value="4">Most Controversial</option>
-                <option value="5">Most Underrated</option>
-			</select> maps of
-			<select name="year" id="year" autocomplete="off" onchange="updateChart();">
-                <?php
-                    echo '<option value="all-time"';
-                    if ($year == -1) {
-                        echo ' selected="selected"';
-                    }
-                    echo '>All Time</option>';
-
-                    for ($i = 2007; $i <= date('Y'); $i++) {
-                        echo '<option value="' . $i . '"';
-                        if ($year == $i) {
-                            echo ' selected="selected"';
-                        }
-                        echo '>' . $i . '</option>';
-                    }
-                ?>
-			</select><br><br>
-            <label>Genre:</label>
-            <select name="genre" id="genre" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-                    for ($i = 1; $i <= 14; $i++) {
-                        $genre = getGenre($i);
-                        if (is_null($genre))
-                            continue;
-
-                        echo "<option value='{$i}'>$genre</option>";
-                    }
-                ?>
-            </select><br>
-            <label>Language:</label>
-            <select name="language" id="language" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-                for ($i = 1; $i <= 14; $i++) {
-                    $language = getLanguage($i);
-                    if (is_null($language))
-                        continue;
-
-                    echo "<option value='{$i}'>$language</option>";
-                }
-                ?>
-            </select><br>
-
-            <label>Country:</label>
-            <select name="country" id="country" autocomplete="off" onchange="updateChart();">
-                <option value="0" selected="selected">Any</option>
-                <?php
-			
-                $result = $conn->query("SELECT DISTINCT Country FROM mappernames WHERE Username IS NOT NULL AND Country IS NOT NULL;");
-
-                while ($row = $result->fetch_assoc()) {
-                    $countryCode = $row["Country"];
-                    $fullName = getFullCountryName($countryCode);
-                    $options[] = array('code' => $countryCode, 'name' => $fullName);
-                }
-
-                usort($options, function($a, $b) {
-                    return strcmp($a['name'], $b['name']);
-                });
-
-                foreach ($options as $option) {
-					if (is_null($option['name']))
-						continue;
-					
-                    echo "<option value=\"{$option['code']}\">{$option['name']}</option>";
-                }
-                ?>
-            </select>
-            <br><br>
-
-            <style>
-                .popover {
-                    display: none;
-                    position: absolute;
-                    background-color: darkslategray;
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                    z-index: 1000;
-                    font-size: 12px;
-                    overflow-y: auto;
-                    max-height: 30em;
-                    margin: 0.5em;
-                }
-
-                .popover ul {
-                    padding: 0;
-                    margin: 0;
-                }
-
-                .popover ul li {
-                    margin-left: 1em;
-                }
-
-                .descriptor span{
-                    cursor: pointer;
-                    color: white;
-                }
-
-                .descriptor span:hover{
-                    text-decoration: underline;
-                }
-
-                .unusable {
-                    color: grey !important;
-                    cursor: revert !important;
-                }
-
-                .unusable:hover {
-                    text-decoration: none !important;
-                }
-
-                .descriptor-item {
-                    padding: 0.5em;
-                    margin: 0.25em;
-                    box-sizing: border-box;
-                    background-color: DarkSlateGrey;
-                    cursor: pointer;
-                }
-
-                .descriptor-item:hover {
-                    background-color: #203838;
-                }
-            </style>
-
-            <label for="descriptor-input">Descriptors:</label><br>
-            <input type="text" id="searchInput" placeholder="Search...">
-            <div id="descriptorTreePopover" class="popover">
-                <?php
-                $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $descriptors = $result->fetch_all(MYSQLI_ASSOC);
-
-                $tree = buildTree($descriptors);
-                echo generateTreeHTML($tree);
-                ?>
-            </div>
-            <div id="current-descriptors" class="flex-row-container"></div>
-            <br>
-
-            <?php if ($loggedIn) { ?>
-            <input type="checkbox" id="hideRated" name="hideRated" onchange="updateChart();">
-            <label for="hideRated">Hide already rated maps</label>
-            <br>
-            <input type="checkbox" id="friends" name="friends" onchange="updateChart();">
-            <label for="friends">Only include friend ratings<br></label>
-            <?php } ?> <br>
-
-            Exclude: <br>
-            <input type="checkbox" id="excludeLoved" name="excludeLoved" onchange="updateChart();">
-            <label for="excludeLoved">Loved maps</label> <br>
-            <input type="checkbox" id="excludeGraveyard" name="excludeGraveyard" onchange="updateChart();">
-            <label for="excludeGraveyard">Graveyard maps</label> <br>
-			<input type="checkbox" id="excludeRanked" name="excludeRanked" onchange="updateChart();">
-            <label for="excludeRanked">Ranked maps</label>
-
-        </form><br><br>
+        <?php
+            $filterConfig = [
+                'defaultYear' => $year
+            ];
+            require "../functions/filter/index.php";
+        ?>
+        <br><br>
 		<span>Info</span>
 		<hr>
 		The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
 		The next update will happen in <span id="updateText">---</span><br><br>
         Ratings are weighed based on user rating quality, one contributing factor being their rating distribution.
 	</div>
-
 </div>
 
     <div style="text-align:left;">
@@ -261,196 +85,85 @@
 <script>
     var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
 
-    var selectedDescriptors = [];
-    <?php foreach ($selectedDescriptors as $descriptor): ?>
-    selectedDescriptors.push({ id: <?php echo (int)$descriptor['id']; ?>, name: <?php echo json_encode($descriptor['name']); ?> });
-    <?php endforeach; ?>
-
-    var genres = {
-        0 : "",
-        2 : "Video Game",
-        3 : "Anime",
-        4 : "Rock",
-        5 : "Pop",
-        6 : "Other Genre",
-        7 : "Novelty",
-        9 : "Hip Hop",
-        10 : "Electronic",
-        11 : "Metal",
-        12 : "Classical",
-        13 : "Folk",
-        14 : "Jazz",
-    }
-
-    var languages = {
-        0: "",
-        2: "English",
-        3: "Japanese",
-        4: "Chinese",
-        5: "Instrumental",
-        6: "Korean",
-        7: "French",
-        8: "German",
-        9: "Swedish",
-        10: "Spanish",
-        11: "Italian",
-        12: "Russian",
-        13: "Polish",
-        14: "Other Language"
+    var orderLabels = {
+        "1": "Highest Rated ",
+        "2": "Lowest Rated ",
+        "3": "Most Rated ",
+        "4": "Most Controversial ",
+        "5": "Most Underrated "
     };
 
-    $(document).ready(function() {
-        updateCurrentDescriptors();
+    var currentPayload = null;
 
-        $('#searchInput').on('focus', function () {
-            $('#descriptorTreePopover').show();
+    function changePage(newPage) {
+        var nextPage = parseInt(newPage, 10);
+        page = Math.max(Math.min(nextPage, 9), 1);
+        var payload = currentPayload || window.getOmdbFilterPayload();
+        updateChart(payload, page);
+    }
+
+    function resetPaginationDisplay(payload) {
+        $("#chart-container").removeClass("faded");
+        $(".pageLink").removeClass("active");
+        $(".page" + page).addClass("active");
+
+        var year = payload ? String(payload.year) : "all-time";
+        var order = payload ? String(payload.order) : "1";
+        var tokens = payload ? payload.tokens : [];
+
+        var orderString = orderLabels[order] || "Highest Rated ";
+        var genreName = "";
+        var languageName = "";
+
+        tokens.forEach(function(t) {
+            if (t.type === "genre" && !t.exclude) genreName = t.name + " ";
+            if (t.type === "language" && !t.exclude) languageName = t.name + " ";
         });
 
-        $(document).on('click', function (event) {
-            if (!$(event.target).closest('#descriptorTreePopover').length && !$(event.target).is('#searchInput')) {
-                $('#descriptorTreePopover').hide();
-            }
-        });
+        var yearString = (year === "all-time") ? "All Time" : year;
+        $("#heading").html(orderString + languageName + genreName + "Maps of " + yearString);
 
-        $('#searchInput').on('input', function () {
-            const searchKeyword = $(this).val().toLowerCase();
-            console.log(searchKeyword);
-            $('#descriptorTreePopover li').each(function () {
-                const text = $(this).text().toLowerCase();
-                if (text.includes(searchKeyword)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
-        $(document).on("click", ".descriptor", function(event) {
-            if ($(this).find('.unusable').length > 0) {
-                event.stopPropagation();
-                return;
-            }
-
-            var descriptor = $($(this).contents()[0]).text();
-            var descriptorID = $(this).data('descriptor-id');
-            selectedDescriptors.push({ id: descriptorID, name: descriptor });
-            updateCurrentDescriptors();
-            $("#descriptor-input").val("");
-            $("#descriptor-suggestions").empty();
-            updateChart()
-            event.stopPropagation();
-        });
-
-        $(document).on("click", ".descriptor-item", function() {
-            var index = $(this).data("index");
-            selectedDescriptors.splice(index, 1);
-            updateCurrentDescriptors();
-            updateChart()
-        });
-
-        function updateCurrentDescriptors() {
-            $("#current-descriptors").empty();
-            selectedDescriptors.forEach(function(descriptor, index) {
-                $("#current-descriptors").append(
-                    $("<span>").addClass("descriptor-item").text(descriptor.name)
-                );
-            });
-        }
+    $(document).on("omdbFiltersSubmitted", function(event, payload) {
+        currentPayload = payload;
+        page = 1;
+        updateChart(payload, page);
     });
 
-	function changePage(newPage) {
-		var nextPage = parseInt(newPage, 10);
-		page = Math.max(Math.min(nextPage, 9), 1);
-		updateChart();
-	}
-
-	function resetPaginationDisplay() {
-        $("#chart-container").removeClass("faded");
-		$(".pageLink").removeClass("active");
-
-		var pageLink = '.page' + page;
-		$(pageLink).addClass("active");
-
-		var year = document.getElementById("year").value;
-		var order = document.getElementById("order").value;
-        var genre = document.getElementById("genre").value;
-        var language = document.getElementById("language").value;
-
-        var orderString = 'Highest Rated ';
-        if (order == 2)
-            orderString = 'Lowest Rated ';
-        else if (order == 3)
-            orderString = 'Most Rated ';
-        else if (order == 4)
-            orderString = 'Most Controversial ';
-        else if (order == 5)
-            orderString = 'Most Underrated ';
-        var genreString = " " + genres[genre] + "   ";
-        var languageString = " " + languages[language] + "   ";
-        var yearString = year == "all-time" ? 'All Time' : year;
-
-        var descriptorUrlArg = "";
-        if (selectedDescriptors.length > 0) {
-            descriptorUrlArg = "&descriptors=" + selectedDescriptors.map((descriptor) => {
-                return descriptor.name;
-            }).join(',');
-        }
-
-        window.history.replaceState({}, document.title, "?y=" + year + "&p=" + page + descriptorUrlArg);
-
-        $('#heading').html(orderString + languageString + genreString + 'Maps of ' + yearString);
-	    window.scrollTo({top: 0, behavior: 'smooth'});
-	}
-
-	function updateChart() {
+    function updateChart(payload, currentPage) {
         $("#chart-container").addClass("faded");
-		var year = document.getElementById("year").value;
-		var order = document.getElementById("order").value;
-        var genre = document.getElementById("genre").value;
-        var language = document.getElementById("language").value;
-        var country = document.getElementById("country").value;
 
-        var friendsElement = document.getElementById("friends");
-		var onlyFriends = friendsElement ? friendsElement.checked : false;
+        var tokensJSON = encodeTokens(payload.tokens);
 
-        var hideRatedElement = document.getElementById("hideRated");
-        var hideRated = hideRatedElement ? hideRatedElement.checked : false;
+        var urlParams = new URLSearchParams();
+        urlParams.set("y", payload.year);
+        urlParams.set("p", currentPage);
+        urlParams.set("o", payload.order);
+        
+        if (payload.tokens.length > 0) {
+            urlParams.set("tokens", tokensJSON); 
+        }
+        
+        window.history.replaceState({}, document.title, "?" + urlParams.toString());
 
-        var excludeGraveyardElement = document.getElementById("excludeGraveyard");
-        var excludeGraveyard = excludeGraveyardElement ? excludeGraveyardElement.checked : false;
-
-        var excludeLovedElement = document.getElementById("excludeLoved");
-        var excludeLoved = excludeLovedElement ? excludeLovedElement.checked : false;
-		
-		var excludeRankedElement = document.getElementById("excludeRanked");
-        var excludeRanked = excludeRankedElement ? excludeRankedElement.checked : false;
-
-        var descriptorsJSON = JSON.stringify(selectedDescriptors);
-
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange=function() {
-			if (this.readyState==4 && this.status==200) {
-				document.getElementById("chart-container").innerHTML=this.responseText;
-				resetPaginationDisplay();
-			}
-		}
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("chart-container").innerHTML = this.responseText;
+                resetPaginationDisplay(payload);
+            }
+        }
 
         xmlhttp.open("POST", "chart.php", true);
         xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = "y=" + year +
-            "&p=" + page +
-            "&o=" + order +
-            "&g=" + genre +
-            "&l=" + language +
-            "&c=" + country +
-            "&f=" + String(onlyFriends) +
-            "&descriptors=" + encodeURIComponent(descriptorsJSON) +
-            "&alreadyRated=" + String(hideRated) +
-            "&excludeLoved=" + String(excludeLoved) +
-            "&excludeGraveyard=" + String(excludeGraveyard) +
-            "&excludeRanked=" + String(excludeRanked);
+        var params = "y=" + encodeURIComponent(payload.year) +
+            "&p=" + currentPage +
+            "&o=" + encodeURIComponent(payload.order) +
+            "&tokens=" + encodeURIComponent(tokensJSON);
         xmlhttp.send(params);
-	}
+    }
 
     function displayTimeRemaining() {
         const now = new Date();
@@ -461,7 +174,6 @@
         }
 
         const timeRemaining = nextReset.getTime() - now.getTime();
-
         const hoursRemaining = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24);
         const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
         const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
@@ -480,6 +192,4 @@
     setInterval(displayTimeRemaining, 1000);
 </script>
 
-<?php
-    require '../footer.php';
-?>
+<?php require '../footer.php'; ?>

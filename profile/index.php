@@ -1,7 +1,7 @@
 <?php
-	require "../base.php";
+    require "../base.php";
 
-	$profileId = GetIntParam('id', -1, "Invalid page bro");
+    $profileId = GetIntParam('id', -1, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
@@ -9,16 +9,12 @@
     $result = $stmt->get_result();
     $profile = $result->fetch_assoc();
     $stmt->close();
-	$isValidUser = true;
+    $isValidUser = $profile !== NULL;
 
-	if ($profile == NULL)
-		$isValidUser = false;
-
-    $PageTitle = $profile != NULL ? GetUserNameFromId($profileId, $conn) : "Profile";
+    $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
     require '../header.php';
 
-	$ratingCounts = array();
-
+    $ratingCounts = [];
     $isBlacklisted = false;
     if ($isValidUser) {
         $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
@@ -35,14 +31,14 @@
         }
         $stmt->close();
 
-        $maxRating = sizeof($ratingCounts) >= 1 ? max($ratingCounts) : 2;
+        $maxRating = count($ratingCounts) >= 1 ? max($ratingCounts) : 2;
 
         $stmt = $conn->prepare("SELECT u.UserID as ID, u.Username as username FROM users u
-                           JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
-                           JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
-                           WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
-                           AND ur1.type = 1 AND ur2.type = 1
-                           ORDER BY LastAccessedSite DESC, ID");
+            JOIN user_relations ur1 ON u.UserID = ur1.UserIDTo
+            JOIN user_relations ur2 ON u.UserID = ur2.UserIDFrom
+            WHERE ur1.UserIDFrom = ? AND ur2.UserIDTo = ?
+            AND ur1.type = 1 AND ur2.type = 1
+            ORDER BY LastAccessedSite DESC, ID");
         $stmt->bind_param("ii", $profileId, $profileId);
         $stmt->execute();
         $mutuals = $stmt->get_result();
@@ -55,7 +51,7 @@
         $isBlacklisted = $stmt->get_result()->num_rows > 0;
         $stmt->close();
     }
-	
+
     $is_friend = $is_blocked = $is_friended = 0;
     if ($loggedIn) {
         $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
@@ -78,7 +74,7 @@
         $stmt_relation_to_profile_user->close();
         $stmt_relation_from_profile_user->close();
 
-        if ($profileId != $userId){
+        if ($profileId != $userId) {
             $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
                         FROM `ratings` r1
                         JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
@@ -246,15 +242,13 @@
                         ORDER BY b.Rating DESC, b.BeatmapID DESC
                         LIMIT 1
                     ");
-                    
+
                     $stmt->bind_param("ii", $profileId, $mode);
                     $stmt->execute();
-                    $extremes = $stmt->get_result();
-                    
-                    $highestMap = $extremes->fetch_assoc();
+                    $highestMap = $stmt->get_result()->fetch_assoc();
                     $stmt->close();
 
-                    $highestMapDescriptors = array();
+                    $highestMapDescriptors = [];
                     if ($highestMap) {
                         $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
                             FROM beatmap_descriptors bd
@@ -590,135 +584,50 @@
 
 <hr>
 <div style="margin-bottom: 1em;">
+    <?php
+        $filterConfig = [
+            'showYear' => true,
+            'showSR' => true,
+            'showRating' => $loggedIn,
+            'showTag' => false,
+            'sortOptions' => [
+                '1' => 'Latest',
+                '2' => 'Oldest',
+                '3' => 'Highest rated',
+                '4' => 'Lowest rated',
+            ],
+            'categories' => ['genre', 'language', 'descriptor', 'status'],
+        ];
+        require "../functions/filter/index.php";
+    ?>
     <label>
         <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
     </label>
 </div>
-<div id="beatmaps">
-    <?php
-        $stmt = $conn->prepare("SELECT s.SetID, s.CreatorID, s.Artist, s.Title
-                           FROM beatmap_creators c
-                           LEFT JOIN beatmaps b ON b.BeatmapID = c.BeatmapID
-                           LEFT JOIN beatmapsets s on b.SetID = s.SetID
-                           WHERE c.`CreatorID` = ? 
-                           GROUP BY s.SetID
-                           ORDER BY s.`Timestamp` DESC;");
-        $stmt->bind_param("s", $profileId);
-        $stmt->execute();
-        $setsResult = $stmt->get_result();
-        $stmt->close();
 
-        while($set = $setsResult->fetch_assoc()) {
-			if ($set['SetID'] == null)
-				continue;
-			
-            $stmt = $conn->prepare("SELECT b.`BeatmapID`, s.`DateRanked`, b.`DifficultyName`, b.`WeightedAvg`, b.`RatingCount`, b.`SR`, b.`ChartRank`, r.`Score`,
-                       (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.`BeatmapID`) AS NumCreators
-                       FROM beatmaps b
-                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                       INNER JOIN beatmap_creators bc ON b.`BeatmapID` = bc.`BeatmapID`
-                       LEFT JOIN ratings r ON b.`BeatmapID` = r.`BeatmapID` AND r.`UserID` = ?
-                       WHERE b.`SetID` = ? AND bc.`CreatorID` = ?
-                       ORDER BY b.`ChartRank` IS NULL, b.`ChartRank` ASC, b.`RatingCount` DESC");
-
-            $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
-            $stmt->execute();
-            $difficultyResult = $stmt->get_result();
-
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM comments WHERE SetID = ?");
-            $stmt->bind_param("i", $set["SetID"]);
-            $stmt->execute();
-            $commentCount = $stmt->get_result()->fetch_row()[0];
-
-            $topMap = $difficultyResult->fetch_assoc();
-            $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
-            $topMapIsGD = $set["CreatorID"] != $profileId;
-            $topMapIsCollab = $topMap["NumCreators"] > 1;
-            $topMapRatingCount = isset($topMap["RatingCount"]) ? $topMap["RatingCount"] : 0;
-            $topMapChartRank = isset($topMap["ChartRank"]) ? $topMap["ChartRank"] : "";
-
-            $stmt->close();
-            ?>
-            <div data-rating-count="<?php echo $topMapRatingCount; ?>" data-chart-rank="<?php echo $topMapChartRank; ?>" class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
-                <a href="/mapset/<?php echo $set['SetID']; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg" class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" loading="lazy" /></a>
-                <div>
-                    <a href="/mapset/<?php echo $set['SetID']; ?>">
-					<?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?> 
-					<a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;">
-					</i></a><br></a>
-                    <a <?php if ($topMapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>">
-					<?php echo safe_htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?></a> <span class="subText">
-					<?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>* <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?></span><br>
-                    <?php echo date("M jS, Y", strtotime($topMap['DateRanked']));?><br>
-                </div>
-                <div style="margin-left:auto;">
-                    <span style="display: inline-block;margin-right:1em;"">
-                        <?php
-                            if (isset($topMap["Score"]))
-                                echo RenderRating($topMap["Score"]);
-                        ?>
-                    </span>
-                    <span style="display: inline-block;margin-right:1em;min-width:8em;">
-                        <?php echo $commentCount; ?> <span class="subText">comment<?php if ($commentCount != 1) echo 's'; ?></span>
-                    </span>
-                    <span style="display: inline-block;min-width:13em;">
-                        <?php if (isset($topMap["WeightedAvg"])) { ?>
-                        <b><?php echo number_format((float)$topMap["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes</span><br>
-                        <?php } ?>
-                    </span>
-                    <span class="collapse-arrow" style="display: inline-block;<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>user-select:none;margin-left:0.5em;margin-right:0.5em;width:1em;">
-                        ◀
-                    </span>
-                </div>
-            </div>
-
-            <div class="lesser-maps" style="display: none;">
-                <?php
-                    while($map = $difficultyResult->fetch_assoc()){
-                        $mapIsBolded = $map["ChartRank"] <= 250 && isset($map["ChartRank"]);
-                ?>
-                    <div class="profile-lesser-map">
-                        <div style="display:inline-block;">
-                            <a <?php if ($mapIsBolded) { echo "style='font-weight:bolder;'"; } ?> href="/mapset/<?php echo $set['SetID']; ?>"><?php echo safe_htmlspecialchars($map['DifficultyName'], ENT_QUOTES); ?></a> <span class="subText"><?php echo number_format((float)$map['SR'], 2, '.', ''); ?>* <?php if ($topMapIsGD) echo ("(GD)"); ?></span><br>
-                        </div>
-
-                        <div style="float:right;display: inline-block;min-width:13em;min-height:1px;text-align:right;">
-                            <?php if (isset($map["ChartRank"])) { ?>
-                                <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes</span><br>
-                            <?php } ?>
-                        </div>
-
-                        <?php if (isset($map["Score"])) { ?>
-                            <div style="float:right;display:inline-block;">
-                                <?php echo RenderRating($map["Score"]); ?>
-                            </div>
-                        <?php } ?>
-                    </div>
-                <?php } ?>
-            </div>
-        <?php
-        }
-        ?>
-</div>
+<?php include 'MapsListing.php'; ?>
 
 <script>
-    var coll = document.getElementsByClassName("profile-top-map");
+    function attachCollapseHandlers() {
+        var coll = document.getElementsByClassName("profile-top-map");
 
-    for (let i = 0; i < coll.length; i++) {
-        coll[i].addEventListener("click", function() {
-            var arrow = this.querySelector(".collapse-arrow");
-            var content = this.nextElementSibling;
-            if (content.style.display === "block") {
-                content.style.display = "none";
-                arrow.textContent = "◀";
-            } else {
-                content.style.display = "block";
-                arrow.textContent = "▼";
-            }
-        });
+        for (let i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                var arrow = this.querySelector(".collapse-arrow");
+                var content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                    arrow.textContent = "◀";
+                } else {
+                    content.style.display = "block";
+                    arrow.textContent = "▼";
+                }
+            });
+        }
     }
 
     $(document).ready(function() {
+        attachCollapseHandlers();
 
         var savedHide = localStorage.getItem('hideLessRelevantMaps');
         if (savedHide !== null) {
@@ -748,8 +657,8 @@
 
                 maps.forEach(function(map, index) {
                     if (index < 10 || map.count >= threshold) {
-                    $(map.el).show();
-                }
+                        $(map.el).show();
+                    }
                 });
             } else {
                 $('.profile-top-map').show();
@@ -808,9 +717,46 @@
                 });
             }
         });
+
+        $(document).on('omdbFiltersSubmitted', function(event, payload) {
+            var params = new URLSearchParams();
+            if (payload.year)
+                params.set('y', payload.year);
+            if (payload.order)
+                params.set('o', payload.order);
+            if (payload.rating)
+                params.set('r', payload.rating);
+            if (payload.tokens && payload.tokens.length > 0)
+                params.set('tokens', encodeTokens(payload.tokens));
+
+            var url = '?' + params.toString();
+            history.replaceState(null, '', url);
+        
+            var $beatmaps = $('#beatmaps');
+            $beatmaps.css('opacity', 0.5);
+        
+            params.set('id', <?php echo $profileId; ?>);
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(this.responseText, "text/html");
+                    var newContent = doc.getElementById('beatmaps');
+                    if (newContent) {
+                        $beatmaps.replaceWith(newContent);
+                        attachCollapseHandlers();
+                        relevanceCheck();
+                    } else {
+                        location.reload();
+                    }
+                    $('#beatmaps').css('opacity', 1);
+                }
+            };
+            xhr.open('POST', 'MapsListing.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send(params.toString());
+        });
     });
 </script>
 
-<?php
-    require '../footer.php';
-?>
+<?php require '../footer.php'; ?>

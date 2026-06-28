@@ -3,6 +3,7 @@
 	include_once 'functions/bbcode.php';
 	include_once 'functions/access.php';
 	include_once 'functions/recommendations/index.php';
+	include_once 'functions/filter/helpers.php';
 
 	/**
 	 * Sends a redirect header pointed to the given relative location (using the
@@ -534,6 +535,14 @@
         );
 
         return $countries[$code] ?? null;
+    }
+
+	function postOrGet(string $key, $default = null) {
+        if (isset($_POST[$key]) && $_POST[$key] !== '')
+			return $_POST[$key];
+        if (isset($_GET[$key]) && $_GET[$key] !== '')
+			return $_GET[$key];
+        return $default;
     }
 
 	function ParseCommentLinks($conn, $string) {

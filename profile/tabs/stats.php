@@ -51,7 +51,7 @@
                             $value = null;
                     }
 
-                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y={$year}'>";
+                    echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y={$year}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;'>" . substr($year, -2) . "</span></div>";
                     echo "</a>";
                 }
@@ -104,7 +104,29 @@
 
                     $label = $SR >= 12 ? "12&#9733;+" : "{$SR}&#9733;";
 
-                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y=all-time&sr={$SR}'>";
+                    $srTokens = [];
+                    if ($SR >= 12) {
+                        $tokenVal = "12<=sr";
+                        $srTokens[] = [
+                            "type" => "sr",
+                            "id" => $tokenVal,
+                            "name" => "SR: " . $tokenVal,
+                            "ops" => [ ["op" => ">=", "val" => 12] ]
+                        ];
+                    } else {
+                        $tokenVal = "$SR<=sr<" . ($SR+1);
+                        $srTokens[] = [
+                            "type" => "sr",
+                            "id" => $tokenVal,
+                            "name" => "SR: " . $tokenVal,
+                            "ops" => [ 
+                                ["op" => ">=", "val" => $SR],
+                                ["op" => "<", "val" => $SR + 1]
+                            ]
+                        ];
+                    }
+                    $tokensParam = encodeTokens($srTokens);
+                    echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;'>" . $label . "</span></div>";
                     echo "</a>";
                 }
@@ -159,7 +181,16 @@
                             $value = $averageRating / 5.0;
                     }
 
-                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y=all-time&g={$genre}'>";
+                    $genreName = getGenre($genre) ?: "Genre {$genre}";
+                    $genreTokens = [
+                        [
+                            "type" => "genre",
+                            "id" => (int)$genre,
+                            "name" => $genreName
+                        ]
+                    ];
+                    $tokensParam = encodeTokens($genreTokens);
+                    echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$genreString}</span></div>";
                     echo "</a>";
                 }
@@ -217,7 +248,16 @@
                         continue;
                     }
 
-                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y=all-time&lang={$language}'>";
+                    $langName = getLanguage($language) ?: "Language {$language}";
+                    $langTokens = [
+                        [
+                            "type" => "language",
+                            "id" => (int)$language,
+                            "name" => $langName
+                        ]
+                    ];
+                    $tokensParam = encodeTokens($langTokens);
+                    echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$languageString}</span></div>";
                     echo "</a>";
                 }
@@ -269,8 +309,16 @@
                     else
                         continue;
 
-                    $countryParam = urlencode($countryCode);
-                    echo "<a href='ratings/?id={$profileId}&r=&o=2&t=&p=1&y=all-time&c={$countryParam}'>";
+                    $countryFullName = getFullCountryName($countryCode) ?? $countryCode;
+                    $countryTokens = [
+                        [
+                            "type" => "country",
+                            "id" => $countryCode,
+                            "name" => $countryFullName
+                        ]
+                    ];
+                    $tokensParam = encodeTokens($countryTokens);
+                    echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y=all-time&tokens={$tokensParam}'>";
                     echo "<div class='year-box' value='{$value}'><span title='({$ratingCount}) {$averageRating}' style='border-bottom:1px dotted black;font-size: 8px;'>{$country["Name"]}</span></div>";
                     echo "</a>";
                 }
