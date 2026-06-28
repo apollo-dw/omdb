@@ -255,15 +255,14 @@
 		$stmt->bind_param("i", $id);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		if ($result->num_rows >= 1) {
-			$row = $result->fetch_row();
-			$stmt->close();
-			if (!is_null($row[0])) {
-				$cache[$id] = $row[0];
-				return $row[0];
-			}
+		$row = $result->fetch_row();
+		$stmt->close();
+
+		if ($row && !is_null($row[0])) {
+			$cache[$id] = $row[0];
+			return $row[0];
 		}
-		
+
 		$username = "ID => " . strval($id);
 		try {
 			$userData = GetUserDataOsuApi($id);
@@ -845,7 +844,7 @@
 	}
 
 	function RenderBeatmapCreators($beatmapID, $conn) {
-		$stmt = $conn->prepare("SELECT `CreatorID` FROM `beatmap_creators` WHERE BeatmapID = ?");
+		$stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
 		$stmt->bind_param('i', $beatmapID);
 		$stmt->execute();
 		$creators = $stmt->get_result();
@@ -854,7 +853,7 @@
 		$index = 0;
 
 		while ($creator = $creators->fetch_assoc()){
-			$creatorName = GetUserNameFromId($creator['CreatorID'], $conn);
+			$creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
 			echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
 			$index++;
@@ -935,23 +934,17 @@
 				s.Title,
 				b.DifficultyName,
 				s.DateRanked,
-				ROUND(ratings.WeightedAvg, 2) AS WeightedAvg,
-				COALESCE(ratings.RatingCount, 0) AS RatingCount,
+				ROUND(SUM(r.Score * u.Weight) / SUM(u.Weight), 2) AS WeightedAvg,
+				COUNT(r.BeatmapID) AS RatingCount,
 				b.ChartRank,
 				b.ChartYearRank
 			FROM cache c
 			JOIN beatmaps b ON c.Value = b.BeatmapID
 			JOIN beatmapsets s ON b.SetID = s.SetID
-			LEFT JOIN (
-				SELECT
-					r.BeatmapID,
-					COUNT(*) AS RatingCount,
-					SUM(r.Score * u.Weight) / SUM(u.Weight) AS WeightedAvg
-				FROM ratings r
-				JOIN users u ON r.UserID = u.UserID
-				GROUP BY r.BeatmapID
-			) ratings ON ratings.BeatmapID = b.BeatmapID
+			LEFT JOIN ratings r ON r.BeatmapID = b.BeatmapID
+			LEFT JOIN users u ON r.UserID = u.UserID
 			WHERE c.Attribute = ?
+			GROUP BY b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.ChartRank, b.ChartYearRank
 		");
 
 		$stmt->bind_param("s", $cacheKey);
@@ -961,10 +954,8 @@
 
 		$stmt->close();
 
-		if ($motd) {
-			$motd['WeightedAvg'] = $motd['WeightedAvg'] !== null
-				? number_format((float)$motd['WeightedAvg'], 2)
-				: null;
+		if ($motd && $motd['WeightedAvg'] !== null) {
+			$motd['WeightedAvg'] = number_format((float)$motd['WeightedAvg'], 2);
 		}
 
 		return $motd ?: null;

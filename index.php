@@ -14,30 +14,25 @@
             <?php
             $motd = getMapOfTheDay($conn, $mode);
             
-            $stmt = $conn->prepare("SELECT (SELECT COUNT(*) FROM `users`), COUNT(*) FROM `users` WHERE `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR;");
+            $query = "
+                SELECT 
+                    COUNT(*) AS total_users,
+                    SUM(CASE WHEN `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR THEN 1 ELSE 0 END) AS online_users,
+                    (SELECT COUNT(*) FROM `ratings`) AS total_ratings,
+                    (SELECT COUNT(*) FROM `comments`) AS total_comments
+                FROM `users`
+            ";
+            
+            $stmt = $conn->prepare($query);
             $stmt->execute();
             $result = $stmt->get_result();
-            $row = $result->fetch_row();
-            $usersCount = $row[0];
-            $usersOnlineCount = $row[1];
-            $stmt->close();
-
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `ratings`");
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $ratingsCount = $result->fetch_row()[0];
-            $stmt->close();
-
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments`");
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $commentsCount = $result->fetch_row()[0];
+            $stats = $result->fetch_assoc();
             $stmt->close();
             ?>
 
-            <span title='<?php echo $usersOnlineCount; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo $usersCount; ?> users</span>,
-            <?php echo $ratingsCount; ?> ratings,
-            <?php echo $commentsCount; ?> comments
+            <span title='<?php echo (int)$stats["online_users"]; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_users"]; ?> users</span>,
+            <?php echo (int)$stats["total_ratings"]; ?> ratings,
+            <?php echo (int)$stats["total_comments"]; ?> comments
         </span>
     </div>  
 </div>
@@ -47,10 +42,11 @@
 		<?php
 		  if ($userId !== -1) {
 				$stmt = $conn->prepare("
-					SELECT r.*, b.DifficultyName, b.SetID 
+					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
 					INNER JOIN `users` u ON r.UserID = u.UserID 
+                    LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ? 
 					  AND b.blacklisted = 0 
 					  AND u.HideRatings = 0
@@ -69,10 +65,11 @@
 				$stmt->bind_param("iiii", $mode, $userId, $userId, $userId);
 			} else {
 				$stmt = $conn->prepare("
-					SELECT r.*, b.DifficultyName, b.SetID 
+					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
 					INNER JOIN `users` u ON r.UserID = u.UserID 
+                    LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ? 
 					  AND b.blacklisted = 0 
 					  AND u.HideRatings = 0
@@ -92,12 +89,12 @@
 			    </div>
                 <div class="flex-child">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                 </div>
                 <div class="flex-child" style="flex:0 0 66%;">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+                        <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
                     </a>
                     <?php
                         echo RenderUserRating($conn, $row) . " on " . "<a href='/mapset/" . $row["SetID"] . "'>" . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "</a>";
@@ -132,9 +129,10 @@
 
         $stmt = $conn->prepare("
             (
-                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM comments c
                 JOIN beatmapsets bs ON bs.SetID = c.SetID
+                LEFT JOIN mappernames m ON m.UserID = c.UserID
                 WHERE NOT EXISTS (
                     SELECT 1 
                     FROM user_relations r 
@@ -157,16 +155,18 @@
             )
             UNION ALL
             (
-                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title
+                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title, m.Username
                 FROM descriptor_proposal_comments dpc
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                LEFT JOIN mappernames m ON m.UserID = dpc.UserID
                 WHERE 1
             )
             UNION ALL
             (
-                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title
+                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM reviews r
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
+                LEFT JOIN mappernames m ON m.UserID = r.UserID
                 WHERE NOT EXISTS (
                     SELECT 1 
                     FROM user_relations ur 
@@ -188,7 +188,7 @@
                 )
             )
             ORDER BY date DESC
-            LIMIT 40;");
+            LIMIT 40; ");
 
         $stmt->bind_param("iiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
@@ -205,7 +205,8 @@
                         <a href="/mapset/<?php echo $row["SetID"]; ?>">
                             <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
                                 class="diffThumb"
-                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"/>
+                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"
+                                loading="lazy"/>
                         </a>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
@@ -219,8 +220,9 @@
                         <a href="/profile/<?php echo $row["UserID"]; ?>">
                             <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
                                 style="height:24px;width:24px;"
-                                title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
-                            <span><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span>
+                                title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"
+                                loading="lazy"/>
+                            <span><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span>
                         </a>
 
                         <span>
@@ -256,7 +258,7 @@
 	<br>
 	<?php
         $usedSets = array();
-		$stmt = $conn->prepare("SELECT * FROM cache_home_recent_maps WHERE Mode = ? ORDER BY Timestamp DESC;");
+		$stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
         $stmt->bind_param("i", $mode);
         $stmt->execute();
 		$result = $stmt->get_result();
@@ -267,10 +269,16 @@
             if (sizeof($usedSets) >= 8)
                 break;
 
-			$artist = GetUserNameFromId($row["CreatorID"], $conn);
+			$artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
 	?>
 	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>">
+            <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+            class="diffThumb" 
+            style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
+            onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+            loading="lazy" />
+        </a><br>
 		<span class="subText">
 			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
             by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
@@ -311,7 +319,12 @@
             $motdYear = date("Y", strtotime($motd['DateRanked']));
         ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $motd["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+            <a href="/mapset/<?php echo $motd["SetID"]; ?>">
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" 
+                style="width:100%;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a>
             <br><br>
             <b><a href="/mapset/<?php echo $motd["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$motd["Title"]} [{$motd["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($motd['BeatmapID'], $conn); ?> <br>
@@ -396,7 +409,12 @@
         ?>
         <?php if ($result != null) { ?>
         <div style="width:100%;text-align:center;">
-            <a href="/mapset/<?php echo $result["SetID"]; ?>"><img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" style="width:100%;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+            <a href="/mapset/<?php echo $result["SetID"]; ?>">
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" 
+                style="width:100%;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a>
             <br><br>
             <b><a href="/mapset/<?php echo $result["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$result["Title"]} [{$result["DifficultyName"]}]", ENT_QUOTES);?></a></b><br>
             by <?php RenderBeatmapCreators($result['BeatmapID'], $conn); ?> <br>
@@ -456,7 +474,12 @@
                     #<?php echo sizeof($usedSets) + 1; ?>
                 </div>
                 <div class="flex-child">
-                    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+                    <a href="/mapset/<?php echo $row["SetID"]; ?>">
+                        <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+                        class="diffThumb" 
+                        onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                        loading="lazy" />
+                    </a>
                 </div>
                 <div class="flex-child" style="text-overflow: ellipsis;overflow:hidden;">
                     <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
