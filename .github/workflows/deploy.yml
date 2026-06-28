@@ -2,7 +2,7 @@ name: Deploy VPS
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
             if [ ! -d "/var/www/omdb.git" ]; then
               git clone https://github.com/apollo-dw/omdb.git /var/www/omdb
             fi
-  
+
             cd /var/www/omdb
             git pull origin master
 
@@ -32,4 +32,5 @@ jobs:
             OSU_API_V1_KEY="${{ secrets.OSU_API_V1_KEY }}"
             OSU_CLIENT_ID="${{ secrets.OSU_CLIENT_ID }}"
             OSU_CLIENT_SECRET="${{ secrets.OSU_CLIENT_SECRET }}"
+            GITHUB_COMMIT="${{ github.sha }}"
             EOF

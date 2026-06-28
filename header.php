@@ -1,8 +1,10 @@
-<?php require_once 'base.php'; 
+<?php 
+	require_once 'base.php'; 
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+	$github_version = $env['GITHUB_COMMIT'] ?? '1';
 ?>
 
 <!DOCTYPE html>
@@ -22,8 +24,8 @@ error_reporting(E_ALL);
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 		<link rel="manifest" href="/site.webmanifest">
-		<link rel="stylesheet" type="text/css" href="/style.css?v=40" />
-    <script src="/script.js?v=5"></script>
+		<link rel="stylesheet" type="text/css" href="/style.css?v=<?php echo $github_version; ?>" />
+    	<script src="/script.js?v=<?php echo $github_version; ?>"></script>
 	</head>
 	<body>
 		<div class="topBar">
