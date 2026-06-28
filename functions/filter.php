@@ -86,7 +86,9 @@
 ?>
 
 <style>
-    .filter-section { margin-bottom: 1em; }
+    .filter-section {
+        margin-bottom: 1em;
+    }
     .filter-search-box {
         position: relative;
         background-color: #203838;
@@ -126,8 +128,13 @@
         font-weight: bold;
         font-size: 0.85em;
     }
-    .popover-item { padding: 0.4em 1em; cursor: pointer; }
-    .popover-item:hover { background-color: #203838; }
+    .popover-item {
+        padding: 0.4em 1em;
+        cursor: pointer;
+    }
+    .popover-item:hover {
+        background-color: #203838;
+    }
     
     .filter-chip {
         padding: 0.1em 0.4em;
@@ -137,8 +144,13 @@
         font-size: 0.9em;
         border: 1px solid;
     }
-    .filter-chip .remove { cursor: pointer; font-weight: bold; }
-    .filter-chip .remove:hover { color: #ff9999; }
+    .filter-chip .remove {
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .filter-chip .remove:hover {
+        color: #ff9999;
+    }
 </style>
 
 <div>
@@ -155,7 +167,7 @@
     <?php endif; ?>
 
     <?php if ($filterConfig['showActivityToggles']): ?>
-        <div class="filter-section flex-row-container" style="gap: 1em; flex-wrap: wrap; margin-bottom: 1em;">
+        <div class="filter-section flex-row-container" style="flex-wrap:wrap; margin-bottom:1em; flex-direction:column;">
             <b>Activity:</b>
             <label><input type="checkbox" id="ratings" value="ratings" checked> Ratings</label>
             <label><input type="checkbox" id="reviews" value="reviews" checked> Reviews</label>
@@ -232,11 +244,20 @@
     window.getOmdbFilterPayload = function() {
         return {
             order: $('#filter-order').val(),
-            year: $('#filter-year').val(),
+            year: $('#filter-year').val() || 'all-time',
             rating: $('#filter-rating').val() || "",
             sr: $('#filter-sr').val() || "",
             tag: $('#filter-tag').val() || "",
-            tokens: activeTokens 
+            tokens: activeTokens,
+
+            // only when showActivityToggles is true otherwise these fall back to true
+            ratings: $('#ratings').length ? $('#ratings').is(':checked') : true,
+            reviews: $('#reviews').length ? $('#reviews').is(':checked') : true,
+            review_likes: $('#review_likes').length ? $('#review_likes').is(':checked') : true,
+            lists: $('#lists').length ? $('#lists').is(':checked') : true,
+            list_likes: $('#list_likes').length ? $('#list_likes').is(':checked') : true,
+            ranked_maps: $('#ranked_maps').length ? $('#ranked_maps').is(':checked') : true,
+            comments: $('#comments').length ? $('#comments').is(':checked') : true,
         };
     };
 
@@ -512,6 +533,12 @@
             });
         }
 
-        $(document).on('change', 'select', function() { fireUpdate(); });
+        $(document).on('change', 'select', function() {
+            fireUpdate();
+        });
+
+         $(document).on('change', '#ratings, #reviews, #review_likes, #lists, #list_likes, #ranked_maps, #comments', function() {
+            fireUpdate();
+        });
     });
 </script>
