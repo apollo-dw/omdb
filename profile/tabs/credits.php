@@ -32,7 +32,7 @@
         <div style='padding-left:0.25em;height:5em;display:flex;align-items: center;' class='alternating-bg'>
             <div>
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
-                    <img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:4em;width:4em;margin-right:0.5em;" onerror="this.onerror=null; this.src='../charts/INF.png';" />
+                    <img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg" class="diffThumb" style="height:4em;width:4em;margin-right:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" />
                 </a>
             </div>
             <div>

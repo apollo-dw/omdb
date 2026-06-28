@@ -135,7 +135,7 @@
                 #<?php echo $listItem['order']; ?>
             </div>
             <div style="text-align: center; width: 8em;">
-                <a href="<?php echo $linkUrl; ?>"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../charts/INF.png';" /></a><br>
+                <a href="<?php echo $linkUrl; ?>"><img src="<?php echo $imageUrl; ?>" class="diffThumb" style="height: 8em; width: 8em;" onerror="this.onerror=null; this.src='../../../assets/img/missing-map-thumbnail.png';" /></a><br>
                 <span class="subText"><?php echo safe_htmlspecialchars($title, ENT_QUOTES); ?></span>
             </div>
             <div style="flex-grow: 1; box-sizing: border-box;">

@@ -119,7 +119,7 @@ GROUP BY
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
-        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="width:25rem;height:8.5em;" onerror="this.onerror=null; this.src='INF.png';" />
+        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="width:25rem;height:8.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
     </div>
     <div class="flex-container flex-child light-bg column-when-mobile" style="margin-left:1em;flex-grow: 1;min-height:8.5em;">
         <div class="flex-child" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">

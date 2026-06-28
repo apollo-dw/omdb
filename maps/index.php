@@ -113,7 +113,7 @@
 ?>
 <div class="flex-container ratingContainer mapList alternating-bg">
 	<div class="flex-child" style="flex: 0 0 8%;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/charts/INF.png';"></a>
+		<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="height:82px;width:82px;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
 	</div>
 	<div class="flex-child" style="flex: 0 0 50%;min-width: 0;">
 		<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Artist"]} - {$row["Title"]}", ENT_QUOTES); ?></a> by <a href='/profile/<?php echo $row["SetCreatorID"]; ?>'><?php echo safe_htmlspecialchars($mapperName, ENT_QUOTES); ?></a> <a href="osu://s/<?php echo $row['SetID']; ?>"><i class="icon-download-alt">&ZeroWidthSpace;</i></a><br>

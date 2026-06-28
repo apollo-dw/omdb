@@ -39,7 +39,7 @@
         ?>
         <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child">
-                <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../charts/INF.png';"></a>
+                <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $beatmap['SetID']; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"></a>
             </div>
             <div class="flex-child" style="flex:0 0 60%;">
                 <?php echo RenderUserRating($conn, $beatmap); ?> on <a href="/mapset/<?php echo $beatmap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$beatmap["Title"]} [{$beatmap["DifficultyName"]}]", 0, 80, "..."), ENT_QUOTES); ?></a>
