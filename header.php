@@ -27,7 +27,7 @@ error_reporting(E_ALL);
 	</head>
 	<body>
 		<div class="topBar">
-			<a href="/" style="margin-right: 8px;color:white;">OMDB</a>
+			<a href="/" style="margin-right: 8px;color:white;"><img src="/assets/img/omdb-32x32.png" /></a>
 			<a href="/"><div class="topBarLink">home</div></a>
 			<a href="/charts/"><div class="topBarLink">charts</div></a>
 			<div class="topBarDropDown">
