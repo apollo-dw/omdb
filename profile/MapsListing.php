@@ -96,9 +96,15 @@
             INNER JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
             LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
             WHERE b.SetID = ? AND bc.CreatorID = ?
+            {$filterConditions}
             ORDER BY b.ChartRank IS NULL, b.ChartRank ASC, b.RatingCount DESC
         ");
-        $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
+        $diffTypes = "iii" . $filterTypes;
+        if (!empty($filterTypes)) {
+            $stmt->bind_param($diffTypes, $userId, $set["SetID"], $profileId, ...$filterValues);
+        } else {
+            $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
+        }
         $stmt->execute();
         $difficultyResult = $stmt->get_result();
         $stmt->close();
