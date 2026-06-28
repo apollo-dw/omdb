@@ -12,6 +12,8 @@
         'showRating' => false,
         'showSR' => false,
         'showTag' => false,
+        'showRelevanceToggle' => false,
+        'showActivityToggles' => false,
         'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta'],
         'customTokens' => []
     ];
@@ -59,7 +61,7 @@
         }
     }
 
-    if (in_array('meta', $filterConfig['categories'])) {
+    if (in_array('meta', $filterConfig['categories']) && $loggedIn) {
         $allFilters[] = ['type' => 'meta', 'id' => 'friends', 'name' => 'Friend Ratings', 'label' => 'System: Friend Ratings'];
         $allFilters[] = ['type' => 'meta', 'id' => 'alreadyRated', 'name' => 'Already Rated Maps', 'label' => 'System: Already Rated Maps'];
     }
@@ -144,6 +146,28 @@
     <b>Filters</b>
     <hr>
     
+    <?php if ($filterConfig['showRelevanceToggle']): ?>
+        <div class="filter-section">
+            <label>
+                <input type="checkbox" id="hideLessRelevantCheckbox" checked> 
+                <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
+            </label>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($filterConfig['showActivityToggles']): ?>
+        <div class="filter-section flex-row-container" style="gap: 1em; flex-wrap: wrap; margin-bottom: 1em;">
+            <b>Activity:</b>
+            <label><input type="checkbox" id="ratings" value="ratings" checked> Ratings</label>
+            <label><input type="checkbox" id="reviews" value="reviews" checked> Reviews</label>
+            <label><input type="checkbox" id="review_likes" value="review_likes" checked> Review likes</label>
+            <label><input type="checkbox" id="lists" value="lists" checked> Lists</label>
+            <label><input type="checkbox" id="list_likes" value="list_likes" checked> List likes</label>
+            <label><input type="checkbox" id="ranked_maps" value="ranked_maps" checked> Ranked maps</label>
+            <label><input type="checkbox" id="comments" value="comments" checked> Comments</label>
+        </div>
+    <?php endif; ?>
+
     <div class="filter-section flex-row-container" style="align-items: center;">
         <?php if (!empty($filterConfig['sortOptions'])): ?>
             <select id="filter-order" autocomplete="off">
