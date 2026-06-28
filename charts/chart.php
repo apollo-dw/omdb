@@ -29,6 +29,7 @@
     $genres = []; $exGenres = [];
     $languages = []; $exLanguages = [];
     $countries = []; $exCountries = [];
+    $srFilters = [];
 
     foreach ($tokensRaw as $t) {
         $type = $t['type'];
@@ -48,6 +49,20 @@
             if ($exclude) $exLanguages[] = (int)$id; else $languages[] = (int)$id;
         } elseif ($type === 'country') {
             if ($exclude) $exCountries[] = $id; else $countries[] = $id;
+        } elseif ($type === 'sr' && !empty($t['ops'])) {
+            $srConds = [];
+            foreach ($t['ops'] as $opData) {
+                $op = $opData['op'] ?? '';
+                $val = (float)($opData['val'] ?? 0);
+                
+                if (in_array($op, ['<', '<=', '>', '>=', '='])) {
+                    $srConds[] = "b.SR {$op} {$val}";
+                }
+            }
+            if (!empty($srConds)) {
+                $srCond = implode(" AND ", $srConds);
+                $srFilters[] = $exclude ? "NOT ({$srCond})" : "({$srCond})";
+            }
         }
     }
 ?>
@@ -138,6 +153,10 @@
                     WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = {$id}
                 )";
             }
+        }
+
+        if (!empty($srFilters)) {
+            $sqlFilters = array_merge($sqlFilters, $srFilters);
         }
 
         foreach ($statusFilters as $sf) {

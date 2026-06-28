@@ -167,7 +167,7 @@
     <div class="filter-section">
         <div class="filter-search-box" id="filter-search-wrapper">
             <div id="filter-chips-container" style="display: contents;"></div>
-            <input type="text" id="filter-input" placeholder="Search genres, descriptors, statuses, friends..." autocomplete="off">
+            <input type="text" id="filter-input" placeholder="Search descriptors, friends, statuses... or type sr>4" autocomplete="off">
             <div class="filter-popover" id="filter-popover" style="display: none;"></div>
         </div>
     </div>
@@ -419,6 +419,36 @@
         });
 
         $input.on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = $(this).val().trim().toLowerCase();
+                const srMatch = val.match(/^(?:(\d+(?:\.\d+)?)\s*(<=|<|>|>=|=)\s*)?sr(?:(?:\s*(<=|<|>|>=|=)\s*(\d+(?:\.\d+)?)))?$/i);
+                if (srMatch && (srMatch[1] || srMatch[4])) {
+                    let parsedOps = [];
+                    
+                    if (srMatch[1] && srMatch[2]) {
+                        const flip = {'<': '>', '<=': '>=', '>': '<', '>=': '<=', '=': '='};
+                        parsedOps.push({ op: flip[srMatch[2]], val: srMatch[1] });
+                    }
+                    if (srMatch[3] && srMatch[4]) {
+                        parsedOps.push({ op: srMatch[3], val: srMatch[4] });
+                    }
+
+                    pushToken({ type: 'sr', id: val, name: 'SR: ' + val, label: val, ops: parsedOps }, false);
+                    
+                    $(this).val('');
+                    $popover.hide();
+                    renderChips();
+                    fireUpdate();
+                    return;
+                }
+
+                if ($popover.is(':visible')) {
+                    const firstItem = $popover.find('.popover-item').first();
+                    if (firstItem.length) firstItem.click();
+                }
+            }
+
             if (e.key === 'Backspace' && $(this).val() === '' && activeTokens.length > 0) {
                 activeTokens.pop();
                 renderChips();

@@ -1,15 +1,57 @@
 <?php
     $order = $_GET['o'] ?? "0";
-	$rating = $_GET['r'] ?? "";
-    $starRating = $_GET['sr'] ?? "";
-    $genre = $_GET['g'] ?? "";
-    $language = $_GET['lang'] ?? "";
-    $country = $_GET['c'] ?? "";
+    $rating = $_GET['r'] ?? "";
     $tagArgument = urldecode($_GET['t'] ?? "") ?? "";
-    $descriptorsJSON = $_GET['descriptors'] ?? "[]";
 
-    if (!isset($selectedDescriptors)) {
-        $selectedDescriptors = json_decode($descriptorsJSON, true);
+    $tokensRaw = json_decode(urldecode($_GET['tokens'] ?? '[]'), true);
+    if (!is_array($tokensRaw)) $tokensRaw = [];
+
+    $genres = []; $exGenres = [];
+    $languages = []; $exLanguages = [];
+    $countries = []; $exCountries = [];
+    $statuses = []; $exStatuses = [];
+    $descriptors = []; $exDescriptors = [];
+    $srFilters = [];
+
+    foreach ($tokensRaw as $t) {
+        $type = $t['type'] ?? '';
+        $id = $t['id'] ?? '';
+        $exclude = !empty($t['exclude']);
+
+        if ($type === 'genre') {
+            if ($exclude) $exGenres[] = (int)$id; else $genres[] = (int)$id;
+        }
+        if ($type === 'language') {
+            if ($exclude) $exLanguages[] = (int)$id; else $languages[] = (int)$id;
+        }
+        if ($type === 'country') {
+            if ($exclude) $exCountries[] = $id; else $countries[] = $id;
+        }
+        if ($type === 'descriptor') {
+            if ($exclude) $exDescriptors[] = (int)$id; else $descriptors[] = (int)$id;
+        }
+        if ($type === 'status') {
+            foreach (explode(',', $id) as $sv) {
+                if ($exclude) $exStatuses[] = (int)$sv; else $statuses[] = (int)$sv;
+            }
+        }
+
+        if ($type === 'sr' && !empty($t['ops'])) {
+            $srConds = [];
+            foreach ($t['ops'] as $opData) {
+                $op = $opData['op'] ?? '';
+                $val = (float)($opData['val'] ?? 0);
+                
+                // only allow valid operators to prevent SQL injection
+                if (in_array($op, ['<', '<=', '>', '>=', '='])) {
+                    $srConds[] = "b.SR {$op} {$val}";
+                }
+            }
+            if (!empty($srConds)) {
+                $srCond = implode(" AND ", $srConds);
+                $srFilters[] = $exclude ? " AND NOT ({$srCond})" : " AND ({$srCond})";
+            }
+        }
     }
 
     $PageTitle = "Ratings";
@@ -61,44 +103,84 @@
         $filterValues[] = intval($year);
     }
 
-    if ($starRating !== "") {
-        $filterConditions .= " AND LEAST(b.SR DIV 1, 12) = ?";
-        $filterTypes .= "i";
-        $filterValues[] = intval($starRating);
+    if (!empty($genres)) {
+        $placeholders = implode(',', array_fill(0, count($genres), '?'));
+        $filterConditions .= " AND s.Genre IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($genres));
+        $filterValues = array_merge($filterValues, $genres);
     }
 
-    if ($genre !== "") {
-        $filterConditions .= " AND s.Genre = ?";
-        $filterTypes .= "i";
-        $filterValues[] = intval($genre);
+    if (!empty($languages)) {
+        $placeholders = implode(',', array_fill(0, count($languages), '?'));
+        $filterConditions .= " AND s.Lang IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($languages));
+        $filterValues = array_merge($filterValues, $languages);
     }
 
-    if ($language !== "") {
-        $filterConditions .= " AND s.Lang = ?";
-        $filterTypes .= "i";
-        $filterValues[] = intval($language);
+    if (!empty($countries)) {
+        $placeholders = implode(',', array_fill(0, count($countries), '?'));
+        $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders))";
+        $filterTypes .= str_repeat('s', count($countries));
+        $filterValues = array_merge($filterValues, $countries);
     }
 
-    if ($country !== "") {
-        $filterConditions .= " AND EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country = ?)";
-        $filterTypes .= "s";
-        $filterValues[] = $country;
+    if (!empty($statuses)) {
+        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
+        $filterConditions .= " AND b.Status IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($statuses));
+        $filterValues = array_merge($filterValues, $statuses);
     }
 
-    if (!empty($selectedDescriptors)) {
+    if (!empty($descriptors)) {
         $descriptorClauses = [];
-        foreach ($selectedDescriptors as $descriptor) {
-            $descriptorId = (int)$descriptor['id'];
-            $descriptorClauses[] = "
-                EXISTS (
-                    SELECT 1
-                    FROM beatmap_descriptors bd
-                    WHERE bd.BeatmapID = b.BeatmapID
-                        AND bd.DescriptorID = {$descriptorId}
-                )
-            ";
+        foreach ($descriptors as $descriptorId) {
+            $descriptorClauses[] = "EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
+            $filterTypes .= "i";
+            $filterValues[] = $descriptorId;
         }
-        $filterConditions .= "AND (" . implode(" AND ", $descriptorClauses) . ")";
+        $filterConditions .= " AND (" . implode(" AND ", $descriptorClauses) . ")";
+    }
+
+    if (!empty($exGenres)) {
+        $placeholders = implode(',', array_fill(0, count($exGenres), '?'));
+        $filterConditions .= " AND s.Genre NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exGenres));
+        $filterValues = array_merge($filterValues, $exGenres);
+    }
+
+    if (!empty($exLanguages)) {
+        $placeholders = implode(',', array_fill(0, count($exLanguages), '?'));
+        $filterConditions .= " AND s.Lang NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exLanguages));
+        $filterValues = array_merge($filterValues, $exLanguages);
+    }
+
+    if (!empty($exCountries)) {
+        $placeholders = implode(',', array_fill(0, count($exCountries), '?'));
+        $filterConditions .= " AND NOT EXISTS (SELECT 1 FROM beatmap_creators bc JOIN mappernames mn ON bc.CreatorID = mn.UserID WHERE bc.BeatmapID = b.BeatmapID AND mn.Country IN ($placeholders))";
+        $filterTypes .= str_repeat('s', count($exCountries));
+        $filterValues = array_merge($filterValues, $exCountries);
+    }
+
+    if (!empty($exStatuses)) {
+        $placeholders = implode(',', array_fill(0, count($exStatuses), '?'));
+        $filterConditions .= " AND b.Status NOT IN ($placeholders)";
+        $filterTypes .= str_repeat('i', count($exStatuses));
+        $filterValues = array_merge($filterValues, $exStatuses);
+    }
+
+    if (!empty($exDescriptors)) {
+        $exDescriptorClauses = [];
+        foreach ($exDescriptors as $descriptorId) {
+            $exDescriptorClauses[] = "NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
+            $filterTypes .= "i";
+            $filterValues[] = $descriptorId;
+        }
+        $filterConditions .= " AND (" . implode(" AND ", $exDescriptorClauses) . ")";
+    }
+
+    if (!empty($srFilters)) {
+        $filterConditions .= implode("", $srFilters);
     }
 
     if ($tagArgument != "") {
@@ -135,7 +217,20 @@
 
 <hr>
 
-<?php include "../../functions/filter.php"; ?><br>
+<?php
+    $filterConfig = [
+        'sortOptions' => [
+            '0' => 'Latest',
+            '1' => 'Oldest',
+            '2' => 'Highest rated',
+            '3' => 'Lowest rated'
+        ],
+        'showRating' => true,
+        'showTag' => true,
+        'categories' => ['status', 'descriptor', 'genre', 'language', 'country'] 
+    ];
+    require "../../functions/filter.php";
+?><br>
 
 <div style="text-align:center;">
     <div class="pagination">
@@ -173,7 +268,6 @@
                     $orderString = "ORDER BY r.DATE DESC";
             }
 
-            // Note: Explicitly selecting b.BeatmapID last ensures it is never overridden with a NULL r.BeatmapID
             $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted, b.BeatmapID
                     FROM {$baseTable}
                     LEFT JOIN beatmapsets s ON b.SetID = s.SetID
@@ -227,31 +321,14 @@
         if (page < 1) page = 1;
         var payload = window.getOmdbFilterPayload();
         
-        var genre = 0, language = 0, country = 0;
-        var mappedDescriptors = [];
-
-        payload.tokens.forEach(function(t) {
-            if (t.type === 'genre') genre = t.id;
-            if (t.type === 'language') language = t.id;
-            if (t.type === 'country') country = t.id;
-            if (t.type === 'descriptor') mappedDescriptors.push({ id: t.id, name: t.name });
-        });
-
         window.location.href = "?id=<?php echo $profileId; ?>" +
-            "&r=" + payload.rating + 
-            "&o=" + payload.order + 
-            "&t=" + payload.tag + 
+            "&r=" + encodeURIComponent(payload.rating) + 
+            "&o=" + encodeURIComponent(payload.order) + 
+            "&t=" + encodeURIComponent(payload.tag) + 
             "&p=" + page + 
-            "&y=" + payload.year + 
-            "&sr=" + payload.sr + 
-            "&g=" + genre + 
-            "&lang=" + language + 
-            "&c=" + encodeURIComponent(country) + 
-            "&descriptors=" + encodeURIComponent(JSON.stringify(mappedDescriptors)) +
-            "&f=" + String(payload.friends) +
-            "&excludeLoved=" + String(payload.exLoved) +
-            "&excludeGraveyard=" + String(payload.exGraveyard) +
-            "&excludeRanked=" + String(payload.exRanked);
+            "&y=" + encodeURIComponent(payload.year) + 
+            "&sr=" + encodeURIComponent(payload.sr) + 
+            "&tokens=" + encodeURIComponent(JSON.stringify(payload.tokens));
     }
 
     $(document).on('omdbFiltersSubmitted', function() {
