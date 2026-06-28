@@ -189,9 +189,7 @@
         <?php endif; ?>
 
         <?php if ($filterConfig['showYear']): ?>
-            <?php if (!empty($filterConfig['sortOptions'])): ?>
-                <span> maps of </span>
-            <?php endif; ?>
+            <span> maps of </span>
             <select id="filter-year" autocomplete="off">
                 <option value="all-time">All Time</option>
                 <?php for ($i = 2007; $i <= date('Y'); $i++): ?>

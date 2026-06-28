@@ -119,14 +119,6 @@
         }
     }
 
-    $yearFilterSQL    = "";
-    $yearFilterTypes  = "";
-    $yearFilterValues = [];
-    if ($year !== 'all-time') {
-        $yearFilterSQL    = " AND YEAR(ActivityDate_col) = ?";
-        $yearFilterTypes  = "i";
-        $yearFilterValues = [$year];
-    }
     $yearCond = function(string $col) use ($year): string {
         return ($year !== 'all-time') ? " AND YEAR($col) = ?" : "";
     };
@@ -144,17 +136,17 @@
                 u.Username AS FriendUsername,
                 r.RatingID AS ObjectID,
                 r.BeatmapID AS ObjectType,
-                CONCAT(bs.Artist, ' - ', bs.Title, ' [', b.DifficultyName, ']') AS Title,
-                JSON_OBJECT('Score', r.Score, 'BeatmapID', b.BeatmapID, 'SetID', bs.SetID) AS ExtraData
+                CONCAT(s.Artist, ' - ', s.Title, ' [', b.DifficultyName, ']') AS Title,
+                JSON_OBJECT('Score', r.Score, 'BeatmapID', b.BeatmapID, 'SetID', s.SetID) AS ExtraData
             FROM user_relations fr
             JOIN users u ON u.UserID = fr.UserIDTo
             JOIN ratings r ON r.UserID = u.UserID
             LEFT JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
-            LEFT JOIN beatmapsets bs ON bs.SetID = b.SetID
+            LEFT JOIN beatmapsets s ON s.SetID = b.SetID
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND r.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
-                {$yearCond('r.date')}
+                {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
             'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
@@ -164,24 +156,24 @@
 
     if ($reviews) {
         $queries[] = "(
-            SELECT
+            SELECT DISTINCT
                 'review' AS ActivityType,
                 rv.date AS ActivityDate,
                 u.UserID AS FriendUserID,
                 u.Username AS FriendUsername,
                 rv.ReviewID AS ObjectID,
                 rv.SetID AS ObjectType,
-                CONCAT(bs.Artist, ' - ', bs.Title) AS Title,
-                JSON_OBJECT('Review', LEFT(rv.Comment, 250), 'SetID', bs.SetID) AS ExtraData
+                CONCAT(s.Artist, ' - ', s.Title) AS Title,
+                JSON_OBJECT('Review', LEFT(rv.Comment, 250), 'SetID', s.SetID) AS ExtraData
             FROM user_relations fr
             JOIN users u ON u.UserID = fr.UserIDTo
             JOIN reviews rv ON rv.UserID = u.UserID
-            LEFT JOIN beatmapsets bs ON bs.SetID = rv.SetID
-            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = bs.SetID LEFT JOIN beatmapsets s ON s.SetID = b.SetID" : "") . "
+            LEFT JOIN beatmapsets s ON s.SetID = rv.SetID
+            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = s.SetID" : "") . "
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND rv.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
-                {$yearCond('rv.date')}
+                {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
             'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
@@ -191,24 +183,24 @@
 
     if ($comments) {
         $queries[] = "(
-            SELECT
+            SELECT DISTINCT
                 'comment' AS ActivityType,
                 c.date AS ActivityDate,
                 u.UserID AS FriendUserID,
                 u.Username AS FriendUsername,
                 c.CommentID AS ObjectID,
                 c.SetID AS ObjectType,
-                CONCAT(bs.Artist, ' - ', bs.Title) AS Title,
-                JSON_OBJECT('Comment', LEFT(c.Comment, 250), 'SetID', bs.SetID) AS ExtraData
+                CONCAT(s.Artist, ' - ', s.Title) AS Title,
+                JSON_OBJECT('Comment', LEFT(c.Comment, 250), 'SetID', s.SetID) AS ExtraData
             FROM user_relations fr
             JOIN users u ON u.UserID = fr.UserIDTo
             JOIN comments c ON c.UserID = u.UserID
-            LEFT JOIN beatmapsets bs ON bs.SetID = c.SetID
-            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = bs.SetID LEFT JOIN beatmapsets s ON s.SetID = b.SetID" : "") . "
+            LEFT JOIN beatmapsets s ON s.SetID = c.SetID
+            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = s.SetID" : "") . "
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND c.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
-                {$yearCond('c.date')}
+                {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
             'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
@@ -216,7 +208,7 @@
         ];
     }
 
-    if ($lists) {
+    if ($lists && $year === 'all-time') {
         $queries[] = "(
             SELECT
                 'list' AS ActivityType,
@@ -233,35 +225,34 @@
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND l.Private = 0
                 AND l.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                {$yearCond('l.CreatedAt')}
         )";
         $paramSets[] = [
-            'types' => "i" . ($year !== 'all-time' ? "i" : ""),
-            'values' => array_merge([$userId], $year !== 'all-time' ? [$year] : []),
+            'types' => "i",
+            'values' => [$userId],
         ];
     }
 
     if ($review_likes) {
         $queries[] = "(
-            SELECT
+            SELECT DISTINCT
                 'review_like' AS ActivityType,
                 rh.CreatedAt AS ActivityDate,
                 u.UserID AS FriendUserID,
                 u.Username AS FriendUsername,
                 rh.HeartID AS ObjectID,
                 rv.ReviewID AS ObjectType,
-                CONCAT(bs.Artist, ' - ', bs.Title) AS Title,
-                JSON_OBJECT('ReviewID', rv.ReviewID, 'SetID', bs.SetID) AS ExtraData
+                CONCAT(s.Artist, ' - ', s.Title) AS Title,
+                JSON_OBJECT('ReviewID', rv.ReviewID, 'SetID', s.SetID) AS ExtraData
             FROM user_relations fr
             JOIN users u ON u.UserID = fr.UserIDTo
             JOIN review_hearts rh ON rh.UserID = u.UserID
             JOIN reviews rv ON rv.ReviewID = rh.ReviewID
-            LEFT JOIN beatmapsets bs ON bs.SetID = rv.SetID
-            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = bs.SetID LEFT JOIN beatmapsets s ON s.SetID = b.SetID" : "") . "
+            LEFT JOIN beatmapsets s ON s.SetID = rv.SetID
+            " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = s.SetID" : "") . "
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND rh.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
-                {$yearCond('rh.CreatedAt')}
+                {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
             'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
@@ -269,7 +260,7 @@
         ];
     }
 
-    if ($list_likes) {
+    if ($list_likes && $year === 'all-time') {
         $queries[] = "(
             SELECT
                 'list_like' AS ActivityType,
@@ -287,11 +278,10 @@
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND l.Private = 0
                 AND lh.CreatedAt >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                {$yearCond('lh.CreatedAt')}
         )";
         $paramSets[] = [
-            'types' => "i" . ($year !== 'all-time' ? "i" : ""),
-            'values' => array_merge([$userId], $year !== 'all-time' ? [$year] : []),
+            'types' => "i",
+            'values' => [$userId],
         ];
     }
 
@@ -299,24 +289,22 @@
         $queries[] = "(
             SELECT
                 'ranked_map' AS ActivityType,
-                bs.DateRanked AS ActivityDate,
+                s.DateRanked AS ActivityDate,
                 u.UserID AS FriendUserID,
                 u.Username AS FriendUsername,
                 b.BeatmapID AS ObjectID,
                 b.BeatmapID AS ObjectType,
-                CONCAT(bs.Artist, ' - ', bs.Title, ' [', b.DifficultyName, ']') AS Title,
-                JSON_OBJECT('SetID', bs.SetID) AS ExtraData
+                CONCAT(s.Artist, ' - ', s.Title, ' [', b.DifficultyName, ']') AS Title,
+                JSON_OBJECT('SetID', s.SetID) AS ExtraData
             FROM user_relations fr
             JOIN users u ON u.UserID = fr.UserIDTo
             JOIN beatmap_creators bc ON bc.CreatorID = u.UserID
             JOIN beatmaps b ON b.BeatmapID = bc.BeatmapID
-            JOIN beatmapsets bs ON bs.SetID = b.SetID
-            -- alias s for genre/lang filters
             JOIN beatmapsets s ON s.SetID = b.SetID
             WHERE fr.UserIDFrom = ? AND fr.type = 1
-                AND bs.DateRanked >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+                AND s.DateRanked >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
-                {$yearCond('bs.DateRanked')}
+                {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
             'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
