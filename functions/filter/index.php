@@ -8,6 +8,7 @@
             '4' => 'Most Controversial',
             '5' => 'Most Underrated'
         ],
+        'defaultYear' => 'all-time',
         'showYear' => true,
         'showRating' => false,
         'showTag' => false,
@@ -414,7 +415,7 @@
     window.getOmdbFilterPayload = function() {
         return {
             order: $('#filter-order').val(),
-            year: $('#filter-year').val() || 'all-time',
+            year: $('#filter-year').val() || '<?php echo $filterConfig["defaultYear"]; ?>',
             rating: $('#filter-rating').val() || "",
             sr: $('#filter-sr').val() || "",
             tag: $('#filter-tag').val() || "",
@@ -461,7 +462,7 @@
         }
 
         $('#filter-order').val(urlParams.get('o') || "1");
-        $('#filter-year').val(urlParams.get('y') || "all-time");
+        $('#filter-year').val(urlParams.get('y') || '<?php echo $filterConfig["defaultYear"]; ?>');
         $('#filter-rating').val(urlParams.get('r') || "");
         $('#filter-sr').val(urlParams.get('sr') || "");
         $('#filter-tag').val(urlParams.get('t') || "");
