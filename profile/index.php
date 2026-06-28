@@ -137,10 +137,10 @@
             $orderSQL = "s.Timestamp ASC";
             break;
         case '3':
-            $orderSQL = "b.WeightedAvg DESC";
+            $orderSQL = "MAX(b.Rating) DESC, MAX(b.WeightedAvg) DESC";
             break;
         case '4':
-            $orderSQL = "b.WeightedAvg ASC";
+            $orderSQL = "MAX(b.Rating) ASC, MAX(b.WeightedAvg) ASC";
             break;
         default:
             $orderSQL = "s.Timestamp DESC";
