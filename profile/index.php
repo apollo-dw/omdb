@@ -596,7 +596,7 @@
                 '3' => 'Highest rated',
                 '4' => 'Lowest rated',
             ],
-            'categories' => ['genre', 'language', 'country', 'descriptor', 'status'],
+            'categories' => ['genre', 'language', 'descriptor', 'status'],
         ];
         require "../functions/filter/index.php";
     ?>
