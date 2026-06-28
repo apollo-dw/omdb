@@ -104,7 +104,7 @@
         xmlhttp.send(params);
     }
 
-    const debouncedUpdateFeed = debounce(updateFeed, 400);
+    const debouncedUpdateFeed = debounce(updateFeed, 100);
 
     $(document).on("omdbFiltersSubmitted", function() {
         debouncedUpdateFeed();

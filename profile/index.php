@@ -874,6 +874,16 @@
 </div>
 
 <script>
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
     var coll = document.getElementsByClassName("profile-top-map");
 
     for (let i = 0; i < coll.length; i++) {
@@ -981,15 +991,49 @@
             }
         });
 
-        $(document).on('omdbFiltersSubmitted', function(event, payload) {
+        function debouncedUpdateProfile(payload) {
             var params = new URLSearchParams();
-            params.set('y', payload.year);
-            params.set('o', payload.order);
-            params.set('r', payload.rating);
-            if (payload.tokens.length > 0) {
+            if (payload.year)
+                params.set('y', payload.year);
+            if (payload.order)
+                params.set('o', payload.order);
+            if (payload.rating)
+                params.set('r', payload.rating);
+            if (payload.tokens && payload.tokens.length > 0)
                 params.set('tokens', JSON.stringify(payload.tokens));
+
+            var url = '?' + params.toString();
+            history.replaceState(null, '', url);
+
+            var container = document.getElementById('maps-container');
+            if (container) {
+                container.style.opacity = '0.5';
             }
-            window.location.href = '?' + params.toString();
+
+            $('#maps-container').css('opacity', 0.5);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(this.responseText, "text/html");
+                    var newContent = doc.getElementById('maps-container');
+                    
+                    if (newContent && container) {
+                        container.innerHTML = newContent.innerHTML;
+                        container.style.opacity = '1';
+                    } else {
+                        // Fallback if parsing fails
+                        location.reload();
+                    }
+                }
+            };
+
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        }
+
+        $(document).on('omdbFiltersSubmitted', function(event, payload) {
+            debouncedUpdateProfile(payload);
         });
     });
 </script>

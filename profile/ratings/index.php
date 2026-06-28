@@ -202,107 +202,168 @@
     require "../../functions/filter.php";
 ?><br>
 
-<div style="text-align:center;">
-    <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
-        <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
+<div id="ratings-list">
+    <div style="text-align:center;">
+        <div class="pagination">
+            <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
+            <span id="page"><?php echo $page; ?></span>
+            <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
+        </div>
     </div>
-</div>
 
-<div class="flex-container">
-	<div class="flex-child" style="width:100%;">
-        <?php
-            $pageString = "LIMIT {$limit}";
+    <div class="flex-container">
+        <div class="flex-child" style="width:100%;">
+            <?php
+                $pageString = "LIMIT {$limit}";
 
-            if ($page > 1){
-                $lower = ($page - 1) * $limit;
-                $pageString = "LIMIT {$lower}, {$limit}";
-            }
+                if ($page > 1) {
+                    $lower = ($page - 1) * $limit;
+                    $pageString = "LIMIT {$lower}, {$limit}";
+                }
 
-            $queryParameterTypes = "ii" . $filterTypes;
-            $queryParameterValues = array_merge(array($profileId, $mode), $filterValues);
+                $queryParameterTypes = "ii" . $filterTypes;
+                $queryParameterValues = array_merge(array($profileId, $mode), $filterValues);
 
-            switch($order) {
-                case "2":
-                    $orderString = "ORDER BY r.DATE ASC";
-                    break;
-                case "3":
-                    $orderString = "ORDER BY r.SCORE DESC, r.DATE ASC";
-                    break;
-                case "4":
-                    $orderString = "ORDER BY r.SCORE ASC, r.DATE ASC";
-                    break;
-                case "1":
-                default:
-                    $orderString = "ORDER BY r.DATE DESC";
-            }
+                switch($order) {
+                    case "2":
+                        $orderString = "ORDER BY r.DATE ASC";
+                        break;
+                    case "3":
+                        $orderString = "ORDER BY r.SCORE DESC, r.DATE ASC";
+                        break;
+                    case "4":
+                        $orderString = "ORDER BY r.SCORE ASC, r.DATE ASC";
+                        break;
+                    case "1":
+                    default:
+                        $orderString = "ORDER BY r.DATE DESC";
+                }
 
-            $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted, b.BeatmapID
-                    FROM {$baseTable}
-                    LEFT JOIN beatmapsets s ON b.SetID = s.SetID
-                    {$filterJoins}
-                    WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}
-                    {$orderString} {$pageString};";
+                $stmt = "SELECT r.*, s.SetID, s.Artist, s.Title, b.DifficultyName, b.Blacklisted, b.BeatmapID
+                        FROM {$baseTable}
+                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
+                        {$filterJoins}
+                        WHERE {$userCondition} AND b.Mode = ? {$filterConditions} {$hideBlacklistedMapsCondition}
+                        {$orderString} {$pageString};";
 
-            $stmt = $conn->prepare($stmt);
-			
-            $stmt->bind_param($queryParameterTypes, ...$queryParameterValues);
-            $stmt->execute();
-            $result = $stmt->get_result();
+                $stmt = $conn->prepare($stmt);
 
-            while ($row = $result->fetch_assoc()) {
-                $stmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS Tags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?;");
-                $stmt->bind_param('ii', $profileId, $row["BeatmapID"]);
+                $stmt->bind_param($queryParameterTypes, ...$queryParameterValues);
                 $stmt->execute();
-                $tags = $stmt->get_result()->fetch_assoc()["Tags"];
-                $tags = safe_htmlspecialchars($tags ?? "", ENT_QUOTES, "ISO-8859-1");
-        ?>
-			<div class="flex-container ratingContainer alternating-bg">
-				<div class="flex-child">
-					<a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../assets/img/missing-map-thumbnail.png';"></a>
-				</div>
-				<div class="flex-child" style="flex:0 0 60%;">
-					<?php echo isset($row["Score"]) ? RenderUserRating($conn, $row) . " on" : ""; ?> <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
-                    <br> <span class="subText"><?php echo $tags; ?></span>
+                $result = $stmt->get_result();
+
+                while ($row = $result->fetch_assoc()) {
+                    $stmt2 = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS Tags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?;");
+                    $stmt2->bind_param('ii', $profileId, $row["BeatmapID"]);
+                    $stmt2->execute();
+                    $tags = $stmt2->get_result()->fetch_assoc()["Tags"];
+                    $tags = safe_htmlspecialchars($tags ?? "", ENT_QUOTES, "ISO-8859-1");
+            ?>
+                <div class="flex-container ratingContainer alternating-bg">
+                    <div class="flex-child">
+                        <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='../../assets/img/missing-map-thumbnail.png';"></a>
+                    </div>
+                    <div class="flex-child" style="flex:0 0 60%;">
+                        <?php echo isset($row["Score"]) ? RenderUserRating($conn, $row) . " on" : ""; ?> <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Artist"]} - {$row["Title"]} [{$row["DifficultyName"]}]", ENT_QUOTES);?></a>
+                        <br> <span class="subText"><?php echo $tags; ?></span>
+                    </div>
+                    <div class="flex-child" style="width:100%;text-align:right;">
+                        <?php if ($row["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
+                        <?php echo isset($row["date"]) ? GetHumanTime($row["date"]) : ""; ?>
+                    </div>
                 </div>
-				<div class="flex-child" style="width:100%;text-align:right;">
-					<?php if ($row["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
-					<?php echo isset($row["date"]) ? GetHumanTime($row["date"]) : ""; ?>
-				</div>
-			</div>
-			<?php
+            <?php
+                    $stmt2->close();
                 }
                 $stmt->close();
-			?>
-	</div>
-</div>
+            ?>
+        </div>
+    </div>
 
-<div style="text-align:center;">
-    <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>"; } ?></span></b>
-        <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amntOfPages) { echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>"; } ?></span></b>
+    <div style="text-align:center;">
+        <div class="pagination">
+            <b><span>
+                <?php
+                    if($page > 1) {
+                        echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>";
+                    }
+                ?>
+            </span></b>
+            <span id="page"><?php echo $page; ?></span>
+            <b><span>
+                <?php
+                    if($page < $amntOfPages) {
+                        echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>";
+                    }
+                ?>
+            </span></b>
+        </div>
     </div>
 </div>
 
 <script>
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
     function changePage(page) {
         if (page < 1) page = 1;
         var payload = window.getOmdbFilterPayload();
         
-        window.location.href = "?id=<?php echo $profileId; ?>" +
-            "&r=" + encodeURIComponent(payload.rating) + 
-            "&o=" + encodeURIComponent(payload.order) + 
-            "&t=" + encodeURIComponent(payload.tag) + 
-            "&p=" + page + 
-            "&y=" + encodeURIComponent(payload.year) + 
-            "&sr=" + encodeURIComponent(payload.sr) + 
-            "&tokens=" + encodeURIComponent(JSON.stringify(payload.tokens));
+        var params = new URLSearchParams();
+        params.set('id', <?php echo $profileId; ?>);
+        params.set('p', page);
+        if (payload.rating)
+            params.set('r', payload.rating);
+        if (payload.order)
+            params.set('o', payload.order);
+        if (payload.tag)
+            params.set('t', payload.tag);
+        if (payload.year)
+            params.set('y', payload.year);
+        if (payload.sr)
+            params.set('sr', payload.sr);
+        if (payload.tokens && payload.tokens.length > 0)
+            params.set('tokens', JSON.stringify(payload.tokens));
+        var url = "?" + params.toString();
+        history.replaceState(null, '', url);
+        
+        var container = document.getElementById('ratings-list');
+        container.style.opacity = '0.5';
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(this.responseText, "text/html");
+                var newContent = doc.getElementById('ratings-list');
+                
+                if (newContent) {
+                    container.innerHTML = newContent.innerHTML;
+                    container.style.opacity = '1';
+                } else {
+                    // Fallback if parsing fails
+                    location.reload();
+                }
+            }
+        };
+
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
     }
 
-    $(document).on('omdbFiltersSubmitted', function() {
+    const debouncedChangePage = debounce(function() {
         changePage(1);
+    }, 100);
+
+    $(document).on('omdbFiltersSubmitted', function() {
+        debouncedChangePage();
     });
 </script>
 
