@@ -28,7 +28,7 @@
 </style>
 
 <?php
-    $stmt = $conn->prepare("SELECT ProposalID, Name, ShortDescription FROM `descriptor_proposals` WHERE Status = 'pending';");
+    $stmt = $conn->prepare("SELECT ProposalID, Name, ShortDescription, Type FROM `descriptor_proposals` WHERE Status = 'pending';");
     $stmt->execute();
     $activeProposals = $stmt->get_result();
     $stmt->close();
@@ -45,6 +45,8 @@
                 <a href="../?id=<?php echo $proposal["ProposalID"]; ?>">
                     <h2 style="margin-bottom: 0em;"><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h2>
                     <span class="subText"><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></span>
+                    <br><br>
+                    <span class="subText"><b><?php echo safe_htmlspecialchars($proposal["Type"], ENT_QUOTES); ?></b></span>
                 </a>
             </div>
         </div>

@@ -229,6 +229,7 @@ CREATE TABLE `descriptors` (
 CREATE TABLE `descriptor_proposals` (
   `ProposalID` int NOT NULL,
   `ProposerID` int NOT NULL,
+  `DescriptorID` int DEFAULT NULL,
   `Name` varchar(40) NOT NULL,
   `ShortDescription` text NOT NULL,
   `ParentID` int DEFAULT NULL,
@@ -351,7 +352,7 @@ CREATE TABLE `list_hearts` (
   `HeartID` int NOT NULL,
   `ListID` int NOT NULL,
   `UserID` int NOT NULL,
-  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -444,7 +445,7 @@ CREATE TABLE `review_hearts` (
   `HeartID` int NOT NULL,
   `ReviewID` int NOT NULL,
   `UserID` int NOT NULL,
-  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------

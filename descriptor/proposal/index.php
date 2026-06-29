@@ -13,6 +13,23 @@
     if (is_null($proposal))
         die("Proposal not found");
 
+    $originalDescriptor = null;
+    $originalParentDescriptor = null;
+    
+    if ($proposal["Type"] === "modify" && !is_null($proposal["DescriptorID"])) {
+        $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
+        $stmt->bind_param("i", $proposal["DescriptorID"]);
+        $stmt->execute();
+        $originalDescriptor = $stmt->get_result()->fetch_assoc();
+        
+        if ($originalDescriptor && !is_null($originalDescriptor["ParentID"])) {
+            $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
+            $stmt->bind_param("i", $originalDescriptor["ParentID"]);
+            $stmt->execute();
+            $originalParentDescriptor = $stmt->get_result()->fetch_assoc();
+        }
+    }
+
     $stmt = $conn->prepare("SELECT * FROM descriptors WHERE DescriptorID = ?;");
     $stmt->bind_param("i", $proposal["ParentID"]);
     $stmt->execute();
@@ -71,6 +88,11 @@
         cursor:pointer;
         color: grey;
     }
+
+    .diff-old-value {
+        color: #ff9090;
+        font-size: 0.85em;
+    }
 </style>
 
 <div class="header">
@@ -85,25 +107,75 @@
         <table>
             <tr>
                 <td class="right">Name</td>
-                <td><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></td>
+                <td>
+                    <?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?>
+                    <?php if ($originalDescriptor && $originalDescriptor["Name"] !== $proposal["Name"]) { ?>
+                        <br>
+                        <span class="diff-old-value">(was: <?php echo safe_htmlspecialchars($originalDescriptor["Name"], ENT_QUOTES); ?>)</span>
+                    <?php } ?>
+                </td>
             </tr>
             <tr>
                 <td class="right">Description</td>
-                <td><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></td>
+                <td>
+                    <?php echo ParseShortLinks($conn, safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES)); ?>
+                    <?php if ($originalDescriptor && $originalDescriptor["ShortDescription"] !== $proposal["ShortDescription"]) { ?>
+                        <br>    
+                        <span class="diff-old-value">(was: <?php echo ParseShortLinks($conn, safe_htmlspecialchars($originalDescriptor["ShortDescription"], ENT_QUOTES)); ?>)</span>
+                    <?php } ?>
+                </td>
             </tr>
-            <?php if ($parentDescriptor !== null) { ?>
+            
             <tr>
                 <td class="right">Parent descriptor</td>
-                <td><?php echo safe_htmlspecialchars($parentDescriptor["Name"], ENT_QUOTES); ?></td>
+                <td>
+                    <?php 
+                    if ($parentDescriptor !== null) {
+                        echo safe_htmlspecialchars($parentDescriptor["Name"], ENT_QUOTES);
+                    } else {
+                        echo "<span class='subText'>None</span>";
+                    }
+
+                    if ($originalDescriptor) {
+                        $oldParentId = $originalDescriptor["ParentID"];
+                        $newParentId = $proposal["ParentID"];
+                        
+                        if ($oldParentId !== $newParentId) {
+                            $oldParentName = $originalParentDescriptor ? $originalParentDescriptor["Name"] : "None";
+                            ?>
+                            <br />
+                            <span class="diff-old-value">(was: <?php echo safe_htmlspecialchars($oldParentName, ENT_QUOTES); ?>)</span>
+                            <?php
+                        }
+                    }
+                    ?>
+                </td>
             </tr>
-            <?php } ?>
+
+            <tr>
+                <td class="right">Usable</td>
+                <td>
+                    <?php echo $proposal["Usable"] == 1 ? "True" : "False"; ?>
+                    <?php if ($originalDescriptor && $originalDescriptor["Usable"] != $proposal["Usable"]) { 
+                        $oldUsableText = $originalDescriptor["Usable"] == 1 ? "True" : "False";
+                        ?>
+                        <br>
+                        <span class="diff-old-value">(was: <?php echo $oldUsableText; ?>)</span>
+                    <?php } ?>
+                </td>
+            </tr>
+
             <tr>
                 <td class="right">Proposer</td>
                 <td><a href="/profile/<?php echo $proposal["ProposerID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($proposal["ProposerID"], $conn), ENT_QUOTES); ?></a></td>
             </tr>
             <tr>
                 <td class="right">Type</td>
-                <td><?php echo $proposal["Type"]; ?></td>
+                <td>
+                    <span style="<?php echo $proposal["Type"] === "modify" ? "color: #e3bc52; font-weight: bold;" : ""; ?>">
+                        <?php echo $proposal["Type"]; ?>
+                    </span>
+                </td>
             </tr>
             <tr>
                 <td class="right">Creation date</td>

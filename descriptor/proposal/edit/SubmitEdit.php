@@ -1,4 +1,5 @@
 <?php
+    ob_start();
     include '../../../base.php';
 
     if (!$loggedIn) {

@@ -1,11 +1,36 @@
 <?php
-    $PageTitle = "New Descriptor Proposal";
-    require '../../../header.php';
+    $descriptorId = isset($_GET['descriptor_id']) ? intval($_GET['descriptor_id']) : null;
+    $isEdit = !is_null($descriptorId);
 
-    $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");
+    $PageTitle = $isEdit ? "Edit Descriptor Proposal" : "New Descriptor Proposal";
+    require '../../../header.php';
 
     $MAX_PROPOSAL_COUNT = 9;
     $activeProposalCount = $conn->query("SELECT * FROM `descriptor_proposals` WHERE Status = 'pending';")->num_rows;
+
+    $name = "";
+    $shortDescription = "";
+    $parentId = "";
+    $usable = "1";
+
+    if ($isEdit) {
+        $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE DescriptorID = ?");
+        $stmt->bind_param("i", $descriptorId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($descriptor = $result->fetch_assoc()) {
+            $name = htmlspecialchars($descriptor['Name']);
+            $shortDescription = htmlspecialchars($descriptor['ShortDescription']);
+            $parentId = htmlspecialchars($descriptor['ParentID']);
+            $usable = $descriptor['Usable'];
+        } else {
+            echo "<h2>Descriptor not found.</h2>";
+            require '../../../footer.php';
+            exit;
+        }
+        $stmt->close();
+    }
 ?>
 
 <style>
@@ -37,7 +62,7 @@
     }
 </style>
 
-<h1>Propose new descriptor</h1>
+<h1><?php echo $isEdit ? "Propose descriptor edit" : "Propose new descriptor"; ?></h1>
 <div class="container">
     <?php if ($activeProposalCount >= $MAX_PROPOSAL_COUNT) { ?>
     <center>
@@ -48,13 +73,17 @@
     </center>
     <?php } else { ?>
     <form action="SubmitProposal.php" method="POST">
+        <?php if ($isEdit) { ?>
+            <input type="hidden" name="DescriptorID" value="<?php echo $descriptorId; ?>" />
+        <?php } ?>
+
         <table>
             <tr>
                 <td>
                     <label>Descriptor name:</label><br>
                 </td>
                 <td style="width:80%;">
-                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" maxlength="40" required/>
+                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" value="<?php echo $name; ?>" maxlength="40" required/>
                 </td>
             </tr>
             <tr>
@@ -62,7 +91,7 @@
                     <label>Description:</label>
                 </td>
                 <td>
-                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required></textarea>
+                    <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo $shortDescription; ?></textarea>
                 </td>
             </tr>
             <tr>
@@ -70,7 +99,7 @@
                     <label>Parent descriptor ID:</label><br>
                 </td>
                 <td>
-                    <input class="force-lowercase" autocomplete="off" name="ParentDescriptorID" id="ParentDescriptorID" placeholder="46" maxlength="40" /> <br>
+                    <input class="force-lowercase" autocomplete="off" name="ParentDescriptorID" id="ParentDescriptorID" placeholder="46" value="<?php echo $parentId; ?>" maxlength="40" /> <br>
                 </td>
             </tr>
             <tr>
@@ -79,8 +108,8 @@
                 </td>
                 <td>
                     <select name="Usable">
-                        <option value="1">True</option>
-                        <option value="0">False</option>
+                        <option value="1" <?php echo $usable == '1' ? 'selected' : ''; ?>>True</option>
+                        <option value="0" <?php echo $usable == '0' ? 'selected' : ''; ?>>False</option>
                     </select><br>
                     <span class="subText">Can this descriptor be used on beatmaps? <br> Some descriptors exist as a way to group other descriptors (such as "style").</span>
                 </td>
@@ -90,8 +119,12 @@
                     <label>Entry comment:</label>
                 </td>
                 <td>
-                    <textarea name="EntryComment" required placeholder="I think this descriptor would be good, because..."></textarea>
-                    <span class="subText">Explain why this would be good as a descriptor. <br>Cite sources for naming and existing usage if applicable.</span>
+                    <textarea name="EntryComment" required placeholder="<?php echo $isEdit ? 'I think this edit is necessary because...' : 'I think this descriptor would be good, because...'; ?>"></textarea>
+                    <?php if ($isEdit) { ?>
+                        <span class="subText">Give a reason for this edit. <br>Cite sources for any changes or additions.</span>
+                    <?php } else { ?>
+                        <span class="subText">Explain why this would be good as a descriptor. <br>Cite sources for naming and existing usage if applicable.</span>
+                    <?php } ?>
                 </td>
             </tr>
             <tr>
