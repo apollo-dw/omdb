@@ -44,10 +44,6 @@
         padding: 0.5em;
     }
 
-    .force-lowercase {
-        text-transform: lowercase;
-    }
-
     textarea {
         border: 1px solid white;
         background-color: #203838;
@@ -83,7 +79,7 @@
                     <label>Descriptor name:</label><br>
                 </td>
                 <td style="width:80%;">
-                    <input class="force-lowercase" autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" value="<?php echo $name; ?>" maxlength="40" required/>
+                    <input autocomplete="off" name="DescriptorName" id="DescriptorName" placeholder="symmetrical" value="<?php echo $name; ?>" maxlength="40" required/>
                 </td>
             </tr>
             <tr>
@@ -99,7 +95,7 @@
                     <label>Parent descriptor ID:</label><br>
                 </td>
                 <td>
-                    <input class="force-lowercase" autocomplete="off" name="ParentDescriptorID" id="ParentDescriptorID" placeholder="46" value="<?php echo $parentId; ?>" maxlength="40" /> <br>
+                    <input autocomplete="off" name="ParentDescriptorID" id="ParentDescriptorID" placeholder="46" value="<?php echo $parentId; ?>" maxlength="40" /> <br>
                 </td>
             </tr>
             <tr>
