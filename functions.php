@@ -1,5 +1,6 @@
 <?php
-    include_once 'env.php';
+	include_once 'env.php';
+	include_once 'functions/shortlinks.php';
 	include_once 'functions/bbcode.php';
 	include_once 'functions/access.php';
 	include_once 'functions/recommendations/index.php';
