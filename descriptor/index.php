@@ -204,6 +204,13 @@
     </div>
 </div>
 
+<br><br><br>
+<hr>
+
+<?php if ($loggedIn) { ?>
+        <a href="proposal/new/?descriptor_id=<?php echo $descriptor_id; ?>"><span class="subText"><i class="icon-edit"></i> Edit descriptor</span></a>
+<?php } ?>
+
 <?php
     require '../footer.php';
 ?>
