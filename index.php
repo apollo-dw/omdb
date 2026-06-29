@@ -247,9 +247,9 @@
                         <a style="color:white;" href="<?php echo $linkID; ?>">
                             <?php
                                 if ($row["comment_type"] == 'review') {
-                                    echo nl2br(safe_htmlspecialchars(mb_strimwidth(implode("\n\n", array_slice(preg_split('/\R\s*\R/', $row["Comment"]), 0, 2)), 0, 460, '...'), ENT_QUOTES));
+                                    echo ParseShortLinks($conn, nl2br(safe_htmlspecialchars(mb_strimwidth(implode("\n\n", array_slice(preg_split('/\R\s*\R/', $row["Comment"]), 0, 2)), 0, 460, '...'), ENT_QUOTES)), false);
                                 } else {
-                                    echo safe_htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."), ENT_QUOTES);
+                                    echo ParseShortLinks($conn, safe_htmlspecialchars(mb_strimwidth($row["Comment"], 0, 180, "..."), ENT_QUOTES), false);
                                 }
 
                             ?>
