@@ -30,11 +30,12 @@
     if($order == "rating")
         $orderString = "score DESC";
 
-$mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
+$mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
     (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
      WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
     FROM `ratings` r
     LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
+    LEFT JOIN mappernames mn ON mn.UserID = r.UserID
     {$selectString}
     AND beatmaps.Blacklisted = 0
     ORDER BY order_weight DESC, {$orderString}";
@@ -63,11 +64,11 @@ $mainQuery = "SELECT r.*, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WH
 ?>
 <div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
     <div class="flex-child">
-        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+        <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
         <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-            <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+            <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
         </a>
         <?php
             $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");

@@ -11,14 +11,14 @@
     }
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT * FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
+    $stmt = $conn->prepare("SELECT *, mn.Username FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID JOIN mappernames mn ON mn.UserID = s.CreatorID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
 
-    $PageTitle = $sampleRow['Title'] . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
+    $PageTitle = $sampleRow['Title'] . " by " . ($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn));
     $year = date("Y", strtotime($sampleRow['DateRanked']));
     $isLoved = $sampleRow["Status"] == 4;
     $isGraveyarded = $sampleRow["Status"] == -2;
@@ -115,7 +115,7 @@ GROUP BY
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  safe_htmlspecialchars(GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  safe_htmlspecialchars($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
@@ -157,7 +157,7 @@ GROUP BY
         <div class="flex-child" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
             <?php
-            $stmt = $conn->prepare("SELECT * FROM beatmapset_nominators WHERE SetID = ?");
+            $stmt = $conn->prepare("SELECT bn.NominatorID, bn.Mode, mn.Username FROM beatmapset_nominators bn LEFT JOIN mappernames mn ON mn.UserID = bn.NominatorID WHERE bn.SetID = ?");
             $stmt->bind_param("i", $mapset_id);
             $stmt->execute();
             $nominatorResult = $stmt->get_result();
@@ -165,7 +165,7 @@ GROUP BY
             $nominators = array();
             while ($row = $nominatorResult->fetch_assoc()) {
                 $nominatorID = $row["NominatorID"];
-                $nominatorName = GetUserNameFromId($nominatorID, $conn);
+                $nominatorName = $row["Username"] ?? GetUserNameFromId($nominatorID, $conn);
                 $mode = $row["Mode"];
 
                 if (!isset($nominators[$mode])) {
@@ -638,9 +638,10 @@ while($row = $result->fetch_assoc()) {
         <hr />
 		<?php } ?>
         <?php
-                $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private
+                $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private, mn.Username
                 FROM lists l
                 LEFT JOIN list_items li ON l.ListID = li.ListID
+                LEFT JOIN mappernames mn ON l.UserID = mn.UserID
                 WHERE ((li.SubjectID = ? AND li.Type = 'beatmapset')
                     OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap'))
                     AND (l.Private = 0 OR l.UserID = ?)
@@ -657,7 +658,7 @@ while($row = $result->fetch_assoc()) {
                 <h4 style="margin-bottom: 0;">Featured on lists</h4>
                 <?php
                 while ($row = $result->fetch_assoc()) {
-                    $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
+                    $stmt = $conn->prepare("SELECT li.* FROM list_items li WHERE `ListID` = ? AND `order` = 1;");
                     $stmt->bind_param("i", $row["ListID"]);
                     $stmt->execute();
                     $item = $stmt->get_result()->fetch_assoc();
@@ -670,7 +671,7 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child">
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
                         </div>
                     </div>
                     <?php
@@ -681,7 +682,7 @@ while($row = $result->fetch_assoc()) {
         <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
 		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
-            $stmt = $conn->prepare("SELECT * FROM `comments` WHERE SetID=? ORDER BY date ASC");
+            $stmt = $conn->prepare("SELECT *, mn.Username FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID WHERE SetID = ? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -699,10 +700,10 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ??  GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
