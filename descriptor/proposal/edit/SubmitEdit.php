@@ -7,7 +7,7 @@
     }
 
     $proposalID = $_POST['ProposalID'];
-    $descriptorName = strtolower($_POST["DescriptorName"]);
+    $descriptorName = $_POST["DescriptorName"];
     $shortDescription = $_POST["ShortDescription"];
     $parentID = $_POST["ParentDescriptorID"];
     $usable = $_POST["Usable"];
