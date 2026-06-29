@@ -214,7 +214,7 @@
                         <a href="/mapset/<?php echo $row["SetID"]; ?>">
                             <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
                                 class="diffThumb"
-                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png;"
+                                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                                 loading="lazy"/>
                         </a>
                     <?php } else { ?>
