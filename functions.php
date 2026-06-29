@@ -583,6 +583,8 @@
 			return $matches[0];
 		}, $string);
 
+		$string = ParseShortlinks($conn, $string);
+
 		return $string;
 	}
 

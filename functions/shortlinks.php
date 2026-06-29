@@ -1,5 +1,5 @@
 <?php
-  function parseShortlinks(mysqli $conn, string $text, bool $useLink = true): string {
+  function ParseShortlinks(mysqli $conn, string $text, bool $useLink = true): string {
     $cache = [];
 
     return preg_replace_callback(
