@@ -897,3 +897,23 @@ CREATE TABLE `cache` (
   `Value` varchar(255) NOT NULL,
   PRIMARY KEY (`Attribute`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `news_posts` (
+  `NewsID` INT NOT NULL AUTO_INCREMENT,
+  `Title` VARCHAR(255) NOT NULL,
+  `Content` TEXT NOT NULL,
+  `AuthorID` INT NOT NULL,
+  `DateCreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `DateEdited` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`NewsID`),
+  KEY `idx_news_date_created` (`DateCreated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `news_hearts` (
+  `HeartID` INT NOT NULL AUTO_INCREMENT,
+  `NewsID` INT NOT NULL,
+  `UserID` INT NOT NULL,
+  `CreatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`HeartID`),
+  UNIQUE KEY `news_hearts_pk2` (`NewsID`,`UserID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

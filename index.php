@@ -263,43 +263,84 @@
     </div>
 </div>
 <br>
-<div class="flex-container" style="width:100%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
-	<br>
-	<?php
-        $usedSets = array();
-		$stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
-        $stmt->bind_param("i", $mode);
-        $stmt->execute();
-		$result = $stmt->get_result();
+<div class="flex-container column-when-mobile-container" style="width:100%;background-color:DarkSlateGrey;justify-content:space-between;padding:0;align-items:stretch;">
+    <div class="flex-container" style="width:80%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+        <br>
+        <?php
+            $usedSets = array();
+            $stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
+            $stmt->bind_param("i", $mode);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-		while($row = $result->fetch_assoc()) {
-            if (in_array($row["SetID"], $usedSets))
-                continue;
-            if (sizeof($usedSets) >= 8)
-                break;
+            while($row = $result->fetch_assoc()) {
+                if (in_array($row["SetID"], $usedSets))
+                    continue;
+                if (sizeof($usedSets) >= 8)
+                    break;
 
-			$artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
-	?>
-	<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-		<a href="/mapset/<?php echo $row["SetID"]; ?>">
-            <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
-            class="diffThumb" 
-            style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
-            onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
-            loading="lazy" />
-        </a><br>
-		<span class="subText">
-			<a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
-            by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
-			<?php echo GetHumanTime($row["Timestamp"]); ?>
-		</span>
-	</div>
-	<?php
-            $usedSets[] = $row["SetID"];
-		}
+                $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
+        ?>
+        <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+            <a href="/mapset/<?php echo $row["SetID"]; ?>">
+                <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+                class="diffThumb" 
+                style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a><br>
+            <span class="subText">
+                <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
+                by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
+                <?php echo GetHumanTime($row["Timestamp"]); ?>
+            </span>
+        </div>
+        <?php
+                $usedSets[] = $row["SetID"];
+            }
 
-		$stmt->close();
-	?>
+            $stmt->close();
+        ?>
+    </div>
+    <div class="flex-child column-when-mobile" style="width:20%;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+            <b>Latest News</b>
+            <hr style="border-color:#2a4a4a;">
+            <?php
+                $newsStmt = $conn->prepare("
+                    SELECT n.NewsID, n.Title, n.Content, n.DateCreated, u.Username
+                    FROM news_posts n
+                    LEFT JOIN users u ON u.UserID = n.AuthorID
+                    ORDER BY n.DateCreated DESC
+                    LIMIT 1
+                ");
+                $newsStmt->execute();
+                $newsPost = $newsStmt->get_result()->fetch_assoc();
+                $newsStmt->close();
+ 
+                if ($newsPost):
+                    $newsDate = date("M j, Y H:i", strtotime($newsPost["DateCreated"]));
+                    $previewText = mb_strimwidth($newsPost["Content"], 0, 200, "…");
+            ?>
+                <b>
+                    <?php echo safe_htmlspecialchars($newsPost["Title"], ENT_QUOTES); ?>
+                </b>
+                <br>
+                <span class="subText">
+                    <?php echo $newsDate; ?> - <?php echo safe_htmlspecialchars($newsPost["Username"], ENT_QUOTES); ?>
+                </span>
+                <br><br>
+                <div style="font-size:0.85em;word-break:break-word;">
+                    <?php echo nl2br(safe_htmlspecialchars($previewText, ENT_QUOTES)); ?>
+                </div>
+            <?php else: ?>
+                <span class="subText">No news yet</span>
+            <?php endif; ?>
+        </div>
+        <div style="text-align:right;">
+            <a href="/news/" style="font-size:0.85em;">View all news →</a>
+        </div>
+    </div>
 </div>
 <br>
 <div class="flex-container column-when-mobile-container">
