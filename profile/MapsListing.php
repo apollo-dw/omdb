@@ -122,53 +122,56 @@
         $topMapRatingCount = $topMap["RatingCount"] ?? 0;
         $topMapChartRank = $topMap["ChartRank"] ?? "";
 ?>
-        <div data-rating-count="<?php echo $topMapRatingCount; ?>"
-             data-chart-rank="<?php echo $topMapChartRank; ?>"
-             class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>">
-
-            <a href="/mapset/<?php echo $set['SetID']; ?>">
-                <img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg"
-                     class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;"
-                     onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"
-                     loading="lazy" />
-            </a>
-            <div>
+        <div
+            data-rating-count="<?php echo $topMapRatingCount; ?>"
+            data-chart-rank="<?php echo $topMapChartRank; ?>"
+            class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>"
+        >
+            <div class="profile-top-map-info">
                 <a href="/mapset/<?php echo $set['SetID']; ?>">
-                    <?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?>
-                    <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>"
-                       target="_blank" rel="noopener noreferrer">
-                        <i class="icon-external-link" style="font-size:10px;"></i>
-                    </a><br>
+                    <img src="https://b.ppy.sh/thumb/<?php echo $set['SetID']; ?>l.jpg"
+                        class="diffThumb" style="height:48px;width:48px;margin-right:0.5em;"
+                        onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"
+                        loading="lazy" />
                 </a>
-                <a <?php if ($topMapIsBolded) echo "style='font-weight:bolder;'"; ?>
-                   href="/mapset/<?php echo $set['SetID']; ?>">
-                    <?php echo safe_htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?>
-                </a>
-                <span class="subText">
-                    <?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>*
-                    <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?>
-                </span><br>
-                <?php echo date("M jS, Y", strtotime($topMap['DateRanked'])); ?><br>
+                <div class="profile-top-map-text">
+                    <a href="/mapset/<?php echo $set['SetID']; ?>">
+                        <?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?>
+                        <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>"
+                        target="_blank" rel="noopener noreferrer">
+                            <i class="icon-external-link" style="font-size:10px;"></i>
+                        </a><br>
+                    </a>
+                    <a <?php if ($topMapIsBolded) echo "style='font-weight:bolder;'"; ?>
+                    href="/mapset/<?php echo $set['SetID']; ?>">
+                        <?php echo safe_htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?>
+                    </a>
+                    <span class="subText">
+                        <?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>*
+                        <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?>
+                    </span><br>
+                    <?php echo date("M jS, Y", strtotime($topMap['DateRanked'])); ?><br>
+                </div>
             </div>
 
-            <div style="margin-left:auto;">
-                <span style="display:inline-block;margin-right:1em;">
+            <div class="profile-top-map-stats">
+                <span class="profile-top-map-rating">
                     <?php if (isset($topMap["Score"])) echo RenderRating($topMap["Score"]); ?>
                 </span>
-                <span style="display:inline-block;margin-right:1em;min-width:8em;">
+                <span class="profile-top-map-comments">
                     <?php echo $commentCount; ?>
                     <span class="subText">comment<?php if ($commentCount != 1) echo 's'; ?></span>
                 </span>
-                <span style="display:inline-block;min-width:13em;">
+                <span class="profile-top-map-weighted">
                     <?php if (isset($topMap["WeightedAvg"])): ?>
                         <b><?php echo number_format((float)$topMap["WeightedAvg"], 2); ?></b>
                         <span class="subText">/ 5.00 from
                             <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes
-                        </span><br>
+                        </span>
                     <?php endif; ?>
                 </span>
                 <span class="collapse-arrow"
-                      style="display:inline-block;<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>user-select:none;margin-left:0.5em;margin-right:0.5em;width:1em;">
+                      style="<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>">
                     ◀
                 </span>
             </div>
@@ -177,7 +180,7 @@
         <div class="lesser-maps" style="display:none;">
             <?php while ($map = $difficultyResult->fetch_assoc()): ?>
                 <div class="profile-lesser-map">
-                    <div style="display:inline-block;">
+                    <div class="profile-lesser-map-name">
                         <a <?php if ($map["ChartRank"] <= 250 && isset($map["ChartRank"])) echo "style='font-weight:bolder;'"; ?>
                            href="/mapset/<?php echo $set['SetID']; ?>">
                             <?php echo safe_htmlspecialchars($map['DifficultyName'], ENT_QUOTES); ?>
@@ -187,19 +190,21 @@
                             <?php if ($topMapIsGD) echo "(GD)"; ?>
                         </span><br>
                     </div>
-                    <div style="float:right;display:inline-block;min-width:13em;min-height:1px;text-align:right;">
-                        <?php if (isset($map["ChartRank"])): ?>
-                            <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b>
-                            <span class="subText">/ 5.00 from
-                                <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes
-                            </span><br>
+                    <div class="profile-lesser-map-stats">
+                        <?php if (isset($map["Score"])): ?>
+                            <span class="profile-lesser-map-rating">
+                                <?php echo RenderRating($map["Score"]); ?>
+                            </span>
                         <?php endif; ?>
+                        <span class="profile-lesser-map-weighted">
+                            <?php if (isset($map["ChartRank"])): ?>
+                                <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b>
+                                <span class="subText">/ 5.00 from
+                                    <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes
+                                </span>
+                            <?php endif; ?>
+                        </span>
                     </div>
-                    <?php if (isset($map["Score"])): ?>
-                        <div style="float:right;display:inline-block;">
-                            <?php echo RenderRating($map["Score"]); ?>
-                        </div>
-                    <?php endif; ?>
                 </div>
             <?php endwhile; ?>
         </div>
