@@ -14,10 +14,10 @@
             <?php
             $motd = getMapOfTheDay($conn, $mode);
             
-            $query = "
-                SELECT 
+            $query = "SELECT 
                     COUNT(*) AS total_users,
-                    SUM(CASE WHEN `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR THEN 1 ELSE 0 END) AS online_users,
+                    (SELECT COUNT(DISTINCT UserID) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS active_raters,
+                    (SELECT COUNT(*) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS ratings_today,
                     (SELECT COUNT(*) FROM `ratings`) AS total_ratings,
                     (SELECT COUNT(*) FROM `comments`) AS total_comments
                 FROM `users`
@@ -30,8 +30,10 @@
             $stmt->close();
             ?>
 
-            <span title='<?php echo (int)$stats["online_users"]; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_users"]; ?> users</span>,
-            <?php echo (int)$stats["total_ratings"]; ?> ratings,
+            <span title='<?php echo (int)$stats["active_raters"]; ?> people rated maps today' style='border-bottom:1px dotted white;'>
+                <?php echo (int)$stats["total_users"]; ?> users
+            </span>,
+            <?php echo (int)$stats["total_ratings"]; ?> ratings (<?php echo (int)$stats["ratings_today"]; ?> today),
             <?php echo (int)$stats["total_comments"]; ?> comments
         </span>
     </div>  
