@@ -264,7 +264,7 @@
 </div>
 <br>
 <div class="flex-container column-when-mobile-container" style="width:100%;background-color:DarkSlateGrey;justify-content:space-between;padding:0;align-items:stretch;">
-    <div class="flex-container" style="width:80%;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+    <div class="flex-container" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
         <br>
         <?php
             $usedSets = array();
@@ -281,7 +281,7 @@
 
                 $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
         ?>
-        <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
             <a href="/mapset/<?php echo $row["SetID"]; ?>">
                 <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
                 class="diffThumb" 
@@ -302,7 +302,7 @@
             $stmt->close();
         ?>
     </div>
-    <div class="flex-child column-when-mobile" style="width:20%;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;margin:0;">
+    <div class="flex-child column-when-mobile" style="flex:1;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;margin:0;">
         <div>
             <b>Latest News</b>
             <hr style="border-color:#2a4a4a;">
