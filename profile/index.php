@@ -373,18 +373,17 @@
 ?>
         <hr>
         <h2>Mutuals</h2>
-        <div class="flex-container" style="background-color:#203838;padding:0px;">
-            <br>
+        <div class="flex-container" style="background-color:#203838;overflow:hidden;flex-wrap:wrap;justify-content:space-evenly;">
             <?php
                 $counter = 0;
-                $max = 10;
+                $max = 8;
 
                 while($row = $mutuals->fetch_assoc() and ($counter < $max)) {
                     ?>
-                    <div class="flex-child" style="text-align:center;width:11%;padding:0.5em;flex-direction:column;">
+                    <div class="flex-child" style="text-align:center;flex:0 0 auto;flex-wrap:wrap;padding:0.5em;flex-direction:column;min-width:0;">
                         <div class="profileImage">
-                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;" loading="lazy" /></a><br>
-                            <a href="/profile/<?php echo $row["ID"]; ?>"><?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?></a>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="max-width:5em;aspect-ratio:1/1;object-fit:cover;max-width:5em;width:100%;" loading="lazy" /></a><br>
+                            <a href="/profile/<?php echo $row["ID"]; ?>" style="width:100%;display:block;overflow:hidden;text-overflow:ellipsis;"><?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?></a>
                         </div>
                     </div>
             <?php
