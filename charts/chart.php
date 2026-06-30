@@ -156,7 +156,7 @@
             JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
             WHERE bd.BeatmapID = ?
             ORDER BY bd.Weight DESC, bd.DescriptorID
-            LIMIT 5");
+            LIMIT 10");
         while ($row = $result->fetch_assoc()) {
             $descStmt->bind_param("i", $row["BeatmapID"]);
             $descStmt->execute();
