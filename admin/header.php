@@ -54,6 +54,7 @@
             <a class="nav-link" href="blacklist.php">blacklist</a>
             <a class="nav-link" href="logs.php">logs</a>
             <a class="nav-link" href="#">ban</a>
+            <a class="nav-link" href="news.php">news</a>
 
             <br><br>
             logged in as <?php echo $userName; ?>
