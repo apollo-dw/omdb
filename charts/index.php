@@ -56,7 +56,7 @@
 		<?php include 'chart.php'; ?>
 	</div>
 
-	<div style="padding-top:0.5em;" class="flex-item column-when-mobile chart-filters">
+	<div style="padding-top:0.5em;" class="flex-item column-when-mobile mobile-filters">
         <?php
             $filterConfig = [
                 'defaultYear' => $year

@@ -475,8 +475,12 @@ a .topBarLink {
     justify-content: space-between;
   }
 
-  .chart-filters {
+  .mobile-filters {
     order: -1;
+  }
+
+  .friends-list {
+    display: none;
   }
 }
 

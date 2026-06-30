@@ -31,15 +31,15 @@
     }
 ?>
 
-<div class="flex-container">
-    <div id="activity-listing" style="flex: 0 0 60%; width: 60%;">
+<div class="flex-container column-when-mobile-container">
+    <div id="activity-listing" style="flex: 0 0 60%;">
 
     <?php
         include 'ActivityListing.php';
     ?>
 
     </div>
-    <div style="flex: 0 0 40%; padding-left: 1em;">
+    <div class="column-when-mobile mobile-filters" style="flex: 0 0 40%; padding-left: 1em;">
         <?php
             $filterConfig = [
                 'showYear' => true,
@@ -53,14 +53,18 @@
         ?>
 
         <hr>
-        <b>Your friends</b> <br>
-        <?php
-            foreach ($friends as $friend) {
-                echo "<a href='/profile/" . $friend . "'>";
-                echo GetUserNameFromId($friend, $conn) . "<br>";
-                echo "</a>";
-            }
-        ?>
+        <div class="friends-list">
+            <b>Your friends</b> <br>
+            <div>
+                <?php
+                    foreach ($friends as $friend) {
+                        echo "<a href='/profile/" . $friend . "'>";
+                        echo GetUserNameFromId($friend, $conn) . "<br>";
+                        echo "</a>";
+                    }
+                ?>
+            </div>
+        </div>
     </div>
 </div>
 
