@@ -302,7 +302,7 @@
             $stmt->close();
         ?>
     </div>
-    <div class="flex-child column-when-mobile" style="width:20%;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="flex-child column-when-mobile" style="width:20%;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;margin:0;">
         <div>
             <b>Latest News</b>
             <hr style="border-color:#2a4a4a;">
