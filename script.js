@@ -46,7 +46,7 @@ function showResult(str) {
         document.getElementById("topBarSearchResults").style.display = "block";
       }
     };
-    xmlhttp.open("GET", "/beatmapSearch.php?q=" + str, true);
+    xmlhttp.open("GET", "/beatmapSearch.php?q=" + encodeURIComponent(str), true);
     xmlhttp.send();
   }, 300);
 }
