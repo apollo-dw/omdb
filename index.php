@@ -261,44 +261,6 @@
 </div>
 <br>
 <div class="flex-container column-when-mobile-container" style="width:100%;background-color:DarkSlateGrey;justify-content:space-between;padding:0;align-items:stretch;">
-    <div class="flex-container" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
-        <br>
-        <?php
-            $usedSets = array();
-            $stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
-            $stmt->bind_param("i", $mode);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            while($row = $result->fetch_assoc()) {
-                if (in_array($row["SetID"], $usedSets))
-                    continue;
-                if (sizeof($usedSets) >= 8)
-                    break;
-
-                $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
-        ?>
-        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
-            <a href="/mapset/<?php echo $row["SetID"]; ?>">
-                <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
-                class="diffThumb" 
-                style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
-                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
-                loading="lazy" />
-            </a><br>
-            <span class="subText">
-                <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
-                by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
-                <?php echo GetHumanTime($row["Timestamp"]); ?>
-            </span>
-        </div>
-        <?php
-                $usedSets[] = $row["SetID"];
-            }
-
-            $stmt->close();
-        ?>
-    </div>
     <div class="flex-child column-when-mobile" style="flex:1;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;margin:0;">
         <div>
             <b>Latest News</b>
@@ -337,6 +299,44 @@
         <div style="text-align:right;">
             <a href="/news/" style="font-size:0.85em;">View all news →</a>
         </div>
+    </div>
+    <div class="flex-container" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+        <br>
+        <?php
+            $usedSets = array();
+            $stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
+            $stmt->bind_param("i", $mode);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while($row = $result->fetch_assoc()) {
+                if (in_array($row["SetID"], $usedSets))
+                    continue;
+                if (sizeof($usedSets) >= 8)
+                    break;
+
+                $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
+        ?>
+        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+            <a href="/mapset/<?php echo $row["SetID"]; ?>">
+                <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
+                class="diffThumb" 
+                style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
+                onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
+                loading="lazy" />
+            </a><br>
+            <span class="subText">
+                <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
+                by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
+                <?php echo GetHumanTime($row["Timestamp"]); ?>
+            </span>
+        </div>
+        <?php
+                $usedSets[] = $row["SetID"];
+            }
+
+            $stmt->close();
+        ?>
     </div>
 </div>
 <br>
