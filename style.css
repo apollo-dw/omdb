@@ -474,6 +474,10 @@ a .topBarLink {
     flex-basis: 100%;
     justify-content: space-between;
   }
+
+  .chart-filters {
+    order: -1;
+  }
 }
 
 .identifier:hover ~ .starRemoveButton:not(.disabled),
@@ -544,12 +548,6 @@ img {
 .chart-container {
   background-color: DarkSlateGrey;
   align-items: center;
-}
-
-.chart-container > div {
-  padding: 0.5em;
-  flex-grow: 1;
-  height: 100%;
 }
 
 .pagination {

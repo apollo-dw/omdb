@@ -156,25 +156,25 @@
             JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
             WHERE bd.BeatmapID = ?
             ORDER BY bd.Weight DESC, bd.DescriptorID
-            LIMIT 10");
+            LIMIT 5");
         while ($row = $result->fetch_assoc()) {
             $descStmt->bind_param("i", $row["BeatmapID"]);
             $descStmt->execute();
             $descriptorResult = $descStmt->get_result();
             $counter++;
         ?>
-        <div class="flex-container chart-container alternating-bg">
-            <div style="text-align:right; flex: 0 0 5%;">
+        <div class="flex-container chart-container alternating-bg" style="padding:0.5em 0;">
+            <div class="flex-child" style="text-align:right;flex:0 0 6%">
                 <b><?php echo "#" . $counter; ?></b>
             </div>
-            <div style="flex: 0 0 0;">
+            <div class="flex-child" style="flex:0 0 80px;">
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
                     <img src="https://b.ppy.sh/thumb/<?php echo $row['SetID']; ?>l.jpg"
                          class="diffThumb" style="height:80px;width:80px;"
                          onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" />
                 </a>
             </div>
-            <div style="flex: 0 0 46%;">
+            <div class="flex-child" style="flex:1 0 40%;">
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
                     <?php echo safe_htmlspecialchars($row['Artist'], ENT_QUOTES); ?>
                     - <?php echo safe_htmlspecialchars($row['Title'], ENT_QUOTES); ?><br>
@@ -202,13 +202,13 @@
                     ?>
                 </span>
             </div>
-            <div style="flex: auto auto 0;">
+            <div class="flex-child" style="flex:1;">
                 <b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b>
                 <span class="subText">/ 5.00 from
                     <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes
                 </span><br>
             </div>
-            <div style="flex: 0 auto 0;">
+            <div class="flex-child" style="flex:0 0 10%">
                 <b style="font-weight:900;"><?php echo $row["Score"]; ?></b>
             </div>
         </div>
