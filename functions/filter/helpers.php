@@ -250,7 +250,31 @@
 		return $parsed;
 	}
 
-    function buildBeatmapFilterSQL(array $parsed): array {
+    function getDescendantDescriptorIds($descriptorId, $conn) {
+        $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
+                SELECT DescriptorID
+                FROM descriptors
+                WHERE DescriptorID = ?
+                UNION ALL
+                SELECT d.DescriptorID
+                FROM descriptors d
+                JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
+            )
+            SELECT DescriptorID FROM DescendantDescriptors;");
+        $stmt->bind_param("i", $descriptorId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $ids = [];
+        while ($row = $result->fetch_assoc()) {
+            $ids[] = (int)$row['DescriptorID'];
+        }
+        $stmt->close();
+
+        return $ids;
+    }
+
+    function buildBeatmapFilterSQL(array $parsed, $conn): array {
         $sql = "";
         $types = "";
         $values = [];
@@ -308,14 +332,24 @@
         }
 
         foreach ($parsed['descriptors'] as $dId) {
-            $sql .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $types .= "i";
-            $values[] = $dId;
+            $descendantIds = getDescendantDescriptorIds($dId, $conn);
+            if (empty($descendantIds))
+                $descendantIds = [$dId];
+
+            $ph = implode(',', array_fill(0, count($descendantIds), '?'));
+            $sql .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID IN ($ph))";
+            $types .= str_repeat('i', count($descendantIds));
+            $values = array_merge($values, $descendantIds);
         }
         foreach ($parsed['exDescriptors'] as $dId) {
-            $sql .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID = ?)";
-            $types .= "i";
-            $values[] = $dId;
+            $descendantIds = getDescendantDescriptorIds($dId, $conn);
+            if (empty($descendantIds))
+                $descendantIds = [$dId];
+
+            $ph = implode(',', array_fill(0, count($descendantIds), '?'));
+            $sql .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID IN ($ph))";
+            $types .= str_repeat('i', count($descendantIds));
+            $values = array_merge($values, $descendantIds);
         }
 
         foreach ($parsed['srFilters'] as $cond) {
