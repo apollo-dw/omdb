@@ -5,10 +5,7 @@
 ?>
 
 <div style="display: flex;">
-    <div style="margin-right: 8px;">
-        <img src="/assets/img/omdb-32x32.png" />
-    </div>
-        <div>
+    <div>
         welcome to OMDB - a place to rate maps! discover new maps, check out people's ratings, AND STUFF. <br>
         <span style="color:grey;">
             <?php
