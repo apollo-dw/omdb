@@ -29,19 +29,23 @@
 	</head>
 	<body>
 		<div class="topBar">
+			<input type="checkbox" id="mobileMenuToggle" class="hamburgerToggle">
+			<label for="mobileMenuToggle" class="hamburgerLabel"><i class="icon-reorder"></i></label>
+
 			<a href="/" style="margin-right: 8px;color:white;"><img src="/assets/img/omdb-32x32.png" /></a>
-			<a href="/"><div class="topBarLink">home</div></a>
-			<a href="/charts/"><div class="topBarLink">charts</div></a>
-			<div class="topBarDropDown">
+			<a href="/" class="hideOnMobile"><div class="topBarLink">home</div></a>
+			<a href="/charts/" class="hideOnMobile"><div class="topBarLink">charts</div></a>
+			<div class="topBarDropDown hideOnMobile">
 				<div class="topBarLink topBarDropDownButton">maps</div>
 				<div class="dropdown-content">
 					<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
 					<a href="/random/">random</a>
 				</div>
 			</div>
-            <a href="/lists/"><div class="topBarLink">lists</div></a>
-			<a href="/friends/"><div class="topBarLink">friends</div></a>
-			
+            <a href="/lists/" class="hideOnMobile"><div class="topBarLink">lists</div></a>
+			<a href="/friends/" class="hideOnMobile"><div class="topBarLink">friends</div></a>
+			<a href="/news/" class="hideOnMobile"><div class="topBarLink">news</div></a>
+
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" onfocusin="searchFocus()" onkeyup="showResult(this.value)" value="" autocomplete="off" placeholder="Search... (or paste link)">
 				<div id="topBarSearchResults"></div>
@@ -73,8 +77,8 @@
 				}
 			?>
 
-			<span style="margin-left:auto;">
-                <div class="topBarDropDown">
+			<span style="margin-left:auto;display:flex;align-items:center;">
+                <div class="topBarDropDown hideOnMobile">
                     <div class="topBarLink topBarDropDownButton"><i class="icon-pencil"></i></div>
                     <div class="dropdown-content">
                         <a href="/descriptor/proposal/list">descriptor proposals</a>
@@ -108,7 +112,7 @@
 				<?php
 					if ($loggedIn) {
 				?>
-                        <a href="/dashboard/"><div class="topBarLink">dashboard</div></a>
+                        <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
                         <a href="/settings/"><b><i class="icon-cogs" style="margin-right:0.5em;"></i></b></a>
                         <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
                         <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
@@ -120,6 +124,33 @@
 					}
 				?>
 			</span>
+
+			<div class="mobileMenuPanel">
+				<a href="/"><div class="topBarLink">home</div></a>
+				<a href="/charts/"><div class="topBarLink">charts</div></a>
+				<a href="/lists/"><div class="topBarLink">lists</div></a>
+				<a href="/friends/"><div class="topBarLink">friends</div></a>
+				<a href="/news/"><div class="topBarLink">news</div></a>
+				<div class="topBarDropDown">
+					<div class="topBarLink topBarDropDownButton">maps</div>
+					<div class="dropdown-content">
+						<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
+						<a href="/random/">random</a>
+					</div>
+				</div>
+				<div class="topBarDropDown">
+					<div class="topBarLink topBarDropDownButton"><i class="icon-pencil"></i> edit tools</div>
+					<div class="dropdown-content">
+						<a href="/descriptor/proposal/list">descriptor proposals</a>
+						<a href="/edit-queue/">edit queue</a>
+						<a href="/maps/add/">add grave sets</a>
+						<a href="/labs/">labs</a>
+					</div>
+				</div>
+				<?php if ($loggedIn) { ?>
+					<a href="/dashboard/"><div class="topBarLink">dashboard</div></a>
+				<?php } ?>
+			</div>
 		</div>
 		
 		<div class="content" style="margin-top:5em;">

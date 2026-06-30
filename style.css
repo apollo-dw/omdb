@@ -204,6 +204,24 @@ a .topBarLink {
   display: none;
 }
 
+.hamburgerToggle {
+  display: none;
+}
+
+.hamburgerLabel {
+  display: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0.6rem;
+  color: white;
+  height: 100%;
+  align-items: center;
+}
+
+.mobileMenuPanel {
+  display: none;
+}
+
 @media only screen and (max-width: 1050px) {
   .content {
     padding-left: 10%;
@@ -236,6 +254,63 @@ a .topBarLink {
 
   .star-rating-list-mobile {
     display: initial;
+  }
+
+  .hamburgerLabel {
+    display: flex;
+    order: -1;
+  }
+
+  .hideOnMobile {
+    display: none !important;
+  }
+
+  .mobileMenuPanel {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #182828;
+    z-index: 998;
+    line-height: 2.5rem;
+  }
+
+  .hamburgerToggle:checked ~ .mobileMenuPanel {
+    display: flex;
+  }
+
+  .mobileMenuPanel a, .mobileMenuPanel .topBarDropDown, .mobileMenuPanel .topBarLink {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobileMenuPanel .topBarLink {
+    text-align: left;
+    padding-left: 1.25rem;
+    height: auto;
+    background-color: transparent;
+  }
+
+  .mobileMenuPanel .topBarLink:hover {
+    background-color: #0c1515;
+  }
+
+  .mobileMenuPanel .topBarDropDownButton {
+    font-weight: bold;
+    background-color: #0c1515;
+  }
+
+  .mobileMenuPanel .dropdown-content {
+    position: static;
+    display: block !important;
+    background-color: transparent;
+  }
+
+  .mobileMenuPanel .dropdown-content a {
+    padding-left: 2.5rem;
+    line-height: 2.25rem;
   }
 }
 
