@@ -111,7 +111,7 @@ a .topBarLink {
   font-family: MS UI Gothic, Verdana, sans-serif;
   width: stretch;
   z-index: 2;
-  padding: 1em 0.25em;
+  padding: 1em 0.5em;
 }
 
 #topBarSearchResults a {
