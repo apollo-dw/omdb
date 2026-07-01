@@ -11,7 +11,7 @@
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-    $filter = buildBeatmapFilterSQL($parsedTokens);
+    $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
     $friendsStatus = $parsedTokens['friendsStatus'];
     $ratedStatus = $parsedTokens['ratedStatus'];
 ?>

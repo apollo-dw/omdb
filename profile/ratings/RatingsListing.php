@@ -14,7 +14,7 @@
     if (!is_array($tokensRaw)) $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-    $filter = buildBeatmapFilterSQL($parsedTokens);
+    $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
 
     $isSelf = $loggedIn && ($profileId === $userId);
     $hideBlacklistedMapsCondition = $isSelf ? "" : "AND b.Blacklisted = 0";

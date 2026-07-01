@@ -149,7 +149,7 @@
 </div>
 
 <?php if ($counter === 10) { ?>
-<a href="../charts/?y=all-time&descriptors=<?php echo safe_htmlspecialchars(rawurlencode($descriptor["Name"]), ENT_QUOTES); ?>">
+<a href="../charts/?y=all-time&tokens=<?php echo safe_htmlspecialchars(rawurlencode('d' . $descriptor['DescriptorID']), ENT_QUOTES); ?>">
     <div style="float:right;">
         ... view more!
     </div>

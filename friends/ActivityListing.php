@@ -17,7 +17,7 @@
     $year = $_POST['year'] ?? 'all-time';
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 
-    $filter = buildBeatmapFilterSQL($parsedTokens);
+    $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
     $beatmapFilterSQL = $filter['sql'];
     $beatmapFilterTypes = $filter['types'];
     $beatmapFilterValues = $filter['values'];

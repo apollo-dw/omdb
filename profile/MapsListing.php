@@ -14,7 +14,7 @@
         $tokensRaw = [];
 
     $parsedTokens = parseFilterTokens($tokensRaw);
-    $filter = buildBeatmapFilterSQL($parsedTokens);
+    $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
 
     $filterConditions = "";
     $filterTypes = "";
