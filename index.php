@@ -17,9 +17,10 @@
             $query = "SELECT 
                     COUNT(*) AS total_users,
                     (SELECT COUNT(DISTINCT UserID) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS active_raters,
-                    (SELECT COUNT(*) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS ratings_today,
                     (SELECT COUNT(*) FROM `ratings`) AS total_ratings,
-                    (SELECT COUNT(*) FROM `comments`) AS total_comments
+                    (SELECT COUNT(*) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS ratings_today,
+                    (SELECT COUNT(*) FROM `comments`) AS total_comments,
+                    (SELECT COUNT(*) FROM `comments` WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS comments_today
                 FROM `users`
             ";
             
@@ -34,9 +35,11 @@
                 <?php echo (int)$stats["total_users"]; ?> users
             </span>,
             <span title='<?php echo (int)$stats["ratings_today"]; ?> today' style='border-bottom:1px dotted white;'>
-                <?php echo (int)$stats["total_ratings"]; ?> ratings,
+                <?php echo (int)$stats["total_ratings"]; ?> ratings
+            </span>,
+            <span title='<?php echo (int)$stats["comments_today"]; ?> today' style='border-bottom:1px dotted white;'>
+                <?php echo (int)$stats["total_comments"]; ?> comments
             </span>
-            <?php echo (int)$stats["total_comments"]; ?> comments
         </span>
     </div>  
 </div>
