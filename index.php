@@ -23,7 +23,9 @@
                     (SELECT COUNT(*) FROM `comments`) AS total_comments,
                     (SELECT COUNT(*) FROM `comments` WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS comments_today,
                     (SELECT COUNT(*) FROM `reviews`) AS total_reviews,
-                    (SELECT COUNT(*) FROM `reviews` WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS reviews_today
+                    (SELECT COUNT(*) FROM `reviews` WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS reviews_today,
+                    (SELECT COUNT(*) FROM `lists`) AS total_lists,
+                    (SELECT COUNT(*) FROM `lists` WHERE `CreatedAt` >= NOW() - INTERVAL 24 HOUR) AS lists_today
                 FROM `users`
             ";
             
@@ -45,6 +47,9 @@
             </span>,
             <span title='<?php echo (int)$stats["reviews_today"]; ?> within the last day' style='border-bottom:1px dotted white;'>
                 <?php echo (int)$stats["total_reviews"]; ?> reviews
+            </span>,
+            <span title='<?php echo (int)$stats["lists_today"]; ?> within the last day' style='border-bottom:1px dotted white;'>
+                <?php echo (int)$stats["total_lists"]; ?> lists
             </span>
         </span>
     </div>  
