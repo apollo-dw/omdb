@@ -33,7 +33,9 @@
             <span title='<?php echo (int)$stats["active_raters"]; ?> people rated maps today' style='border-bottom:1px dotted white;'>
                 <?php echo (int)$stats["total_users"]; ?> users
             </span>,
-            <?php echo (int)$stats["total_ratings"]; ?> ratings (<?php echo (int)$stats["ratings_today"]; ?> today),
+            <span title='<?php echo (int)$stats["ratings_today"]; ?> today' style='border-bottom:1px dotted white;'>
+                <?php echo (int)$stats["total_ratings"]; ?> ratings,
+            </span>
             <?php echo (int)$stats["total_comments"]; ?> comments
         </span>
     </div>  
