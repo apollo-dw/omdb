@@ -20,7 +20,7 @@
                     (SELECT COUNT(*) FROM `comments`) AS total_comments,
                     (SELECT COUNT(*) FROM `comments` WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS comments_today,
                     (SELECT COUNT(*) FROM `reviews`) AS total_reviews,
-                    (SELECT COUNT(*) FROM `lists`) AS total_lists,
+                    (SELECT COUNT(*) FROM `lists`) AS total_lists
                 FROM `users`
             ";
             
