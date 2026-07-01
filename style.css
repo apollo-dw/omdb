@@ -89,7 +89,8 @@ a .topBarLink {
 .topBarSearch {
   display: inline-block;
   margin: 0px;
-  padding: 0px;
+  padding: 0 1em;
+  width: 100%;
 }
 
 #topBarSearchResults {
@@ -98,19 +99,19 @@ a .topBarLink {
   z-index: 1;
   line-height: 1.5em;
   overflow-y: auto;
+  overflow-x: hidden;
+  text-wrap: auto;
   max-height: 25em;
-  width: 50em;
   border-radius: 6px;
 }
 
 .topBarSearchBar {
-  margin-left: 8px;
-  border-radius: 8px;
-  font-family:
-    MS UI Gothic,
-    Verdana,
-    sans-serif;
+  border: 0;
+  outline: 0;
+  font-family: MS UI Gothic, Verdana, sans-serif;
+  width: stretch;
   z-index: 2;
+  padding: 1em 0.5em;
 }
 
 #topBarSearchResults a {
@@ -213,13 +214,148 @@ a .topBarLink {
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0 0.6rem;
-  color: white;
+  color: #6fffea;
   height: 100%;
   align-items: center;
 }
 
 .mobileMenuPanel {
   display: none;
+}
+
+.profile-top-map {
+  padding: 0.5em;
+  width: 100%;
+  background-color: darkslategray;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.5em;
+}
+
+.profile-top-map .collapse-arrow {
+  justify-self: end;
+}
+
+.lesser-maps {
+  width: 55%;
+  min-width: 24em;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.profile-lesser-map {
+  margin-left: 1em;
+  margin-right: 0;
+  background-color: darkslategray;
+  padding: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em 1em;
+}
+
+.profile-lesser-map:nth-last-child(1) {
+  margin-bottom: 1em;
+}
+
+.profile-top-map:nth-child(4n + 1) {
+  background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n + 1) + .lesser-maps .profile-lesser-map:nth-of-type(even) {
+  background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd) {
+  background-color: #203838;
+}
+
+.profile-top-map:nth-child(4n + 1) .starBackground {
+  color: darkslategray;
+}
+
+.profile-top-map:nth-child(4n + 1) + .lesser-maps .profile-lesser-map:nth-of-type(even) .starBackground {
+  color: darkslategray;
+}
+
+.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd) .starBackground {
+  color: darkslategray;
+}
+
+.profile-top-map-info {
+  display: flex;
+  flex: 1 1 220px;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.profile-top-map-text {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.profile-top-map-text a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.profile-top-map-stats {
+  display: grid;
+  flex: 1 1 320px;
+  grid-template-columns: 6em 8em 12em auto;
+  align-items: center;
+  justify-content: end;
+  column-gap: 1em;
+  row-gap: 0.5em;
+}
+
+.profile-top-map-rating {
+  text-align: left;
+}
+
+.profile-top-map-comments {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.profile-top-map-weighted {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.profile-lesser-map-name {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.profile-lesser-map-name a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.profile-lesser-map-stats {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75em;
+}
+
+.profile-lesser-map-weighted {
+  min-width: 9em;
+  text-align: right;
 }
 
 @media only screen and (max-width: 1050px) {
@@ -233,10 +369,6 @@ a .topBarLink {
     padding-right: 2%;
   }
 
-  .topBarSearchBar {
-    width: 3.5em;
-  }
-
   .column-when-mobile-container {
     flex-direction: column;
   }
@@ -245,10 +377,7 @@ a .topBarLink {
     width: 100% !important;
   }
 
-  .topBarUsername,
-  .star-rating-list,
-  .starRemoveButton,
-  .star-value {
+  .star-rating-list, .starRemoveButton, .star-value {
     display: none !important;
   }
 
@@ -311,6 +440,47 @@ a .topBarLink {
   .mobileMenuPanel .dropdown-content a {
     padding-left: 2.5rem;
     line-height: 2.25rem;
+  }
+
+  .profile-top-map {
+    align-items: flex-start;
+  }
+
+  .lesser-maps {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .profile-top-map-info, .profile-top-map-stats {
+    flex-basis: 100%;
+  }
+
+  .profile-top-map-stats {
+    grid-template-columns: 1fr;
+    justify-items: end;
+    row-gap: 0.25em;
+  }
+
+  .profile-top-map-comments, .profile-top-map-weighted {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .profile-lesser-map {
+    margin-left: 1em;
+  }
+
+  .profile-lesser-map-stats {
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+
+  .mobile-filters {
+    order: -1;
+  }
+
+  .friends-list {
+    display: none;
   }
 }
 
@@ -382,12 +552,6 @@ img {
 .chart-container {
   background-color: DarkSlateGrey;
   align-items: center;
-}
-
-.chart-container > div {
-  padding: 0.5em;
-  flex-grow: 1;
-  height: 100%;
 }
 
 .pagination {
@@ -780,59 +944,6 @@ ol.star-rating-list > li {
   position: relative;
   bottom: 100%;
   display: inline-block;
-}
-
-.profile-top-map {
-  padding: 0.5em;
-  width: 100%;
-  background-color: darkslategray;
-  display: flex;
-  align-items: center;
-}
-
-.profile-lesser-map {
-  margin-left: 40%;
-  margin-right: 0;
-  background-color: darkslategray;
-  padding: 1em;
-}
-
-.profile-top-map:nth-child(4n + 1) {
-  background-color: #203838;
-}
-
-.profile-top-map:nth-child(4n + 1)
-  + .lesser-maps
-  .profile-lesser-map:nth-of-type(even) {
-  background-color: #203838;
-}
-
-.profile-top-map:nth-child(4n-1)
-  + .lesser-maps
-  .profile-lesser-map:nth-of-type(odd) {
-  background-color: #203838;
-}
-
-.profile-top-map:nth-child(4n + 1) .starBackground {
-  color: darkslategray;
-}
-
-.profile-top-map:nth-child(4n + 1)
-  + .lesser-maps
-  .profile-lesser-map:nth-of-type(even)
-  .starBackground {
-  color: darkslategray;
-}
-
-.profile-top-map:nth-child(4n-1)
-  + .lesser-maps
-  .profile-lesser-map:nth-of-type(odd)
-  .starBackground {
-  color: darkslategray;
-}
-
-.profile-lesser-map:nth-last-child(1) {
-  margin-bottom: 1em;
 }
 
 .tabbed-container-nav {

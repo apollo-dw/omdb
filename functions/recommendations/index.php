@@ -358,7 +358,7 @@
 		foreach ($similarMaps as $similarMap) {
 			$similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
 			?>
-			<div class="flex-child" style="text-align:center;width:11%;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+			<div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
 				<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
 				<span class="subText">
 					<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$similarMap["Artist"]} - {$similarMap["Title"]} [{$similarMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a><br>
