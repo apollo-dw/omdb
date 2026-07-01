@@ -14,7 +14,7 @@
 
             (SELECT COUNT(*)
             FROM lists
-            WHERE UserID = ?) AS listCount,
+            WHERE UserID = ? AND Private = 0) AS listCount,
 
             (SELECT COUNT(*)
             FROM list_hearts
