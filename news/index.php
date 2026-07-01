@@ -53,15 +53,26 @@
                 "</span>";
         }
         $heartedUsernamesString = implode(", ", $heartedUsernames);
+
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM news_comments WHERE NewsID = ?;");
+        $stmt->bind_param("i", $newsId);
+        $stmt->execute();
+        $newsCommentCount = $stmt->get_result()->fetch_row()[0];
+        $stmt->close();
 ?>
     <div class="news-post alternating-bg" style="padding: 1em;">
-        <?php if ($loggedIn) { ?>
+        <h2>
+            <a href="post.php?id=<?php echo $newsId; ?>">
+                <?php echo safe_htmlspecialchars($post["Title"], ENT_QUOTES); ?>
+            </a>
+            <?php if ($loggedIn) { ?>
             <div class="tooltip-wrapper" style="float:right;">
                 <span class="subText">[<?php echo $newsHeartCount; ?>]</span>
 
                 <i
                     id="news-heart-<?php echo $newsId; ?>"
                     class="icon-heart<?php if (!$userHasLikedNews) echo "-empty"; ?> news-heart"
+                    style="font-size: 13px;"
                     data-news-id="<?php echo $newsId; ?>"
                 ></i>
                 <?php if ($heartedUsernamesString) { ?>
@@ -70,9 +81,12 @@
                     </div>
                 <?php } ?>
             </div>
+            <br>
+            <span class="subText" style="float:right;">    
+                <?php echo $newsCommentCount; ?> comment<?php echo $newsCommentCount == 1 ? "" : "s"; ?>
+            </span>
         <?php } ?>
-
-        <h2><?php echo safe_htmlspecialchars($post["Title"], ENT_QUOTES); ?></h2>
+        </h2>
         <span class="subText">
             Posted by
             <a href="/profile/<?php echo (int)$post["AuthorID"]; ?>">
@@ -85,7 +99,10 @@
         </span>
         <hr>
         <div style="line-height:1.6;word-break:break-word;">
-            <?php echo ParseCommentLinks($conn, $post["Content"]); ?>
+            <?php 
+                $previewText = mb_strimwidth($post["Content"], 0, 200, "…");
+                echo nl2br(safe_htmlspecialchars($previewText, ENT_QUOTES));
+            ?>
         </div>
     </div>
 <?php endforeach; ?>
