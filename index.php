@@ -31,15 +31,9 @@
             $stmt->close();
             ?>
 
-            <span title='<?php echo (int)$stats["online_users"]; ?> within the last day, <?php echo (int)$stats["active_raters"]; ?> rated maps within the last day' style='border-bottom:1px dotted white;'>
-                <?php echo (int)$stats["total_users"]; ?> users
-            </span>,
-            <span title='<?php echo (int)$stats["ratings_today"]; ?> within the last day' style='border-bottom:1px dotted white;'>
-                <?php echo (int)$stats["total_ratings"]; ?> ratings
-            </span>,
-            <span title='<?php echo (int)$stats["comments_today"]; ?> within the last day' style='border-bottom:1px dotted white;'>
-                <?php echo (int)$stats["total_comments"]; ?> comments
-            </span>, <?php echo (int)$stats["total_reviews"]; ?> reviews, <?php echo (int)$stats["total_lists"]; ?> lists
+            <span title='<?php echo (int)$stats["online_users"]; ?> within the last day, <?php echo (int)$stats["active_raters"]; ?> rated maps within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_users"]; ?> users</span>,
+            <span title='<?php echo (int)$stats["ratings_today"]; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_ratings"]; ?> ratings</span>,
+            <span title='<?php echo (int)$stats["comments_today"]; ?> within the last day' style='border-bottom:1px dotted white;'><?php echo (int)$stats["total_comments"]; ?> comments</span>, <?php echo (int)$stats["total_reviews"]; ?> reviews, <?php echo (int)$stats["total_lists"]; ?> lists
         </span>
     </div>  
 </div>
