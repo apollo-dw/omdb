@@ -173,6 +173,18 @@
             )
             UNION ALL
             (
+                SELECT nc.*, 'news' AS comment_type, np.Title as Name, nc.NewsID as ProposalID, NULL as Artist, NULL as Title, m.Username
+                FROM news_comments nc
+                JOIN news_posts np ON np.NewsID = nc.NewsID
+                LEFT JOIN mappernames m ON m.UserID = nc.UserID
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_relations r 
+                    WHERE nc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                )
+            )
+            UNION ALL
+            (
                 SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM reviews r
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
@@ -200,14 +212,18 @@
             ORDER BY date DESC
             LIMIT 40; ");
 
-        $stmt->bind_param("iiiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
+        $stmt->bind_param("iiiiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
         $stmt->execute();
         $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
-            $linkID = $row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review'
-                ? "/mapset/{$row["SetID"]}"
-                : "/descriptor/proposal/?id={$row["ProposalID"]}";
+            if ($row['comment_type'] === 'beatmap' || $row['comment_type'] === 'review') {
+                $linkID = "/mapset/{$row["SetID"]}";
+            } elseif ($row['comment_type'] === 'news') {
+                $linkID = "/news/post.php?id={$row["ProposalID"]}";
+            } else {
+                $linkID = "/descriptor/proposal/?id={$row["ProposalID"]}";
+            }
         ?>
             <div class="flex-container ratingContainer alternating-bg">
                 <div class="flex-child" style="margin-left:0.5em;">
@@ -218,6 +234,10 @@
                                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                                 loading="lazy"/>
                         </a>
+                    <?php } elseif ($row["comment_type"] == 'news') { ?>
+                        <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
+                            <i class="icon-list-alt"></i>
+                        </div>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
                             <i class="icon-pencil"></i>
@@ -238,6 +258,8 @@
                         <span>
                             <?php if ($row["comment_type"] == 'descriptor_proposal') { ?>
                                 on <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?> descriptor</a>
+                            <?php } elseif ($row["comment_type"] == 'news') { ?>
+                                on <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?></a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
                                 reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Artist"] . " - " . $row["Title"], ENT_QUOTES); ?></a>
                             <?php } ?>
