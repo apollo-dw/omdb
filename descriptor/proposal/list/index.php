@@ -44,7 +44,7 @@
             <div class="proposal-content">
                 <a href="../?id=<?php echo $proposal["ProposalID"]; ?>">
                     <h2 style="margin-bottom: 0em;"><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h2>
-                    <span class="subText"><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></span>
+                    <span class="subText"><?php echo ParseShortLinks($conn, safe_htmlspecialchars($proposal["ShortDescription"]), false); ?></span>
                     <br><br>
                     <span class="subText"><b><?php echo safe_htmlspecialchars($proposal["Type"], ENT_QUOTES); ?></b></span>
                 </a>

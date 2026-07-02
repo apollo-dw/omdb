@@ -421,7 +421,7 @@
                     foreach ($highestMapDescriptors as $descriptor) {
                         $name = safe_htmlspecialchars($descriptor["Name"]);
                         $id = (int)$descriptor["DescriptorID"];
-                        $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                        $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
                         $highestMapDescLinks[] = '
                           <span class="tooltip-wrapper">
@@ -484,7 +484,7 @@
                         while ($descriptor = $descResult->fetch_assoc()) {
                             $name = safe_htmlspecialchars($descriptor["Name"]);
                             $id = (int)$descriptor["DescriptorID"];
-                            $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                            $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
                             $descriptors[] = '
                                             <span class="tooltip-wrapper">
                                                 <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>

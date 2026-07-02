@@ -191,7 +191,7 @@
                         while ($descriptor = $descriptorResult->fetch_assoc()) {
                             $name = safe_htmlspecialchars($descriptor["Name"]);
                             $id = (int)$descriptor["DescriptorID"];
-                            $short = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                            $short = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
                             $descriptorLinks[] = '
                                 <span class="tooltip-wrapper">
                                     <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>

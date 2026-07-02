@@ -386,7 +386,7 @@
                   while ($descriptor = $motdDescriptorResult->fetch_assoc()) {
                     $name = safe_htmlspecialchars($descriptor["Name"]);
                     $id = (int)$descriptor["DescriptorID"];
-                    $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                    $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
                     $descriptorLink = '
                       <span class="tooltip-wrapper">
@@ -476,7 +476,7 @@
                   while ($descriptor = $descriptorResult->fetch_assoc()) {
                     $name = safe_htmlspecialchars($descriptor["Name"]);
                     $id = (int)$descriptor["DescriptorID"];
-                    $shortDescription = safe_htmlspecialchars($descriptor["ShortDescription"]);
+                    $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
                     $descriptorLink = '
                       <span class="tooltip-wrapper">
