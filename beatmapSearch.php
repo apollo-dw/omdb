@@ -40,19 +40,49 @@
             <?php
         }
     }
-
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT s.`SetID`, s.Title, s.Artist, b.DifficultyName 
-                            FROM `beatmaps` b 
-                            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
-                            WHERE (b.DifficultyName LIKE ? OR s.Artist LIKE ? OR s.Title LIKE ?)
-                                AND b.Mode = ?
-                            ORDER BY RatingCount DESC
-                            LIMIT 25;");
-    $stmt->bind_param("sssi", $like, $like, $like, $mode);
-	$stmt->execute();
-	$stmt->bind_result($setId, $title, $artist, $difficultyName);
+    $types = "";
+    $params = [];
+    $sql = "SELECT s.`SetID`, s.Title, s.Artist, b.DifficultyName 
+            FROM `beatmaps` b 
+            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
+            WHERE b.Mode = ?";
+            
+    $types .= "i";
+    $params[] = $mode;
+
+    // Only check the first 10 terms basically
+    $terms = array_slice(array_filter(explode(" ", $q)), 0, 10);
+    $termClauses = [];
+    foreach ($terms as $term) {
+        $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
+        if (is_numeric($term)) { // Potentially just bID/sID
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName) LIKE ? OR b.BeatmapID = ? OR s.SetID = ?)";
+            $types .= "sii";
+            $params[] = $likeTerm;
+            $params[] = (int)$term;
+            $params[] = (int)$term;
+        } else {
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName) LIKE ?)";
+            $types .= "s";
+            $params[] = $likeTerm;
+        }
+    }
+
+    if (!empty($termClauses)) {
+        $sql .= " AND " . implode(" AND ", $termClauses);
+    }
+
+    $sql .= " ORDER BY RatingCount DESC LIMIT 25;";
+
+    $stmt = $conn->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $stmt->execute();
+    $stmt->bind_result($setId, $title, $artist, $difficultyName);
     $stmt->store_result();
 
     if ($stmt->num_rows > 0){
@@ -89,7 +119,5 @@
             <?php
         }
     }
-
     $stmt->close();
-
-
+?>
