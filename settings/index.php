@@ -51,7 +51,6 @@
             <td>
 				<textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo safe_htmlspecialchars($user["CustomDescription"], ENT_QUOTES); ?></textarea> <br><br>
 				<button type="button" onclick="insertTag('img')" class="small-button">img</button>
-				<button type="button" onclick="insertTag('a')" class="small-button">link</button>
 				<button type="button" onclick="insertTag('code')" class="small-button">code</button>
 				<button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
 				<button type="button" onclick="insertTag('b')" class="small-button">bold</button>
