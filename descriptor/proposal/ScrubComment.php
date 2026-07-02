@@ -33,7 +33,7 @@
             "UserID" => $result["UserID"],
             "ProposalID" => $result["ProposalID"],
             "Comment" => $result["Comment"],
-            "Date" => $result["date"],
+            "Date" => $result["Timestamp"],
         ));
 
     $json = json_encode($array);

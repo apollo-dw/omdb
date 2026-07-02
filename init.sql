@@ -918,3 +918,13 @@ CREATE TABLE IF NOT EXISTS `news_hearts` (
   PRIMARY KEY (`HeartID`),
   UNIQUE KEY `news_hearts_pk2` (`NewsID`,`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `news_comments` (
+  `CommentID` INT NOT NULL AUTO_INCREMENT,
+  `UserID` INT NOT NULL,
+  `NewsID` INT NOT NULL,
+  `Comment` TEXT NOT NULL,
+  `Timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`CommentID`),
+  KEY `idx_news_comments_newsid` (`NewsID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

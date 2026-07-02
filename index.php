@@ -270,8 +270,17 @@
             <b>Latest News</b>
             <hr style="border-color:#2a4a4a;">
             <?php
-                $newsStmt = $conn->prepare("
-                    SELECT n.NewsID, n.Title, n.Content, n.DateCreated, u.Username
+                $newsStmt = $conn->prepare("SELECT
+                        n.NewsID,
+                        n.Title,
+                        n.Content,
+                        n.DateCreated,
+                        u.Username,
+                        (
+                            SELECT COUNT(*)
+                            FROM news_comments c
+                            WHERE c.NewsID = n.NewsID
+                        ) AS CommentsCount
                     FROM news_posts n
                     LEFT JOIN users u ON u.UserID = n.AuthorID
                     ORDER BY n.DateCreated DESC
@@ -285,12 +294,16 @@
                     $newsDate = date("M j, Y H:i", strtotime($newsPost["DateCreated"]));
                     $previewText = mb_strimwidth($newsPost["Content"], 0, 200, "…");
             ?>
-                <b>
+                <b><a href="news/post.php?id=<?php echo $newsPost["NewsID"]; ?>">
                     <?php echo safe_htmlspecialchars($newsPost["Title"], ENT_QUOTES); ?>
-                </b>
+                </a></b>
                 <br>
                 <span class="subText">
                     <?php echo $newsDate; ?> - <?php echo safe_htmlspecialchars($newsPost["Username"], ENT_QUOTES); ?>
+                </span>
+                <br>
+                <span class="subText">
+                    <?php echo $newsPost["CommentsCount"]; ?> comment<?php echo $newsPost["CommentsCount"] == 1 ? "" : "s"; ?>
                 </span>
                 <br><br>
                 <div style="font-size:0.85em;word-break:break-word;">

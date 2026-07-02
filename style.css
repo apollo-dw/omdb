@@ -679,6 +679,7 @@ button.blocked:hover {
 
 .commentComposer {
   text-align: right;
+  width: 100%;
 }
 
 textarea {
