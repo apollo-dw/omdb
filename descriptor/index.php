@@ -100,7 +100,7 @@
 <br><br>
 
 <h2 style="margin-bottom: 0px;">Highest ranked <?php echo safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES); ?> maps</h2><br>
-<div class="flex-container alternating-bg" style="width:100%;padding:0;margin-bottom:2em;">
+<div class="flex-container alternating-bg" style="width:100%;padding:0;margin-bottom:2em;justify-content: flex-start;">
     <?php
     $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
                                     SELECT DescriptorID, ParentID
@@ -135,7 +135,7 @@
 
         $difficultyName = mb_strimwidth($row['DifficultyName'], 0, 35, "...");
         ?>
-        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;max-width: 11%;">
             <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
             <span class="subText">
 			    <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("{$row["Title"]} [$difficultyName]", ENT_QUOTES); ?></a><br>
