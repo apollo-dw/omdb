@@ -207,8 +207,7 @@ class BBCode
 //                    if (isset ($args['size'])) {
 //                        $font_param['font-size'] = $args['size'];
 //                    }
-                    if (isset ($args['color'])) {
-//TODO: color validation
+                    if (isset($args['color']) && preg_match('/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/', $args['color'])) { // Some regex i found online
                         $font_param['color'] = $args['color'];
                     }
 //TODO: handle bad settings
@@ -281,11 +280,11 @@ class BBCode
 
                         // filter and emit the tag
                         $src = filter_var($buffer, FILTER_VALIDATE_URL) && preg_match('/^https?:\/\//i', $buffer)
-                            ? htmlspecialchars($buffer, ENT_QUOTES)
+                            ? safe_htmlspecialchars($buffer, ENT_QUOTES)
                             : '';
-                        $output = $output . '<img style="max-height:300px;" src="' . $buffer . '"';
+                        $output = $output . '<img style="max-height:300px;" src="' . $src . '"';
                         foreach ($img_param as $name=>$value) {
-                            $output = $output . ' ' . $name . '="' . $value . '"';
+                            $output = $output . ' ' . $name . '="' . safe_htmlspecialchars($value, ENT_QUOTES) . '"';
                         }
                         $output .= '>';
 
