@@ -1,5 +1,5 @@
 <?php
-require_once '../../base.php';
+require_once '../base.php';
 
 header('Content-Type: text/plain');
 

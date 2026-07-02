@@ -15,7 +15,6 @@ class BBCode
 {
     // Tag aliases.  Item on left translates to item on right.
     const TAG_ALIAS = [
-        'url' => 'a',
         'code' => 'pre',
         'quote' => 'blockquote',
         '*' => 'li',
@@ -118,7 +117,6 @@ class BBCode
     // Renders a BBCode string to HTML, for inclusion into a document.
     static public function bbcode_to_html($input) : string
     {
-        return $input;
         // split input string into array using regex, UTF-8 aware
         //  this should give us tokens to work with
 
@@ -209,8 +207,7 @@ class BBCode
 //                    if (isset ($args['size'])) {
 //                        $font_param['font-size'] = $args['size'];
 //                    }
-                    if (isset ($args['color'])) {
-//TODO: color validation
+                    if (isset($args['color']) && preg_match('/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/', $args['color'])) { // Some regex i found online
                         $font_param['color'] = $args['color'];
                     }
 //TODO: handle bad settings
@@ -253,39 +250,6 @@ class BBCode
                         // Unrecognized type!
                         $output .= self::encode($match);
                     }
-                } elseif ($name === 'a') {
-                    // URL handling.  Two modes: [a=url]title[/a] and [a]url[/a].
-                    //  Verify enclosing value first.
-                    $buffer = null;
-                    $i = $match_idx + 1;
-                    if ($i < $match_count) {
-                        list($search_match, $search_offset) = $matches[0][$i];
-                        $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'a') {
-                            $buffer = substr($input, $input_ptr, $search_offset - $input_ptr);
-                        }
-                    }
-
-                    // matched something in the middle
-                    if (isset($buffer)) {
-                        if (isset($args['default'])) {
-                            // $buffer is the title
-                            $url = $args['default'];
-                        } else {
-                            // $buffer is the url
-                            $url = $buffer;
-                        }
-                        // emit the tag
-                        $output = $output . '<a href="' . $url . '">' . self::encode($buffer) . '</a>';
-                        // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match ?? "");
-                        // update search position
-                        $match_idx = $i;
-                    } else {
-                        // Unrecognized type!
-                        $output .= self::encode($match);
-                    }
-
                 } elseif ($name === 'img') {
                     // image handling.  [img (optional=args go=here)]url[/img].
                     //  Verify enclosing value first.
@@ -314,10 +278,13 @@ class BBCode
                         }
 //TODO: handle bad settings
 
-                        // emit the tag
-                        $output = $output . '<img style="max-height:300px;" src="' . $buffer . '"';
+                        // filter and emit the tag
+                        $src = filter_var($buffer, FILTER_VALIDATE_URL) && preg_match('/^https?:\/\//i', $buffer)
+                            ? safe_htmlspecialchars($buffer, ENT_QUOTES)
+                            : '';
+                        $output = $output . '<img style="max-height:300px;" src="' . $src . '"';
                         foreach ($img_param as $name=>$value) {
-                            $output = $output . ' ' . $name . '="' . $value . '"';
+                            $output = $output . ' ' . $name . '="' . safe_htmlspecialchars($value, ENT_QUOTES) . '"';
                         }
                         $output .= '>';
 
