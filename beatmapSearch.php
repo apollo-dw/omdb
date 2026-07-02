@@ -79,8 +79,8 @@
     $types .= "i";
     $params[] = $mode;
 
-    // Only check the first 10 terms basically
-    $terms = array_slice(array_filter(explode(" ", $q)), 0, 10);
+    // Only check the first 5 terms basically
+    $terms = array_slice(array_filter(explode(" ", $q)), 0, 5);
     $termClauses = [];
     foreach ($terms as $term) {
         $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
