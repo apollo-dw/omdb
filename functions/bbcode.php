@@ -1,111 +1,358 @@
 <?php
-/******************************************************************************
-
-php-bbcode
-BBCode to HTML conversion, in PHP7.
-
-Greg Kennedy <kennedy.greg@gmail.com>, 2018
-https://github.com/greg-kennedy/php-bbcode
-
-This is public domain software.  Please see LICENSE for more details.
-
- ******************************************************************************/
 
 class BBCode
 {
-    // Tag aliases.  Item on left translates to item on right.
-    const TAG_ALIAS = [
-        'url' => 'a',
-        'code' => 'pre',
+    private const ALIAS = [
         'quote' => 'blockquote',
+        'code' => 'pre',
+        'url' => 'a',
+        'img' => 'img',
+        'list' => 'ul',
         '*' => 'li',
-        'list' => 'ul'
     ];
 
-    // helper function: normalize a potential "tag"
-    //  convert to lowercase and check against the alias list
-    //  returns a named array with details about the tag
-    static private function decode_tag($input) : array
+    private const SIMPLE = ['b', 'i', 'u', 's', 'sup', 'sub', 'blockquote', 'ol', 'ul', 'table'];
+
+    private const CLOSE_ELEMENT = ['font' => 'span'];
+
+    private const URL_SCHEMES = ['http', 'https'];
+
+    private const TAG_PATTERN = "/\[[A-Za-z0-9 \-._~:\/?#@!$&'()*+,;=%]+\]/u";
+
+    private string $input;
+    private int $count;
+    private array $matches;
+
+    private array $stack;
+    private string $output;
+    private int $ptr;
+    private int $idx;
+
+    public static function bbcode_to_html(string $input): string
     {
-        // first determine if it's opening on closing tag, then substr out the inner portion
-        if ($input[1] === '/') {
-            $open = 0;
-            $inner = substr($input, 2, -1);
-        } else {
-            $open = 1;
-            $inner = substr($input, 1, -1);
-        }
-
-        // oneliner to burst inner by spaces, then burst each of those by equals signs
-        $params = array_map(
-            function($a) { return explode('=', $a, 2); },
-            explode(' ', $inner));
-
-        // first "param" is special - it's the tag name and (optionally) the default arg
-        $first = array_shift($params);
-
-        // tag name
-        $name = strtolower($first[0]);
-        if (isset(self::TAG_ALIAS[$name])) {
-            $name = self::TAG_ALIAS[$name];
-        }
-
-        // "default" (unnamed) argument
-        $args = null;
-        if (isset ($first[1])) {
-            $args['default'] = $first[1];
-        }
-
-        // finally, put the rest of the args in the list
-        //array_walk( $params, function(&$a, $i, &$args) { print_r($args); $args[strtolower($a[1])] = $a[0]; }, $args);
-        foreach ($params as &$param) {
-            $k = isset($param[0]) ? strtolower($param[0]) : '';
-            $v = isset($param[1]) ? $param[1] : '';
-            $args[$k] = $v;
-        }
-
-        return [ 'name' => $name, 'open' => $open, 'args' => $args ];
+        return (new self($input))->parse();
     }
 
-    // helper function: normalize HTML entities, with newline handling
-    static private function encode($input) : string
+    private function __construct(string $input)
     {
-        // break substring into individual unicode chars
-        $characters = preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY);
+        $this->input = $input;
+    }
 
-        // append each one-at-a-time to create output
-        $lf = 0;
-        $output = '';
-        foreach ($characters as &$ch)
-        {
-            if ($ch === "\n") {
-                $lf ++;
-            } elseif ($ch === "\r") {
-                continue;
+    private function parse(): string
+    {
+        if (preg_match_all(self::TAG_PATTERN, $this->input, $matches, PREG_OFFSET_CAPTURE) === false) {
+            throw new RuntimeException('Fatal error in preg_match_all for BBCode tags');
+        }
+
+        $this->matches = $matches[0];
+        $this->count = count($this->matches);
+        $this->stack = [];
+        $this->output = '';
+        $this->ptr = 0;
+
+        for ($this->idx = 0; $this->idx < $this->count; $this->idx++) {
+            [$match, $offset] = $this->matches[$this->idx];
+
+            $this->output .= $this->encode(substr($this->input, $this->ptr, $offset - $this->ptr));
+            $this->ptr = $offset + strlen($match);
+
+            $tag = $this->decodeTag($match);
+            if ($tag['open']) {
+                $this->openTag($tag, $match);
             } else {
-                if ($lf === 1) {
-                    $output .= "\n<br>";
-                    $lf = 0;
-                } elseif ($lf > 1) {
-                    $output .= "\n\n<p>";
-                    $lf = 0;
-                }
-
-                if ($ch === '<') {
-                    $output .= '&lt;';
-                } elseif ($ch === '>') {
-                    $output .= '&gt;';
-                } elseif ($ch === '&') {
-                    $output .= '&amp;';
-                } elseif ($ch === "\u{00A0}") {
-                    $output .= '&nbsp;';
-                } else {
-                    $output .= $ch;
-                }
+                $this->closeTag($tag['name'], $match);
             }
         }
 
-        // trailing linefeed handle
+        $this->output .= $this->encode(substr($this->input, $this->ptr));
+
+        while (!empty($this->stack)) {
+            $popped = array_pop($this->stack);
+            $this->output .= '</' . (self::CLOSE_ELEMENT[$popped] ?? $popped) . '>';
+        }
+
+        return $this->output;
+    }
+
+    private function openTag(array $tag, string $match): void
+    {
+        $name = $tag['name'];
+
+        $handled = match (true) {
+            in_array($name, self::SIMPLE, true) => $this->openElement($name),
+            $name === 'li' => $this->openListItem(),
+            $name === 'tr' => $this->openTableRow(),
+            $name === 'td', $name === 'th' => $this->openTableCell($name),
+            $name === 'font' => $this->openFont($tag['args']),
+            $name === 'pre' => $this->parseCode(),
+            $name === 'a' => $this->parseUrl($tag['args']),
+            $name === 'img' => $this->parseImage($tag['args']),
+            default => false,
+        };
+
+        if (!$handled) {
+            $this->output .= $this->encode($match);
+        }
+    }
+
+    private function closeTag(string $name, string $match): void
+    {
+        if (!in_array($name, $this->stack, true)) {
+            $this->output .= $this->encode($match);
+
+            return;
+        }
+
+        do {
+            $popped = array_pop($this->stack);
+            $this->output .= '</' . (self::CLOSE_ELEMENT[$popped] ?? $popped) . '>';
+        } while ($popped !== $name);
+    }
+
+    private function openElement(string $name): bool
+    {
+        $this->stack[] = $name;
+        $this->output .= '<' . $name . '>';
+
+        return true;
+    }
+
+    private function openListItem(): bool
+    {
+        if (!in_array('ol', $this->stack, true) && !in_array('ul', $this->stack, true)) {
+            return false;
+        }
+
+        if (end($this->stack) === 'li') {
+            array_pop($this->stack);
+            $this->output .= '</li>';
+        }
+
+        $this->stack[] = 'li';
+        $this->output .= '<li>';
+
+        return true;
+    }
+
+    private function openTableRow(): bool
+    {
+        if (!in_array('table', $this->stack, true)) {
+            return false;
+        }
+
+        $this->stack[] = 'tr';
+        $this->output .= '<tr>';
+
+        return true;
+    }
+
+    private function openTableCell(string $name): bool
+    {
+        $tr = array_search('tr', $this->stack, true);
+        $table = array_search('table', $this->stack, true);
+        if ($tr === false || $table === false || $table > $tr) {
+            return false;
+        }
+
+        $this->stack[] = $name;
+        $this->output .= '<' . $name . '>';
+
+        return true;
+    }
+
+    private function openFont(?array $args): bool
+    {
+        $color = $args['color'] ?? null;
+        if ($color === null || !preg_match('/^(#[0-9a-f]{3}|#[0-9a-f]{6}|[a-z]+)$/i', $color)) {
+            return false;
+        }
+
+        $this->stack[] = 'font';
+        $this->output .= '<span' . $this->attributes(['style' => "color: {$color}"]) . '>';
+
+        return true;
+    }
+
+    private function parseCode(): bool
+    {
+        $end = $this->findClose('pre');
+        if ($end === null) {
+            return false;
+        }
+
+        [, $endOffset] = $this->matches[$end];
+        $this->output .= $this->tag('pre', [], $this->encode(substr($this->input, $this->ptr, $endOffset - $this->ptr)));
+        $this->consumeUntil($end);
+
+        return true;
+    }
+
+    private function parseUrl(?array $args): bool
+    {
+        $target = $args['default'] ?? null;
+
+        if ($target !== null) {
+            $this->stack[] = 'a';
+            $this->output .= '<a' . $this->attributes(['href' => $this->sanitizeUrl($target), 'rel' => 'nofollow']) . '>';
+
+            return true;
+        }
+
+        $body = $this->enclosedText('a');
+        if ($body === null) {
+            return false;
+        }
+
+        $this->output .= $this->tag('a', ['href' => $this->sanitizeUrl($body), 'rel' => 'nofollow'], $this->encode($body));
+
+        return true;
+    }
+
+    private function parseImage(?array $args): bool
+    {
+        $body = $this->enclosedText('img');
+        if ($body === null) {
+            return false;
+        }
+
+        $attributes = [
+            'src' => $this->sanitizeUrl($body),
+            'style' => 'max-height:300px;',
+            'alt' => '',
+            'loading' => 'lazy',
+        ];
+        foreach (['width', 'height'] as $dimension) {
+            $value = $args[$dimension] ?? null;
+            if ($value !== null && preg_match('/^\d+(?:px|%)?$/', $value)) {
+                $attributes[$dimension] = $value;
+            }
+        }
+
+        $this->output .= '<img' . $this->attributes($attributes) . '>';
+
+        return true;
+    }
+
+    private function decodeTag(string $token): array
+    {
+        $open = $token[1] !== '/';
+        $inner = substr($token, $open ? 1 : 2, -1);
+
+        $params = array_map(fn($p) => explode('=', $p, 2), explode(' ', $inner));
+        $first = array_shift($params);
+
+        $name = strtolower($first[0]);
+        $name = self::ALIAS[$name] ?? $name;
+        $args = isset($first[1]) ? ['default' => $first[1]] : null;
+        foreach ($params as $param) {
+            $args[strtolower($param[0])] = $param[1] ?? '';
+        }
+
+        return ['name' => $name, 'open' => $open, 'args' => $args];
+    }
+
+    private function enclosedText(string $element): ?string
+    {
+        $next = $this->idx + 1;
+        if ($next >= $this->count) {
+            return null;
+        }
+
+        [$match, $offset] = $this->matches[$next];
+        $tag = $this->decodeTag($match);
+        if ($tag['open'] || $tag['name'] !== $element) {
+            return null;
+        }
+
+        $text = substr($this->input, $this->ptr, $offset - $this->ptr);
+        $this->consumeUntil($next);
+
+        return $text;
+    }
+
+    private function findClose(string $element): ?int
+    {
+        for ($i = $this->idx + 1; $i < $this->count; $i++) {
+            $tag = $this->decodeTag($this->matches[$i][0]);
+            if (!$tag['open'] && $tag['name'] === $element) {
+                return $i;
+            }
+        }
+
+        return null;
+    }
+
+    private function consumeUntil(int $to): void
+    {
+        [$match, $offset] = $this->matches[$to];
+        $this->ptr = $offset + strlen($match);
+        $this->idx = $to;
+    }
+
+    private function sanitizeUrl(string $url): string
+    {
+        $stripped = preg_replace('/[\x00-\x20]+/', '', $url);
+        if (
+            preg_match('#^([a-z][a-z0-9+.\-]*):#i', $stripped, $m)
+            && !in_array(strtolower($m[1]), self::URL_SCHEMES, true)
+        ) {
+            return '';
+        }
+
+        return $url;
+    }
+
+    private function tag(string $element, array $attributes = [], ?string $content = null): string
+    {
+        return '<' . $element . $this->attributes($attributes) . '>' . ($content ?? '') . '</' . $element . '>';
+    }
+
+    private function attributes(array $attributes): string
+    {
+        $out = '';
+        foreach ($attributes as $key => $value) {
+            $out .= ' ' . $key . '="' . $this->encodeAttr($value) . '"';
+        }
+
+        return $out;
+    }
+
+    private function encodeAttr(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    private function encode(string $input): string
+    {
+        $output = '';
+        $lf = 0;
+
+        foreach (preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY) as $ch) {
+            if ($ch === "\n") {
+                $lf++;
+
+                continue;
+            }
+            if ($ch === "\r") {
+                continue;
+            }
+
+            if ($lf === 1) {
+                $output .= "\n<br>";
+            } elseif ($lf > 1) {
+                $output .= "\n\n<p>";
+            }
+            $lf = 0;
+
+            $output .= match ($ch) {
+                '<' => '&lt;',
+                '>' => '&gt;',
+                '&' => '&amp;',
+                "\u{00A0}" => '&nbsp;',
+                default => $ch,
+            };
+        }
+
         if ($lf === 1) {
             $output .= "\n<br>";
         } elseif ($lf > 1) {
@@ -114,246 +361,9 @@ class BBCode
 
         return $output;
     }
-
-    // Renders a BBCode string to HTML, for inclusion into a document.
-    static public function bbcode_to_html($input) : string
-    {
-        return $input;
-        // split input string into array using regex, UTF-8 aware
-        //  this should give us tokens to work with
-
-        // The regex is: one or more characters within square brackets,
-        //  where the characters are any in this list (allowable URI chars):
-        // ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -._~:/?#@!$&'()*+,;=%
-        // Square brackets are technically allowed, but excluded here, because they interfere.
-        $match_count = preg_match_all("/\[[A-Za-z0-9 \-._~:\/?#@!$&'()*+,;=%]+\]/u",
-            $input, $matches, PREG_OFFSET_CAPTURE);
-        if ($match_count === FALSE) {
-            throw new RuntimeException('Fatal error in preg_match_all for BBCode tags');
-        }
-
-        // begin with the empty string
-        $output = '';
-        $input_ptr = 0;
-
-        $stack = [];
-        for ($match_idx = 0; $match_idx < $match_count; $match_idx ++)
-        {
-            list($match, $offset) = $matches[0][$match_idx];
-
-            // pick up chars between tags and HTML-encode them
-            $output .= self::encode(substr($input, $input_ptr, $offset - $input_ptr));
-            // advance input_ptr to just past the current tag
-            $input_ptr = $offset + strlen($match ?? "");
-
-            // decode the tag
-            list('name' => $name, 'open' => $open, 'args' => $args) = self::decode_tag($match);
-
-            if (! $open) {
-                // CLOSING TAG
-
-                // Search the tag stack and see if the opening tag was pushed into it
-                if (array_search($name, $stack, TRUE) === FALSE) {
-                    // Attempted to close a tag that was not on the stack!
-                    $output = $output . self::encode($match);
-                } else {
-                    //pop repeatedly until we pop the tag, and close everything on the way
-                    do {
-                        $popped_name = array_pop($stack);
-                        $output = $output . '</' . $popped_name . '>';
-                    } while ($name !== $popped_name);
-                }
-            } else {
-                // OPENING TAG
-
-                // Big if / elseif ladder to handle each tag
-                if ($name === 'b' || $name === 'i' || $name === 'u' || $name === 's' || $name === 'sup' || $name === 'sub' ||
-                    $name === 'blockquote' ||
-                    $name === 'ol' || $name === 'ul' ||
-                    $name === 'table') {
-                    // Simple tags (no validation or alternate modes)
-                    $stack[] = $name;
-                    $output = $output . '<' . $name . '>';
-                } elseif ($name === 'li') {
-                    // Disallow [li] outside of [ol] or [ul]
-                    if (array_search('ol', $stack, TRUE) !== FALSE ||
-                        array_search('ul', $stack, TRUE) !== FALSE) {
-                        $stack[] = 'li';
-                        $output .= '<li>';
-                    } else {
-                        $output .= self::encode($match);
-                    }
-                } elseif ($name === 'tr') {
-                    // Disallow [tr] outside of [table]
-                    if (array_search('table', $stack, TRUE) !== FALSE) {
-                        $stack[] = 'tr';
-                        $output .= '<tr>';
-                    } else {
-                        $output .= self::encode($match);
-                    }
-                } elseif ($name === 'td' || $name === 'th') {
-                    // Disallow [th] / [td] outside of [tr] outside of [table]
-                    $tr_index = array_search('tr', $stack, TRUE);
-                    $table_index = array_search('table', $stack, TRUE);
-                    if ($tr_index !== FALSE && $table_index !== FALSE && $table_index < $tr_index) {
-                        $stack[] = $name;
-                        $output = $output . '<' . $name . '>';
-                    } else {
-                        $output .= self::encode($match);
-                    }
-
-                } elseif ($name === 'font') {
-                    // Font size adjustment.  This requires an argument, one of "size" or "color" (or both).
-                    $font_param = [];
-
-//                    if (isset ($args['size'])) {
-//                        $font_param['font-size'] = $args['size'];
-//                    }
-                    if (isset ($args['color'])) {
-//TODO: color validation
-                        $font_param['color'] = $args['color'];
-                    }
-//TODO: handle bad settings
-
-                    if (! empty($font_param)) {
-                        $stack[] = 'font';
-
-                        // append all css_style params
-                        $css_style = [];
-                        foreach ($font_param as $name=>$value) {
-                            $css_style[] = $name . ': ' . $value;
-                        }
-                        $output = $output . '<span style="' . implode(';', $css_style) . '">';
-                    } else {
-                        // Font tag without good args is useless.
-                        $output .= self::encode($match);
-                    }
-
-                    // SPECIAL TAG HANDLING
-                } elseif ($name === 'pre') {
-                    // [pre] / [code] put us into RAW mode, where nothing is parsed except [/code]
-
-                    for ($i = $match_idx + 1; $i < $match_count; $i ++)
-                    {
-                        list($search_match, $search_offset) = $matches[0][$i];
-                        $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'pre') { break; }
-                    }
-
-                    if ($i < $match_count) {
-                        // successfully found ending tag
-
-                        // encode everything contained between here and there
-                        $output = $output . '<pre>' . self::encode(substr($input, $input_ptr, $search_offset - $input_ptr)) . '</pre>';
-                        // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match ?? "");
-                        // update search position
-                        $match_idx = $i;
-                    } else {
-                        // Unrecognized type!
-                        $output .= self::encode($match);
-                    }
-                } elseif ($name === 'a') {
-                    // URL handling.  Two modes: [a=url]title[/a] and [a]url[/a].
-                    //  Verify enclosing value first.
-                    $buffer = null;
-                    $i = $match_idx + 1;
-                    if ($i < $match_count) {
-                        list($search_match, $search_offset) = $matches[0][$i];
-                        $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'a') {
-                            $buffer = substr($input, $input_ptr, $search_offset - $input_ptr);
-                        }
-                    }
-
-                    // matched something in the middle
-                    if (isset($buffer)) {
-                        if (isset($args['default'])) {
-                            // $buffer is the title
-                            $url = $args['default'];
-                        } else {
-                            // $buffer is the url
-                            $url = $buffer;
-                        }
-                        // emit the tag
-                        $output = $output . '<a href="' . $url . '">' . self::encode($buffer) . '</a>';
-                        // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match ?? "");
-                        // update search position
-                        $match_idx = $i;
-                    } else {
-                        // Unrecognized type!
-                        $output .= self::encode($match);
-                    }
-
-                } elseif ($name === 'img') {
-                    // image handling.  [img (optional=args go=here)]url[/img].
-                    //  Verify enclosing value first.
-                    $buffer = null;
-                    $i = $match_idx + 1;
-                    if ($i < $match_count) {
-                        list($search_match, $search_offset)  = $matches[0][$i];
-                        $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'img') {
-                            $buffer = substr($input, $input_ptr, $search_offset - $input_ptr);
-                        }
-                    }
-
-                    // matched something in the middle
-                    if (isset($buffer)) {
-                        // Image size adjustment - accepts width and height
-                        $img_param = [];
-
-                        if (isset ($args['width'])) {
-                            //TODO: size validation
-                            $img_param['width'] = $args['width'];
-                        }
-                        if (isset ($args['height'])) {
-                            //TODO: size validation
-                            $img_param['height'] = $args['height'];
-                        }
-//TODO: handle bad settings
-
-                        // emit the tag
-                        $output = $output . '<img style="max-height:300px;" src="' . $buffer . '"';
-                        foreach ($img_param as $name=>$value) {
-                            $output = $output . ' ' . $name . '="' . $value . '"';
-                        }
-                        $output .= '>';
-
-                        // advance ptr (again)
-                        $input_ptr = $search_offset + strlen($search_match ?? "");
-                        // update search position
-                        $match_idx = $i;
-                    } else {
-                        // Unrecognized type!
-                        $output .= self::encode($match);
-                    }
-
-                    // ADD CUSTOM TAGS HERE
-
-                } else {
-                    // Unrecognized type!
-                    $output .= self::encode($match);
-                }
-            }
-        }
-
-        // pick up any stray chars and HTML-encode them
-        $output .= self::encode(substr($input, $input_ptr));
-
-        // Close any remaining stray tags left on the stack
-        while ($stack)
-        {
-            $tag = array_pop($stack);
-            $output = $output . '</' . $tag . '>';
-        }
-
-        return $output;
-    }
 }
 
-function bbcode_to_html($input) : string
+function bbcode_to_html(string $input): string
 {
     return BBCode::bbcode_to_html($input);
 }
