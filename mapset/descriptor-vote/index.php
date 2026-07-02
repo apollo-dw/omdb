@@ -189,7 +189,7 @@ while ($voteRow = $voteResult->fetch_assoc())
                 ?>
                 <div class="descriptor-box" data-descriptor-id="<?php echo $row["DescriptorID"]; ?>">
                     <h2><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES)?></h2>
-                    <span class="subText"><?php echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false); ?></span> <br>
+                    <span class="subText"><?php echo ParseShortLinks($conn, safe_htmlspecialchars($row["ShortDescription"]), false); ?></span> <br>
                     <?php if ($loggedIn) { ?>
                         <div class="actions">
                             <i class="icon-thumbs-up<?php echo isset($userVotes[$row["DescriptorID"]]) && ($userVotes[$row["DescriptorID"]] === 1) ? ' voted' : ''; ?>"></i>
