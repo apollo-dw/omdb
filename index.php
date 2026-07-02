@@ -234,6 +234,10 @@
                                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                                 loading="lazy"/>
                         </a>
+                    <?php } elseif ($row["comment_type"] == 'news') { ?>
+                        <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
+                            <i class="icon-list-alt"></i>
+                        </div>
                     <?php } else { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
                             <i class="icon-pencil"></i>
