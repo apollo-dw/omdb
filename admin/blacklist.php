@@ -20,6 +20,7 @@ include 'header.php';
 
 <h1>blacklist</h1>
 
+<?php CSRFField(); ?>
 <label for="blacklistID">Blacklist ID:</label>
 <input name="blacklistID" type="number" oninput="GetUsername()" />
 <input type="button" value="Toggle ID" onclick="SubmitBlacklist()"/>
@@ -81,6 +82,7 @@ include 'header.php';
 
     function SubmitBlacklist() {
         const blacklistID = document.querySelector('input[name="blacklistID"]').value;
+        const csrf = document.getElementById('csrf_token').value;
 
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -95,7 +97,10 @@ include 'header.php';
 
         xhr.open('POST', 'actions/BlacklistUser.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('blacklistID=' + encodeURIComponent(blacklistID));
+        xhr.send(
+            'csrf_token=' + encodeURIComponent(csrf) +
+            '&blacklistID=' + encodeURIComponent(blacklistID)
+        );
     }
 
 </script>

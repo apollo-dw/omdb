@@ -2,6 +2,8 @@
 require_once ('../../base.php');
 require ('../base.php');
 
+requireCSRF();
+
 $blacklistUserID = $_POST['blacklistID'];
 
 // Check if user already exists

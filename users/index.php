@@ -9,10 +9,7 @@
             padding: 0.5em;
         }
 </style>
-	<?php 
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
+	<?php
 	
 		$stmt = $conn->prepare("SELECT U.userid, U.username, COUNT(R.userid) AS ratings_count FROM users U LEFT JOIN ratings R ON U.userid = R.userid GROUP BY U.userid, U.username ORDER BY ratings_count DESC LIMIT 100;");
 		$stmt->execute();

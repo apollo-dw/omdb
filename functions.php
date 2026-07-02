@@ -546,6 +546,21 @@
         return $default;
     }
 
+	function CSRFField() {
+		$token = safe_htmlspecialchars($_SESSION['csrf_token'] ?? '');
+		echo "<input type='hidden' id='csrf_token' name='csrf_token' value='{$token}'>";
+	}
+
+	function requireCSRF() {
+		$token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+		echo $token;
+		
+		if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+			http_response_code(403);
+			die("CSRF token validation failed. Refresh the page and try again");
+		}
+	}
+
 	function ParseCommentLinks($conn, $string) {
 		$string = bbcode_to_html($string);
 

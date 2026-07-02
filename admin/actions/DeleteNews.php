@@ -1,5 +1,8 @@
 <?php
+require_once ('../../base.php');
 require_once '../base.php';
+
+requireCSRF();
 
 header('Content-Type: text/plain');
 

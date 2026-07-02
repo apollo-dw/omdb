@@ -1,6 +1,4 @@
 <?php
-    error_reporting(E_ALL);
-	ini_set('display_errors', 'On');
     include '../base.php';
 	
 	$set_id = $_POST['sID'] ?? -1;
