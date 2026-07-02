@@ -119,6 +119,7 @@
 		'path'     => '/',
 		'secure'   => true,
 		'httponly' => true,
+		'samesite' => 'Lax',
 	]);
 	siteRedirect($redirect_url);
 ?>
