@@ -5,7 +5,6 @@ class BBCode
     private const ALIAS = [
         'quote' => 'blockquote',
         'code' => 'pre',
-        'url' => 'a',
         'img' => 'img',
         'list' => 'ul',
         '*' => 'li',
@@ -85,7 +84,6 @@ class BBCode
             $name === 'td', $name === 'th' => $this->openTableCell($name),
             $name === 'font' => $this->openFont($tag['args']),
             $name === 'pre' => $this->parseCode(),
-            $name === 'a' => $this->parseUrl($tag['args']),
             $name === 'img' => $this->parseImage($tag['args']),
             default => false,
         };
@@ -183,27 +181,6 @@ class BBCode
         [, $endOffset] = $this->matches[$end];
         $this->output .= $this->tag('pre', [], $this->encode(substr($this->input, $this->ptr, $endOffset - $this->ptr)));
         $this->consumeUntil($end);
-
-        return true;
-    }
-
-    private function parseUrl(?array $args): bool
-    {
-        $target = $args['default'] ?? null;
-
-        if ($target !== null) {
-            $this->stack[] = 'a';
-            $this->output .= '<a' . $this->attributes(['href' => $this->sanitizeUrl($target), 'rel' => 'nofollow']) . '>';
-
-            return true;
-        }
-
-        $body = $this->enclosedText('a');
-        if ($body === null) {
-            return false;
-        }
-
-        $this->output .= $this->tag('a', ['href' => $this->sanitizeUrl($body), 'rel' => 'nofollow'], $this->encode($body));
 
         return true;
     }
