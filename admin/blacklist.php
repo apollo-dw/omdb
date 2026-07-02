@@ -82,6 +82,7 @@ include 'header.php';
 
     function SubmitBlacklist() {
         const blacklistID = document.querySelector('input[name="blacklistID"]').value;
+        const csrf = document.getElementById('csrf_token').value;
 
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
