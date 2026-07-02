@@ -24,6 +24,28 @@
 		<?php
 		die();
 	}
+    $like = "%$q%";
+
+    $stmt = $conn->prepare("SELECT `DescriptorID`, `Name`
+        FROM `descriptors`
+        WHERE `Usable` = 1 AND `Name` LIKE ?
+        ORDER BY (`Name` = ?) DESC, LENGTH(`Name`) ASC
+        LIMIT 5;
+    ");
+    $stmt->bind_param("ss", $like, $q);
+    $stmt->execute();
+    $stmt->bind_result($descriptorID, $descriptorName);
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0){
+        echo "<div style='background-color:#182828;'><b>Descriptors</b></div>";
+        while ($stmt->fetch()) {
+            ?>
+            <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/descriptors/<?php echo $descriptorID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($descriptorName, ENT_QUOTES); ?></a></div>
+            <?php
+        }
+    }
+    $stmt->close();
 
     $stmt = $conn->prepare("
         (SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ? OR UserID = ?)
@@ -31,7 +53,6 @@
         (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ? OR UserID = ?)
         LIMIT 5;
     ");
-    $like = "%$q%";
     $idMatch = ctype_digit($q) ? (int)$q : null;
     $stmt->bind_param("sisi", $like, $idMatch, $like, $idMatch);
     $stmt->execute();
