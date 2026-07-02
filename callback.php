@@ -2,10 +2,6 @@
 	require_once 'base.php';
     require_once 'connection.php';
     require_once 'functions.php';
-
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
 	
 	$state = json_decode(urldecode($_GET["state"]), true);
 	$csrf_token = $state["csrf_token"];
