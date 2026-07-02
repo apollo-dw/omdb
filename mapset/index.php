@@ -626,7 +626,7 @@ while($row = $result->fetch_assoc()) {
             <ul>
 			<?php
 				foreach ($credits as $credit) {
-					$escapedCreditName = safe_htmlspecialchars($credit['Username'], ENT_QUOTES);
+					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID']), ENT_QUOTES);
 					echo "<li>
 					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
