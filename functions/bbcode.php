@@ -118,6 +118,7 @@ class BBCode
     // Renders a BBCode string to HTML, for inclusion into a document.
     static public function bbcode_to_html($input) : string
     {
+        return $input;
         // split input string into array using regex, UTF-8 aware
         //  this should give us tokens to work with
 
