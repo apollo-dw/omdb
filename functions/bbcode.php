@@ -279,7 +279,10 @@ class BBCode
                         }
 //TODO: handle bad settings
 
-                        // emit the tag
+                        // filter and emit the tag
+                        $src = filter_var($buffer, FILTER_VALIDATE_URL) && preg_match('/^https?:\/\//i', $buffer)
+                            ? htmlspecialchars($buffer, ENT_QUOTES)
+                            : '';
                         $output = $output . '<img style="max-height:300px;" src="' . $buffer . '"';
                         foreach ($img_param as $name=>$value) {
                             $output = $output . ' ' . $name . '="' . $value . '"';
