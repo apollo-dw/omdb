@@ -48,7 +48,7 @@ include 'header.php';
         $stmt->close();
     }
 ?>
-
+<?php CSRFField(); ?>
 <label for="title">Title:</label><br>
 <input name="title" id="title" type="text" maxlength="255" value="<?php echo $editing ? safe_htmlspecialchars($editing["Title"], ENT_QUOTES) : ''; ?>" /><br><br>
 
@@ -108,6 +108,7 @@ include 'header.php';
         const newsID = document.getElementById('newsID').value;
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
+        const csrf = document.getElementById('csrf_token').value;
 
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -125,7 +126,8 @@ include 'header.php';
         xhr.open('POST', 'actions/SubmitNews.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.send(
-            'newsID=' + encodeURIComponent(newsID) +
+            'csrf_token=' + encodeURIComponent(csrf) +
+            '&newsID=' + encodeURIComponent(newsID) +
             '&title=' + encodeURIComponent(title) +
             '&content=' + encodeURIComponent(content)
         );
@@ -135,6 +137,7 @@ include 'header.php';
         if (!confirm('Delete this post?'))
             return;
 
+        const csrf = document.getElementById('csrf_token').value;
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -147,6 +150,9 @@ include 'header.php';
 
         xhr.open('POST', 'actions/DeleteNews.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('newsID=' + encodeURIComponent(newsID));
+        xhr.send(
+            'csrf_token=' + encodeURIComponent(csrf) +
+            '&newsID=' + encodeURIComponent(newsID)
+        );
     }
 </script>

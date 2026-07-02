@@ -16,6 +16,10 @@
     session_start();
     $timeAtPageLoad = microtime(true);
 
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
     $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 0;
 
     if ($loggedIn && $user["banned"]) {
