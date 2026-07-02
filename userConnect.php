@@ -42,7 +42,7 @@
 						'path'     => '/',
 						'secure'   => true,
 						'httponly' => true,
-						'samesite' => 'Lax',
+						'samesite' => 'Strict',
 					]);
 
 					$loggedIn = false;
@@ -87,7 +87,7 @@
 					'path'     => '/',
 					'secure'   => true,
 					'httponly' => true,
-					'samesite' => 'Lax',
+					'samesite' => 'Strict',
 
 				]);
 			}

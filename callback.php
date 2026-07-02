@@ -119,7 +119,7 @@
 		'path'     => '/',
 		'secure'   => true,
 		'httponly' => true,
-		'samesite' => 'Lax',
+		'samesite' => 'Strict',
 	]);
 	siteRedirect($redirect_url);
 ?>
