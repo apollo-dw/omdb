@@ -25,9 +25,15 @@
 		die();
 	}
 
-    $stmt = $conn->prepare("(SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ?) UNION (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ?) LIMIT 5;");
+    $stmt = $conn->prepare("
+        (SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ? OR UserID = ?)
+        UNION
+        (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ? OR UserID = ?)
+        LIMIT 5;
+    ");
     $like = "%$q%";
-    $stmt->bind_param("ss", $like, $like);
+    $idMatch = ctype_digit($q) ? (int)$q : null;
+    $stmt->bind_param("sisi", $like, $idMatch, $like, $idMatch);
     $stmt->execute();
     $stmt->bind_result($userID, $username);
     $stmt->store_result();
@@ -44,7 +50,7 @@
 
     $types = "";
     $params = [];
-    $sql = "SELECT s.`SetID`, s.Title, s.Artist, b.DifficultyName 
+    $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID
             FROM `beatmaps` b 
             LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
             WHERE b.Mode = ?";
@@ -74,7 +80,8 @@
         $sql .= " AND " . implode(" AND ", $termClauses);
     }
 
-    $sql .= " ORDER BY RatingCount DESC LIMIT 25;";
+    // Collapse to one row per set + sort sets by their most popular diff.
+    $sql .= " GROUP BY s.SetID ORDER BY MAX(b.RatingCount) DESC LIMIT 25;";
 
     $stmt = $conn->prepare($sql);
     if (!empty($params)) {
@@ -82,14 +89,15 @@
     }
     
     $stmt->execute();
-    $stmt->bind_result($setId, $title, $artist, $difficultyName);
+    $stmt->bind_result($setId, $title, $artist, $hostId);
     $stmt->store_result();
 
     if ($stmt->num_rows > 0){
         echo "<div style='background-color:#182828;'><b>Maps</b></div>";
         while ($stmt->fetch()) {
+            $mapperName = GetUserNameFromId($hostId, $conn);
             ?>
-            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo safe_htmlspecialchars($artist . " - " . $title . " [" . $difficultyName . "]", ENT_QUOTES); ?></a></div>
+            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo safe_htmlspecialchars($artist . " - " . $title . " (" . $mapperName . ")", ENT_QUOTES); ?></a></div>
             <?php
         }
     }
