@@ -1,6 +1,9 @@
 <?php
     require '../base.php';
     $mapset_id = GetIntParam('mapset_id', -1);
+    if ($mapset_id == -1) {
+        die("WHAT");
+    }
 
     // gives just the similar maps for a diff if wanted but its basically for the select box in similar maps
     // similarMapsSeed is also set by the GetSimilarBeatmaps
@@ -11,22 +14,21 @@
     }
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT *, mn.Username FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID JOIN mappernames mn ON mn.UserID = s.CreatorID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
+    $stmt = $conn->prepare("SELECT *, mn.Username FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
+    if (!$sampleRow) {
+        die("Mapset not found");
+    }
 
     $PageTitle = $sampleRow['Title'] . " by " . ($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn));
     $year = date("Y", strtotime($sampleRow['DateRanked']));
     $isLoved = $sampleRow["Status"] == 4;
     $isGraveyarded = $sampleRow["Status"] == -2;
     require '../header.php';
-
-    if($mapset_id == -1){
-        siteRedirect();
-    }
 	
 	$stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
 	$stmt->bind_param("ss", $userId, $mapset_id);
@@ -624,7 +626,7 @@ while($row = $result->fetch_assoc()) {
             <ul>
 			<?php
 				foreach ($credits as $credit) {
-					$escapedCreditName = safe_htmlspecialchars($credit['Username'], ENT_QUOTES);
+					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID']), ENT_QUOTES);
 					echo "<li>
 					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
