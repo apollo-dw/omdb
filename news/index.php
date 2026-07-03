@@ -102,7 +102,7 @@
             <?php 
                 $previewText = mb_strimwidth($post["Content"], 0, 200, "…");
                 echo nl2br(safe_htmlspecialchars($previewText, ENT_QUOTES));
-            ?><br><a href="post.php?id=<?php echo $newsId; ?>">See full post 👀</a>
+            ?><br><a href="post.php?id=<?php echo $newsId; ?>">See full post →</a>
         </div>
     </div>
 <?php endforeach; ?>

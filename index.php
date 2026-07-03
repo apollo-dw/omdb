@@ -314,7 +314,7 @@
             <?php endif; ?>
         </div>
         <div style="text-align:right;">
-            <a href="/news/" style="font-size:0.85em;">View all news 👀 →</a>
+            <a href="/news/" style="font-size:0.85em;">View all news →</a>
         </div>
     </div>
     <div class="flex-container" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">

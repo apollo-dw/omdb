@@ -58,7 +58,7 @@
 ?>
 
 <div style="padding: 1em; background-color:darkslategray">
-    <a href="/news/" style="font-size:0.85em;">← 👀 View all news</a>
+    <a href="/news/" style="font-size:0.85em;">← View all news</a>
     <?php if ($loggedIn) { ?>
         <div class="tooltip-wrapper" style="float:right;">
             <span class="subText">[<?php echo $newsHeartCount; ?>]</span>
