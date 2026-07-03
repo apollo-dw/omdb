@@ -74,6 +74,9 @@
     $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID
             FROM `beatmaps` b 
             LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
+            LEFT JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
+            LEFT JOIN users u ON u.UserID = COALESCE(bc.CreatorID, s.CreatorID)
+            LEFT JOIN mappernames mn ON mn.UserID = COALESCE(bc.CreatorID, s.CreatorID)
             WHERE b.Mode = ?";
             
     $types .= "i";
@@ -84,14 +87,16 @@
     $termClauses = [];
     foreach ($terms as $term) {
         $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
-        if (is_numeric($term)) { // Potentially just bID/sID
-            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName) LIKE ? OR b.BeatmapID = ? OR s.SetID = ?)";
-            $types .= "sii";
+        if (is_numeric($term)) { // Potentially bID, sID, or CreatorID
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ? OR b.BeatmapID = ? OR s.SetID = ? OR s.CreatorID = ? OR bc.CreatorID = ?)";
+            $types .= "siiii";
             $params[] = $likeTerm;
             $params[] = (int)$term;
             $params[] = (int)$term;
+            $params[] = (int)$term;
+            $params[] = (int)$term;
         } else {
-            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName) LIKE ?)";
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ?)";
             $types .= "s";
             $params[] = $likeTerm;
         }
