@@ -41,7 +41,7 @@
         echo "<div style='background-color:#182828;'><b>Descriptors</b></div>";
         while ($stmt->fetch()) {
             ?>
-            <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/descriptors/<?php echo $descriptorID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($descriptorName, ENT_QUOTES); ?></a></div>
+            <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/descriptor/?id=<?php echo $descriptorID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($descriptorName, ENT_QUOTES); ?></a></div>
             <?php
         }
     }
