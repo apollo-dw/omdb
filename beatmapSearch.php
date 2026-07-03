@@ -24,10 +24,37 @@
 		<?php
 		die();
 	}
-
-    $stmt = $conn->prepare("(SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ?) UNION (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ?) LIMIT 5;");
     $like = "%$q%";
-    $stmt->bind_param("ss", $like, $like);
+
+    $stmt = $conn->prepare("SELECT `DescriptorID`, `Name`
+        FROM `descriptors`
+        WHERE `Usable` = 1 AND `Name` LIKE ?
+        ORDER BY (`Name` = ?) DESC, LENGTH(`Name`) ASC
+        LIMIT 5;
+    ");
+    $stmt->bind_param("ss", $like, $q);
+    $stmt->execute();
+    $stmt->bind_result($descriptorID, $descriptorName);
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0){
+        echo "<div style='background-color:#182828;'><b>Descriptors</b></div>";
+        while ($stmt->fetch()) {
+            ?>
+            <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/descriptors/<?php echo $descriptorID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($descriptorName, ENT_QUOTES); ?></a></div>
+            <?php
+        }
+    }
+    $stmt->close();
+
+    $stmt = $conn->prepare("
+        (SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ? OR UserID = ?)
+        UNION
+        (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ? OR UserID = ?)
+        LIMIT 5;
+    ");
+    $idMatch = ctype_digit($q) ? (int)$q : null;
+    $stmt->bind_param("sisi", $like, $idMatch, $like, $idMatch);
     $stmt->execute();
     $stmt->bind_result($userID, $username);
     $stmt->store_result();
@@ -40,26 +67,63 @@
             <?php
         }
     }
-
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT s.`SetID`, s.Title, s.Artist, b.DifficultyName 
-                            FROM `beatmaps` b 
-                            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
-                            WHERE (b.DifficultyName LIKE ? OR s.Artist LIKE ? OR s.Title LIKE ?)
-                                AND b.Mode = ?
-                            ORDER BY RatingCount DESC
-                            LIMIT 25;");
-    $stmt->bind_param("sssi", $like, $like, $like, $mode);
-	$stmt->execute();
-	$stmt->bind_result($setId, $title, $artist, $difficultyName);
+    $types = "";
+    $params = [];
+    $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID
+            FROM `beatmaps` b 
+            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
+            LEFT JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
+            LEFT JOIN users u ON u.UserID = COALESCE(bc.CreatorID, s.CreatorID)
+            LEFT JOIN mappernames mn ON mn.UserID = COALESCE(bc.CreatorID, s.CreatorID)
+            WHERE b.Mode = ?";
+            
+    $types .= "i";
+    $params[] = $mode;
+
+    // Only check the first 5 terms basically
+    $terms = array_slice(array_filter(explode(" ", $q)), 0, 5);
+    $termClauses = [];
+    foreach ($terms as $term) {
+        $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
+        if (is_numeric($term)) { // Potentially bID, sID, or CreatorID
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ? OR b.BeatmapID = ? OR s.SetID = ? OR s.CreatorID = ? OR bc.CreatorID = ?)";
+            $types .= "siiii";
+            $params[] = $likeTerm;
+            $params[] = (int)$term;
+            $params[] = (int)$term;
+            $params[] = (int)$term;
+            $params[] = (int)$term;
+        } else {
+            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ?)";
+            $types .= "s";
+            $params[] = $likeTerm;
+        }
+    }
+
+    if (!empty($termClauses)) {
+        $sql .= " AND " . implode(" AND ", $termClauses);
+    }
+
+    // Collapse to one row per set + sort sets by their most popular diff.
+    $sql .= " GROUP BY s.SetID ORDER BY MAX(b.RatingCount) DESC LIMIT 25;";
+
+    $stmt = $conn->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $stmt->execute();
+    $stmt->bind_result($setId, $title, $artist, $hostId);
     $stmt->store_result();
 
     if ($stmt->num_rows > 0){
         echo "<div style='background-color:#182828;'><b>Maps</b></div>";
         while ($stmt->fetch()) {
+            $mapperName = GetUserNameFromId($hostId, $conn);
             ?>
-            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo safe_htmlspecialchars($artist . " - " . $title . " [" . $difficultyName . "]", ENT_QUOTES); ?></a></div>
+            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo safe_htmlspecialchars($artist . " - " . $title . " (" . $mapperName . ")", ENT_QUOTES); ?></a></div>
             <?php
         }
     }
@@ -89,7 +153,5 @@
             <?php
         }
     }
-
     $stmt->close();
-
-
+?>
