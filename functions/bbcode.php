@@ -282,7 +282,7 @@ class BBCode
                         $src = filter_var($buffer, FILTER_VALIDATE_URL) && preg_match('/^https?:\/\//i', $buffer)
                             ? safe_htmlspecialchars($buffer, ENT_QUOTES)
                             : '';
-                        $output = $output . '<img style="max-height:300px;" src="' . $src . '"';
+                        $output = $output . '<img style="max-height:300px;width: stretch;" src="' . $src . '"';
                         foreach ($img_param as $name=>$value) {
                             $output = $output . ' ' . $name . '="' . safe_htmlspecialchars($value, ENT_QUOTES) . '"';
                         }
