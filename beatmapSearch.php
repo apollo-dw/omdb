@@ -47,58 +47,72 @@
     }
     $stmt->close();
 
-    $stmt = $conn->prepare("
-        (SELECT DISTINCT `UserID`, `Username` FROM users WHERE username LIKE ? OR UserID = ?)
-        UNION
-        (SELECT DISTINCT `UserID`, `Username` FROM mappernames WHERE username LIKE ? OR UserID = ?)
+    $sql = "
+        (SELECT `UserID`, `Username` FROM users WHERE username LIKE ? LIMIT 5)
+        UNION ALL
+        (SELECT `UserID`, `Username` FROM mappernames WHERE username LIKE ? LIMIT 5)
         LIMIT 5;
-    ");
-    $idMatch = ctype_digit($q) ? (int)$q : null;
-    $stmt->bind_param("sisi", $like, $idMatch, $like, $idMatch);
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $like, $like);
     $stmt->execute();
     $stmt->bind_result($userID, $username);
     $stmt->store_result();
 
-    if ($stmt->num_rows > 0){
+    $seenUsers = [];
+    if ($stmt->num_rows > 0) {
         echo "<div style='background-color:#182828;'><b>Users</b></div>";
         while ($stmt->fetch()) {
+            if (isset($seenUsers[$userID])) 
+                continue;
+            
+            $seenUsers[$userID] = true;
             ?>
-            <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;" ><a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;"><img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/> <?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?></a></div>
+            <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;">
+                <a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;">
+                    <img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/> 
+                    <?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>
+                </a>
+            </div>
             <?php
         }
     }
     $stmt->close();
-
+            
     $types = "";
     $params = [];
-    $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID
-            FROM `beatmaps` b 
-            LEFT JOIN beatmapsets s ON b.SetID = s.SetID 
-            LEFT JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
-            LEFT JOIN users u ON u.UserID = COALESCE(bc.CreatorID, s.CreatorID)
-            LEFT JOIN mappernames mn ON mn.UserID = COALESCE(bc.CreatorID, s.CreatorID)
-            WHERE b.Mode = ?";
-            
+    $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID, COALESCE(mn.Username, u.Username) AS MapperName
+            FROM `beatmapsets` s
+            LEFT JOIN users u ON u.UserID = s.CreatorID
+            LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
+            INNER JOIN (
+                SELECT b.SetID, MAX(b.RatingCount) as MaxRating
+                FROM `beatmaps` b
+                LEFT JOIN beatmapsets s2 ON b.SetID = s2.SetID
+                LEFT JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
+                LEFT JOIN users u2 ON u2.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
+                LEFT JOIN mappernames mn2 ON mn2.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
+                WHERE b.Mode = ?";
+                
     $types .= "i";
     $params[] = $mode;
 
-    // Only check the first 5 terms basically
     $terms = array_slice(array_filter(explode(" ", $q)), 0, 5);
     $termClauses = [];
+    
     foreach ($terms as $term) {
         $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
-        if (is_numeric($term)) { // Potentially bID, sID, or CreatorID
-            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ? OR b.BeatmapID = ? OR s.SetID = ? OR s.CreatorID = ? OR bc.CreatorID = ?)";
-            $types .= "siiii";
-            $params[] = $likeTerm;
-            $params[] = (int)$term;
-            $params[] = (int)$term;
-            $params[] = (int)$term;
-            $params[] = (int)$term;
+        $textSearch = "(s2.Artist LIKE ? OR s2.Title LIKE ? OR b.DifficultyName LIKE ? OR u2.Username LIKE ? OR mn2.Username LIKE ?)";
+        
+        if (is_numeric($term)) {
+            $termClauses[] = "(" . $textSearch . " OR b.BeatmapID = ? OR s2.SetID = ? OR s2.CreatorID = ? OR bc.CreatorID = ?)";
+            $types .= "sssssiiii";
+            array_push($params, $likeTerm, $likeTerm, $likeTerm, $likeTerm, $likeTerm, (int)$term, (int)$term, (int)$term, (int)$term);
         } else {
-            $termClauses[] = "(CONCAT_WS(' ', s.Artist, s.Title, b.DifficultyName, u.Username, mn.Username) LIKE ?)";
-            $types .= "s";
-            $params[] = $likeTerm;
+            $termClauses[] = $textSearch;
+            $types .= "sssss";
+            array_push($params, $likeTerm, $likeTerm, $likeTerm, $likeTerm, $likeTerm);
         }
     }
 
@@ -106,8 +120,11 @@
         $sql .= " AND " . implode(" AND ", $termClauses);
     }
 
-    // Collapse to one row per set + sort sets by their most popular diff.
-    $sql .= " GROUP BY s.SetID ORDER BY MAX(b.RatingCount) DESC LIMIT 25;";
+    $sql .= " GROUP BY b.SetID 
+              ORDER BY MaxRating DESC 
+              LIMIT 25
+            ) as top_sets ON s.SetID = top_sets.SetID
+            ORDER BY top_sets.MaxRating DESC;";
 
     $stmt = $conn->prepare($sql);
     if (!empty($params)) {
@@ -115,22 +132,28 @@
     }
     
     $stmt->execute();
-    $stmt->bind_result($setId, $title, $artist, $hostId);
+    // Added $mapperName directly to the bound results
+    $stmt->bind_result($setId, $title, $artist, $hostId, $mapperName);
     $stmt->store_result();
 
-    if ($stmt->num_rows > 0){
+    if ($stmt->num_rows > 0) {
         echo "<div style='background-color:#182828;'><b>Maps</b></div>";
         while ($stmt->fetch()) {
-            $mapperName = GetUserNameFromId($hostId, $conn);
+            // If both tables lacked a username for some reason, fallback to a placeholder
+            $displayName = $mapperName ?? "Unknown Mapper";
             ?>
-            <div class="alternating-bg" style="margin:0;" ><a href="/mapset/<?php echo $setId; ?>"><?php echo safe_htmlspecialchars($artist . " - " . $title . " (" . $mapperName . ")", ENT_QUOTES); ?></a></div>
+            <div class="alternating-bg" style="margin:0;">
+                <a href="/mapset/<?php echo $setId; ?>">
+                    <?php echo safe_htmlspecialchars($artist . " - " . $title . " (" . $displayName . ")", ENT_QUOTES); ?>
+                </a>
+            </div>
             <?php
         }
     }
 
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT * FROM `lists` WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) AND (`Private` = 0 OR `UserID` = ?) LIMIT 5;");
+    $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, mn.Username FROM `lists` l LEFT JOIN mappernames mn on l.UserID = mn.UserID WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) AND (`Private` = 0 OR l.`UserID` = ?) LIMIT 5;");
     $stmt->bind_param("si", $like, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -147,7 +170,7 @@
             ?>
             <div class="alternating-bg" style="margin:0;">
                 <div>
-                    <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?> <span class="subText">by <?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span></a>
+                    <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?> <span class="subText">by <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span></a>
                 </div>
             </div>
             <?php
