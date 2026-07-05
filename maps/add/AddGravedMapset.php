@@ -179,8 +179,8 @@
     $rebuild_desc_stmt = $conn->prepare("
         INSERT INTO beatmap_descriptors (BeatmapID, DescriptorID, Weight)
         SELECT 
-            Descriptor_votes.BeatmapID, 
-            Descriptor_votes.DescriptorID, 
+            descriptor_votes.BeatmapID, 
+            descriptor_votes.DescriptorID, 
             SUM(CASE WHEN Vote = 1 THEN 1 ELSE -1 END) AS net
         FROM descriptor_votes
         INNER JOIN beatmaps b ON descriptor_votes.BeatmapID = b.BeatmapID
