@@ -1,7 +1,6 @@
 <?php
     include '../../base.php';
 
-
     if (!$loggedIn) {
         die('Goodbye');
     }
@@ -22,15 +21,18 @@
 
     $set = GetBeatmapsetDataOsuApi($token, $requestedSetId);
 
-    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (BeatmapID, SetID, SR, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, Timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
-    $beatmap_stmt->bind_param("iidsiiiss", $beatmapID, $setID, $SR, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $dateRanked);
+    $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (BeatmapID, SetID, SR, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, Timestamp, ApproachRate, CircleSize, Drain, OverallDifficulty, CircleCount, SpinnerCount, SliderCount, PlayTime, Bpm)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    $beatmap_stmt->bind_param("iidsiiissddddiiiid", $beatmapID, $setID, $SR, $difficultyName, $mode, $status, $blacklisted, $blacklist_reason, $dateRanked, $approachRate, $circleSize, $drainHp, $overallDifficulty, $circleCount, $spinnerCount, $sliderCount, $playTime, $bpm);
 
-    $beatmapset_stmt = $conn->prepare("INSERT INTO beatmapsets (DateRanked, Artist, SetID, CreatorID, Genre, Lang, Title, Status, HasStoryboard, HasVideo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-    $beatmapset_stmt->bind_param("ssiiiisiii", $dateRanked, $artist, $setID, $creatorID, $genre, $lang, $title, $status, $hasStoryboard, $hasVideo);
+    $beatmapset_stmt = $conn->prepare("INSERT INTO beatmapsets (DateRanked, Artist, SetID, CreatorID, Genre, Lang, Title, Status, HasStoryboard, HasVideo, CreatorName, IsNSFW) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    $beatmapset_stmt->bind_param("ssiiiisiiisi", $dateRanked, $artist, $setID, $creatorID, $genre, $lang, $title, $status, $hasStoryboard, $hasVideo, $creatorName, $isNsfw);
 
     $creators_stmt = $conn->prepare("INSERT INTO beatmap_creators (BeatmapID, CreatorID) VALUES (?, ?)");
     $creators_stmt->bind_param("ii", $beatmapID, $diffCreatorID);
+
+    $descriptor_stmt = $conn->prepare("INSERT INTO descriptor_votes (BeatmapID, UserID, Vote, DescriptorID) VALUES (?, 0, 1, ?) ON DUPLICATE KEY UPDATE Vote = 1;");
+    $descriptor_stmt->bind_param("ii", $beatmapID, $descriptorID);
 
     if (!$set || sizeof($set["beatmaps"] ?? []) == 0) {
         die("there are no maps found from this id (did u paste in beatmap id)");
@@ -47,6 +49,8 @@
     $blacklisted = 0;
     $hasStoryboard = (int)$set["storyboard"];
     $hasVideo = (int)$set["video"];
+    $creatorName = $set["creator"];
+    $isNsfw = $set["nsfw"];
     $dateRanked = date("Y-m-d", strtotime($set["last_updated"]));
 
     // Blacklist + last update checks
@@ -60,7 +64,6 @@
     }
     $query2->close();
 
-    
     if (strtotime($set["last_updated"]) > strtotime("-6 months")) {
         die("No - not old enough");
     }
@@ -74,7 +77,20 @@
     }
     $query3->close();
 
-    // Diff-based params
+    $isFeaturedArtist = isset($set["track_id"]) && !is_null($set["track_id"]);
+    
+    $allSetCreators = [];
+    foreach ($set["beatmaps"] as $diff) {
+        $owners = !empty($diff["owners"]) ? $diff["owners"] : [["id" => $diff["user_id"]]];
+        foreach ($owners as $owner) {
+            $allSetCreators[] = $owner["id"];
+        }
+    }
+    $uniqueCreatorsCount = count(array_unique($allSetCreators));
+
+    $isMegacollab = ($uniqueCreatorsCount >= 8);
+    $isCollab = (!$isMegacollab && $uniqueCreatorsCount >= 2);
+
     foreach($set["beatmaps"] as $diff){
         if($diff["ranked"] != -2){
             continue;
@@ -95,6 +111,15 @@
         $SR = $diff["difficulty_rating"];
         $difficultyName = $diff["version"];
         $mode = $diff["mode_int"];
+        $approachRate = $diff["ar"];
+        $circleSize = $diff["cs"];
+        $drainHp = $diff["drain"];
+        $overallDifficulty = $diff["accuracy"];
+        $circleCount = $diff["count_circles"];
+        $spinnerCount = $diff["count_spinners"];
+        $sliderCount = $diff["count_sliders"];
+        $playTime = $diff["total_length"];
+        $bpm = $diff["bpm"];
 
         $beatmap_stmt->execute();
 
@@ -103,7 +128,69 @@
             $diffCreatorID = $owner["id"];
             $creators_stmt->execute();
         }
+
+        $votesToInsert = [];
+
+        // precision: CS >= 6
+        if ($circleSize >= 6) {
+            $votesToInsert[] = 35;
+        }
+
+        // large circles: CS <= 3 and SR >= 4.0
+        if ($circleSize <= 3 && $SR >= 4.0) {
+            $votesToInsert[] = 82;
+        }
+
+        // slider only: circle count == 0
+        if ($circleCount == 0) {
+            $votesToInsert[] = 69;
+        }
+
+        // circle only: slider count == 0
+        if ($sliderCount == 0) {
+            $votesToInsert[] = 70;
+        }
+
+        if ($playTime > 600) {
+            $votesToInsert[] = 40; // gungathon
+        } elseif ($playTime > 300) {
+            $votesToInsert[] = 39; // marathon
+        }
+
+        if ($isFeaturedArtist) {
+            $votesToInsert[] = 78;
+        }
+        if ($isMegacollab) {
+            $votesToInsert[] = 68;
+        } elseif ($isCollab) {
+            $votesToInsert[] = 38;
+        }
+
+        foreach ($votesToInsert as $descriptorID) {
+            $descriptor_stmt->execute();
+        }
     }
+
+    $delete_desc_stmt = $conn->prepare("DELETE FROM beatmap_descriptors WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?);");
+    $delete_desc_stmt->bind_param("i", $setID);
+    $delete_desc_stmt->execute();
+    $delete_desc_stmt->close();
+
+    $rebuild_desc_stmt = $conn->prepare("
+        INSERT INTO beatmap_descriptors (BeatmapID, DescriptorID, Weight)
+        SELECT 
+            Descriptor_votes.BeatmapID, 
+            Descriptor_votes.DescriptorID, 
+            SUM(CASE WHEN Vote = 1 THEN 1 ELSE -1 END) AS net
+        FROM descriptor_votes
+        INNER JOIN beatmaps b ON descriptor_votes.BeatmapID = b.BeatmapID
+        WHERE b.SetID = ?
+        GROUP BY descriptor_votes.BeatmapID, descriptor_votes.DescriptorID
+        HAVING net > 0;
+    ");
+    $rebuild_desc_stmt->bind_param("i", $setID);
+    $rebuild_desc_stmt->execute();
+    $rebuild_desc_stmt->close();
 
     header("Location: ../../mapset/" . $setID);
     die();
