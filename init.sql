@@ -55,7 +55,17 @@ CREATE TABLE `beatmaps` (
   `WeightedAvg` float DEFAULT NULL,
   `Blacklisted` tinyint(1) NOT NULL DEFAULT '0',
   `BlacklistReason` text CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `controversy` decimal(10,8) DEFAULT NULL
+  `controversy` decimal(10,8) DEFAULT NULL,
+  `ApproachRate` decimal(4,2) DEFAULT NULL,
+  `CircleSize` decimal(4,2) DEFAULT NULL,
+  `Drain` decimal(4,2) DEFAULT NULL,
+  `OverallDifficulty` decimal(4,2) DEFAULT NULL,
+  `CircleCount` int DEFAULT NULL,
+  `SpinnerCount` int DEFAULT NULL,
+  `SliderCount` int DEFAULT NULL,
+  `PlayTime` int DEFAULT NULL,
+  `LazerOnly` tinyint(1) DEFAULT NULL,
+  `Bpm` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC;
 
 -- --------------------------------------------------------
@@ -75,7 +85,9 @@ CREATE TABLE `beatmapsets` (
   `Title` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `DateRanked` timestamp NULL DEFAULT NULL,
   `HasStoryboard` tinyint(1) DEFAULT '0',
-  `HasVideo` tinyint(1) DEFAULT '0'
+  `HasVideo` tinyint(1) DEFAULT '0',
+  `CreatorName` varchar(50) DEFAULT NULL,
+  `IsNSFW` tinyint(1) DEFAULT NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
