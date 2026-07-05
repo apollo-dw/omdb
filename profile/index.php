@@ -14,6 +14,11 @@
     $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
     require '../header.php';
 
+    if ($profileId === 0) {
+        require "./OMDBBotUser.php";
+        die();
+    }
+
     $ratingCounts = [];
     $isBlacklisted = false;
     if ($isValidUser) {
