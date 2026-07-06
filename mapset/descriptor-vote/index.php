@@ -127,6 +127,11 @@ while ($voteRow = $voteResult->fetch_assoc())
         .descriptor-box .user {
             margin-left: 0.1em;
         }
+
+        .popover li.keyboard-active {
+            background-color: rgba(255, 255, 255, 0.15);
+            outline: 1px dashed #ccc;
+        }
     </style>
 
     <h1>Descriptor vote for <?php echo "{$title} [{$difficultyName}]"; ?></h1>
@@ -202,193 +207,268 @@ while ($voteRow = $voteResult->fetch_assoc())
     </div>
 
 <script>
-	console.log("Hello");
     const searchInput = document.getElementById('searchInput');
-	console.log(searchInput);
     const descriptorTreePopover = document.getElementById('descriptorTreePopover');
     const descriptorBoxContainer = document.getElementById('descriptor-box-container');
-	
-document.addEventListener('DOMContentLoaded', function () {
-    searchInput.addEventListener('focus', () => {
-        descriptorTreePopover.style.display = 'block';
-    });
 
-    document.addEventListener('click', (event) => {
-        if (!descriptorTreePopover.contains(event.target) && event.target !== searchInput) {
-            descriptorTreePopover.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+        let currentFocusIndex = -1;
+
+        function getVisibleValidItems() {
+            return Array.from(descriptorTreePopover.querySelectorAll('li')).filter(li => {
+                const isVisible = li.style.display !== 'none';
+                const isDescriptor = li.classList.contains('descriptor') || li.querySelector('.descriptor');
+                const isUnusable = li.classList.contains('unusable') || li.querySelector('.unusable');
+                return isVisible && (isDescriptor || li.dataset.descriptorId) && !isUnusable;
+            });
         }
-    });
 
-    searchInput.addEventListener('input', () => {
-        const searchKeyword = searchInput.value.toLowerCase();
-        console.log(searchKeyword);
-        const listItems = descriptorTreePopover.querySelectorAll('li');
-        listItems.forEach(li => {
-            const text = li.textContent.toLowerCase();
-            li.style.display = text.includes(searchKeyword) ? '' : 'none';
+        function removeActiveStyles(items) {
+            items.forEach(item => {
+                item.classList.remove('keyboard-active');
+            });
+        }
+
+        function setActiveItem(items) {
+            removeActiveStyles(items);
+            if (currentFocusIndex >= items.length) currentFocusIndex = 0;
+            if (currentFocusIndex < 0) currentFocusIndex = items.length - 1;
+
+            if (items[currentFocusIndex]) {
+                const activeItem = items[currentFocusIndex];
+                activeItem.classList.add('keyboard-active');
+                activeItem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        searchInput.addEventListener('focus', () => {
+            descriptorTreePopover.style.display = 'block';
+            currentFocusIndex = -1;
         });
-    });
 
-    // Delegate click event for '.descriptor' inside document
-    document.addEventListener('click', function(event) {
-        const target = event.target.closest('.descriptor');
-        if (!target) return;
+        document.addEventListener('click', (event) => {
+            if (!descriptorTreePopover.contains(event.target) && event.target !== searchInput) {
+                descriptorTreePopover.style.display = 'none';
+                removeActiveStyles(getVisibleValidItems());
+                currentFocusIndex = -1;
+            }
+        });
 
-        if (target.querySelector('.unusable')) {
+        searchInput.addEventListener('input', (e) => {
+            const searchKeyword = searchInput.value.toLowerCase();
+            const listItems = descriptorTreePopover.querySelectorAll('li');
+            
+            listItems.forEach(li => {
+                const text = li.textContent.toLowerCase();
+                li.style.display = text.includes(searchKeyword) ? '' : 'none';
+            });
+
+            const validItems = getVisibleValidItems();
+            if (searchKeyword.trim() !== '') {
+                removeActiveStyles(validItems);
+                currentFocusIndex = -1; 
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const validItems = getVisibleValidItems();
+
+            if (descriptorTreePopover.style.display === 'none' || validItems.length === 0) {
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentFocusIndex++;
+                setActiveItem(validItems);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentFocusIndex--;
+                setActiveItem(validItems);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                
+                let targetItem = null;
+
+                if (currentFocusIndex > -1 && validItems[currentFocusIndex]) {
+                    targetItem = validItems[currentFocusIndex];
+                } else if (validItems.length === 1) {
+                    targetItem = validItems[0];
+                }
+
+                if (targetItem) {
+                    const targetEl = targetItem.classList.contains('descriptor') ? targetItem : targetItem.querySelector('.descriptor') || targetItem;
+                    const descriptorID = targetEl.dataset.descriptorId;
+                    
+                    if (descriptorID) {
+                        handleDescriptorClick(descriptorID);
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                descriptorTreePopover.style.display = 'none';
+                searchInput.blur();
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            const target = event.target.closest('.descriptor');
+            if (!target) return;
+
+            if (target.querySelector('.unusable') || target.classList.contains('unusable')) {
+                event.stopPropagation();
+                return;
+            }
+
+            const descriptorID = target.dataset.descriptorId;
+            handleDescriptorClick(descriptorID);
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
             event.stopPropagation();
-            return;
-        }
-
-        const descriptorID = target.dataset.descriptorId;
-        handleDescriptorClick(descriptorID);
-        searchInput.value = '';
-        searchInput.dispatchEvent(new Event('input'));
-        event.stopPropagation();
-    });
-
-    // Initialize vote icon click handlers for existing descriptor boxes
-    document.querySelectorAll('.descriptor-box').forEach(descriptorBox => {
-        const descriptorID = descriptorBox.dataset.descriptorId;
-        const upvoteIcon = descriptorBox.querySelector('.icon-thumbs-up');
-        const downvoteIcon = descriptorBox.querySelector('.icon-thumbs-down');
-
-        upvoteIcon.addEventListener('click', () => {
-            if (upvoteIcon.classList.contains('voted')) {
-                upvoteIcon.classList.remove('voted');
-            } else {
-                downvoteIcon.classList.remove('voted');
-                upvoteIcon.classList.add('voted');
-            }
-            submitVote(descriptorID, 1);
         });
 
-        downvoteIcon.addEventListener('click', () => {
-            if (downvoteIcon.classList.contains('voted')) {
-                downvoteIcon.classList.remove('voted');
-            } else {
-                upvoteIcon.classList.remove('voted');
-                downvoteIcon.classList.add('voted');
-            }
-            submitVote(descriptorID, 0);
-        });
-    });
+        document.querySelectorAll('.descriptor-box').forEach(descriptorBox => {
+            const descriptorID = descriptorBox.dataset.descriptorId;
+            const upvoteIcon = descriptorBox.querySelector('.icon-thumbs-up');
+            const downvoteIcon = descriptorBox.querySelector('.icon-thumbs-down');
 
-    // Functions
-
-    function handleDescriptorClick(descriptorID) {
-        fetch(`GetDescriptor.php?descriptorID=${encodeURIComponent(descriptorID)}`)
-            .then(response => response.json())
-            .then(response => {
-                if (response) {
-                    if (!isDescriptorBoxExist(descriptorID)) {
-                        createDescriptorBox(response);
+            if (upvoteIcon && downvoteIcon) {
+                upvoteIcon.addEventListener('click', () => {
+                    if (upvoteIcon.classList.contains('voted')) {
+                        upvoteIcon.classList.remove('voted');
+                    } else {
+                        downvoteIcon.classList.remove('voted');
+                        upvoteIcon.classList.add('voted');
                     }
                     submitVote(descriptorID, 1);
-                    descriptorTreePopover.style.display = descriptorTreePopover.style.display === 'none' || !descriptorTreePopover.style.display ? 'block' : 'none';
-                }
-            })
-            .catch(error => console.error(error));
-    }
+                });
 
-    function isDescriptorBoxExist(descriptorID) {
-        return !!document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
-    }
-
-    function createDescriptorBox(descriptorData) {
-        const descriptorBox = document.createElement('div');
-        descriptorBox.className = 'descriptor-box';
-        descriptorBox.dataset.descriptorId = descriptorData.DescriptorID;
-
-        const h2 = document.createElement('h2');
-        h2.textContent = descriptorData.Name;
-        descriptorBox.appendChild(h2);
-
-        const subText = document.createElement('span');
-        subText.className = 'subText';
-        subText.textContent = descriptorData.ShortDescription;
-        descriptorBox.appendChild(subText);
-
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'actions';
-
-        const upvoteIcon = document.createElement('i');
-        upvoteIcon.className = 'icon-thumbs-up voted';
-
-        const downvoteIcon = document.createElement('i');
-        downvoteIcon.className = 'icon-thumbs-down';
-
-        actionsDiv.appendChild(upvoteIcon);
-        actionsDiv.appendChild(downvoteIcon);
-
-        descriptorBox.appendChild(actionsDiv);
-
-        descriptorBox.appendChild(document.createElement('hr'));
-
-        const upvotesB = document.createElement('b');
-        upvotesB.className = 'upvotes';
-        upvotesB.textContent = `upvotes (0): `;
-        descriptorBox.appendChild(upvotesB);
-
-        const upvoteUsersSpan = document.createElement('span');
-        upvoteUsersSpan.className = 'user';
-        descriptorBox.appendChild(upvoteUsersSpan);
-
-        descriptorBox.appendChild(document.createElement('hr'));
-
-        const downvotesB = document.createElement('b');
-        downvotesB.className = 'downvotes';
-        downvotesB.textContent = `downvotes (0): `;
-        descriptorBox.appendChild(downvotesB);
-
-        const downvoteUsersSpan = document.createElement('span');
-        downvoteUsersSpan.className = 'user';
-        descriptorBox.appendChild(downvoteUsersSpan);
-
-        descriptorBoxContainer.appendChild(descriptorBox);
-
-        upvoteIcon.addEventListener('click', () => {
-            if (upvoteIcon.classList.contains('voted')) {
-                upvoteIcon.classList.remove('voted');
-            } else {
-                downvoteIcon.classList.remove('voted');
-                upvoteIcon.classList.add('voted');
+                downvoteIcon.addEventListener('click', () => {
+                    if (downvoteIcon.classList.contains('voted')) {
+                        downvoteIcon.classList.remove('voted');
+                    } else {
+                        upvoteIcon.classList.remove('voted');
+                        downvoteIcon.classList.add('voted');
+                    }
+                    submitVote(descriptorID, 0);
+                });
             }
-            submitVote(descriptorData.DescriptorID, 1);
         });
 
-        downvoteIcon.addEventListener('click', () => {
-            if (downvoteIcon.classList.contains('voted')) {
-                downvoteIcon.classList.remove('voted');
-            } else {
-                upvoteIcon.classList.remove('voted');
-                downvoteIcon.classList.add('voted');
-            }
-            submitVote(descriptorData.DescriptorID, 0);
-        });
-    }
-
-    function updateDescriptorBox(descriptorID, voteData) {
-        const descriptorBox = document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
-        if (!descriptorBox) return;
-
-        const upvotesElem = descriptorBox.querySelector('.upvotes');
-        const downvotesElem = descriptorBox.querySelector('.downvotes');
-        const upvoteUsernamesElem = upvotesElem.nextElementSibling;
-        const downvoteUsernamesElem = downvotesElem.nextElementSibling;
-
-        if (voteData.upvotes == null && voteData.downvotes == null) {
-            descriptorBox.remove();
-            return;
+        function handleDescriptorClick(descriptorID) {
+            fetch(`GetDescriptor.php?descriptorID=${encodeURIComponent(descriptorID)}`)
+                .then(response => response.json())
+                .then(response => {
+                    if (response) {
+                        if (!isDescriptorBoxExist(descriptorID)) {
+                            createDescriptorBox(response);
+                        }
+                        submitVote(descriptorID, 1);
+                    }
+                })
+                .catch(error => console.error(error));
         }
 
-        upvotesElem.innerHTML = `upvotes (${voteData.upvotes}):`;
-        upvoteUsernamesElem.textContent = voteData.upvoteUsernames.join(', ');
+        function isDescriptorBoxExist(descriptorID) {
+            return !!document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
+        }
 
-        downvotesElem.innerHTML = `downvotes (${voteData.downvotes}):`;
-        downvoteUsernamesElem.textContent = voteData.downvoteUsernames.join(', ');
-    }
+        function createDescriptorBox(descriptorData) {
+            const descriptorBox = document.createElement('div');
+            descriptorBox.className = 'descriptor-box';
+            descriptorBox.dataset.descriptorId = descriptorData.DescriptorID;
 
-    function submitVote(descriptorID, vote) {
+            const h2 = document.createElement('h2');
+            h2.textContent = descriptorData.Name;
+            descriptorBox.appendChild(h2);
+
+            const subText = document.createElement('span');
+            subText.className = 'subText';
+            subText.textContent = descriptorData.ShortDescription;
+            descriptorBox.appendChild(subText);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'actions';
+
+            const upvoteIcon = document.createElement('i');
+            upvoteIcon.className = 'icon-thumbs-up voted';
+
+            const downvoteIcon = document.createElement('i');
+            downvoteIcon.className = 'icon-thumbs-down';
+
+            actionsDiv.appendChild(upvoteIcon);
+            actionsDiv.appendChild(downvoteIcon);
+
+            descriptorBox.appendChild(actionsDiv);
+
+            descriptorBox.appendChild(document.createElement('hr'));
+
+            const upvotesB = document.createElement('b');
+            upvotesB.className = 'upvotes';
+            upvotesB.textContent = `upvotes (0): `;
+            descriptorBox.appendChild(upvotesB);
+
+            const upvoteUsersSpan = document.createElement('span');
+            upvoteUsersSpan.className = 'user';
+            descriptorBox.appendChild(upvoteUsersSpan);
+
+            descriptorBox.appendChild(document.createElement('hr'));
+
+            const downvotesB = document.createElement('b');
+            downvotesB.className = 'downvotes';
+            downvotesB.textContent = `downvotes (0): `;
+            descriptorBox.appendChild(downvotesB);
+
+            const downvoteUsersSpan = document.createElement('span');
+            downvoteUsersSpan.className = 'user';
+            descriptorBox.appendChild(downvoteUsersSpan);
+
+            descriptorBoxContainer.appendChild(descriptorBox);
+
+            upvoteIcon.addEventListener('click', () => {
+                if (upvoteIcon.classList.contains('voted')) {
+                    upvoteIcon.classList.remove('voted');
+                } else {
+                    downvoteIcon.classList.remove('voted');
+                    upvoteIcon.classList.add('voted');
+                }
+                submitVote(descriptorData.DescriptorID, 1);
+            });
+
+            downvoteIcon.addEventListener('click', () => {
+                if (downvoteIcon.classList.contains('voted')) {
+                    downvoteIcon.classList.remove('voted');
+                } else {
+                    upvoteIcon.classList.remove('voted');
+                    downvoteIcon.classList.add('voted');
+                }
+                submitVote(descriptorData.DescriptorID, 0);
+            });
+        }
+
+        function updateDescriptorBox(descriptorID, voteData) {
+            const descriptorBox = document.querySelector(`.descriptor-box[data-descriptor-id="${descriptorID}"]`);
+            if (!descriptorBox) return;
+
+            const upvotesElem = descriptorBox.querySelector('.upvotes');
+            const downvotesElem = descriptorBox.querySelector('.downvotes');
+            const upvoteUsernamesElem = upvotesElem.nextElementSibling;
+            const downvoteUsernamesElem = downvotesElem.nextElementSibling;
+
+            if (voteData.upvotes == null && voteData.downvotes == null) {
+                descriptorBox.remove();
+                return;
+            }
+
+            upvotesElem.innerHTML = `upvotes (${voteData.upvotes}):`;
+            upvoteUsernamesElem.textContent = voteData.upvoteUsernames.join(', ');
+
+            downvotesElem.innerHTML = `downvotes (${voteData.downvotes}):`;
+            downvoteUsernamesElem.textContent = voteData.downvoteUsernames.join(', ');
+        }
+
+        function submitVote(descriptorID, vote) {
             $.ajax({
                 type: "POST",
                 url: "SubmitVote.php",
@@ -406,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-});
+    });
 </script>
 
 <?php
