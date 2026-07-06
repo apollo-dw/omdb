@@ -132,22 +132,22 @@
         $votesToInsert = [];
 
         // precision: CS >= 6
-        if ($circleSize >= 6) {
+        if ($circleSize >= 6 && $mode == 0) {
             $votesToInsert[] = 35;
         }
 
         // large circles: CS <= 3 and SR >= 4.0
-        if ($circleSize <= 3 && $SR >= 4.0) {
+        if ($circleSize <= 3 && $SR >= 4.0 && $mode == 0) {
             $votesToInsert[] = 82;
         }
 
         // slider only: circle count == 0
-        if ($circleCount == 0) {
+        if ($circleCount == 0 && $mode == 0) {
             $votesToInsert[] = 69;
         }
 
         // circle only: slider count == 0
-        if ($sliderCount == 0) {
+        if ($sliderCount == 0 && $mode == 0) {
             $votesToInsert[] = 70;
         }
 
