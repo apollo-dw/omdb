@@ -137,7 +137,7 @@
         }
 
         // large circles: CS <= 3 and SR >= 4.0
-        if ($circleSize <= 3 && $SR >= 4.0 && $mode == 0) {
+        if ($circleSize < 3 && $SR >= 4.0 && $mode == 0) {
             $votesToInsert[] = 82;
         }
 
