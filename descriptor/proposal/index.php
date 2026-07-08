@@ -196,15 +196,6 @@
                 <td><?php echo $proposal["UpdatedTimestamp"]; ?></td>
             </tr>
             <?php } ?>
-            <tr>
-                <td></td>
-                <td>
-                    <span class="subText">
-                        Proposals can be approved when it receives <b>20 votes and has >=65% positive votes.</b>
-                        Approvals can only happen after a minimum of 5 days.
-                    </span>
-                </td>
-            </tr>
             <?php if(!is_null($proposal["EditorID"]) && $proposal["Status"] !== "pending") {
                 $editorName = GetUserNameFromId($proposal["EditorID"], $conn);
                 ?>
