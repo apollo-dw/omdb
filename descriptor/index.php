@@ -60,10 +60,10 @@
     echo "</div>";
 
     if (!empty($descriptor["LongDescription"])) {
-        $longDescription = ParseShortLinks(
+        $longDescription = nl2br(ParseShortLinks(
             $conn,
             safe_htmlspecialchars($descriptor["LongDescription"], ENT_QUOTES)
-        );
+        ));
 
         echo "<a href='#' id='readMoreLink' onclick='showLongDescription(); return false;'>Read more</a>";
 
