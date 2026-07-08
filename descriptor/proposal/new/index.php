@@ -96,7 +96,7 @@
                     <label>Long Description:</label>
                 </td>
                 <td>
-                    <textarea name="LongDescription" placeholder="" required rows="8"><?php echo $longDescription; ?></textarea><br>
+                    <textarea name="LongDescription" placeholder="" rows="8"><?php echo $longDescription; ?></textarea><br>
                     <span class="subText">You can provide a more detailed explanation of the descriptor here. Development of style, usage, history, notable maps, all of these aspects can be described here.</span><br>
                     <span class="subText">If you're documenting history, it's a good idea to provide sources and context for the information you include in the entry comment.</span>
                 </td>
