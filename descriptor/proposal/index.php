@@ -116,7 +116,7 @@
                 </td>
             </tr>
             <tr>
-                <td class="right">Description</td>
+                <td class="right">Short Description</td>
                 <td>
                     <?php echo ParseShortLinks($conn, safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES)); ?>
                     <?php if ($originalDescriptor && $originalDescriptor["ShortDescription"] !== $proposal["ShortDescription"]) { ?>
@@ -125,7 +125,16 @@
                     <?php } ?>
                 </td>
             </tr>
-            
+            <tr>
+                <td class="right">Long Description</td>
+                <td>
+                    <?php echo ParseShortLinks($conn, safe_htmlspecialchars($proposal["LongDescription"], ENT_QUOTES)); ?>
+                    <?php if ($originalDescriptor && $originalDescriptor["LongDescription"] !== $proposal["LongDescription"]) { ?>
+                        <br>    
+                        <span class="diff-old-value">(was: <?php echo ParseShortLinks($conn, safe_htmlspecialchars($originalDescriptor["LongDescription"], ENT_QUOTES)); ?>)</span>
+                    <?php } ?>
+                </td>
+            </tr>
             <tr>
                 <td class="right">Parent descriptor</td>
                 <td>

@@ -60,10 +60,20 @@
             </tr>
             <tr>
                 <td>
-                    <label>Description:</label>
+                    <label>Short Description:</label>
                 </td>
                 <td>
                     <textarea name="ShortDescription" placeholder="Employs symmetry within the map design, often mirroring elements along the horizontal centreline." required><?php echo safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES); ?></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>Long Description:</label>
+                </td>
+                <td>
+                    <textarea name="LongDescription" placeholder="" required rows="8"><?php echo safe_htmlspecialchars($proposal["LongDescription"], ENT_QUOTES); ?></textarea><br>
+                    <span class="subText">You can provide a more detailed explanation of the descriptor here. Development of style, usage, history, notable maps, all of these aspects can be described here.</span><br>
+                    <span class="subText">If you're documenting history, it's a good idea to provide sources and context for the information you include in the entry comment.</span>
                 </td>
             </tr>
             <tr>

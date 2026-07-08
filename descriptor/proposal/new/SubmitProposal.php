@@ -8,6 +8,7 @@
 
     $descriptorName = $_POST["DescriptorName"];
     $shortDescription = $_POST["ShortDescription"];
+    $longDescription = $_POST["LongDescription"];
     $parentID = $_POST["ParentDescriptorID"];
     $usable = $_POST["Usable"];
     $entryComment = trim($_POST["EntryComment"] ?? "");
@@ -23,8 +24,8 @@
         $parentID = null;
     }
 
-    $stmt = $conn->prepare("INSERT INTO `descriptor_proposals` (DescriptorID, Name, ShortDescription, ParentID, Usable, Type, ProposerID) VALUES (?, ?, ?, ?, ?, ?, ?);");
-    $stmt->bind_param("isssisi", $descriptorIdTarget, $descriptorName, $shortDescription, $parentID, $usable, $type, $userId);
+    $stmt = $conn->prepare("INSERT INTO `descriptor_proposals` (DescriptorID, Name, ShortDescription, LongDescription, ParentID, Usable, Type, ProposerID) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+    $stmt->bind_param("issssisi", $descriptorIdTarget, $descriptorName, $shortDescription, $longDescription, $parentID, $usable, $type, $userId);
     $stmt->execute();
     $proposalId = $stmt->insert_id;
     $stmt->close();
