@@ -229,7 +229,8 @@ CREATE TABLE `descriptors` (
   `Name` varchar(40) NOT NULL,
   `ShortDescription` text,
   `ParentID` int DEFAULT NULL,
-  `Usable` tinyint(1) NOT NULL DEFAULT '1'
+  `Usable` tinyint(1) NOT NULL DEFAULT '1',
+  `LongDescription` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -250,7 +251,8 @@ CREATE TABLE `descriptor_proposals` (
   `Type` enum('new','delete','modify') DEFAULT NULL,
   `EditorID` int DEFAULT NULL,
   `Status` enum('pending','approved','denied') NOT NULL DEFAULT 'pending',
-  `UpdatedTimestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `UpdatedTimestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `LongDescription` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
