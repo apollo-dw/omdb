@@ -16,16 +16,16 @@
 
     function getParentTree($descriptor, $conn) {
         if ($descriptor['ParentID'] === null) {
-            return $descriptor['Name'];
+            return '<a href="./?id=' . $descriptor['DescriptorID'] . '">' . safe_htmlspecialchars($descriptor['Name'], ENT_QUOTES) . '</a>';
         } else {
-            $parentStmt = $conn->prepare("SELECT `Name`, `ParentID` FROM `descriptors` WHERE `DescriptorID` = ?;");
+            $parentStmt = $conn->prepare("SELECT `DescriptorID`, `Name`, `ParentID` FROM `descriptors` WHERE `DescriptorID` = ?;");
             $parentStmt->bind_param("i", $descriptor['ParentID']);
             $parentStmt->execute();
             $parentDescriptor = $parentStmt->get_result()->fetch_assoc();
             $parentStmt->close();
 
             $parentTree = getParentTree($parentDescriptor, $conn);
-            return $parentTree . ' >> ' . $descriptor['Name'];
+            return $parentTree . ' >> <a href="./?id=' . $descriptor['DescriptorID'] . '">' . safe_htmlspecialchars($descriptor['Name'], ENT_QUOTES) . '</a>';
         }
     }
 
@@ -53,9 +53,29 @@
 
     echo "<h1>Descriptor - " . safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
     echo "<span class='subText' style='float: right;'>[Descriptor" . $descriptor["DescriptorID"] . "]</span>";
-    echo "<h3 style='color:#a8a8a8;'>{$beatmapCount} beatmaps</h3>";
-    echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES)) . "<br>";
-    echo "<span class='subText'>" . safe_htmlspecialchars($parentTree, ENT_QUOTES) . "</span>";
+    echo "<h3 style='color:#a8a8a8; margin-bottom: 0;'>{$beatmapCount} beatmaps</h3>";
+    echo "<span class='subText'>" . $parentTree . "</span><hr>";
+    echo "<div id='descriptorDescription'>";
+        echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES));
+    echo "</div>";
+
+    if (!empty($descriptor["LongDescription"])) {
+        $longDescription = ParseShortLinks(
+            $conn,
+            safe_htmlspecialchars($descriptor["LongDescription"], ENT_QUOTES)
+        );
+
+        echo "<a href='#' id='readMoreLink' onclick='showLongDescription(); return false;'>Read more</a>";
+
+        echo "<script>
+            const longDescription = " . json_encode($longDescription) . ";
+
+            function showLongDescription() {
+                document.getElementById('descriptorDescription').innerHTML = longDescription;
+                document.getElementById('readMoreLink').remove();
+            }
+        </script>";
+    }
 ?>
 
 <style>
