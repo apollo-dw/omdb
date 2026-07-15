@@ -264,12 +264,35 @@
                 case 'meta':
                     parts.push(`m${ex}${t.id}`);
                     break;
+                case 'ar':
+                case 'od':
+                case 'hp':
+                case 'length':
+                case 'bpm':
+                case 'circles':
+                case 'sliders':
+                case 'spinners':
                 case 'sr':
+                case 'cs': {
                     if (t.ops && t.ops.length > 0) {
+                        const prefix = {
+                            sr: 'r',
+                            cs: 'p',
+                            ar: 'a',
+                            od: 'o',
+                            hp: 'h',
+                            length: 't',
+                            bpm: 'b',
+                            circles: 'x',
+                            sliders: 'y',
+                            spinners: 'z'
+                        }[t.type];
+                        
                         const opStr = t.ops.map(o => o.op + o.val).join('');
-                        parts.push(`r${ex}${opStr}`);
+                        parts.push(`${prefix}${ex}${opStr}`);
                     }
                     break;
+                }
             }
         }
         return parts.join(',');
@@ -335,14 +358,26 @@
                         exclude
                     });
                     break;
-                case 'r': {
+
+                case 'a':
+                case 'o':
+                case 'h':
+                case 't':
+                case 'b':
+                case 'x':
+                case 'y':
+                case 'z':
+                case 'r':
+                case 'p': {
+                    const typeKey = { r: 'sr', p: 'cs', a: 'ar', o: 'od', h: 'hp', t: 'length', b: 'bpm', x: 'circles', y: 'sliders', z: 'spinners' }[prefix];
+                    const namePrefix = { r: 'SR: ', p: 'CS: ', a: 'AR: ', o: 'OD: ', h: 'HP: ', t: 'Length: ', b: 'BPM: ', x: 'Circle count: ', y: 'Slider count: ', z: 'Spinner count: ' }[prefix];
+
                     const ops = [];
                     let rem = rest;
                     const opRx = /^(>=|<=|>|<|=)(\d+(?:\.\d+)?)/;
                     while (rem.length > 0) {
                         const m = rem.match(opRx);
-                        if (!m)
-                            break;
+                        if (!m) break;
 
                         ops.push({
                             op: m[1],
@@ -369,12 +404,10 @@
                                 case '>=':
                                     lower = op;
                                     break;
-
                                 case '<':
                                 case '<=':
                                     upper = op;
                                     break;
-
                                 case '=':
                                     lower = upper = op;
                                     break;
@@ -385,20 +418,20 @@
 
                         if (lower && upper) {
                             if (lower.op === '=' && upper.op === '=') {
-                                idStr = `sr=${lower.val}`;
+                                idStr = `${typeKey}=${lower.val}`;
                             } else {
-                                idStr = `${lower.val}${flip[lower.op]}sr${upper.op}${upper.val}`;
+                                idStr = `${lower.val}${flip[lower.op]}${typeKey}${upper.op}${upper.val}`;
                             }
                         } else if (lower) {
-                            idStr = `sr${lower.op}${lower.val}`;
+                            idStr = `${typeKey}${lower.op}${lower.val}`;
                         } else if (upper) {
-                            idStr = `sr${upper.op}${upper.val}`;
+                            idStr = `${typeKey}${upper.op}${upper.val}`;
                         }
 
                         tokens.push({
-                            type: 'sr',
+                            type: typeKey,
                             id: idStr,
-                            name: 'SR: ' + idStr,
+                            name: namePrefix + idStr,
                             ops,
                             exclude
                         });
@@ -418,6 +451,15 @@
             year: $('#filter-year').val() || '<?php echo $filterConfig["defaultYear"]; ?>',
             rating: $('#filter-rating').val() || "",
             sr: $('#filter-sr').val() || "",
+            cs: $('#filter-cs').val() || "",
+            ar: $('#filter-ar').val() || "",
+            od: $('#filter-od').val() || "",
+            hp: $('#filter-hp').val() || "",
+            length: $('#filter-length').val() || "",
+            bpm: $('#filter-bpm').val() || "",
+            circles: $('#filter-circles').val() || "",
+            sliders: $('#filter-sliders').val() || "",
+            spinners: $('#filter-spinners').val() || "",
             tag: $('#filter-tag').val() || "",
             tokens: activeTokens,
 
@@ -465,6 +507,15 @@
         $('#filter-year').val(urlParams.get('y') || '<?php echo $filterConfig["defaultYear"]; ?>');
         $('#filter-rating').val(urlParams.get('r') || "");
         $('#filter-sr').val(urlParams.get('sr') || "");
+        $('#filter-cs').val(urlParams.get('p') || "");
+        $('#filter-ar').val(urlParams.get('a') || "");
+        $('#filter-od').val(urlParams.get('o') || "");
+        $('#filter-hp').val(urlParams.get('h') || "");
+        $('#filter-length').val(urlParams.get('t') || "");
+        $('#filter-bpm').val(urlParams.get('b') || "");
+        $('#filter-circles').val(urlParams.get('x') || "");
+        $('#filter-sliders').val(urlParams.get('y') || "");
+        $('#filter-spinners').val(urlParams.get('z') || "");
         $('#filter-tag').val(urlParams.get('t') || "");
 
         renderChips();
@@ -628,25 +679,49 @@
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const val = $(this).val().trim().toLowerCase();
-                const srMatch = val.match(/^(?:(\d+(?:\.\d+)?)\s*(<=|<|>|>=|=)\s*)?sr(?:(?:\s*(<=|<|>|>=|=)\s*(\d+(?:\.\d+)?)))?$/i);
-                if (srMatch && (srMatch[1] || srMatch[4])) {
-                    let parsedOps = [];
-                    
-                    if (srMatch[1] && srMatch[2]) {
-                        const flip = {'<': '>', '<=': '>=', '>': '<', '>=': '<=', '=': '='};
-                        parsedOps.push({ op: flip[srMatch[2]], val: srMatch[1] });
-                    }
-                    if (srMatch[3] && srMatch[4]) {
-                        parsedOps.push({ op: srMatch[3], val: srMatch[4] });
-                    }
 
-                    pushToken({ type: 'sr', id: val, name: 'SR: ' + val, label: val, ops: parsedOps }, false);
-                    
-                    $(this).val('');
-                    $popover.hide();
-                    renderChips();
-                    fireUpdate();
-                    return;
+                const tokenConfigs = [
+                    { key: 'sr', label: 'SR: ' },
+                    { key: 'cs', label: 'CS: ' },
+                    { key: 'ar', label: 'AR: ' },
+                    { key: 'od', label: 'OD: ' },
+                    { key: 'hp', label: 'HP: ' },
+                    { key: 'length', label: 'Length: ' },
+                    { key: 'bpm', label: 'BPM: ' },
+                    { key: 'circles', label: 'Circle count: ' },
+                    { key: 'sliders', label: 'Slider count: ' },
+                    { key: 'spinners', label: 'Spinner count: ' }
+                ];
+
+                for (const cfg of tokenConfigs) {
+                    const rx = new RegExp(`^(?:(\\d+(?:\\.\\d+)?)\\s*(<=|<|>|>=|=)\\s*)?${cfg.key}(?:(?:\\s*(<=|<|>|>=|=)\\s*(\\d+(?:\\.\\d+)?)))?$`, 'i');
+                    const match = val.match(rx);
+
+                    if (match && (match[1] || match[4])) {
+                        let parsedOps = [];
+                        
+                        if (match[1] && match[2]) {
+                            const flip = {'<': '>', '<=': '>=', '>': '<', '>=': '<=', '=': '='};
+                            parsedOps.push({ op: flip[match[2]], val: match[1] });
+                        }
+                        if (match[3] && match[4]) {
+                            parsedOps.push({ op: match[3], val: match[4] });
+                        }
+
+                        pushToken({ 
+                            type: cfg.key, 
+                            id: val, 
+                            name: cfg.label + val, 
+                            label: val, 
+                            ops: parsedOps 
+                        }, false);
+                        
+                        $(this).val('');
+                        $popover.hide();
+                        renderChips();
+                        fireUpdate();
+                        return;
+                    }
                 }
 
                 if ($popover.is(':visible')) {

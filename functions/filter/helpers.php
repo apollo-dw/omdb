@@ -35,15 +35,40 @@
                     $parts[] = "m{$ex}{$id}";
                     break;
 
+                case 'ar':
+                case 'od':
+                case 'hp':
+                case 'length':
+                case 'bpm':
+                case 'circles':
+                case 'sliders':
+                case 'spinners':
                 case 'sr':
+                case 'cs': {
                     if (!empty($t['ops'])) {
+                        $typeMap = [
+                            'sr' => 'r',
+                            'cs' => 'p',
+                            'ar' => 'a',
+                            'od' => 'o',
+                            'hp' => 'h',
+                            'length' => 't',
+                            'bpm' => 'b',
+                            'circles' => 'x',
+                            'sliders' => 'y',
+                            'spinners' => 'z',
+                        ];
+
+                        $prefix = $typeMap[$type]; 
+
                         $opStr = '';
                         foreach ($t['ops'] as $op) {
                             $opStr .= ($op['op'] ?? '') . ($op['val'] ?? '');
                         }
-                        $parts[] = "r{$ex}{$opStr}";
+                        $parts[] = "{$prefix}{$ex}{$opStr}";
                     }
                     break;
+                }
             }
         }
 
@@ -120,7 +145,33 @@
                     ];
                     break;
 
+                case 'a':
+                case 'o':
+                case 'h':
+                case 't':
+                case 'b':
+                case 'x':
+                case 'y':
+                case 'z':
                 case 'r':
+                case 'p': {
+                    $typeMap = [
+                        'r' => ['key' => 'sr', 'label' => 'SR: '],
+                        'p' => ['key' => 'cs', 'label' => 'CS: '],
+                        'a' => ['key' => 'ar', 'label' => 'AR: '],
+                        'o' => ['key' => 'od', 'label' => 'OD: '],
+                        'h' => ['key' => 'hp', 'label' => 'HP: '],
+                        't' => ['key' => 'length', 'label' => 'Length: '],
+                        'b' => ['key' => 'bpm', 'label' => 'BPM: '],
+                        'x' => ['key' => 'circles', 'label' => 'Circle count: '],
+                        'y' => ['key' => 'sliders', 'label' => 'Slider count: '],
+                        'z' => ['key' => 'spinners', 'label' => 'Spinner count: '],
+                    ];
+
+                    $cfg         = $typeMap[$prefix];
+                    $typeKey     = $cfg['key'];
+                    $labelPrefix = $cfg['label'];
+
                     $ops = [];
                     $remaining = $rest;
                     while ($remaining !== '') {
@@ -131,17 +182,19 @@
                             break; // fucked
                         }
                     }
+
                     if (!empty($ops)) {
                         $idStr = '';
                         $lower = null;
                         $upper = null;
                         $flip = [
-                            '>' => '<',
+                            '>'  => '<',
                             '>=' => '<=',
-                            '<' => '>',
+                            '<'  => '>',
                             '<=' => '>=',
-                            '=' => '=',
+                            '='  => '=',
                         ];
+
                         foreach ($ops as $op) {
                             switch ($op['op']) {
                                 case '>':
@@ -159,30 +212,33 @@
                                     break;
                             }
                         }
+
                         if ($lower && $upper) {
                             if ($lower['op'] === '=' && $upper['op'] === '=') {
-                                $idStr = 'sr=' . $lower['val'];
+                                $idStr = $typeKey . '=' . $lower['val'];
                             } else {
                                 $idStr = $lower['val']
                                     . $flip[$lower['op']]
-                                    . 'sr'
+                                    . $typeKey
                                     . $upper['op']
                                     . $upper['val'];
                             }
                         } elseif ($lower) {
-                            $idStr = 'sr' . $lower['op'] . $lower['val'];
+                            $idStr = $typeKey . $lower['op'] . $lower['val'];
                         } elseif ($upper) {
-                            $idStr = 'sr' . $upper['op'] . $upper['val'];
+                            $idStr = $typeKey . $upper['op'] . $upper['val'];
                         }
+
                         $tokens[] = [
-                            'type' => 'sr',
-                            'id' => $idStr,
-                            'name' => 'SR: ' . $idStr,
-                            'ops' => $ops,
+                            'type'    => $typeKey,
+                            'id'      => $idStr,
+                            'name'    => $labelPrefix . $idStr,
+                            'ops'     => $ops,
                             'exclude' => $exclude,
                         ];
                     }
                     break;
+                }
             }
         }
 
@@ -206,6 +262,15 @@
 			'countries' => [],
 			'exCountries' => [],
 			'srFilters' => [],
+            'csFilters' => [],
+            'arFilters' => [],
+            'odFilters' => [],
+            'hpFilters' => [],
+            'lengthFilters' => [],
+            'bpmFilters' => [],
+            'circlesFilters' => [],
+            'slidersFilters' => [],
+            'spinnersFilters' => [],
 		];
 
 		foreach ($tokensRaw as $t) {
@@ -230,21 +295,39 @@
 				if ($exclude) $parsed['exLanguages'][] = (int)$id; else $parsed['languages'][] = (int)$id;
 			} elseif ($type === 'country') {
 				if ($exclude) $parsed['exCountries'][] = $id; else $parsed['countries'][] = $id;
-			} elseif ($type === 'sr' && !empty($t['ops'])) {
-				$srConds = [];
-				foreach ($t['ops'] as $opData) {
-					$op = $opData['op'] ?? '';
-					$val = (float)($opData['val'] ?? 0);
-					
-					if (in_array($op, ['<', '<=', '>', '>=', '='])) {
-						$srConds[] = "b.SR {$op} {$val}";
-					}
-				}
-				if (!empty($srConds)) {
-					$srCond = implode(" AND ", $srConds);
-					$parsed['srFilters'][] = $exclude ? "NOT ({$srCond})" : "({$srCond})";
-				}
-			}
+			} elseif (in_array($type, ['sr', 'cs', 'ar', 'od', 'hp', 'length', 'bpm', 'circles', 'sliders', 'spinners']) && !empty($t['ops'])) {
+                $rangeConfigs = [
+                    'sr' => ['col' => 'b.SR',           'filterKey' => 'srFilters'],
+                    'cs' => ['col' => 'b.CircleSize',   'filterKey' => 'csFilters'],
+                    'ar' => ['col' => 'b.ApproachRate', 'filterKey' => 'arFilters'],
+                    'od' => ['col' => 'b.OverallDifficulty', 'filterKey' => 'odFilters'],
+                    'hp' => ['col' => 'b.Drain', 'filterKey' => 'hpFilters'],
+                    'length' => ['col' => 'b.PlayTime', 'filterKey' => 'lengthFilters'],
+                    'bpm' => ['col' => 'b.Bpm', 'filterKey' => 'bpmFilters'],
+                    'circles' => ['col' => 'b.CircleCount', 'filterKey' => 'circlesFilters'],
+                    'sliders' => ['col' => 'b.SliderCount', 'filterKey' => 'slidersFilters'],
+                    'spinners' => ['col' => 'b.SpinnerCount', 'filterKey' => 'spinnersFilters'],
+                ];
+
+                $cfg = $rangeConfigs[$type];
+                $dbCol = $cfg['col'];
+                $filterKey = $cfg['filterKey'];
+
+                $conds = [];
+                foreach ($t['ops'] as $opData) {
+                    $op = $opData['op'] ?? '';
+                    $val = (float)($opData['val'] ?? 0);
+                    
+                    if (in_array($op, ['<', '<=', '>', '>=', '='])) {
+                        $conds[] = "{$dbCol} {$op} {$val}";
+                    }
+                }
+
+                if (!empty($conds)) {
+                    $condStr = implode(" AND ", $conds);
+                    $parsed[$filterKey][] = $exclude ? "NOT ({$condStr})" : "({$condStr})";
+                }
+            }
 		}
 
 		return $parsed;
@@ -353,6 +436,42 @@
         }
 
         foreach ($parsed['srFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['csFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['arFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['odFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['hpFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['lengthFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['bpmFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['circlesFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['slidersFilters'] as $cond) {
+            $sql .= " AND $cond";
+        }
+
+        foreach ($parsed['spinnersFilters'] as $cond) {
             $sql .= " AND $cond";
         }
 
