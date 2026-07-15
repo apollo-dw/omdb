@@ -681,6 +681,7 @@ while($row = $result->fetch_assoc()) {
                 echo "<hr />";
             }
         ?>
+        <?php if ($sampleRow['CreatorID'] !== 7960151) { ?>
         <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
 		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
@@ -748,6 +749,7 @@ while($row = $result->fetch_assoc()) {
 
         </div>
 		<hr />
+        <?php } ?>
         <h4 style="margin-bottom: 0;">Latest Ratings</h4>
         <div id="setRatingsDisplay">
             <?php
@@ -755,7 +757,10 @@ while($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
+
 	<div class="flex-child column-when-mobile" style="width:60%;">
+        <?php if ($sampleRow['CreatorID'] !== 7960151) { ?>
+
 		<h4 style="margin-bottom: 0;">Reviews</h4>
 
         
@@ -863,6 +868,8 @@ while($row = $result->fetch_assoc()) {
 				}
 			}
 		?>
+
+        <?php } ?>
 	</div>
 </div>
 
