@@ -201,23 +201,23 @@
 <div class="alternating-bg" style="width:100%;padding:0px;">
     <div class="ratingDistributionContainer">
         <?php
-        $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
-                                        SELECT DescriptorID, ParentID
-                                        FROM descriptors
-                                        WHERE DescriptorID = ?
-                                        UNION ALL
-                                        SELECT d.DescriptorID, d.ParentID
-                                        FROM descriptors d
-                                        JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
-                                    )
-                                    SELECT YEAR(s.DateRanked) AS Year, COUNT(b.BeatmapID) AS BeatmapCount
-                                    FROM beatmaps b
-                                    JOIN beatmapsets s ON b.SetID = s.SetID
-                                    JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
-                                    JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
-                                    WHERE b.Mode = ?
-                                    GROUP BY Year
-                                    ORDER BY Year;");
+        $stmt = $conn->prepare("
+            WITH RECURSIVE DescendantDescriptors AS (
+                SELECT DescriptorID FROM descriptors
+                WHERE DescriptorID = ?
+                UNION ALL
+                SELECT d.DescriptorID FROM descriptors d
+                JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
+            )
+            SELECT
+                YEAR(s.DateRanked) AS Year,
+                COUNT(DISTINCT b.BeatmapID) AS BeatmapCount
+            FROM beatmaps b
+            JOIN beatmapsets s ON b.SetID = s.SetID
+            JOIN beatmap_descriptors bd ON b.BeatmapID = bd.BeatmapID
+            JOIN DescendantDescriptors dd ON bd.DescriptorID = dd.DescriptorID
+            WHERE b.Mode = ?
+            GROUP BY Year ORDER BY Year;");
         $stmt->bind_param("ii", $descriptor_id, $mode);
         $stmt->execute();
         $result = $stmt->get_result();
