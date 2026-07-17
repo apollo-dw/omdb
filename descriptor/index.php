@@ -29,21 +29,27 @@
         }
     }
 
-    $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
-                                        SELECT DescriptorID, ParentID
-                                        FROM descriptors
-                                        WHERE DescriptorID = ?
-                                        UNION ALL
-                                        SELECT d.DescriptorID, d.ParentID
-                                        FROM descriptors d
-                                        JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
-                                    )
-                                    SELECT COUNT(*) as count
-                                    FROM beatmaps b
-                                    JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
-                                    JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
-                                    WHERE b.Mode = ?
-                                    HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END);");
+    $stmt = $conn->prepare("
+        WITH RECURSIVE DescendantDescriptors AS (
+            SELECT DescriptorID
+            FROM descriptors
+            WHERE DescriptorID = ?
+
+            UNION ALL
+
+            SELECT d.DescriptorID
+            FROM descriptors d
+            JOIN DescendantDescriptors dd
+                ON d.ParentID = dd.DescriptorID
+        )
+        SELECT COUNT(DISTINCT bd.BeatmapID) AS count
+        FROM beatmap_descriptors bd
+        JOIN beatmaps b
+            ON b.BeatmapID = bd.BeatmapID
+        JOIN DescendantDescriptors dd
+            ON bd.DescriptorID = dd.DescriptorID
+        WHERE b.Mode = ?
+    ");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();
     $beatmapCount = $stmt->get_result()->fetch_assoc()["count"];
@@ -51,12 +57,12 @@
 
     $parentTree = getParentTree($descriptor, $conn);
 
-    echo "<h1>Descriptor - " . safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
+    echo "<h1>" . safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
     echo "<span class='subText' style='float: right;'>[Descriptor" . $descriptor["DescriptorID"] . "]</span>";
     echo "<h3 style='color:#a8a8a8; margin-bottom: 0;'>{$beatmapCount} beatmaps</h3>";
     echo "<span class='subText'>" . $parentTree . "</span><hr>";
     echo "<div id='descriptorDescription'>";
-        echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES));
+    echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES));
     echo "</div>";
 
     if (!empty($descriptor["LongDescription"])) {
@@ -98,15 +104,19 @@
         padding-top: 2em;
     }
 
-    .ratingDistributionContainer > .bar {
+    .ratingDistributionContainer .bar {
         width: 100%;
         text-align: left;
         display: inline-block;
         vertical-align: bottom;
         background-color: rgba(125, 125, 125, 0.66);
-        border-bottom: 2px solid rgba(125, 125, 125, 0.66);
         box-sizing: border-box;
         margin: 0;
+    }
+
+    .bar:hover {
+        background-color: rgba(125, 125, 125, 0.88);
+        transition: background-color 0.15s ease;
     }
 
     .bar > span {
@@ -123,24 +133,34 @@
 <div class="flex-container alternating-bg" style="width:100%;padding:0;margin-bottom:2em;justify-content: flex-start;">
     <?php
     $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
-                                    SELECT DescriptorID, ParentID
-                                    FROM descriptors
-                                    WHERE DescriptorID = ?
-                                    UNION ALL
-                                    SELECT d.DescriptorID, d.ParentID
-                                    FROM descriptors d
-                                    JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
-                                )
-                                SELECT b.*, s.Title
-                                FROM beatmaps b
-                                JOIN beatmapsets s ON b.SetID = s.SetID
-                                JOIN descriptor_votes dv ON b.BeatmapID = dv.BeatmapID
-                                JOIN DescendantDescriptors dd ON dv.DescriptorID = dd.DescriptorID
-                                WHERE b.Mode = ? AND b.Rating IS NOT NULL AND b.RatingCount >= 5
-                                GROUP BY b.BeatmapID, b.ChartRank
-                                HAVING SUM(CASE WHEN dv.Vote = 1 THEN 1 ELSE 0 END) > SUM(CASE WHEN dv.Vote = 0 THEN 1 ELSE 0 END)
-                                ORDER BY b.Rating DESC
-                                LIMIT 10;");
+            SELECT DescriptorID
+            FROM descriptors
+            WHERE DescriptorID = ?
+
+            UNION ALL
+
+            SELECT d.DescriptorID
+            FROM descriptors d
+            JOIN DescendantDescriptors dd
+                ON d.ParentID = dd.DescriptorID
+        ),
+        MatchingBeatmaps AS (
+            SELECT DISTINCT bd.BeatmapID
+            FROM beatmap_descriptors bd
+            JOIN DescendantDescriptors dd
+                ON bd.DescriptorID = dd.DescriptorID
+        )
+        SELECT b.*, s.Title
+        FROM MatchingBeatmaps mb
+        JOIN beatmaps b
+            ON b.BeatmapID = mb.BeatmapID
+        JOIN beatmapsets s
+            ON b.SetID = s.SetID
+        WHERE b.Mode = ?
+        AND b.Rating IS NOT NULL
+        AND b.RatingCount >= 5
+        ORDER BY b.Rating DESC
+        LIMIT 10;");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -218,7 +238,10 @@
 
         foreach ($yearlyDescriptorCounts as $year => $count) {
             $proportion = ($count/$maxCount) * 100;
+            echo '<div class="tooltip-wrapper" style="width:100%;height:100%;">';
             echo "<div class='bar' style='height: {$proportion}%;'><span>{$year}</span></div>";
+            echo "<div class='tooltip-box'>{$count} maps</div>";
+            echo '</div>';
         }
         ?>
     </div>
