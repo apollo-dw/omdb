@@ -400,13 +400,13 @@ foreach($difficulties as $beatmapID => $difficulty) {
         <hr>
         <form action="SubmitEditRequest.php" method="post" id="form-<?php echo $beatmapID; ?>" difficultyID="<?php echo $beatmapID; ?>">
             <b>Mappers</b><br>
-            <span class="subText">Add mappers that have contributed to this difficulty.</span><br>
+            <span class="subText">Add mappers that have contributed to this difficulty.</span><br><br>
             <div class="flex-container">
                 <div style="margin-right: 1em;">
                     <label>
                         Add mapper ID:
-                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" /> <br>
-                        <button type="button" id="add-mapper-btn-<?php echo $beatmapID; ?>" onclick="addMapperItem(this)" style="float:right;">Add</button>
+                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" /> <br> <br>
+                        <button type="button" id="backfill-btn-<?php echo $beatmapID; ?>" onclick="fetchCreatorsFromOsu(this)" >Fetch from osu!</button> <button type="button" id="add-mapper-btn-<?php echo $beatmapID; ?>" onclick="addMapperItem(this)" style="float:right;">Add</button>
                     </label>
                 </div>
                 <div style="flex-grow: 1;">
@@ -550,6 +550,28 @@ foreach($difficulties as $beatmapID => $difficulty) {
                     }
                 });
             }
+        }
+
+        function fetchCreatorsFromOsu(button) {
+            const beatmapID = $(button).attr("id").split("-").pop();
+            const list = $(button).closest(".flex-container").find(".mapperList");
+            const meta = $(`#meta-comment-${beatmapID}`);
+
+            $.ajax({
+                type: "GET",
+                url: "GetDifficultyOwners.php",
+                data: { id: beatmapID },
+                success: function(response) {
+                    list.empty();
+                    meta.val("Fetched automatically via osu! API")
+
+                    response.forEach(creator => {
+                        const listItem = `<li data-creatorid='${creator.id}'><i class='icon-remove remove-button'></i>  ${creator.username} <span class='subText mapperid'>${creator.id}</span></li>`;
+                        list.append(listItem);
+                    });
+                    
+                }
+            });
         }
 		
 		function addCreditItem(button) {
