@@ -116,6 +116,14 @@
 			<span class="subText" style="font-weight:bolder;"><?php echo $profile['UserTitle']; ?></span>
 		</div>
 		<?php } ?>
+
+        <?php if ($isValidUser && $profile['IsPatron'] === 1) { ?>
+		<div class="profilePatronBadge">
+            <a href="/patron/" style="text-decoration:none;">
+			    <div class="subText" style="background-color: #714977; border-radius: 2px; color: white; font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
+            </a>
+        </div>
+		<?php } ?>
 		
 		<?php if ($profileId != $userId && $isValidUser && $loggedIn){ ?>
         <div class="profileActions">

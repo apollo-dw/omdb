@@ -685,7 +685,7 @@ while($row = $result->fetch_assoc()) {
         <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
 		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
-            $stmt = $conn->prepare("SELECT *, mn.Username FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID WHERE SetID = ? ORDER BY date ASC");
+            $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -707,6 +707,20 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                            <?php 
+                                if ($row["IsPatron"] === 1) {
+                                    ?>
+                                    <span class="tooltip-wrapper">
+                                        <a href="/patron/" style="text-decoration:none;">
+                                            <i class="icon-heart" style="color:#ecb4f5"></i>
+                                        </a>
+                                        <span class="tooltip-box">
+                                            OMDB patron
+                                        </span>
+                                    </span>
+                                    <?php
+                                }
+                            ?>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
@@ -772,7 +786,7 @@ while($row = $result->fetch_assoc()) {
         <?php } ?>
 		
 		<?php
-			$stmt = $conn->prepare("SELECT * FROM `reviews` WHERE SetID = ? ORDER BY date DESC");
+			$stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
 			$stmt->bind_param("s", $sampleRow["SetID"]);
 			$stmt->execute();
 			$result = $stmt->get_result();
@@ -830,6 +844,20 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
+                            <?php 
+                                if ($row["IsPatron"] === 1) {
+                                    ?>
+                                    <span class="tooltip-wrapper">
+                                        <a href="/patron/" style="text-decoration:none;">
+                                            <i class="icon-heart" style="color:#ecb4f5"></i>
+                                        </a>
+                                        <span class="tooltip-box">
+                                            OMDB patron
+                                        </span>
+                                    </span>
+                                    <?php
+                                }
+                            ?>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
