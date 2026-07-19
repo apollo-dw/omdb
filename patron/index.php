@@ -24,13 +24,51 @@
     </div>  
 </div>
 
+<?php
+    if (!$loggedIn) {
+        die("log in to views this page");    
+    }
+?>
+
+<?php 
+if ($user["IsPatron"] === 1) {
+?>
+<hr>
+<div style="width:100%;text-align:center;margin-top:5em;margin-bottom:5em;background-color: #ecb4f5;color: black;">
+    <div style="padding:2em;">
+        <span style="font-size:2em; font-weight: bolder;"><i class="icon-heart"></i> </span>
+        <p>
+            <b>thank you for supporting OMDB!</b> <br />
+            you have OMDB patron benefits until <?php echo(new DateTime($user["PatronToDate"]))->format("jS F Y"); ?> <br>
+            you have supported OMDB for <?php echo $user["TotalPatronMonths"]; ?> month<?php if ($user["TotalPatronMonths"] !== 1) { echo "s"; } ?>
+        </p>
+    </div>
+</div> 
+<?php
+}
+?>
+
 <hr>
 
-<div style="width:100%;text-align:center;margin-top:5em;margin-bottom:5em;color: darkslategrey;background-color: white;">
-    <p style="padding:2em;">
-        <b>OMDB patronage is currently in development and is unavailable for now</b> <br>
-    </p>
-</div>
+<div style="width:100%;text-align:center;margin-top:5em;margin-bottom:5em;background-color: darkslategray;">
+    <div style="padding:2em;">
+        <?php
+        if ($user["IsPatron"] !== 1) {
+        ?>
+            <span style="font-size:2em; font-weight: bolder;"><a style="color: #ecb4f5;" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Become a Patron</a></span>
+        <?php
+        } else {
+        ?>
+            <span style="font-size:2em; font-weight: bolder;"><a style="color: #ecb4f5;" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Extend your patronage</a></span>
+        <?php
+        }
+        ?>
+        <p>
+            get 1 month of benefits per £3.00 // $4.00 // €3.50 <br />
+            please get in touch if there are any issues
+        </p>
+    </div>
+</div> 
 
 
 <hr>
@@ -49,14 +87,14 @@
     </div>
     <div class="alternating-bg" style="width: 50%; text-align: center;">
         <p>
-            <b>Profile theme</b> <br>
+            <b>Profile theme</b> (coming soon) <br> 
             Customize the colour theme of your profile for anyone visiting
         </p>
     </div>
     <div class="alternating-bg" style="width: 50%; text-align: center;">
         <p>
             <b>Discord role</b> <br>
-            Get a distinctly <i>DarkSlateGrey-ish</i> role on the OMDB Discord.
+            Get a distinctly <i>DarkSlateGrey-ish</i> role on the OMDB <a href="https://discord.gg/PWVGrQRq2w" target="_blank">Discord</a> (just ping me!)
         </p>
     </div>
     <div class="alternating-bg" style="width: 50%; text-align: center;">
@@ -73,7 +111,53 @@
     </div>
 </div>
 
+<hr>
 
+<div style="width:100%;text-align:center">
+    <h2>OMDB Patrons</h2>
+</div>
+
+<?php
+    $stmt = $conn->prepare("
+        SELECT
+            UserID,
+            Username,
+            TotalPatronMonths,
+            PatronToDate
+        FROM users
+        WHERE TotalPatronMonths > 0
+        ORDER BY
+            (PatronToDate IS NOT NULL AND PatronToDate > NOW()) DESC,
+            TotalPatronMonths DESC
+    ");
+
+    $stmt->execute();
+    $patrons = $stmt->get_result();
+?>
+
+<div class="flex-row-container">
+    <?php
+    while ($row = $patrons->fetch_assoc()) {
+        $isActive = (
+            !empty($row["PatronToDate"]) &&
+            strtotime($row["PatronToDate"]) > time()
+        );
+
+        $patronClass = $isActive ? "pink-background" : "";
+        ?>
+        <div class="friend-box <?php echo $patronClass; ?>">
+            <a href="/profile/<?php echo $row["UserID"]; ?>">
+                <div class="profileImage">
+                    <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="width:5em;height:5em;"/><br>
+                    <?php echo safe_htmlspecialchars($row["Username"], ENT_QUOTES); ?> <br>
+                    (<?php echo (int)$row["TotalPatronMonths"]; ?> <?php echo ((int)$row["TotalPatronMonths"] === 1) ? "month" : "months"; ?>)
+                </div>
+            </a>
+        </div>
+        <?php
+    }
+    ?>
+</div>
 
 <?php
     require '../footer.php'
