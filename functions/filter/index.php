@@ -92,7 +92,7 @@
     }
     .filter-search-box {
         position: relative;
-        background-color: #203838;
+        background-color: var(--main-theme-color-darker);
         border: 1px solid white;
         padding: 0.25em;
         display: flex;
@@ -116,14 +116,14 @@
         top: 100%;
         left: 0;
         right: 0;
-        background-color: DarkSlateGrey;
+        background-color: var(--main-theme-color);
         border: 1px solid white;
         max-height: 25em;
         overflow-y: auto;
         z-index: 999;
     }
     .popover-category-header {
-        background-color: #182828;
+        background-color: var(--main-theme-color-even-darker);
         color: #6fffea;
         padding: 0.25em 0.5em;
         font-weight: bold;
@@ -134,7 +134,7 @@
         cursor: pointer;
     }
     .popover-item:hover {
-        background-color: #203838;
+        background-color: var(--main-theme-color-darker);
     }
     
     .filter-chip {

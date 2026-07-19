@@ -1,8 +1,12 @@
 :root {
   --main-theme-color: DarkSlateGray;
   --main-theme-color-darker: #203838;
+  --main-theme-color-even-darker: #0c1515;
   --main-theme-text-color: white;
   --main-theme-background-color: black;
+  --main-theme-subtext-color: #a8a8a8;
+  --main-theme-link-color: #6fffea;
+  --main-theme-star-color: white;
 }
 
 body {
@@ -60,7 +64,7 @@ body {
 }
 
 a {
-  color: #6fffea;
+  color: var(--main-theme-link-color);
   text-decoration: none;
 }
 
@@ -71,7 +75,7 @@ a:hover {
 .topBarLink {
   height: 100%;
   min-width: 3rem;
-  background-color: #182828;
+  background-color: var(--main-theme-color-darker);
   display: inline-block;
   text-align: center;
   padding-left: 0.25rem;
@@ -84,7 +88,7 @@ a .topBarLink {
 }
 
 .topBarLink:hover {
-  background-color: #0c1515;
+  background-color: var(--main-theme-color-even-darker);
 }
 
 .topBarDropDown {
@@ -423,7 +427,7 @@ a .topBarLink {
     top: 100%;
     left: 0;
     right: 0;
-    background-color: #182828;
+    background-color: var(--main-theme-color-darker);
     z-index: 998;
     line-height: 2.5rem;
   }
@@ -447,12 +451,12 @@ a .topBarLink {
   }
 
   .mobileMenuPanel .topBarLink:hover {
-    background-color: #0c1515;
+    background-color: var(--main-theme-color-even-darker);
   }
 
   .mobileMenuPanel .topBarDropDownButton {
     font-weight: bold;
-    background-color: #0c1515;
+    background-color: var(--main-theme-color-even-darker);
   }
 
   .mobileMenuPanel .dropdown-content {
@@ -531,7 +535,7 @@ a .topBarLink {
 
 span.subText {
   font-size: 11px;
-  color: #a8a8a8;
+  color: var(--main-theme-subtext-color);
 }
 
 .badge {
@@ -624,7 +628,7 @@ input[type="button"] {
 
 button:hover,
 input[type="button"]:hover {
-  background-color: #182828;
+  background-color: var(--main-theme-color-even-darker);
   cursor: pointer;
 }
 
@@ -743,7 +747,7 @@ input {
 }
 
 input#commentSubmit:hover {
-  background-color: #182828;
+  background-color: var(--main-theme-color-even-darker);
 }
 
 summary {
@@ -842,7 +846,7 @@ ol.star-rating-list > li {
 }
 
 .starForeground {
-  color: white;
+  color: var(--main-theme-star-color);
   z-index: 2;
   display: inline-block;
   position: relative;
@@ -857,7 +861,7 @@ ol.star-rating-list > li {
 }
 
 .alternating-bg:nth-of-type(even) {
-  background-color: DarkSlateGray;
+  background-color: var(--main-theme-color);
 }
 
 .alternating-bg-pink:nth-of-type(odd) {
@@ -986,11 +990,11 @@ ol.star-rating-list > li {
 }
 
 .tabbed-container-nav button:hover {
-  background-color: #182828;
+  background-color: var(--main-theme-color-darker);
 }
 
 .tabbed-container-nav button.active {
-  background-color: #0c1515;
+  background-color: var(--main-theme-color-even-darker);
 }
 
 .tooltip-wrapper {
