@@ -8,11 +8,15 @@
         die("You need to be logged in to view this page.");
     }
 
+    $profileTheme = [];
+    if (!empty($user['ProfileTheme'])) {
+        $profileTheme = json_decode($user['ProfileTheme'], true) ?? [];
+    }
 ?>
 
 <h1>Settings</h1>
 <hr>
-<form>
+<form id="settingsForm">
     <table>
         <tr>
             <td>
@@ -31,31 +35,31 @@
                 <label>Custom rating names:</label>
             </td>
             <td>
-                <input autocomplete="off" id="50Name" placeholder="5.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom50Rating"], ENT_QUOTES); ?>"/> 5.0<br>
-                <input autocomplete="off" id="45Name" placeholder="4.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom45Rating"], ENT_QUOTES); ?>"/> 4.5<br>
-                <input autocomplete="off" id="40Name" placeholder="4.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom40Rating"], ENT_QUOTES); ?>"/> 4.0<br>
-                <input autocomplete="off" id="35Name" placeholder="3.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom35Rating"], ENT_QUOTES); ?>"/> 3.5<br>
-                <input autocomplete="off" id="30Name" placeholder="3.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom30Rating"], ENT_QUOTES); ?>"/> 3.0<br>
-                <input autocomplete="off" id="25Name" placeholder="2.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom25Rating"], ENT_QUOTES); ?>"/> 2.5<br>
-                <input autocomplete="off" id="20Name" placeholder="2.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom20Rating"], ENT_QUOTES); ?>"/> 2.0<br>
-                <input autocomplete="off" id="15Name" placeholder="1.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom15Rating"], ENT_QUOTES); ?>"/> 1.5<br>
-                <input autocomplete="off" id="10Name" placeholder="1.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom10Rating"], ENT_QUOTES); ?>"/> 1.0<br>
-                <input autocomplete="off" id="05Name" placeholder="0.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom05Rating"], ENT_QUOTES); ?>"/> 0.5<br>
-                <input autocomplete="off" id="00Name" placeholder="0.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom00Rating"], ENT_QUOTES); ?>"/> 0.0<br>
+                <input autocomplete="off" id="50Name" name="ratingNames[]" placeholder="5.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom50Rating"], ENT_QUOTES); ?>"/> 5.0<br>
+                <input autocomplete="off" id="45Name" name="ratingNames[]" placeholder="4.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom45Rating"], ENT_QUOTES); ?>"/> 4.5<br>
+                <input autocomplete="off" id="40Name" name="ratingNames[]" placeholder="4.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom40Rating"], ENT_QUOTES); ?>"/> 4.0<br>
+                <input autocomplete="off" id="35Name" name="ratingNames[]" placeholder="3.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom35Rating"], ENT_QUOTES); ?>"/> 3.5<br>
+                <input autocomplete="off" id="30Name" name="ratingNames[]" placeholder="3.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom30Rating"], ENT_QUOTES); ?>"/> 3.0<br>
+                <input autocomplete="off" id="25Name" name="ratingNames[]" placeholder="2.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom25Rating"], ENT_QUOTES); ?>"/> 2.5<br>
+                <input autocomplete="off" id="20Name" name="ratingNames[]" placeholder="2.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom20Rating"], ENT_QUOTES); ?>"/> 2.0<br>
+                <input autocomplete="off" id="15Name" name="ratingNames[]" placeholder="1.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom15Rating"], ENT_QUOTES); ?>"/> 1.5<br>
+                <input autocomplete="off" id="10Name" name="ratingNames[]" placeholder="1.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom10Rating"], ENT_QUOTES); ?>"/> 1.0<br>
+                <input autocomplete="off" id="05Name" name="ratingNames[]" placeholder="0.5" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom05Rating"], ENT_QUOTES); ?>"/> 0.5<br>
+                <input autocomplete="off" id="00Name" name="ratingNames[]" placeholder="0.0" maxlength="40" value="<?php echo safe_htmlspecialchars($user["Custom00Rating"], ENT_QUOTES); ?>"/> 0.0<br>
             </td>
         </tr>
-		<tr>
+        <tr>
             <td>
                 <label>Description:</label><br>
             </td>
             <td>
-				<textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo safe_htmlspecialchars($user["CustomDescription"], ENT_QUOTES); ?></textarea> <br><br>
-				<button type="button" onclick="insertTag('img')" class="small-button">img</button>
-				<button type="button" onclick="insertTag('code')" class="small-button">code</button>
-				<button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
-				<button type="button" onclick="insertTag('b')" class="small-button">bold</button>
-				<button type="button" onclick="insertTag('i')" class="small-button">italics</button>
-				<button type="button" onclick="insertTag('u')" class="small-button">underline</button> <br>
+                <textarea id="CustomDescription" name="CustomDescription" rows="5" cols="70"><?php echo safe_htmlspecialchars($user["CustomDescription"], ENT_QUOTES); ?></textarea> <br><br>
+                <button type="button" onclick="insertTag('img')" class="small-button">img</button>
+                <button type="button" onclick="insertTag('code')" class="small-button">code</button>
+                <button type="button" onclick="insertTag('font', 'color=')" class="small-button">color</button>
+                <button type="button" onclick="insertTag('b')" class="small-button">bold</button>
+                <button type="button" onclick="insertTag('i')" class="small-button">italics</button>
+                <button type="button" onclick="insertTag('u')" class="small-button">underline</button> <br>
                 <span class="subText">Write a custom description that appears on your profile.</span>
             </td>
         </tr>
@@ -71,7 +75,7 @@
                 <span class="subText">Disallows your ratings from appearing on the front page feed.</span>
             </td>
         </tr>
-		<tr>
+        <tr>
             <td>
                 <label>Only show friends on front feeds:</label><br>
             </td>
@@ -83,9 +87,34 @@
                 <span class="subText">Only shows users that you have friended.</span>
             </td>
         </tr>
+        <?php if ($user["IsPatron"] === 1) { ?>
+        <tr>
+            <td><hr></td>
+            <td>
+            <hr>
+            <b>OMDB Patron settings</b><br>
+            <span class="subText">thank you for supporting the site!</span>
+            </td>
+        </tr>
         <tr>
             <td>
+                <label>Custom profile theme:</label>
             </td>
+            <td>
+                <input type="color" id="theme-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-color'] ?? '#2F4F4F', ENT_QUOTES); ?>"> Main Color<br>
+                <input type="color" id="theme-color-darker" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-color-darker'] ?? '#203838', ENT_QUOTES); ?>"> Darker Color<br>
+                <input type="color" id="theme-color-even-darker" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-color-even-darker'] ?? '#0c1515', ENT_QUOTES); ?>"> Even Darker Color<br>
+                <input type="color" id="theme-text-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-text-color'] ?? '#ffffff', ENT_QUOTES); ?>"> Text Color<br>
+                <input type="color" id="theme-background-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-background-color'] ?? '#000000', ENT_QUOTES); ?>"> Background Color<br>
+                <input type="color" id="theme-subtext-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-subtext-color'] ?? '#a8a8a8', ENT_QUOTES); ?>"> Subtext Color<br>
+                <input type="color" id="theme-link-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-link-color'] ?? '#6fffea', ENT_QUOTES); ?>"> Link Color<br>
+                <input type="color" id="theme-star-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-star-color'] ?? '#ffffff', ENT_QUOTES); ?>"> Star Color<br>
+                <button type='button' onclick="resetTheme()" class="small-button">Reset theme to default</button>
+            </td>
+        </tr>
+        <?php } ?>
+        <tr>
+            <td></td>
             <td>
                 <button type='button' onclick="saveChanges()">Save changes</button> <span id="statusText"></span>
             </td>
@@ -193,13 +222,24 @@
 
         const randomBehaviour = document.getElementById("RandomBehaviour").value;
         const hideRatings = document.getElementById("HideRatings").value;
-		const customDescription = document.getElementById("CustomDescription").value;
-		const onlyFriendsOnFrontPage = document.getElementById("OnlyFriendsOnFrontPage").value;
+        const customDescription = document.getElementById("CustomDescription").value;
+        const onlyFriendsOnFrontPage = document.getElementById("OnlyFriendsOnFrontPage").value;
+
+        const profileTheme = {
+            'main-theme-color': document.getElementById('theme-color').value,
+            'main-theme-color-darker': document.getElementById('theme-color-darker').value,
+            'main-theme-color-even-darker': document.getElementById('theme-color-even-darker').value,
+            'main-theme-text-color': document.getElementById('theme-text-color').value,
+            'main-theme-background-color': document.getElementById('theme-background-color').value,
+            'main-theme-subtext-color': document.getElementById('theme-subtext-color').value,
+            'main-theme-link-color': document.getElementById('theme-link-color').value,
+            'main-theme-star-color': document.getElementById('theme-star-color').value
+        };
 
         fetch("save.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings, customDescription, onlyFriendsOnFrontPage }),
+            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings, customDescription, onlyFriendsOnFrontPage, profileTheme }),
         }).then(response => {
             if (response.status == 200) {
                 document.getElementById("statusText").textContent = "Saved!";
@@ -229,6 +269,17 @@
         textarea.value = textBefore + tagText + textAfter;
         textarea.setSelectionRange(cursorPos, cursorPos + tagText.length);
         textarea.focus();
+    }
+
+    function resetTheme() {
+        document.getElementById('theme-color').value = '#2F4F4F';
+        document.getElementById('theme-color-darker').value = '#203838';     
+        document.getElementById('theme-color-even-darker').value = '#0c1515';     
+        document.getElementById('theme-text-color').value = '#ffffff';       
+        document.getElementById('theme-background-color').value = '#000000'; 
+        document.getElementById('theme-subtext-color').value = '#a8a8a8';    
+        document.getElementById('theme-link-color').value = '#6fffea';       
+        document.getElementById('theme-star-color').value = '#ffffff';       
     }
 </script>
 

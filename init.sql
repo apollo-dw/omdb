@@ -509,7 +509,8 @@ CREATE TABLE `users` (
   `IsPatron` tinyint(1) NOT NULL DEFAULT '0',
   `PatronFromDate` datetime DEFAULT NULL,
   `PatronToDate` datetime DEFAULT NULL,
-  `TotalPatronMonths` int NOT NULL DEFAULT '0'
+  `TotalPatronMonths` int NOT NULL DEFAULT '0',
+  `ProfileTheme` json DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------

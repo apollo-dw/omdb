@@ -87,7 +87,7 @@ if ($user["IsPatron"] === 1) {
     </div>
     <div class="alternating-bg" style="width: 50%; text-align: center;">
         <p>
-            <b>Profile theme</b> (coming soon) <br> 
+            <b>Profile theme</b><br> 
             Customize the colour theme of your profile for anyone visiting
         </p>
     </div>

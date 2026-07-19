@@ -100,7 +100,32 @@
             $correlation = CalculatePearsonCorrelation($userScores, $profileScores);
         }
     }
+
+    $defaultTheme = [
+        'main-theme-color' => 'DarkSlateGray',
+        'main-theme-color-darker' => '#203838',
+        'main-theme-color-even-darker' => '#0c1515',
+        'main-theme-text-color' => 'white',
+        'main-theme-background-color' => 'black',
+        'main-theme-subtext-color' => '#a8a8a8',
+        'main-theme-link-color' => '#6fffea',
+        'main-theme-star-color' => 'white'
+    ];
+
+    $userTheme = [];
+    if (!empty($profile['ProfileTheme']) && $profile['IsPatron'] === 1) {
+        $userTheme = json_decode($profile['ProfileTheme'], true) ?? [];
+    }
+    $activeTheme = array_merge($defaultTheme, $userTheme);
 ?>
+
+<style>
+    :root {
+        <?php foreach ($activeTheme as $variable => $value): ?>
+            --<?= htmlspecialchars($variable, ENT_QUOTES, 'UTF-8'); ?>: <?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>;
+        <?php endforeach; ?>
+    }
+</style>
 
 <div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
