@@ -2,7 +2,7 @@
     require("../../../base.php");
     $payload = file_get_contents('php://input');
     $signatureHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
-    $endpointSecret = $env['STRIPE_PAYMENT_WEBHOOK_SECRET']
+    $endpointSecret = $env['STRIPE_PAYMENT_WEBHOOK_SECRET'];
 
     if (!$payload || !$signatureHeader) {
         http_response_code(400);
