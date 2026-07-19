@@ -120,7 +120,7 @@
         <?php if ($isValidUser && $profile['IsPatron'] === 1) { ?>
 		<div class="profilePatronBadge">
             <a href="/patron/" style="text-decoration:none;">
-			    <div class="subText" style="background-color: #714977; border-radius: 2px; color: white; font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
+			    <div style="background-color: #ecb4f5; border-radius: 2px; color: black; font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
             </a>
         </div>
 		<?php } ?>
