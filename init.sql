@@ -505,7 +505,11 @@ CREATE TABLE `users` (
   `UserTitle` varchar(50) DEFAULT NULL,
   `IpAddress` varchar(50) DEFAULT NULL,
   `OnlyFriendsOnFrontPage` tinyint(1) DEFAULT '0',
-  `moderator` tinyint(1) DEFAULT '0'
+  `moderator` tinyint(1) DEFAULT '0',
+  `IsPatron` tinyint(1) NOT NULL DEFAULT '0',
+  `PatronFromDate` datetime DEFAULT NULL,
+  `PatronToDate` datetime DEFAULT NULL,
+  `TotalPatronMonths` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -942,3 +946,25 @@ CREATE TABLE IF NOT EXISTS `news_comments` (
   PRIMARY KEY (`CommentID`),
   KEY `idx_news_comments_newsid` (`NewsID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `stripe_payments` (
+  `StripePaymentID` int unsigned NOT NULL AUTO_INCREMENT,
+  `StripeEventID` varchar(255) NOT NULL,
+  `EventType` varchar(100) NOT NULL,
+  `StripeSessionID` varchar(255) DEFAULT NULL,
+  `StripePaymentIntentID` varchar(255) DEFAULT NULL,
+  `StripeCustomerID` varchar(255) DEFAULT NULL,
+  `UserID` int unsigned DEFAULT NULL,
+  `AmountTotal` int unsigned DEFAULT NULL,
+  `Currency` varchar(10) DEFAULT NULL,
+  `PaymentStatus` varchar(50) DEFAULT NULL,
+  `Payload` json NOT NULL,
+  `ProcessedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`StripePaymentID`),
+  UNIQUE KEY `UK_StripeEventID` (`StripeEventID`),
+  KEY `IX_StripeSessionID` (`StripeSessionID`),
+  KEY `IX_StripePaymentIntentID` (`StripePaymentIntentID`),
+  KEY `IX_StripeCustomerID` (`StripeCustomerID`),
+  KEY `IX_UserID` (`UserID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci 
