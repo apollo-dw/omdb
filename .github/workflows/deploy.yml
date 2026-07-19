@@ -32,5 +32,7 @@ jobs:
             OSU_API_V1_KEY="${{ secrets.OSU_API_V1_KEY }}"
             OSU_CLIENT_ID="${{ secrets.OSU_CLIENT_ID }}"
             OSU_CLIENT_SECRET="${{ secrets.OSU_CLIENT_SECRET }}"
+            DISCORD_WEBHOOK_STRIPE_PAYMENT="${{ secrets.DISCORD_WEBHOOK_STRIPE_PAYMENT }}"
+            STRIPE_PAYMENT_WEBHOOK_SECRET="${{ secrets.STRIPE_PAYMENT_WEBHOOK_SECRET }}"
             GITHUB_COMMIT="${{ github.sha }}"
             EOF
