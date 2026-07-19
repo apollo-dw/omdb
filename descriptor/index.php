@@ -95,7 +95,7 @@
 
     .ratingDistributionContainer {
         width: calc(100% / 20);
-        height: 10em;
+        height: 16em;
         margin: 0;
         color: rgba(125, 125, 125, 0.66);
         vertical-align: bottom;
@@ -208,39 +208,74 @@
                 UNION ALL
                 SELECT d.DescriptorID FROM descriptors d
                 JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
+            ),
+            TotalMapsPerYear AS (
+                SELECT 
+                    YEAR(s.DateRanked) AS Year,
+                    COUNT(DISTINCT b.BeatmapID) AS TotalCount
+                FROM beatmaps b
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                WHERE b.Mode = ?
+                GROUP BY Year
+            ),
+            DescriptorMapsPerYear AS (
+                SELECT
+                    YEAR(s.DateRanked) AS Year,
+                    COUNT(DISTINCT b.BeatmapID) AS DescriptorCount
+                FROM beatmaps b
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                JOIN beatmap_descriptors bd ON b.BeatmapID = bd.BeatmapID
+                JOIN DescendantDescriptors dd ON bd.DescriptorID = dd.DescriptorID
+                WHERE b.Mode = ?
+                GROUP BY Year
             )
-            SELECT
-                YEAR(s.DateRanked) AS Year,
-                COUNT(DISTINCT b.BeatmapID) AS BeatmapCount
-            FROM beatmaps b
-            JOIN beatmapsets s ON b.SetID = s.SetID
-            JOIN beatmap_descriptors bd ON b.BeatmapID = bd.BeatmapID
-            JOIN DescendantDescriptors dd ON bd.DescriptorID = dd.DescriptorID
-            WHERE b.Mode = ?
-            GROUP BY Year ORDER BY Year;");
-        $stmt->bind_param("ii", $descriptor_id, $mode);
+            SELECT 
+                t.Year,
+                COALESCE(d.DescriptorCount, 0) AS BeatmapCount,
+                t.TotalCount,
+                (COALESCE(d.DescriptorCount, 0) / t.TotalCount) * 100 AS Percentage
+            FROM TotalMapsPerYear t
+            LEFT JOIN DescriptorMapsPerYear d ON t.Year = d.Year
+            ORDER BY t.Year;
+        ");
+
+        $stmt->bind_param("iii", $descriptor_id, $mode, $mode);
         $stmt->execute();
         $result = $stmt->get_result();
 
         $currentYear = date("Y");
-        $yearlyDescriptorCounts = array();
+        $yearlyData = array();
         for ($year = 2007; $year <= $currentYear; $year++) {
-            $yearlyDescriptorCounts[$year] = 0;
+            $yearlyData[$year] = [
+                'count' => 0,
+                'percentage' => 0.0
+            ];
         }
 
-        $maxCount = 0;
+        $maxPercentage = 0.0;
         while ($row = $result->fetch_assoc()) {
-            $yearlyDescriptorCounts[$row['Year']] = $row['BeatmapCount'];
+            $year = $row['Year'];
+            if (isset($yearlyData[$year])) {
+                $yearlyData[$year]['count'] = $row['BeatmapCount'];
+                $yearlyData[$year]['percentage'] = (float)$row['Percentage'];
 
-            if ($maxCount < $row['BeatmapCount'])
-                $maxCount = $row['BeatmapCount'];
+                if ($row['Percentage'] > $maxPercentage) {
+                    $maxPercentage = (float)$row['Percentage'];
+                }
+            }
         }
 
-        foreach ($yearlyDescriptorCounts as $year => $count) {
-            $proportion = ($count/$maxCount) * 100;
+        $logMax = $maxPercentage > 0 ? log10($maxPercentage + 1) : 1;
+        foreach ($yearlyData as $year => $data) {
+            $pct = $data['percentage'];
+            
+            $logCurrent = $pct > 0 ? log10($pct + 1) : 0;
+            $barHeight = ($logCurrent / $logMax) * 100;
+            $formattedPercent = number_format($pct, 2) . '%';
+
             echo '<div class="tooltip-wrapper" style="width:100%;height:100%;">';
-            echo "<div class='bar' style='height: {$proportion}%;'><span>{$year}</span></div>";
-            echo "<div class='tooltip-box'>{$count} maps</div>";
+            echo "<div class='bar' style='height: {$barHeight}%;'><span>{$year}</span></div>";
+            echo "<div class='tooltip-box'>{$data['count']} maps ({$formattedPercent})</div>";
             echo '</div>';
         }
         ?>
