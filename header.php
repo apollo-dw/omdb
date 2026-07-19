@@ -110,6 +110,7 @@
 					if ($loggedIn) {
 				?>
                         <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
+                        <a href="/patron/" style="margin:0 1em;"><b><i style="color:#ecb4f5" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
                         <a href="/settings/" style="margin:0 1em;"><b><i class="icon-cogs"></i></b></a>
                         <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
                         <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>
