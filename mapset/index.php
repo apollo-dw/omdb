@@ -554,6 +554,26 @@ while($row = $result->fetch_assoc()) {
     <?php if ($loggedIn) { ?>
         <span class="subText"><a href="edit/?id=<?php echo $mapset_id; ?>"><i class="icon-edit"></i> Propose edit</a></span>
     <?php } ?>
+    <span class="subText">
+        <?php
+            $contributorsStmt = $conn->prepare("SELECT u.UserID, u.Username FROM beatmap_edit_requests er JOIN users u ON er.UserID = u.UserID LEFT JOIN beatmaps b ON er.BeatmapID = b.BeatmapID WHERE er.SetID = ? OR b.SetID = ? GROUP BY u.UserID, u.Username ORDER BY MIN(er.Timestamp) ASC;");
+            $contributorsStmt->bind_param("ii", $mapset_id, $mapset_id);
+            $contributorsStmt->execute();
+            $contributorsResult = $contributorsStmt->get_result();
+
+            $contributor_links = [];
+
+            while ($row = $contributorsResult->fetch_assoc()) {
+                $safe_username = htmlspecialchars($row['Username'], ENT_QUOTES, 'UTF-8');
+                $contributor_links[] = '<a href="/profile/' . $row['UserID'] . '">' . $safe_username . '</a>';
+            }
+
+            if (sizeof($contributor_links) > 0)
+                echo " | contributors: ";
+
+            echo implode(', ', $contributor_links);
+        ?>
+    </span>
 </div>
 <hr style="margin-top: 0">
 
