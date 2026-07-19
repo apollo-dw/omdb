@@ -366,7 +366,7 @@
 ?>
 			<hr>
 			<h2>About me</h2>
-			<div style="background-color:#203838;padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
+			<div style="background-color:var(--main-theme-color-darker);padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
 				<?php
 					echo ParseCommentLinks($conn, $desc);
 				?>
@@ -386,7 +386,7 @@
 ?>
         <hr>
         <h2>Mutuals</h2>
-        <div class="flex-container" style="background-color:#203838;overflow:hidden;flex-wrap:wrap;justify-content:space-evenly;">
+        <div class="flex-container" style="background-color:var(--main-theme-color-darker);overflow:hidden;flex-wrap:wrap;justify-content:space-evenly;">
             <?php
                 $counter = 0;
                 $max = 8;
@@ -419,7 +419,7 @@
     <hr>
     <h2>Mapping Overview</h2>
     <div class="flex-container column-when-mobile-container" style="justify-content:space-around; align-items:stretch; gap:67px;">
-        <div class="flex-container" style="background-color:#203838; flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
+        <div class="flex-container" style="background-color:var(--main-theme-color-darker); flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
             <span class="subText">Excl. collabs with 4+ mappers</span>
             <?php if ($highestMap) { 
@@ -460,7 +460,7 @@
             <?php } else { echo "<span class='subText'>N/A</span>"; } ?>
         </div>
 
-        <div style="background-color:#203838; flex:1; text-align:center; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; padding:0.25em;">
+        <div style="background-color:var(--main-theme-color-darker); flex:1; text-align:center; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; padding:0.25em;">
             <div>
                 <b>Total Ratings Received:</b> <?php echo $mapStats['TotalRatings']; ?><br>
                 <b>Average Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
@@ -515,7 +515,7 @@
             </span>
         </div>
 
-        <div style="background-color:#203838; flex:1; overflow-y:auto; max-height:23em;">
+        <div style="background-color:var(--main-theme-color-darker); flex:1; overflow-y:auto; max-height:23em;">
             <?php
                 if ($loggedIn) {
                     $stmt = $conn->prepare("
@@ -680,9 +680,9 @@
             $('.profile-top-map').css('background-color', '').find('.starBackground').css('color', '');
             $('.profile-top-map:visible').each(function(index) {
                 if (index % 2 === 0) {
-                    $(this).css('background-color', '#203838').find('.starBackground').css('color', 'darkslategray');
+                    $(this).css('background-color', 'var(--main-theme-color-darker)').find('.starBackground').css('color', 'var(--main-theme-color)');
                 } else {
-                    $(this).css('background-color', 'darkslategray').find('.starBackground').css('color', '#203838');
+                    $(this).css('background-color', 'var(--main-theme-color)').find('.starBackground').css('color', 'var(--main-theme-color-darker)');
                 }
             });
         }

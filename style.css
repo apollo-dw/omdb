@@ -1,8 +1,15 @@
+:root {
+  --main-theme-color: DarkSlateGray;
+  --main-theme-color-darker: #203838;
+  --main-theme-text-color: white;
+  --main-theme-background-color: black;
+}
+
 body {
   font-family: Verdana, sans-serif;
   font-size: 13px;
-  background-color: black;
-  color: white;
+  background-color: var(--main-theme-background-color);
+  color: var(--main-theme-text-color);
   margin: 0;
   overflow-y: scroll;
 }
@@ -18,7 +25,7 @@ body {
   left: 0px;
   right: 0px;
   top: 0px;
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   width: 100%;
   box-sizing: border-box;
   font-size: 0.75rem;
@@ -108,7 +115,10 @@ a .topBarLink {
 .topBarSearchBar {
   border: 0;
   outline: 0;
-  font-family: MS UI Gothic, Verdana, sans-serif;
+  font-family:
+    MS UI Gothic,
+    Verdana,
+    sans-serif;
   width: stretch;
   z-index: 2;
   padding: 1em 0.5em;
@@ -147,7 +157,7 @@ a .topBarLink {
 }
 
 .dropdown-content a:hover {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
 }
 
 .topBarDropDown:hover .dropdown-content {
@@ -192,7 +202,7 @@ a .topBarLink {
   vertical-align: middle;
   align-items: center;
   justify-content: center;
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
 }
 
 .starRemoveButton {
@@ -226,7 +236,7 @@ a .topBarLink {
 .profile-top-map {
   padding: 0.5em;
   width: 100%;
-  background-color: darkslategray;
+  background-color: var(--main-theme-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -248,7 +258,7 @@ a .topBarLink {
 .profile-lesser-map {
   margin-left: 1em;
   margin-right: 0;
-  background-color: darkslategray;
+  background-color: var(--main-theme-color);
   padding: 1em;
   display: flex;
   flex-wrap: wrap;
@@ -262,27 +272,37 @@ a .topBarLink {
 }
 
 .profile-top-map:nth-child(4n + 1) {
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
 }
 
-.profile-top-map:nth-child(4n + 1) + .lesser-maps .profile-lesser-map:nth-of-type(even) {
-  background-color: #203838;
+.profile-top-map:nth-child(4n + 1)
+  + .lesser-maps
+  .profile-lesser-map:nth-of-type(even) {
+  background-color: var(--main-theme-color-darker);
 }
 
-.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd) {
-  background-color: #203838;
+.profile-top-map:nth-child(4n-1)
+  + .lesser-maps
+  .profile-lesser-map:nth-of-type(odd) {
+  background-color: var(--main-theme-color-darker);
 }
 
 .profile-top-map:nth-child(4n + 1) .starBackground {
-  color: darkslategray;
+  color: var(--main-theme-color);
 }
 
-.profile-top-map:nth-child(4n + 1) + .lesser-maps .profile-lesser-map:nth-of-type(even) .starBackground {
-  color: darkslategray;
+.profile-top-map:nth-child(4n + 1)
+  + .lesser-maps
+  .profile-lesser-map:nth-of-type(even)
+  .starBackground {
+  color: var(--main-theme-color);
 }
 
-.profile-top-map:nth-child(4n-1) + .lesser-maps .profile-lesser-map:nth-of-type(odd) .starBackground {
-  color: darkslategray;
+.profile-top-map:nth-child(4n-1)
+  + .lesser-maps
+  .profile-lesser-map:nth-of-type(odd)
+  .starBackground {
+  color: var(--main-theme-color);
 }
 
 .profile-top-map-info {
@@ -377,7 +397,9 @@ a .topBarLink {
     width: 100% !important;
   }
 
-  .star-rating-list, .starRemoveButton, .star-value {
+  .star-rating-list,
+  .starRemoveButton,
+  .star-value {
     display: none !important;
   }
 
@@ -410,7 +432,9 @@ a .topBarLink {
     display: flex;
   }
 
-  .mobileMenuPanel a, .mobileMenuPanel .topBarDropDown, .mobileMenuPanel .topBarLink {
+  .mobileMenuPanel a,
+  .mobileMenuPanel .topBarDropDown,
+  .mobileMenuPanel .topBarLink {
     width: 100%;
     box-sizing: border-box;
   }
@@ -451,7 +475,8 @@ a .topBarLink {
     min-width: 0;
   }
 
-  .profile-top-map-info, .profile-top-map-stats {
+  .profile-top-map-info,
+  .profile-top-map-stats {
     flex-basis: 100%;
   }
 
@@ -461,7 +486,8 @@ a .topBarLink {
     row-gap: 0.25em;
   }
 
-  .profile-top-map-comments, .profile-top-map-weighted {
+  .profile-top-map-comments,
+  .profile-top-map-weighted {
     min-width: 0;
     text-align: left;
   }
@@ -518,7 +544,7 @@ span.subText {
 }
 
 .ratingContainer {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   align-items: center;
 }
 
@@ -550,13 +576,13 @@ img {
 }
 
 .chart-container {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   align-items: center;
 }
 
 .pagination {
   display: inline-block;
-  color: DarkSlateGrey;
+  color: var(--main-theme-color);
 }
 
 .pagination #page {
@@ -564,7 +590,7 @@ img {
 }
 
 .pagination a {
-  color: darkslategray;
+  color: var(--main-theme-color);
 }
 
 .pagination span {
@@ -584,7 +610,7 @@ select {
   padding: 0.2em;
   border: none;
   border-radius: 1px;
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   color: white;
 }
 
@@ -592,7 +618,7 @@ button,
 input[type="button"] {
   min-width: 6em;
   border: 1px solid white;
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   color: white;
 }
 
@@ -619,7 +645,7 @@ button.blocked:hover {
 }
 
 .difficulty-container {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   justify-content: space-between;
   align-items: center;
   min-height: 5.5em;
@@ -655,7 +681,7 @@ button.blocked:hover {
 }
 
 .commentContainer {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   padding: 0px;
   align-items: center;
   align-content: center;
@@ -664,7 +690,7 @@ button.blocked:hover {
 
 .commentHeader {
   align-items: center;
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   padding: 0.25em;
   margin: 0;
   box-sizing: border-box;
@@ -684,7 +710,7 @@ button.blocked:hover {
 
 textarea {
   margin: 0;
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   color: white;
   border: 1px solid white;
   box-sizing: border-box;
@@ -698,7 +724,7 @@ textarea#commentForm {
 }
 
 [contenteditable] {
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   color: white;
   border: 1px solid white;
   height: 6em;
@@ -712,7 +738,7 @@ textarea#commentForm {
 
 input {
   border: 1px solid white;
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   color: white;
 }
 
@@ -775,7 +801,7 @@ td input {
 }
 
 .osuTimestamp {
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
   font-weight: bold;
   color: white;
   border-radius: 2px;
@@ -809,7 +835,7 @@ ol.star-rating-list > li {
 }
 
 .starBackground {
-  color: #203838;
+  color: var(--main-theme-color-darker);
   z-index: 0;
   display: inline-block;
   position: absolute;
@@ -827,7 +853,7 @@ ol.star-rating-list > li {
 }
 
 .alternating-bg:nth-of-type(odd) {
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
 }
 
 .alternating-bg:nth-of-type(even) {
@@ -843,7 +869,7 @@ ol.star-rating-list > li {
 }
 
 .alternating-bg:nth-of-type(odd) .starBackground {
-  color: darkslategray;
+  color: var(--main-theme-color);
 }
 
 .alternating-bg-pink:nth-of-type(odd) .starBackground {
@@ -855,7 +881,7 @@ ol.star-rating-list > li {
 }
 
 .alternating-bg:nth-of-type(even) select {
-  background-color: #203838;
+  background-color: var(--main-theme-color-darker);
 }
 
 /* || PROFILE PAGE */
@@ -868,7 +894,7 @@ ol.star-rating-list > li {
 .profileCard {
   display: inline-flex;
   flex-direction: column;
-  border: 1px solid DarkSlateGrey;
+  border: 1px solid var(--main-theme-color);
   padding: 1.5em;
   text-align: center;
   width: 16rem;
@@ -877,7 +903,7 @@ ol.star-rating-list > li {
 }
 
 .ratingsCard {
-  background-color: DarkSlateGrey;
+  background-color: var(--main-theme-color);
   padding: 0;
   margin: 0.5rem;
   width: 100%;
@@ -913,7 +939,7 @@ ol.star-rating-list > li {
 }
 
 .profileRankingDistribution {
-  border: 1px solid DarkSlateGrey;
+  border: 1px solid var(--main-theme-color);
   width: 14em;
   height: 14em;
   padding: 0px;
@@ -956,7 +982,7 @@ ol.star-rating-list > li {
   height: 3em;
   border: 0;
   margin: 0;
-  background-color: darkslategray;
+  background-color: var(--main-theme-color);
 }
 
 .tabbed-container-nav button:hover {
@@ -980,7 +1006,7 @@ ol.star-rating-list > li {
   width: max-content;
   background: #000;
   color: #fff;
-  border: 1px solid #203838;
+  border: 1px solid var(--main-theme-color-darker);
   border-radius: 4px;
   padding: 6px 10px;
   font-size: 12px;
@@ -996,7 +1022,7 @@ ol.star-rating-list > li {
 }
 
 .tooltip-box::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -1018,7 +1044,8 @@ ol.star-rating-list > li {
   bottom: 100%;
   top: auto;
 
-  border-color: transparent transparent #203838 transparent;
+  border-color: transparent transparent var(--main-theme-color-darker)
+    transparent;
 }
 
 .tooltip-box.flip-right {
