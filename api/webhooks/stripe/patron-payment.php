@@ -83,10 +83,64 @@
     if (!empty($session->custom_fields)) {
         foreach ($session->custom_fields as $field) {
             if (isset($field->key) && $field->key === 'osuuserid' && isset($field->text->value)) {
-                $userID = (int)$field->text->value;
+                $userID = $field->text->value;
                 break;
             }
         }
+    }
+
+    if ($userID === null) {
+        http_response_code(400);
+        exit();
+    }
+
+    $isNumeric = is_numeric($userID); 
+    if (!$isNumeric) {
+        $usernameInput = strtolower(trim($userID)); 
+        $stmt = $conn->prepare("SELECT UserID, IsPatron, PatronFromDate, PatronToDate, TotalPatronMonths FROM users WHERE LOWER(Username) = ? LIMIT 1");
+        $stmt->bind_param("s", $usernameInput);
+    } else {
+        if ($userID <= 0) {
+            http_response_code(400);
+            exit();
+        }
+        $stmt = $conn->prepare("SELECT UserID, IsPatron, PatronFromDate, PatronToDate, TotalPatronMonths FROM users WHERE UserID = ? LIMIT 1");
+        $stmt->bind_param("i", $userID);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        $result->free();
+        $stmt->close();
+
+        if (!$isNumeric) {
+            http_response_code(200); 
+            exit();
+        }
+
+        $username = GetUserNameFromId($userID, $conn);
+        $userID = (int)$userID; 
+
+        $insertStmt = $conn->prepare("INSERT INTO users (UserID, Username, IsPatron, TotalPatronMonths) VALUES (?, ?, 0, 0)");
+        $insertStmt->bind_param("is", $userID, $username);
+        if (!$insertStmt->execute()) {
+            http_response_code(500);
+            exit();
+        }
+
+        $insertStmt->close();
+        $user = [
+            "IsPatron" => 0,
+            "PatronFromDate" => null,
+            "PatronToDate" => null,
+            "TotalPatronMonths" => 0
+        ];
+    } else {
+        $user = $result->fetch_assoc();
+        $userID = (int)$user['UserID'];
+        $stmt->close();
     }
 
     $stmt = $conn->prepare("
@@ -137,43 +191,6 @@
         error_log("discord failure:" . $e->getMessage());
     }
 
-    if ($userID === null || $userID <= 0) {
-        http_response_code(400);
-        exit();
-    }
-
-
-    // update user patronage
-    $stmt = $conn->prepare("SELECT IsPatron, PatronFromDate, PatronToDate, TotalPatronMonths FROM users WHERE UserID = ? LIMIT 1");
-    $stmt->bind_param("i", $userID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        $stmt->close();
-
-        $username = GetUserNameFromId($userID, $conn);
-        $stmt = $conn->prepare("INSERT INTO users (UserID, Username, IsPatron, TotalPatronMonths) VALUES (?, ?, 0, 0)");
-        $stmt->bind_param("is", $userID, $username);
-
-        if (!$stmt->execute()) {
-            http_response_code(500);
-            exit();
-        }
-
-        $stmt->close();
-        $user = [
-            "IsPatron" => 0,
-            "PatronFromDate" => null,
-            "PatronToDate" => null,
-            "TotalPatronMonths" => 0
-        ];
-
-    } else {
-        $user = $result->fetch_assoc();
-        $stmt->close();
-    }
-
     $patronRates = [
         'GBP' => 300,    // £3.00
         'USD' => 400,    // $4.00
@@ -199,7 +216,16 @@
     }
 
     $pricePerMonth = $patronRates[$currency];
+    if ($pricePerMonth <= 0) {
+        http_response_code(200);
+        exit("");
+    }
+
     $monthsPurchased = intdiv($amountTotal, $pricePerMonth);
+    if ($monthsPurchased <= 0) {
+        http_response_code(200);
+        exit("");
+    }
 
     if (empty($user["PatronToDate"]) || strtotime($user["PatronToDate"]) < time()) {
         $from = new DateTime();
