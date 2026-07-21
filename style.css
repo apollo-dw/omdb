@@ -131,6 +131,14 @@ a:hover {
   box-sizing: border-box;
 }
 
+.topBarSearchBar::placeholder {
+  color: color-mix(
+    in srgb,
+    rgba(125, 125, 125, 0.66) 50%,
+    var(--main-theme-subtext-color) 50%
+  );
+}
+
 #topBarSearchResults a {
   float: none;
   text-decoration: none;
