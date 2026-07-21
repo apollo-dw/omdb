@@ -147,7 +147,7 @@ a:hover {
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #395f5f;
+  background-color: var(--main-theme-color);
   min-width: 8rem;
   z-index: 1;
 }
@@ -228,7 +228,7 @@ a:hover {
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0 0.6rem;
-  color: #6fffea;
+  color: var(--main-theme-link-color);
   height: 100%;
   align-items: center;
 }
@@ -541,8 +541,8 @@ span.subText {
 .badge {
   padding: 0.1em 0.4em;
   border-radius: 999px;
-  background: #6fffea;
-  color: black;
+  background: var(--main-theme-link-color);
+  color: contrast-color(var(--main-theme-link-color));
   font-size: 0.7em;
   font-weight: 700;
 }

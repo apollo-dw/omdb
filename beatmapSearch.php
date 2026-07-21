@@ -20,7 +20,7 @@
 			die("Mapset not found!");
 		}
 		?>
-		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:DarkSlateGrey;" ><?php echo safe_htmlspecialchars($value[2] . " - " . $value[1], ENT_QUOTES); ?></div></a>
+		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:var(--main-theme-color);" ><?php echo safe_htmlspecialchars($value[2] . " - " . $value[1], ENT_QUOTES); ?></div></a>
 		<?php
 		die();
 	}

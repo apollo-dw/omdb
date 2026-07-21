@@ -124,7 +124,7 @@
     }
     .popover-category-header {
         background-color: var(--main-theme-color-even-darker);
-        color: #6fffea;
+        color: var(--main-theme-link-color);
         padding: 0.25em 0.5em;
         font-weight: bold;
         font-size: 0.85em;
