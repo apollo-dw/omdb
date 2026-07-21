@@ -134,8 +134,8 @@ a:hover {
 .topBarSearchBar::placeholder {
   color: color-mix(
     in srgb,
-    rgba(125, 125, 125, 0.66) 50%,
-    var(--main-theme-subtext-color) 50%
+    var(--main-theme-text-color) 35%,
+    var(--main-theme-color-darker)
   );
 }
 
