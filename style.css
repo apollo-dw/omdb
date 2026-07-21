@@ -100,6 +100,7 @@ a:hover {
   margin: 0px;
   padding: 0 1em;
   width: 100%;
+  height: stretch;
 }
 
 #topBarSearchResults {
@@ -123,7 +124,8 @@ a:hover {
     sans-serif;
   width: stretch;
   z-index: 2;
-  padding: 1em 0.5em;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 #topBarSearchResults a {
