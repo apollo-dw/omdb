@@ -63,7 +63,6 @@
             ];
             require "../functions/filter/index.php";
         ?>
-        <br><br>
         <div style="width: 100%; text-align:right;">
             <button id="update-chart-button" value="Update chart" onClick="pressUpdateChartButton()" disabled>
                 Update chart
