@@ -118,6 +118,47 @@
         $userTheme = json_decode($profile['ProfileTheme'], true) ?? [];
     }
     $activeTheme = array_merge($defaultTheme, $userTheme);
+
+    function getOmdbLogoFilters(string $hex): array
+    {
+        // if hex doesnt contain #, early return default values
+        if (!preg_match('/^#?[0-9A-Fa-f]{6}$/', $hex)) {
+            return [
+                'rotation' => 0,
+                'saturation' => 1,
+            ];
+        }
+
+        $hex = ltrim($hex, '#');
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $d = $max - $min;
+
+        // magic bs from you-know-where
+        if ($d == 0) {
+            $h = 0;
+        } elseif ($max == $r) {
+            $h = 60 * fmod((($g - $b) / $d + 6), 6);
+        } elseif ($max == $g) {
+            $h = 60 * ((($b - $r) / $d) + 2);
+        } else {
+            $h = 60 * ((($r - $g) / $d) + 4);
+        }
+
+        $l = ($max + $min) / 2;
+        $s = $d == 0 ? 0 : $d / (1 - abs(2 * $l - 1));
+
+        return [
+            'rotation' => round($h - 180),
+            'saturation' => round(max(1, $s / 0.25), 2),
+        ];
+    }
+
+    $imageFilter = getOmdbLogoFilters($activeTheme['main-theme-color']);
 ?>
 
 <style>
@@ -125,6 +166,8 @@
         <?php foreach ($activeTheme as $variable => $value): ?>
             --<?= htmlspecialchars($variable, ENT_QUOTES, 'UTF-8'); ?>: <?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>;
         <?php endforeach; ?>
+        --top-bar-icon-hue: <?= $imageFilter['rotation'] ?>deg;
+        --top-bar-icon-saturation: <?= $imageFilter['saturation'] ?>;
     }
 </style>
 

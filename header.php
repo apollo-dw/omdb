@@ -29,7 +29,7 @@
 			<input type="checkbox" id="mobileMenuToggle" class="hamburgerToggle">
 			<label for="mobileMenuToggle" class="hamburgerLabel"><i class="icon-reorder"></i></label>
 
-			<a href="/" style="margin-right: 8px;"><img src="/assets/img/omdb-32x32.png" /></a>
+			<a href="/" style="margin-right: 8px;"><img src="/assets/img/omdb-32x32.png" class="top-bar-logo" /></a>
 			<a href="/" class="hideOnMobile"><div class="topBarLink">home</div></a>
 			<a href="/charts/" class="hideOnMobile"><div class="topBarLink">charts</div></a>
 			<div class="topBarDropDown hideOnMobile">

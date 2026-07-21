@@ -8,6 +8,9 @@
   --main-theme-link-color: #6fffea;
   --main-theme-star-color: white;
   --main-theme-patron-pink: #ecb4f5;
+
+  --top-bar-icon-hue: 0deg;
+  --top-bar-icon-saturation: 100%;
 }
 
 body {
@@ -134,6 +137,11 @@ a:hover {
   display: block;
   text-align: left;
   color: var(--main-theme-text-color);
+}
+
+.top-bar-logo {
+  filter: hue-rotate(var(--top-bar-icon-hue))
+    saturate(var(--top-bar-icon-saturation));
 }
 
 #topBarSearchResults a:hover {

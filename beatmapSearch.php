@@ -38,7 +38,7 @@
     $stmt->store_result();
 
     if ($stmt->num_rows > 0){
-        echo "<div style='background-color:#182828;'><b>Descriptors</b></div>";
+        echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Descriptors</b></div>";
         while ($stmt->fetch()) {
             ?>
             <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/descriptor/?id=<?php echo $descriptorID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($descriptorName, ENT_QUOTES); ?></a></div>
@@ -62,7 +62,7 @@
 
     $seenUsers = [];
     if ($stmt->num_rows > 0) {
-        echo "<div style='background-color:#182828;'><b>Users</b></div>";
+        echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Users</b></div>";
         while ($stmt->fetch()) {
             if (isset($seenUsers[$userID])) 
                 continue;
@@ -137,7 +137,7 @@
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        echo "<div style='background-color:#182828;'><b>Maps</b></div>";
+        echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Maps</b></div>";
         while ($stmt->fetch()) {
             // If both tables lacked a username for some reason, fallback to a placeholder
             $displayName = $mapperName ?? "Unknown Mapper";
@@ -159,7 +159,7 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0){
-        echo "<div style='background-color:#182828;'><b>Lists</b></div>";
+        echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Lists</b></div>";
         while ($row = $result->fetch_assoc()) {
             $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
             $stmt->bind_param("i", $row["ListID"]);
