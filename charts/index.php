@@ -64,6 +64,11 @@
             require "../functions/filter/index.php";
         ?>
         <br><br>
+        <div style="width: 100%; text-align:right;">
+            <button id="update-chart-button" value="Update chart" onClick="pressUpdateChartButton()" disabled>
+                Update chart
+            </button>
+        </div>
 		<span>Info</span>
 		<hr>
 		The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
@@ -126,10 +131,16 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    $(document).on("omdbFiltersSubmitted", function(event, payload) {
+    function pressUpdateChartButton() {
+        var payload = window.getOmdbFilterPayload();
         currentPayload = payload;
         page = 1;
         updateChart(payload, page);
+        $("#update-chart-button").prop("disabled", true);
+    }
+
+    $(document).on("omdbFiltersSubmitted", function(event, payload) {
+        $("#update-chart-button").prop("disabled", false);
     });
 
     function updateChart(payload, currentPage) {

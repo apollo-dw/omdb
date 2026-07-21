@@ -624,10 +624,16 @@ input[type="button"] {
   color: white;
 }
 
-button:hover,
-input[type="button"]:hover {
+button:not(:disabled):hover,
+input[type="button"]:not(:disabled):hover {
   background-color: var(--main-theme-color-even-darker);
   cursor: pointer;
+}
+
+.disabled,
+button:disabled,
+input[type="button"]:disabled {
+  opacity: 0.5;
 }
 
 button.mutual {
