@@ -166,7 +166,7 @@
                     <?php if (isset($topMap["WeightedAvg"])): ?>
                         <b><?php echo number_format((float)$topMap["WeightedAvg"], 2); ?></b>
                         <span class="subText">/ 5.00 from
-                            <span style="color:white"><?php echo $topMap["RatingCount"]; ?></span> votes
+                            <span style="color: var(--main-theme-text-color);"><?php echo $topMap["RatingCount"]; ?></span> votes
                         </span>
                     <?php endif; ?>
                 </span>
@@ -200,7 +200,7 @@
                             <?php if (isset($map["ChartRank"])): ?>
                                 <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b>
                                 <span class="subText">/ 5.00 from
-                                    <span style="color:white"><?php echo $map["RatingCount"]; ?></span> votes
+                                    <span style="color: var(--main-theme-text-color);"><?php echo $map["RatingCount"]; ?></span> votes
                                 </span>
                             <?php endif; ?>
                         </span>

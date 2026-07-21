@@ -133,7 +133,7 @@ a:hover {
   text-decoration: none;
   display: block;
   text-align: left;
-  color: white;
+  color: var(--main-theme-text-color);
 }
 
 #topBarSearchResults a:hover {
@@ -154,7 +154,7 @@ a:hover {
 
 .dropdown-content a {
   float: none;
-  color: white;
+  color: var(--main-theme-text-color);
   padding: 0.01rem 1rem;
   text-decoration: none;
   display: block;
@@ -792,6 +792,7 @@ td input {
   height: 1em;
   width: 1em;
   display: inline-block;
+  color: var(--main-theme-text-color);
 }
 
 .ruleset-icon.osu {
@@ -1001,6 +1002,7 @@ ol.star-rating-list > li {
   border: 0;
   margin: 0;
   background-color: var(--main-theme-color);
+  color: var(--main-theme-text-color);
 }
 
 .tabbed-container-nav button:hover {

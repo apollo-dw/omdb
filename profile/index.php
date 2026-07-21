@@ -477,7 +477,7 @@
                 <div>
                     Ranked <?php echo date("M jS, Y", strtotime($highestMap['DateRanked'])); ?>
                     <br>
-                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $highestMap["RatingCount"]; ?></span> votes</span>
+                    <b><?php echo number_format((float)$highestMap['WeightedAvg'], 2); ?></b> <span class="subText">/ 5.00 from <span style="color: var(--main-theme-text-color);"><?php echo $highestMap["RatingCount"]; ?></span> votes</span>
                     <br>
                     <?php if ($highestMap["ChartRank"] != null) { ?>
                         <b>#<?php echo $highestMap["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $highestMapYear;?>&p=<?php echo ceil($highestMap["ChartYearRank"] / 50); ?>"><?php echo $highestMapYear;?></a>, <b>#<?php echo $highestMap["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($highestMap["ChartRank"] / 50); ?>">overall</a>
