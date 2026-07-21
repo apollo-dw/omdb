@@ -7,6 +7,7 @@
   --main-theme-subtext-color: #a8a8a8;
   --main-theme-link-color: #6fffea;
   --main-theme-star-color: white;
+  --main-theme-patron-pink: #ecb4f5;
 }
 
 body {
@@ -81,10 +82,7 @@ a:hover {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
   margin: 0px;
-}
-
-a .topBarLink {
-  color: white;
+  color: var(--main-theme-text-color);
 }
 
 .topBarLink:hover {
@@ -947,12 +945,16 @@ ol.star-rating-list > li {
   width: 14em;
   height: 14em;
   padding: 0px;
-  color: rgba(125, 125, 125, 0.66);
   overflow: clip;
 }
 
 .profileRankingDistribution a {
-  color: rgba(125, 125, 125, 0.66);
+  color: color-mix(
+    in srgb,
+    rgba(125, 125, 125, 0.66) 50%,
+    var(--main-theme-subtext-color) 50%
+  );
+  text-decoration: none;
 }
 
 .profileRankingDistributionBar {
@@ -961,7 +963,11 @@ ol.star-rating-list > li {
   margin: 0px;
   padding: 0px;
   text-align: left;
-  background-color: #282828;
+  background-color: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.01) 80%,
+    var(--main-theme-subtext-color) 20%
+  );
   padding-left: 0.25em;
   white-space: nowrap;
   text-overflow: ellipsis;

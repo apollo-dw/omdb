@@ -109,6 +109,7 @@
                 <input type="color" id="theme-subtext-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-subtext-color'] ?? '#a8a8a8', ENT_QUOTES); ?>"> Subtext Color<br>
                 <input type="color" id="theme-link-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-link-color'] ?? '#6fffea', ENT_QUOTES); ?>"> Link Color<br>
                 <input type="color" id="theme-star-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-star-color'] ?? '#ffffff', ENT_QUOTES); ?>"> Star Color<br>
+                <input type="color" id="theme-patron-pink" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-patron-pink'] ?? '#ecb4f5', ENT_QUOTES); ?>"> Patron Badge Pink<br>
                 <button type='button' onclick="resetTheme()" class="small-button">Reset theme to default</button>
             </td>
         </tr>
@@ -233,7 +234,8 @@
             'main-theme-background-color': document.getElementById('theme-background-color').value,
             'main-theme-subtext-color': document.getElementById('theme-subtext-color').value,
             'main-theme-link-color': document.getElementById('theme-link-color').value,
-            'main-theme-star-color': document.getElementById('theme-star-color').value
+            'main-theme-star-color': document.getElementById('theme-star-color').value,
+            'main-theme-patron-pink': document.getElementById('theme-patron-pink').value
         };
 
         fetch("save.php", {
@@ -280,6 +282,7 @@
         document.getElementById('theme-subtext-color').value = '#a8a8a8';    
         document.getElementById('theme-link-color').value = '#6fffea';       
         document.getElementById('theme-star-color').value = '#ffffff';       
+        document.getElementById('theme-patron-pink').value = '#ecb4f5';
     }
 </script>
 

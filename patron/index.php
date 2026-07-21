@@ -34,7 +34,7 @@
 if ($user["IsPatron"] === 1) {
 ?>
 <hr>
-<div style="width:100%;text-align:center;margin-top:5em;margin-bottom:5em;background-color: #ecb4f5;color: black;">
+<div style="width:100%;text-align:center;margin-top:5em;margin-bottom:5em;background-color: var(--main-theme-patron-pink);color: black;">
     <div style="padding:2em;">
         <span style="font-size:2em; font-weight: bolder;"><i class="icon-heart"></i> </span>
         <p>
@@ -55,11 +55,11 @@ if ($user["IsPatron"] === 1) {
         <?php
         if ($user["IsPatron"] !== 1) {
         ?>
-            <span style="font-size:2em; font-weight: bolder;"><a style="color: #ecb4f5;" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Become a Patron</a></span>
+            <span style="font-size:2em; font-weight: bolder;"><a style="color: var(--main-theme-patron-pink);" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Become a Patron</a></span>
         <?php
         } else {
         ?>
-            <span style="font-size:2em; font-weight: bolder;"><a style="color: #ecb4f5;" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Extend your patronage</a></span>
+            <span style="font-size:2em; font-weight: bolder;"><a style="color: var(--main-theme-patron-pink);" href="https://buy.stripe.com/9B67sLdRT7caas7gZPcEw00" target="_blank">Extend your patronage</a></span>
         <?php
         }
         ?>

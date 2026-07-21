@@ -29,7 +29,7 @@
 			<input type="checkbox" id="mobileMenuToggle" class="hamburgerToggle">
 			<label for="mobileMenuToggle" class="hamburgerLabel"><i class="icon-reorder"></i></label>
 
-			<a href="/" style="margin-right: 8px;color:white;"><img src="/assets/img/omdb-32x32.png" /></a>
+			<a href="/" style="margin-right: 8px;"><img src="/assets/img/omdb-32x32.png" /></a>
 			<a href="/" class="hideOnMobile"><div class="topBarLink">home</div></a>
 			<a href="/charts/" class="hideOnMobile"><div class="topBarLink">charts</div></a>
 			<div class="topBarDropDown hideOnMobile">
@@ -110,7 +110,7 @@
 					if ($loggedIn) {
 				?>
                         <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
-                        <a href="/patron/" style="margin:0 1em;"><b><i style="color:#ecb4f5" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
+                        <a href="/patron/" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
                         <a href="/settings/" style="margin:0 1em;"><b><i class="icon-cogs"></i></b></a>
                         <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
                         <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color:white;"><b><?php echo $userName; ?></b></a>

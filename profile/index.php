@@ -109,7 +109,8 @@
         'main-theme-background-color' => 'black',
         'main-theme-subtext-color' => '#a8a8a8',
         'main-theme-link-color' => '#6fffea',
-        'main-theme-star-color' => 'white'
+        'main-theme-star-color' => 'white',
+        'main-theme-patron-pink' => '#ecb4f5'
     ];
 
     $userTheme = [];
@@ -145,7 +146,7 @@
         <?php if ($isValidUser && $profile['IsPatron'] === 1) { ?>
 		<div class="profilePatronBadge">
             <a href="/patron/" style="text-decoration:none;">
-			    <div style="background-color: #ecb4f5; border-radius: 2px; color: black; font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
+			    <div style="background-color: var(--main-theme-patron-pink); border-radius: 2px; color: contrast-color(var(--main-theme-patron-pink)); font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
             </a>
         </div>
 		<?php } ?>

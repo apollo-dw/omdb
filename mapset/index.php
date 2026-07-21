@@ -646,7 +646,7 @@ while($row = $result->fetch_assoc()) {
             <ul>
 			<?php
 				foreach ($credits as $credit) {
-					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID']), ENT_QUOTES);
+					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID'], $conn), ENT_QUOTES);
 					echo "<li>
 					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
@@ -732,7 +732,7 @@ while($row = $result->fetch_assoc()) {
                                     ?>
                                     <span class="tooltip-wrapper">
                                         <a href="/patron/" style="text-decoration:none;">
-                                            <i class="icon-heart" style="color:#ecb4f5"></i>
+                                            <i class="icon-heart" style="color: var(--main-theme-patron-pink)"></i>
                                         </a>
                                         <span class="tooltip-box">
                                             OMDB patron
@@ -869,7 +869,7 @@ while($row = $result->fetch_assoc()) {
                                     ?>
                                     <span class="tooltip-wrapper">
                                         <a href="/patron/" style="text-decoration:none;">
-                                            <i class="icon-heart" style="color:#ecb4f5"></i>
+                                            <i class="icon-heart" style="color: var(--main-theme-patron-pink)"></i>
                                         </a>
                                         <span class="tooltip-box">
                                             OMDB patron
