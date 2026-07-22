@@ -648,7 +648,6 @@ input[type="button"]:not(:disabled):hover {
   cursor: pointer;
 }
 
-.disabled,
 button:disabled,
 input[type="button"]:disabled {
   opacity: 0.5;
