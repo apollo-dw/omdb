@@ -227,15 +227,15 @@
         const onlyFriendsOnFrontPage = document.getElementById("OnlyFriendsOnFrontPage").value;
 
         const profileTheme = {
-            'main-theme-color': document.getElementById('theme-color').value,
-            'main-theme-color-darker': document.getElementById('theme-color-darker').value,
-            'main-theme-color-even-darker': document.getElementById('theme-color-even-darker').value,
-            'main-theme-text-color': document.getElementById('theme-text-color').value,
-            'main-theme-background-color': document.getElementById('theme-background-color').value,
-            'main-theme-subtext-color': document.getElementById('theme-subtext-color').value,
-            'main-theme-link-color': document.getElementById('theme-link-color').value,
-            'main-theme-star-color': document.getElementById('theme-star-color').value,
-            'main-theme-patron-pink': document.getElementById('theme-patron-pink').value
+            'main-theme-color': document.getElementById('theme-color')?.value,
+            'main-theme-color-darker': document.getElementById('theme-color-darker')?.value,
+            'main-theme-color-even-darker': document.getElementById('theme-color-even-darker')?.value,
+            'main-theme-text-color': document.getElementById('theme-text-color')?.value,
+            'main-theme-background-color': document.getElementById('theme-background-color')?.value,
+            'main-theme-subtext-color': document.getElementById('theme-subtext-color')?.value,
+            'main-theme-link-color': document.getElementById('theme-link-color')?.value,
+            'main-theme-star-color': document.getElementById('theme-star-color')?.value,
+            'main-theme-patron-pink': document.getElementById('theme-patron-pink')?.value
         };
 
         fetch("save.php", {
