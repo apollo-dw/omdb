@@ -126,6 +126,7 @@
             return [
                 'rotation' => 0,
                 'saturation' => 1,
+                'brightness' => 1,
             ];
         }
 
@@ -151,10 +152,18 @@
 
         $l = ($max + $min) / 2;
         $s = $d == 0 ? 0 : $d / (1 - abs(2 * $l - 1));
+        
+        $luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+        $sourceLuminance =
+            0.2126 * (47 / 255) +
+            0.7152 * (79 / 255) +
+            0.0722 * (79 / 255);
+        $brightness = round($luminance / $sourceLuminance, 2);
 
         return [
-            'rotation' => round($h - 180),
+            'rotation' => round(($h - 180) * $s),
             'saturation' => round(max(1, $s / 0.25), 2),
+            'brightness' => max(0.5, min(2, $brightness)),
         ];
     }
 
@@ -168,6 +177,7 @@
         <?php endforeach; ?>
         --top-bar-icon-hue: <?= $imageFilter['rotation'] ?>deg;
         --top-bar-icon-saturation: <?= $imageFilter['saturation'] ?>;
+        --top-bar-icon-brightness: <?= $imageFilter['brightness'] ?>;
     }
 </style>
 

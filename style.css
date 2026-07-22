@@ -11,6 +11,7 @@
 
   --top-bar-icon-hue: 0deg;
   --top-bar-icon-saturation: 100%;
+  --top-bar-icon-brightness: 1;
 }
 
 body {
@@ -149,7 +150,8 @@ a:hover {
 
 .top-bar-logo {
   filter: hue-rotate(var(--top-bar-icon-hue))
-    saturate(var(--top-bar-icon-saturation));
+    saturate(var(--top-bar-icon-saturation))
+    brightness(var(--top-bar-icon-brightness));
 }
 
 #topBarSearchResults a:hover {
