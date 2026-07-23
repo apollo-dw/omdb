@@ -3,6 +3,7 @@
   --main-theme-color-darker: #203838;
   --main-theme-color-even-darker: #0c1515;
   --main-theme-text-color: white;
+  --main-theme-text-font-family: Verdana;
   --main-theme-background-color: black;
   --main-theme-subtext-color: #a8a8a8;
   --main-theme-link-color: #6fffea;
@@ -15,7 +16,7 @@
 }
 
 body {
-  font-family: Verdana, sans-serif;
+  font-family: var(--main-theme-text-font-family), sans-serif;
   font-size: 13px;
   background-color: var(--main-theme-background-color);
   color: var(--main-theme-text-color);

@@ -109,7 +109,22 @@
                 <input type="color" id="theme-subtext-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-subtext-color'] ?? '#a8a8a8', ENT_QUOTES); ?>"> Subtext Color<br>
                 <input type="color" id="theme-link-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-link-color'] ?? '#6fffea', ENT_QUOTES); ?>"> Link Color<br>
                 <input type="color" id="theme-star-color" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-star-color'] ?? '#ffffff', ENT_QUOTES); ?>"> Star Color<br>
-                <input type="color" id="theme-patron-pink" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-patron-pink'] ?? '#ecb4f5', ENT_QUOTES); ?>"> Patron Badge Pink<br>
+                <input type="color" id="theme-patron-pink" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-patron-pink'] ?? '#ecb4f5', ENT_QUOTES); ?>"> Patron Badge Pink<br><br>
+                <select id="theme-text-font-family" name="theme-text-font-family">
+                <?php
+                $currentFont = $profileTheme['main-theme-text-font-family'] ?? 'Verdana, sans-serif';
+                ?>
+                    <?php foreach ($CUSTOM_THEME_FONTS as $label => $stack): ?>
+                        <option
+                            value="<?php echo safe_htmlspecialchars($stack, ENT_QUOTES); ?>"
+                            <?php echo ($currentFont === $stack) ? 'selected' : ''; ?>
+                        >
+                            <?php echo safe_htmlspecialchars($label); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                Text Font Family<br>
+                <br>
                 <button type='button' onclick="resetTheme()" class="small-button">Reset theme to default</button>
             </td>
         </tr>
@@ -235,7 +250,8 @@
             'main-theme-subtext-color': document.getElementById('theme-subtext-color')?.value,
             'main-theme-link-color': document.getElementById('theme-link-color')?.value,
             'main-theme-star-color': document.getElementById('theme-star-color')?.value,
-            'main-theme-patron-pink': document.getElementById('theme-patron-pink')?.value
+            'main-theme-patron-pink': document.getElementById('theme-patron-pink')?.value,
+            'main-theme-text-font-family': document.getElementById('theme-text-font-family')?.value
         };
 
         fetch("save.php", {
@@ -283,6 +299,7 @@
         document.getElementById('theme-link-color').value = '#6fffea';       
         document.getElementById('theme-star-color').value = '#ffffff';       
         document.getElementById('theme-patron-pink').value = '#ecb4f5';
+        document.getElementById('theme-text-font-family').value = 'Verdana, sans-serif';
     }
 </script>
 

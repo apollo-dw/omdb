@@ -170,14 +170,37 @@
     $imageFilter = getOmdbLogoFilters($activeTheme['main-theme-color']);
 ?>
 
+<?php
+    function css_value_escape(string $value): string {
+        return str_replace(
+            ['</style', '<', '>', "\0"],
+            ['<\/style', '\3C ', '\3E ', ''],
+            $value
+        );
+    }
+
+    function css_var_name(string $name): string {
+        return preg_replace('/[^a-zA-Z0-9_-]/', '', $name);
+    }
+
+    function parseCssValue(string $text): string {
+        return str_replace(
+            ['</style', '<', '>', "\0"],
+            ['<\/style', '\3C ', '\3E ', ''],
+            preg_replace('/[^a-zA-Z0-9_-]/', '', $text)
+        );
+    }
+?>
+
 <style>
     :root {
         <?php foreach ($activeTheme as $variable => $value): ?>
-            --<?= htmlspecialchars($variable, ENT_QUOTES, 'UTF-8'); ?>: <?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>;
+            --<?= css_value_escape(css_var_name($variable)) ?>: <?= css_value_escape((string)$value) ?>;
         <?php endforeach; ?>
-        --top-bar-icon-hue: <?= $imageFilter['rotation'] ?>deg;
-        --top-bar-icon-saturation: <?= $imageFilter['saturation'] ?>;
-        --top-bar-icon-brightness: <?= $imageFilter['brightness'] ?>;
+
+        --top-bar-icon-hue: <?= (float)$imageFilter['rotation'] ?>deg;
+        --top-bar-icon-saturation: <?= (float)$imageFilter['saturation'] ?>;
+        --top-bar-icon-brightness: <?= (float)$imageFilter['brightness'] ?>;
     }
 </style>
 

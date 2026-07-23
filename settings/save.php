@@ -44,6 +44,13 @@
         is_array($body_json['profileTheme']) &&
         count($body_json['profileTheme']) > 0
     ) {
+        if (isset($body_json['profileTheme']['main-theme-text-font-family'])) {
+            $font = $body_json['profileTheme']['main-theme-text-font-family'];
+            if (!in_array($font, $CUSTOM_THEME_FONTS, true)) {
+                $body_json['profileTheme']['main-theme-text-font-family'] = 'Verdana, sans-serif';
+            }
+        }
+
         $fields[] = "`ProfileTheme`=?";
         $params[] = json_encode($body_json['profileTheme']);
         $types .= "s";
