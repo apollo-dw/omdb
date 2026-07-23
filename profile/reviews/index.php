@@ -29,6 +29,8 @@
     $stmt->close();
 
     $amntOfPages = floor($count / $limit) + 1;
+
+		RenderCustomThemeCss($profile);
 ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s reviews</h1></center>
 

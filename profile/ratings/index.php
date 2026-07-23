@@ -13,6 +13,8 @@
 
     if ($profile == NULL)
         die("Can't view this bros friends cuz they aint an OMDB user");
+
+    RenderCustomThemeCss($profile);
 ?>
 
 <center><h1><a href="/profile/<?php echo safe_htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s ratings</h1></center>

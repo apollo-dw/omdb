@@ -21,14 +21,16 @@
 	$limit = 25;
 	$prevPage = $page - 1;
 	$nextPage = $page + 1;
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    $stmt->bind_result($count);
-    $stmt->fetch();
-    $stmt->close();
+	$stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
+	$stmt->bind_param("i", $profileId);
+	$stmt->execute();
+	$stmt->bind_result($count);
+	$stmt->fetch();
+	$stmt->close();
 
-    $amntOfPages = floor($count / $limit) + 1;
+	$amntOfPages = floor($count / $limit) + 1;
+
+	RenderCustomThemeCss($profile);
 ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s comments</h1></center>
 
