@@ -319,7 +319,6 @@ a:hover {
 
 .profile-top-map-info {
   display: flex;
-  flex: 1 1 220px;
   min-width: 0;
   align-items: center;
   justify-content: flex-start;

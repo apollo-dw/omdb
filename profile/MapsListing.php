@@ -123,6 +123,7 @@
         $topMapChartRank = $topMap["ChartRank"] ?? "";
 ?>
         <div
+            style="box-sizing: border-box;"
             data-rating-count="<?php echo $topMapRatingCount; ?>"
             data-chart-rank="<?php echo $topMapChartRank; ?>"
             class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>"
@@ -137,11 +138,8 @@
                 <div class="profile-top-map-text">
                     <a href="/mapset/<?php echo $set['SetID']; ?>">
                         <?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?>
-                        <a href="https://osu.ppy.sh/b/<?php echo $topMap['BeatmapID']; ?>"
-                        target="_blank" rel="noopener noreferrer">
-                            <i class="icon-external-link" style="font-size:10px;"></i>
-                        </a><br>
                     </a>
+                    <br>
                     <a <?php if ($topMapIsBolded) echo "style='font-weight:bolder;'"; ?>
                     href="/mapset/<?php echo $set['SetID']; ?>">
                         <?php echo safe_htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?>
