@@ -3,6 +3,7 @@
 	include_once 'functions/shortlinks.php';
 	include_once 'functions/bbcode.php';
 	include_once 'functions/access.php';
+	include_once 'functions/customthemes.php';
 	include_once 'functions/discord.php';
 	include_once 'functions/recommendations/index.php';
 	include_once 'functions/filter/helpers.php';
