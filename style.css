@@ -808,7 +808,6 @@ td input {
 }
 
 .ruleset-icon {
-  filter: invert(100%);
   background-size: contain;
   background-repeat: no-repeat;
   height: 1em;
@@ -818,19 +817,27 @@ td input {
 }
 
 .ruleset-icon.osu {
-  background-image: url("assets/icon-osu.svg");
+  background-color: var(--main-theme-text-color);
+  -webkit-mask: url("assets/icon-osu.svg") center/contain no-repeat;
+  mask: url("assets/icon-osu.svg") center/contain no-repeat;
 }
 
 .ruleset-icon.taiko {
-  background-image: url("assets/icon-taiko.svg");
+  background-color: var(--main-theme-text-color);
+  -webkit-mask: url("assets/icon-taiko.svg") center/contain no-repeat;
+  mask: url("assets/icon-taiko.svg") center/contain no-repeat;
 }
 
 .ruleset-icon.catch {
-  background-image: url("assets/icon-catch.svg");
+  background-color: var(--main-theme-text-color);
+  -webkit-mask: url("assets/icon-catch.svg") center/contain no-repeat;
+  mask: url("assets/icon-catch.svg") center/contain no-repeat;
 }
 
 .ruleset-icon.mania {
-  background-image: url("assets/icon-mania.svg");
+  background-color: var(--main-theme-text-color);
+  -webkit-mask: url("assets/icon-mania.svg") center/contain no-repeat;
+  mask: url("assets/icon-mania.svg") center/contain no-repeat;
 }
 
 .osuTimestamp {
