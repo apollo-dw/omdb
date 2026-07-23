@@ -161,7 +161,7 @@
         $brightness = round($luminance / $sourceLuminance, 2);
 
         return [
-            'rotation' => round(($h - 180) * $s),
+            'rotation' => round(($h - 180)),
             'saturation' => round(max(1, $s / 0.25), 2),
             'brightness' => max(0.5, min(2, $brightness)),
         ];
