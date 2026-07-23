@@ -631,15 +631,20 @@ select {
   border: none;
   border-radius: 1px;
   background-color: var(--main-theme-color);
+  font-family: var(--main-theme-text-font-family), sans-serif;
   color: white;
 }
 
 button,
 input[type="button"] {
   min-width: 6em;
-  border: 1px solid white;
+  border: 1px solid var(--main-theme-text-color);
   background-color: var(--main-theme-color-darker);
-  color: white;
+  color: var(--main-theme-text-color);
+}
+
+hr {
+  border: 1px solid var(--main-theme-text-color);
 }
 
 button:not(:disabled):hover,
@@ -1009,7 +1014,7 @@ ol.star-rating-list > li {
 
 .tabbed-container-nav {
   width: 100%;
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid var(--main-theme-text-color);
 }
 
 .tabbed-container-nav button {

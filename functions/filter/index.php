@@ -93,7 +93,7 @@
     .filter-search-box {
         position: relative;
         background-color: var(--main-theme-color-darker);
-        border: 1px solid white;
+        border: 1px solid var(--main-theme-text-color);
         padding: 0.25em;
         display: flex;
         flex-wrap: wrap;
@@ -117,7 +117,7 @@
         left: 0;
         right: 0;
         background-color: var(--main-theme-color);
-        border: 1px solid white;
+        border: 1px solid var(--main-theme-text-color);
         max-height: 25em;
         overflow-y: auto;
         z-index: 999;
