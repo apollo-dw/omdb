@@ -130,14 +130,6 @@ a:hover {
   box-sizing: border-box;
 }
 
-.topBarSearchBar::placeholder {
-  color: color-mix(
-    in srgb,
-    var(--main-theme-text-color) 35%,
-    var(--main-theme-color-darker)
-  );
-}
-
 #topBarSearchResults a {
   float: none;
   text-decoration: none;
@@ -632,7 +624,7 @@ select {
   border-radius: 1px;
   background-color: var(--main-theme-color);
   font-family: var(--main-theme-text-font-family), sans-serif;
-  color: white;
+  color: var(--main-theme-text-color);
 }
 
 button,
@@ -767,9 +759,17 @@ textarea#commentForm {
 }
 
 input {
-  border: 1px solid white;
+  border: 1px solid var(--main-theme-text-color);
   background-color: var(--main-theme-color-darker);
-  color: white;
+  color: var(--main-theme-text-color);
+}
+
+input::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--main-theme-text-color) 35%,
+    var(--main-theme-color-darker)
+  );
 }
 
 input#commentSubmit:hover {
