@@ -14,7 +14,8 @@
   --top-bar-icon-saturation: 100%;
   --top-bar-icon-brightness: 1;
 
-  scrollbar-color: var(--main-theme-color) var(--main-theme-color-even-darker);
+  scrollbar-color: var(--main-theme-color)
+    color-mix(in srgb, var(--main-theme-color) 50%, black);
 }
 
 body {
