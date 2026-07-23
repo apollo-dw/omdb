@@ -123,10 +123,7 @@ a:hover {
 .topBarSearchBar {
   border: 0;
   outline: 0;
-  font-family:
-    MS UI Gothic,
-    Verdana,
-    sans-serif;
+  font-family: var(--main-theme-text-font-family), Verdana, sans-serif;
   width: stretch;
   z-index: 2;
   height: 100%;
@@ -1021,6 +1018,7 @@ ol.star-rating-list > li {
   margin: 0;
   background-color: var(--main-theme-color);
   color: var(--main-theme-text-color);
+  font-family: var(--main-theme-text-font-family), sans-serif;
 }
 
 .tabbed-container-nav button:hover {
