@@ -583,7 +583,7 @@ img {
 .diffThumb {
   height: 32px;
   width: 32px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--main-theme-text-color);
   object-fit: cover;
 }
 

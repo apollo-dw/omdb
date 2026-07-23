@@ -672,7 +672,7 @@
     		return $starString;
 
         $hint = safe_htmlspecialchars($hint, ENT_QUOTES);
-        echo "<span title='{$hint}' style='border-bottom:1px dotted white;'>{$starString}</span>";
+        echo "<span title='{$hint}' style='border-bottom:1px dotted var(--main-theme-text-color);'>{$starString}</span>";
     }
 
 	function CalculatePearsonCorrelation($x, $y) {
