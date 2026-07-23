@@ -13,6 +13,8 @@
   --top-bar-icon-hue: 0deg;
   --top-bar-icon-saturation: 100%;
   --top-bar-icon-brightness: 1;
+
+  scrollbar-color: var(--main-theme-color) var(--main-theme-color-even-darker);
 }
 
 body {
@@ -1108,4 +1110,42 @@ ol.star-rating-list > li {
   .topBar > a:first-child {
     margin-right: 0.5rem;
   }
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  vertical-align: middle;
+  background: var(--main-theme-color-darker);
+  border: 1px solid var(--main-theme-text-color);
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"]:active {
+  background: var(--main-theme-color-even-darker);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--main-theme-color);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  left: 1px;
+  top: -3px;
+
+  color: var(--main-theme-text-color);
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+}
+
+input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: initial;
 }
