@@ -158,6 +158,7 @@
                     )
                     OR c.UserID = ?
                 )
+                ORDER BY date DESC LIMIT 40
             )
             UNION ALL
             (
@@ -170,6 +171,7 @@
                     FROM user_relations r 
                     WHERE dpc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
                 )
+                ORDER BY Timestamp DESC LIMIT 40
             )
             UNION ALL
             (
@@ -182,6 +184,7 @@
                     FROM user_relations r 
                     WHERE nc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
                 )
+                ORDER BY Timestamp DESC LIMIT 40
             )
             UNION ALL
             (
@@ -208,6 +211,7 @@
                     )
                     OR r.UserID = ?
                 )
+                ORDER BY date DESC LIMIT 40
             )
             ORDER BY date DESC
             LIMIT 40; ");
@@ -536,15 +540,27 @@
     </div>
     <div class="flex-child column-when-mobile" style="width:34%;height:40em;">
         <?php
-        $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, s.Title, b.DifficultyName, COUNT(r.BeatmapID) as num_ratings
-                                        FROM beatmaps b
-                                        JOIN beatmapsets s on b.SetID = s.SetID
-                                        INNER JOIN ratings r ON b.BeatmapID = r.BeatmapID
-                                        WHERE r.date >= NOW() - INTERVAL 1 WEEK
-                                        AND b.Mode = ? AND b.blacklisted = 0
-                                        GROUP BY b.BeatmapID
-                                        ORDER BY num_ratings DESC
-                                        LIMIT 25;");
+        $stmt = $conn->prepare("
+                SELECT 
+                    b.BeatmapID, 
+                    b.SetID, 
+                    s.Title, 
+                    b.DifficultyName, 
+                    top_maps.num_ratings
+                FROM (
+                    SELECT r.BeatmapID, COUNT(*) as num_ratings
+                    FROM ratings r
+                    JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
+                    WHERE r.date >= NOW() - INTERVAL 2 YEAR
+                    AND b.Mode = ? 
+                    AND b.blacklisted = 0
+                    GROUP BY r.BeatmapID
+                    ORDER BY num_ratings DESC
+                    LIMIT 25
+                ) AS top_maps
+                JOIN beatmaps b ON top_maps.BeatmapID = b.BeatmapID
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                ORDER BY top_maps.num_ratings DESC;");
         $stmt->bind_param("i", $mode);
         $stmt->execute();
         $result = $stmt->get_result();

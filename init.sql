@@ -522,7 +522,8 @@ CREATE TABLE `users` (
 CREATE TABLE `user_correlations` (
   `user1_id` int DEFAULT NULL,
   `user2_id` int DEFAULT NULL,
-  `correlation` float DEFAULT NULL
+  `correlation` float DEFAULT NULL,
+  `count` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
