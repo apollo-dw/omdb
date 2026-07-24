@@ -551,7 +551,7 @@
                     SELECT r.BeatmapID, COUNT(*) as num_ratings
                     FROM ratings r
                     JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
-                    WHERE r.date >= NOW() - INTERVAL 2 YEAR
+                    WHERE r.date >= NOW() - INTERVAL 1 WEEK
                     AND b.Mode = ? 
                     AND b.blacklisted = 0
                     GROUP BY r.BeatmapID
