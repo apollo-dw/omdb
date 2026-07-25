@@ -192,11 +192,10 @@
                             $name = safe_htmlspecialchars($descriptor["Name"]);
                             $id = (int)$descriptor["DescriptorID"];
                             $short = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
-                            $descriptorLinks[] = '
-                                <span class="tooltip-wrapper">
-                                    <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
-                                    <span class="tooltip-box">' . $short . '</span>
-                                </span>';
+                            $descriptorLinks[] = '<span class="tooltip-wrapper">'
+                                . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
+                                . '<span class="tooltip-box">' . $short . '</span>'
+                            . '</span>';
                         }
                         echo implode(', ', $descriptorLinks);
                     ?>

@@ -29,7 +29,7 @@
 			<input type="checkbox" id="mobileMenuToggle" class="hamburgerToggle">
 			<label for="mobileMenuToggle" class="hamburgerLabel"><i class="icon-reorder"></i></label>
 
-			<a href="/" style="margin-right: 8px;"><img src="/assets/img/omdb-32x32.png" class="top-bar-logo" /></a>
+			<a href="/" class="topBarLogoLink" style="margin-right: 8px;"><img src="/assets/img/omdb-32x32.png" class="top-bar-logo" /></a>
 			<a href="/" class="hideOnMobile"><div class="topBarLink">home</div></a>
 			<a href="/charts/" class="hideOnMobile"><div class="topBarLink">charts</div></a>
 			<div class="topBarDropDown hideOnMobile">
@@ -74,7 +74,7 @@
 				}
 			?>
 
-			<span style="margin-left:auto;display:flex;align-items:center;">
+			<span class="topBarRight" style="margin-left:auto;display:flex;align-items:center;">
                 <div class="topBarDropDown hideOnMobile">
                     <div class="topBarLink topBarDropDownButton"><i class="icon-pencil"></i></div>
                     <div class="dropdown-content">
@@ -110,14 +110,14 @@
 					if ($loggedIn) {
 				?>
                         <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
-                        <a href="/patron/" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
-                        <a href="/settings/" style="margin:0 1em;"><b><i class="icon-cogs"></i></b></a>
-                        <a href="/profile/<?php echo $userId; ?>" style="color:white;"><img src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
-                        <a class="topBarUsername" href="/profile/<?php echo $userId; ?>" style="color: var(--main-theme-text-color);"><b><?php echo $userName; ?></b></a>
+                        <a href="/patron/" class="topBarIconLink" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
+                        <a href="/settings/" class="topBarIconLink hideOnMobile" style="margin:0 1em;"><b><i class="icon-cogs"></i></b></a>
+                        <a href="/profile/<?php echo $userId; ?>" class="topBarAvatarLink" style="color:white;"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
+                        <a class="topBarUsername hideOnMobile" href="/profile/<?php echo $userId; ?>" style="color: var(--main-theme-text-color);"><b><?php echo $userName; ?></b></a>
 				<?php
 					} else {
 				?>
-					<b><a href=<?php echo FetchOsuOauthLink($env['OSU_CLIENT_ID'], $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
+					<b style="margin-left:1em"><a href=<?php echo FetchOsuOauthLink($env['OSU_CLIENT_ID'], $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
 				<?php
 					}
 				?>
@@ -147,6 +147,10 @@
 				</div>
 				<?php if ($loggedIn) { ?>
 					<a href="/dashboard/"><div class="topBarLink">dashboard</div></a>
+					<hr class="mobileMenuDivider">
+					<a href="/profile/<?php echo $userId; ?>"><div class="topBarLink"><i class="icon-user"></i> <?php echo $userName; ?></div></a>
+					<a href="/patron/"><div class="topBarLink"><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i> patron</div></a>
+					<a href="/settings/"><div class="topBarLink"><i class="icon-cogs"></i> settings</div></a>
 				<?php } ?>
 			</div>
 		</div>

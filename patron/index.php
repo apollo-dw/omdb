@@ -148,7 +148,7 @@ if ($user["IsPatron"] === 1) {
         <div class="friend-box <?php echo $patronClass; ?>">
             <a href="/profile/<?php echo $row["UserID"]; ?>">
                 <div class="profileImage">
-                    <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="width:5em;height:5em;"/><br>
+                    <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="width:5em;height:5em;"/><br>
                     <?php echo safe_htmlspecialchars($row["Username"], ENT_QUOTES); ?> <br>
                     (<?php echo (int)$row["TotalPatronMonths"]; ?> <?php echo ((int)$row["TotalPatronMonths"] === 1) ? "month" : "months"; ?>)
                 </div>

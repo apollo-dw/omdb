@@ -268,7 +268,7 @@
             /* Main content */
             echo '<div class="flex-child">';
             echo '<a href="/profile/' . intval($row["FriendUserID"]) . '">';
-            echo '<img src="https://s.ppy.sh/a/' . intval($row["FriendUserID"]) . '" style="height:24px;width:24px;"
+            echo '<img class="square-thumb" src="https://s.ppy.sh/a/' . intval($row["FriendUserID"]) . '" style="height:24px;width:24px;"
                     title="' . safe_htmlspecialchars($row["FriendUsername"], ENT_QUOTES) . '"/>';
             echo '</a> ';
             echo '<a href="/profile/' . intval($row["FriendUserID"]) . '">';

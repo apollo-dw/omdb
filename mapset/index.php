@@ -121,9 +121,9 @@ GROUP BY
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
-        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" style="width:25rem;height:8.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
+        <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" class="mapset-cover" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
     </div>
-    <div class="flex-container flex-child light-bg column-when-mobile" style="margin-left:1em;flex-grow: 1;min-height:8.5em;">
+    <div class="flex-container flex-child light-bg column-when-mobile" style="flex-grow: 1;min-height:8.5em;">
         <div class="flex-child" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset info</div>
             <div style="padding:0.25em;">
@@ -185,7 +185,7 @@ GROUP BY
                     $nominatorLinks = array();
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
                         $escapedNominatorName = safe_htmlspecialchars($nominatorName, ENT_QUOTES);
-                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'></a>
+                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img class='square-thumb' src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'></a>
                                      <a href='/profile/$nominatorID'>$escapedNominatorName</a>";
                     }
                     echo implode(" ", $nominatorLinks);
@@ -421,14 +421,10 @@ while($row = $result->fetch_assoc()) {
                                         $name = safe_htmlspecialchars($descriptor["Name"]);
                                         $id = (int)$descriptor["DescriptorID"];
                                         $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
-
-                                        $descriptorLink = '
-                                            <span class="tooltip-wrapper">
-                                                <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
-                                                <span class="tooltip-box">
-                                                    ' . $shortDescription . '
-                                                </span>
-                                            </span>';
+                                        $descriptorLink = '<span class="tooltip-wrapper">'
+                                                . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
+                                                . '<span class="tooltip-box">' . $shortDescription . '</span>'
+                                            . '</span>';
 
                                         $descriptorLinks[] = $descriptorLink;
                                     }
@@ -605,13 +601,13 @@ while($row = $result->fetch_assoc()) {
     <span class="badge">BETA</span>
     <span class="tooltip-wrapper">
         <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
-        <span class="tooltip-box" style="right:auto;">
+        <span class="tooltip-box">
             This is WIP if u wanna help or just play with the weights and settings, check out
             <a href="/labs/">Labs</a>.
         </span>
     </span>
 </h4>
-<div id="similarMapsContainer" class="flex-container" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
+<div id="similarMapsContainer" class="flex-container map-card-strip" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
     <br>
     <?php RenderSimilarMapCards($conn, $similarMaps); ?>
 </div>
@@ -648,7 +644,7 @@ while($row = $result->fetch_assoc()) {
 				foreach ($credits as $credit) {
 					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID'], $conn), ENT_QUOTES);
 					echo "<li>
-					<a href='/profile/{$credit['UserID']}'><img src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
+					<a href='/profile/{$credit['UserID']}'><img class='square-thumb' src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
 					<br>
 					<span class='subText'>{$credit['Roles']}</span>
@@ -689,7 +685,7 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container ratingContainer alternating-bg">
                         <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" class="square-thumb" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
                         </div>
                         <div class="flex-child">
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
@@ -723,7 +719,7 @@ while($row = $result->fetch_assoc()) {
                     ?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ??  GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ??  GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
@@ -860,7 +856,7 @@ while($row = $result->fetch_assoc()) {
 					?>
                     <div class="flex-container flex-child commentHeader">
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
                         <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>

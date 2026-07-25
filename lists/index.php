@@ -44,7 +44,7 @@
         <div class="flex-container alternating-bg list-container">
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
-                    <img src="<?php echo $imageUrl; ?>" 
+                    <img src="<?php echo $imageUrl; ?>" class="square-thumb"
                     style="height:8em;width:8em;object-fit:cover;object-position:center;"
                     loading="lazy" />
                 </a>

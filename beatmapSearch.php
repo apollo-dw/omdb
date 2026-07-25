@@ -71,7 +71,7 @@
             ?>
             <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;">
                 <a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;">
-                    <img src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/> 
+                    <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/> 
                     <?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>
                 </a>
             </div>

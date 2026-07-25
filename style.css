@@ -108,7 +108,18 @@ a:hover {
   margin: 0px;
   padding: 0 1em;
   width: 100%;
+  min-width: 0;
+  flex-shrink: 1;
   height: stretch;
+}
+
+.topBarRight {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.topBarLogoLink, .hamburgerLabel {
+  flex-shrink: 0;
 }
 
 #topBarSearchResults {
@@ -121,6 +132,7 @@ a:hover {
   text-wrap: auto;
   max-height: 25em;
   border-radius: 6px;
+  background-color: var(--main-theme-color-darker);
 }
 
 .topBarSearchBar {
@@ -128,6 +140,7 @@ a:hover {
   outline: 0;
   font-family: var(--main-theme-text-font-family), Verdana, sans-serif;
   width: stretch;
+  min-width: 0;
   z-index: 2;
   height: 100%;
   box-sizing: border-box;
@@ -175,7 +188,18 @@ a:hover {
   background-color: var(--main-theme-color);
 }
 
-.topBarDropDown:hover .dropdown-content {
+/*
+Touchscreens have no hover to leave so script.js toggles .open instead
+see the header menu block which gives dropdowns + hamburger both tap again + tap outside funcs
+insane hack but whatever
+*/
+@media (hover: hover) {
+  .topBarDropDown:hover .dropdown-content {
+    display: block;
+  }
+}
+
+.topBarDropDown.open > .dropdown-content {
   display: block;
 }
 
@@ -230,8 +254,14 @@ a:hover {
   display: none;
 }
 
-.hamburgerToggle {
-  display: none;
+input[type="checkbox"].hamburgerToggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+  border: 0;
+  pointer-events: none;
 }
 
 .hamburgerLabel {
@@ -246,6 +276,12 @@ a:hover {
 
 .mobileMenuPanel {
   display: none;
+}
+
+.mobileMenuDivider {
+  margin: 0.25rem 1.25rem;
+  border: 0;
+  border-top: 1px solid var(--main-theme-color);
 }
 
 .profile-top-map {
@@ -392,137 +428,38 @@ a:hover {
   text-align: right;
 }
 
-@media only screen and (max-width: 1050px) {
-  .content {
-    padding-left: 10%;
-    padding-right: 10%;
-  }
-
-  .topBar {
-    padding-left: 2%;
-    padding-right: 2%;
-  }
-
-  .column-when-mobile-container {
-    flex-direction: column;
-  }
-
-  .column-when-mobile {
-    width: 100% !important;
-  }
-
-  .star-rating-list,
-  .starRemoveButton,
-  .star-value {
-    display: none !important;
-  }
-
-  .star-rating-list-mobile {
-    display: initial;
-  }
-
-  .hamburgerLabel {
-    display: flex;
-    order: -1;
-  }
-
-  .hideOnMobile {
-    display: none !important;
-  }
-
-  .mobileMenuPanel {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: var(--main-theme-color-darker);
-    z-index: 998;
-    line-height: 2.5rem;
-  }
-
-  .hamburgerToggle:checked ~ .mobileMenuPanel {
-    display: flex;
-  }
-
-  .mobileMenuPanel a,
-  .mobileMenuPanel .topBarDropDown,
-  .mobileMenuPanel .topBarLink {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .mobileMenuPanel .topBarLink {
-    text-align: left;
-    padding-left: 1.25rem;
-    height: auto;
-    background-color: transparent;
-  }
-
-  .mobileMenuPanel .topBarLink:hover {
-    background-color: var(--main-theme-color-even-darker);
-  }
-
-  .mobileMenuPanel .topBarDropDownButton {
-    font-weight: bold;
-    background-color: var(--main-theme-color-even-darker);
-  }
-
-  .mobileMenuPanel .dropdown-content {
-    position: static;
-    display: block !important;
-    background-color: transparent;
-  }
-
-  .mobileMenuPanel .dropdown-content a {
-    padding-left: 2.5rem;
-    line-height: 2.25rem;
-  }
-
-  .profile-top-map {
-    align-items: flex-start;
-  }
-
-  .lesser-maps {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .profile-top-map-info,
-  .profile-top-map-stats {
-    flex-basis: 100%;
-  }
-
-  .profile-top-map-stats {
-    grid-template-columns: 1fr;
-    justify-items: end;
-    row-gap: 0.25em;
-  }
-
-  .profile-top-map-comments,
-  .profile-top-map-weighted {
-    min-width: 0;
-    text-align: left;
-  }
-
-  .profile-lesser-map {
-    margin-left: 1em;
-  }
-
-  .profile-lesser-map-stats {
-    flex-basis: 100%;
-    justify-content: space-between;
-  }
-
-  .mobile-filters {
-    order: -1;
-  }
-
-  .friends-list {
-    display: none;
-  }
+.scroll-panel {
+  height: 36em;
+  overflow-y: auto;
+  position: relative;
 }
+
+.home-panel {
+  height: 40em;
+}
+
+.map-card-strip {
+  flex-wrap: nowrap;
+}
+
+.map-card-strip > br {
+  display: none;
+}
+
+.map-card {
+  text-align: center;
+  flex: 1;
+  overflow: hidden;
+  padding: 0.5em;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mapset-cover {
+  width: 25rem;
+  height: 8.5em;
+}
+
 
 .identifier:hover ~ .starRemoveButton:not(.disabled),
 .starRemoveButton:hover:not(.disabled) {
@@ -587,6 +524,26 @@ img {
   width: 32px;
   border: 1px solid var(--main-theme-text-color);
   object-fit: cover;
+}
+
+.square-thumb {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.news-post-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.news-post-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .chart-container {
@@ -1052,7 +1009,7 @@ ol.star-rating-list > li {
 .tooltip-box {
   position: absolute;
   right: 0;
-  max-width: 220px;
+  max-width: min(220px, calc(100vw - 2rem)); /* never wider than the screen it has to fit on */
   width: max-content;
   background: #000;
   color: #fff;
@@ -1080,7 +1037,7 @@ ol.star-rating-list > li {
   top: 100%;
 }
 
-.tooltip-wrapper:hover .tooltip-box {
+.tooltip-wrapper:hover .tooltip-box, .tooltip-wrapper:focus-visible .tooltip-box, .tooltip-wrapper.tooltip-open .tooltip-box {
   opacity: 1;
   visibility: visible;
 }
@@ -1093,9 +1050,7 @@ ol.star-rating-list > li {
 .tooltip-box.flip::after {
   bottom: 100%;
   top: auto;
-
-  border-color: transparent transparent var(--main-theme-color-darker)
-    transparent;
+  border-color: transparent transparent var(--main-theme-color-darker) transparent;
 }
 
 .tooltip-box.flip-right {
@@ -1103,21 +1058,22 @@ ol.star-rating-list > li {
   right: auto;
 }
 
-@media only screen and (max-width: 680px) {
-  .topBar {
-    padding-left: 1%;
-    padding-right: 1%;
-  }
+.tapTooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+  pointer-events: none;
+}
 
-  .topBarLink {
-    min-width: 0;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
+.tapTooltip::before {
+  content: none;
+}
 
-  .topBar > a:first-child {
-    margin-right: 0.5rem;
-  }
+.tapTooltip.open {
+  opacity: 1;
+  visibility: visible;
 }
 
 input[type="checkbox"] {
@@ -1146,7 +1102,6 @@ input[type="checkbox"]:checked::after {
   position: absolute;
   left: 1px;
   top: -3px;
-
   color: var(--main-theme-text-color);
   font-size: 14px;
   font-weight: bold;
@@ -1156,4 +1111,444 @@ input[type="checkbox"]:checked::after {
 input[type="checkbox"]:disabled {
   opacity: 0.5;
   cursor: initial;
+}
+
+@media only screen and (max-width: 1050px) {
+  body {
+    overflow-x: clip;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .diffThumb, .square-thumb {
+    max-width: none;
+  }
+
+  .flex-child:has(> .diffThumb:only-child), .flex-child:has(> .square-thumb:only-child), .flex-child:has(> a:only-child > .diffThumb:only-child), .flex-child:has(> a:only-child > .square-thumb:only-child), .profile-top-map-info > a:has(> .diffThumb:only-child) {
+    flex-shrink: 0 !important;
+  }
+
+  .mapset-cover {
+    width: 100%;
+    height: auto;
+  }
+
+  .content {
+    padding-left: 10%;
+    padding-right: 10%;
+    overflow-wrap: break-word;
+  }
+
+  .topBar {
+    padding-left: 2%;
+    padding-right: 2%;
+  }
+
+  .column-when-mobile-container {
+    flex-direction: column;
+  }
+
+  .column-when-mobile {
+    width: 100% !important;
+  }
+
+  .column-when-mobile-container > * {
+    flex-basis: auto !important;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .star-rating-list, .starRemoveButton, .star-value {
+    display: none !important;
+  }
+
+  .star-rating-list-mobile {
+    display: initial;
+  }
+
+  .hamburgerLabel {
+    display: flex;
+    order: -1;
+  }
+
+  .hideOnMobile {
+    display: none !important;
+  }
+
+  .mobileMenuPanel {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--main-theme-color-darker);
+    z-index: 998;
+    line-height: 2.5rem;
+  }
+
+  .hamburgerToggle:checked ~ .mobileMenuPanel {
+    display: flex;
+  }
+
+  .mobileMenuPanel a, .mobileMenuPanel .topBarDropDown, .mobileMenuPanel .topBarLink {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobileMenuPanel .topBarLink {
+    text-align: left;
+    padding-left: 1.25rem;
+    height: auto;
+    background-color: transparent;
+  }
+
+  .mobileMenuPanel .topBarLink:hover {
+    background-color: var(--main-theme-color-even-darker);
+  }
+
+  .mobileMenuPanel .topBarDropDownButton {
+    font-weight: bold;
+    background-color: var(--main-theme-color-even-darker);
+  }
+
+  .mobileMenuPanel .dropdown-content {
+    position: static;
+    display: block !important;
+    background-color: transparent;
+  }
+
+  .mobileMenuPanel .dropdown-content a {
+    padding-left: 2.5rem;
+    line-height: 2.25rem;
+  }
+
+  .profile-top-map {
+    align-items: flex-start;
+  }
+
+  .lesser-maps {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .profile-top-map-info, .profile-top-map-stats {
+    flex-basis: 100%;
+  }
+
+  .profile-top-map-stats {
+    grid-template-columns: 1fr;
+    justify-items: end;
+    row-gap: 0.25em;
+  }
+
+  .profile-top-map-comments, .profile-top-map-weighted {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .profile-lesser-map {
+    margin-left: 1em;
+  }
+
+  .profile-lesser-map-stats {
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+
+  .mobile-filters {
+    display: contents;
+  }
+
+  .mobile-filters > * {
+    order: -1;
+  }
+
+  .mobile-filters > .mobile-filters-after {
+    order: 1;
+  }
+
+  .mobile-filters-after {
+    width: 100%;
+  }
+
+  .home-panel {
+    height: auto;
+  }
+
+  .scroll-panel, .ratingsCard {
+    height: auto;
+    max-height: 60vh;
+  }
+
+  .map-card-strip {
+    flex-wrap: wrap;
+  }
+
+  .map-card {
+    flex: 0 0 calc(25% - 0.5em);
+    max-width: none !important;
+  }
+
+  .flex-container > .flex-child {
+    min-width: 0;
+  }
+
+  .ratingContainer > .flex-child {
+    min-width: 0;
+    flex-shrink: 1 !important;
+  }
+
+  .chart-container {
+    flex-wrap: wrap;
+  }
+
+  .chart-container > .flex-child {
+    min-width: 0;
+  }
+
+  .chart-container > .flex-child:nth-child(1) {
+    flex: 0 0 auto !important;
+    text-align: left !important;
+  }
+
+  .chart-container > .flex-child:nth-child(2) {
+    flex: 0 0 auto !important;
+  }
+
+  .chart-container > .flex-child:nth-child(2) .diffThumb {
+    height: 3.5em !important;
+    width: 3.5em !important;
+  }
+
+  .chart-container > .flex-child:nth-child(3) {
+    flex: 1 1 0 !important;
+  }
+
+  .chart-container > .flex-child:nth-child(4) {
+    flex: 1 1 calc(100% - 4em) !important;
+  }
+
+  .chart-container > .flex-child:nth-child(5) {
+    flex: 0 0 auto !important;
+    text-align: right !important;
+  }
+
+  .mapList {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .mapList > .flex-child:nth-child(1) {
+    flex: 0 0 auto !important;
+  }
+
+  .mapList .diffThumb {
+    width: 3.5em !important;
+    height: 3.5em !important;
+  }
+
+  .mapList > .flex-child:nth-child(2) {
+    flex: 1 1 calc(100% - 6em) !important;
+  }
+
+  .mapList > .flex-child:nth-child(3) {
+    flex: 0 1 auto !important;
+    text-align: left !important;
+    white-space: nowrap;
+  }
+
+  .mapList > .flex-child:nth-child(4) {
+    flex: 1 1 auto !important;
+    text-align: right !important;
+  }
+
+  .difficulty-container {
+    flex-wrap: wrap;
+  }
+
+  .difficulty-container > .diffBox {
+    width: auto !important;
+    flex: 1 1 100%;
+    text-align: left !important;
+  }
+
+  .difficulty-container > .diffBox:empty {
+    display: none;
+  }
+
+  .difficulty-container .map-descriptors table, .difficulty-container .map-descriptors tbody, .difficulty-container .map-descriptors tr, .difficulty-container .map-descriptors th {
+    display: inline;
+    margin-left: 0 !important;
+  }
+
+  .map-descriptors .tooltip-wrapper {
+    display: inline;
+  }
+
+  .difficulty-container > .diffBox:has(> .star-rating-list-mobile) {
+    flex: 1 1 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .difficulty-container > .diffBox:has(> .star-rating-list-mobile) > div {
+    flex: 1 1 100%;
+  }
+
+  .difficulty-container .tag-button {
+    align-self: center;
+    padding-right: 0 !important;
+  }
+
+  .mapsetRankingDistribution .tooltip-wrapper {
+    position: static;
+  }
+
+  .ratingDistributionChart {
+    padding-right: 2em !important;
+    box-sizing: border-box;
+  }
+
+  table {
+    max-width: 100%;
+  }
+
+  td {
+    padding: 0.5rem;
+  }
+
+  .form-table, .form-table tbody, .form-table tr, .form-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-table td {
+    padding: 0 0 0.25rem 0;
+  }
+
+  .form-table tr label {
+    text-align: left;
+  }
+
+  .form-table tr {
+    margin-bottom: 1rem;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  textarea, input[type="text"] {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 680px) {
+  .topBar {
+    padding-left: 1%;
+    padding-right: 1%;
+  }
+
+  .topBarLink {
+    min-width: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .topBar > a:first-of-type {
+    margin-right: 0.5rem;
+  }
+
+  .topBarUsername {
+    display: none;
+  }
+
+  .content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .footerBar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+  }
+
+  #topBarSearchResults {
+    left: 0.5rem;
+    right: 0.5rem;
+    max-width: none;
+  }
+
+  .centered,
+  .warningBar {
+    width: auto;
+  }
+
+  .warningBar {
+    margin-top: 2rem;
+  }
+
+  .profileCard {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .profileRankingDistribution {
+    width: 100%;
+  }
+
+  .map-card {
+    flex: 0 0 calc(50% - 0.5em);
+  }
+
+  .friend-box {
+    width: 5.5em;
+    padding: 0.5em;
+  }
+
+  .profile-lesser-map {
+    margin-left: 0.5em !important;
+    padding: 0.5em;
+  }
+
+  select, button, input[type="button"], input[type="submit"] {
+    min-height: 2.4em;
+    padding: 0.3em 0.5em;
+  }
+
+  .ratingChoice {
+    font-size: 12px;
+    padding: 0.35em 0.6em;
+  }
+
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  input[type="checkbox"]:checked::after {
+    font-size: 17px;
+    left: 2px;
+    top: -1px;
+  }
+
+  .badge {
+    font-size: 0.8em;
+  }
+
+  .tabbed-container-nav button {
+    height: 2.6em;
+    padding: 0 0.5em;
+  }
 }

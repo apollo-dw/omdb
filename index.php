@@ -39,7 +39,7 @@
 </div>
 <hr>
 <div class="flex-container column-when-mobile-container">
-	<div class="flex-child column-when-mobile" style="width:40%;height:36em;overflow-y:scroll;position:relative;">
+	<div class="flex-child column-when-mobile scroll-panel" style="width:40%;">
 		<?php
 		  if ($userId !== -1) {
 				$stmt = $conn->prepare("
@@ -95,7 +95,7 @@
 			    </div>
                 <div class="flex-child">
                     <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                 </div>
                 <div class="flex-child" style="flex:0 0 66%;">
@@ -122,7 +122,7 @@
 		  $stmt->close();
 		?>
 	</div>
-    <div class="flex-child column-when-mobile" style="width:60%;height:36em;overflow-y:scroll;">
+    <div class="flex-child column-when-mobile scroll-panel" style="width:60%;">
     <?php
         $onlyFriends = 0;
         if ($userId !== -1) {
@@ -252,7 +252,7 @@
                 <div class="flex-child">
                     <div>
                         <a href="/profile/<?php echo $row["UserID"]; ?>">
-                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
+                            <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>"
                                 style="height:24px;width:24px;"
                                 title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"
                                 loading="lazy"/>
@@ -343,7 +343,7 @@
             <a href="/news/" style="font-size:0.85em;">View all news →</a>
         </div>
     </div>
-    <div class="flex-container" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
+    <div class="flex-container map-card-strip" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
         <br>
         <?php
             $usedSets = array();
@@ -360,7 +360,7 @@
 
                 $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
         ?>
-        <div class="flex-child" style="text-align:center;flex:1;overflow:hidden;padding:0.5em;display: inline-block;margin-left:auto;margin-right:auto;">
+        <div class="flex-child map-card">
             <a href="/mapset/<?php echo $row["SetID"]; ?>">
                 <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
                 class="diffThumb" 
@@ -384,7 +384,7 @@
 </div>
 <br>
 <div class="flex-container column-when-mobile-container">
-    <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+    <div class="flex-child column-when-mobile home-panel" style="width:33%;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
         <h2 style="margin-top:0;">Random Map of the Day</h2>
         <?php
             if ($motd != null) {
@@ -427,13 +427,10 @@
                     $id = (int)$descriptor["DescriptorID"];
                     $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
-                    $descriptorLink = '
-                      <span class="tooltip-wrapper">
-                        <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
-                        <span class="tooltip-box">
-                          ' . $shortDescription . '
-                        </span>
-                      </span>';
+                    $descriptorLink = '<span class="tooltip-wrapper">'
+                      . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
+                      . '<span class="tooltip-box">' . $shortDescription . '</span>'
+                      . '</span>';
 
                     $motdDescriptorLinks[] = $descriptorLink;
                   }
@@ -457,7 +454,7 @@
         <?php } else { echo "No maps found?! :("; } ?>
     </div>
 
-    <div class="flex-child column-when-mobile" style="width:33%;height:40em;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
+    <div class="flex-child column-when-mobile home-panel" style="width:33%;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
         <h2 style="margin-top:0;">Highest charting map of the week</h2>
         <?php
             $stmt = $conn->prepare(
@@ -517,13 +514,10 @@
                     $id = (int)$descriptor["DescriptorID"];
                     $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
-                    $descriptorLink = '
-                      <span class="tooltip-wrapper">
-                        <a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>
-                        <span class="tooltip-box">
-                          ' . $shortDescription . '
-                        </span>
-                      </span>';
+                    $descriptorLink = '<span class="tooltip-wrapper">'
+                      . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
+                      . '<span class="tooltip-box">' . $shortDescription . '</span>'
+                      . '</span>';
 
                     $descriptorLinks[] = $descriptorLink;
                   }
@@ -538,7 +532,7 @@
         </div>
         <?php } else { echo "no maps for this week :("; } ?>
     </div>
-    <div class="flex-child column-when-mobile" style="width:34%;height:40em;">
+    <div class="flex-child column-when-mobile home-panel" style="width:34%;">
         <?php
         $stmt = $conn->prepare("
                 SELECT 

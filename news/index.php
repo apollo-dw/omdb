@@ -61,29 +61,30 @@
         $stmt->close();
 ?>
     <div class="news-post alternating-bg" style="padding: 1em;">
-        <h2>
+        <h2 class="news-post-heading">
             <a href="post.php?id=<?php echo $newsId; ?>">
                 <?php echo safe_htmlspecialchars($post["Title"], ENT_QUOTES); ?>
             </a>
             <?php if ($loggedIn) { ?>
-            <div class="tooltip-wrapper" style="float:right;">
-                <span class="subText">[<?php echo $newsHeartCount; ?>]</span>
+            <span class="news-post-meta">
+                <span class="tooltip-wrapper">
+                    <span class="subText">[<?php echo $newsHeartCount; ?>]</span>
 
-                <i
-                    id="news-heart-<?php echo $newsId; ?>"
-                    class="icon-heart<?php if (!$userHasLikedNews) echo "-empty"; ?> news-heart"
-                    style="font-size: 13px;"
-                    data-news-id="<?php echo $newsId; ?>"
-                ></i>
-                <?php if ($heartedUsernamesString) { ?>
-                    <div class="tooltip-box">
-                        <?php echo $heartedUsernamesString; ?>
-                    </div>
-                <?php } ?>
-            </div>
-            <br>
-            <span class="subText" style="float:right;">    
-                <?php echo $newsCommentCount; ?> comment<?php echo $newsCommentCount == 1 ? "" : "s"; ?>
+                    <i
+                        id="news-heart-<?php echo $newsId; ?>"
+                        class="icon-heart<?php if (!$userHasLikedNews) echo "-empty"; ?> news-heart"
+                        style="font-size: 13px;"
+                        data-news-id="<?php echo $newsId; ?>"
+                    ></i>
+                    <?php if ($heartedUsernamesString) { ?>
+                        <span class="tooltip-box">
+                            <?php echo $heartedUsernamesString; ?>
+                        </span>
+                    <?php } ?>
+                </span>
+                <span class="subText">
+                    <?php echo $newsCommentCount; ?> comment<?php echo $newsCommentCount == 1 ? "" : "s"; ?>
+                </span>
             </span>
         <?php } ?>
         </h2>

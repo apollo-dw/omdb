@@ -53,6 +53,7 @@
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
                     <img
+                        class="square-thumb"
                         src="<?php echo $imageUrl; ?>"
                         style="height:24px;width:24px;object-fit:cover;object-position:center;"
                     />
@@ -128,6 +129,7 @@
             <div class="flex-child">
                 <a href="/list/?id=<?php echo $row["ListID"]; ?>">
                     <img
+                        class="square-thumb"
                         src="<?php echo $imageUrl; ?>"
                         style="height:24px;width:24px;object-fit:cover;object-position:center;"
                     />

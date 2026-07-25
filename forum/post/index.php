@@ -133,7 +133,7 @@
                         <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"></a>
                     </div>
                     <div class="profileImage">
-                        <img src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">
                     </div>
                     <div style="text-align: center;">
                     </div>
