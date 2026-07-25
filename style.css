@@ -59,6 +59,10 @@ body {
   }
 }
 
+.topBar > a:first-of-type {
+  margin-right: 0.5rem;
+}
+
 .footerBar {
   display: block;
   width: 100%;
@@ -1147,6 +1151,10 @@ input[type="checkbox"]:disabled {
     padding-right: 2%;
   }
 
+  .topBar > a:first-of-type {
+    margin-right: 0;
+  }
+
   .column-when-mobile-container {
     flex-direction: column;
   }
@@ -1460,10 +1468,6 @@ input[type="checkbox"]:disabled {
     min-width: 0;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-  }
-
-  .topBar > a:first-of-type {
-    margin-right: 0.5rem;
   }
 
   .topBarUsername {
