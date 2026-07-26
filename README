@@ -1,5 +1,6 @@
 OMDB repo
 PHP version: 8.1
+Needs composer installed to run tests and linting
 
 Recommended to join the Discord if you're contributing
 
