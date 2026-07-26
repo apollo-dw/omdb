@@ -327,7 +327,7 @@ while($row = $result->fetch_assoc()) {
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
-            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
+            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && !is_null($row["ChartRank"])){ echo "class='bolded-map'"; }?>>
                 <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>

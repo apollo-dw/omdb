@@ -858,10 +858,6 @@ td input {
   padding: 0.05em;
 }
 
-.bolded {
-  font-weight: bold;
-}
-
 .starRatingDisplay {
   display: inline-block;
   white-space: nowrap;
@@ -1166,4 +1162,8 @@ input[type="checkbox"]:checked::after {
 input[type="checkbox"]:disabled {
   opacity: 0.5;
   cursor: initial;
+}
+
+.bolded-map {
+  font-weight: 750;
 }
