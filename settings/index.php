@@ -112,7 +112,7 @@
                 <input type="color" id="theme-patron-pink" value="<?php echo safe_htmlspecialchars($profileTheme['main-theme-patron-pink'] ?? '#ecb4f5', ENT_QUOTES); ?>"> Patron Badge Pink<br><br>
                 <select id="theme-text-font-family" name="theme-text-font-family">
                 <?php
-                $currentFont = $profileTheme['main-theme-text-font-family'] ?? 'Verdana, sans-serif';
+                $currentFont = $profileTheme['main-theme-text-font-family'] ?? 'OpenSans, sans-serif';
                 ?>
                     <?php foreach ($CUSTOM_THEME_FONTS as $label => $stack): ?>
                         <option
@@ -299,7 +299,7 @@
         document.getElementById('theme-link-color').value = '#6fffea';       
         document.getElementById('theme-star-color').value = '#ffffff';       
         document.getElementById('theme-patron-pink').value = '#ecb4f5';
-        document.getElementById('theme-text-font-family').value = 'Verdana, sans-serif';
+        document.getElementById('theme-text-font-family').value = 'OpenSans, sans-serif';
     }
 </script>
 

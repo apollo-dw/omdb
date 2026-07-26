@@ -47,7 +47,7 @@
         if (isset($body_json['profileTheme']['main-theme-text-font-family'])) {
             $font = $body_json['profileTheme']['main-theme-text-font-family'];
             if (!in_array($font, $CUSTOM_THEME_FONTS, true)) {
-                $body_json['profileTheme']['main-theme-text-font-family'] = 'Verdana, sans-serif';
+                $body_json['profileTheme']['main-theme-text-font-family'] = 'OpenSans, sans-serif';
             }
         }
 
