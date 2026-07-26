@@ -1,16 +1,18 @@
 <?php
     include_once '../base.php';
 
-    $ratings      = filter_var($_POST['ratings'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $reviews      = filter_var($_POST['reviews'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $ratings = filter_var($_POST['ratings'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $reviews = filter_var($_POST['reviews'] ?? true, FILTER_VALIDATE_BOOLEAN);
     $review_likes = filter_var($_POST['review_likes'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $lists        = filter_var($_POST['lists'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $list_likes   = filter_var($_POST['list_likes'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $ranked_maps  = filter_var($_POST['ranked_maps'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $comments     = filter_var($_POST['comments'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $lists = filter_var($_POST['lists'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $list_likes = filter_var($_POST['list_likes'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $ranked_maps = filter_var($_POST['ranked_maps'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $comments = filter_var($_POST['comments'] ?? true, FILTER_VALIDATE_BOOLEAN);
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
-    if (!is_array($tokensRaw)) $tokensRaw = [];
+    if (!is_array($tokensRaw)) {
+        $tokensRaw = [];
+    }
 
     $parsedTokens = parseFilterTokens($tokensRaw);
 
@@ -22,12 +24,12 @@
     $beatmapFilterTypes = $filter['types'];
     $beatmapFilterValues = $filter['values'];
 
-    $yearCond = function(string $col) use ($year): string {
+    $yearCond = function (string $col) use ($year): string {
         return ($year !== 'all-time') ? " AND YEAR($col) = ?" : "";
     };
 
     $queries = [];
-    $paramSets  = [];
+    $paramSets = [];
     $hasBeatmapFilter = !empty($beatmapFilterSQL);
 
     if ($ratings) {
@@ -221,11 +223,11 @@
         $sql = implode(" UNION ALL ", $queries) . " ORDER BY ActivityDate DESC LIMIT 250;";
         $feed_query = $conn->prepare($sql);
 
-        $allTypes  = "";
+        $allTypes = "";
         $allValues = [];
         foreach ($paramSets as $ps) {
-            $allTypes  .= $ps['types'];
-            $allValues  = array_merge($allValues, $ps['values']);
+            $allTypes .= $ps['types'];
+            $allValues = array_merge($allValues, $ps['values']);
         }
 
         $feed_query->bind_param($allTypes, ...$allValues);
@@ -345,4 +347,3 @@
             echo '</div>';
         }
     }
-?>

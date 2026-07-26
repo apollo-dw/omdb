@@ -11,8 +11,9 @@
     $profile = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if ($profile == NULL)
+    if ($profile == null) {
         die("Can't view this bros friends cuz they aint an OMDB user");
+    }
 
     RenderCustomThemeCss($profile);
 ?>
@@ -31,7 +32,7 @@
         ],
         'showRating' => true,
         'showTag' => true,
-        'categories' => ['status', 'descriptor', 'genre', 'language', 'country'] 
+        'categories' => ['status', 'descriptor', 'genre', 'language', 'country']
     ];
     require "../../functions/filter/index.php";
 ?><br>
@@ -109,5 +110,5 @@
 </script>
 
 <?php
-	require '../../footer.php';
+    require '../../footer.php';
 ?>

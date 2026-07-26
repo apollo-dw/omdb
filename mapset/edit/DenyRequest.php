@@ -11,16 +11,18 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `SetID` = ? AND Status = 'Pending';");
     $stmt->bind_param('i', $setID);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO SET");
+    }
 
 } else {
     $stmt = $conn->prepare("SELECT SetID FROM beatmaps WHERE BeatmapID = ?;");
@@ -28,8 +30,9 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $setID = $result->fetch_assoc()["SetID"];
 
@@ -38,13 +41,14 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO MAP");
+    }
 }
 
 $request = $result->fetch_assoc();
 if (!$loggedIn || !(isIdEditRequestAdmin($userId) ||
-					$userId == $request['UserID'])) {
+                    $userId == $request['UserID'])) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
     die("Forbidden");

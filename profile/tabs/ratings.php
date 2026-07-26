@@ -1,6 +1,7 @@
 <?php
-    if (file_exists("../../base.php"))
+    if (file_exists("../../base.php")) {
         include "../../base.php";
+    }
 
     $profileId = GetIntParam("id", null, "Invalid page bro");
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
@@ -67,7 +68,7 @@
 
 <div id="tabbed-ratings" class="tab">
     <table style="width:100%;">
-        <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5){ ?>
+        <?php for ($rating = 5.0; $rating >= 0.0; $rating -= 0.5) { ?>
             <?php
             $formattedRating = number_format((float)$rating, 1);
             $ratingCount = $ratingCounts[$formattedRating] ?? 0;
@@ -76,7 +77,7 @@
             <tr class="alternating-bg">
                 <td style="width:20%;">
                     <a href="ratings/?id=<?php echo $profileId; ?>&r=<?php echo $formattedRating; ?>&p=1"><?php echo $formattedRating; ?><br>
-                        <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != ""){ ?>
+                        <?php if ($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"] != "") { ?>
                             <span class="subText"><?php echo safe_htmlspecialchars($profile["Custom" . str_replace('.', '', $formattedRating) . "Rating"], ENT_QUOTES); ?></span>
                         <?php } ?>
                     </a>

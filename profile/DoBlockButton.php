@@ -4,15 +4,17 @@ include '../base.php';
 $user_id_from = $_POST['user_id_from'];
 $user_id_to = $_POST['user_id_to'];
 
-if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to){
+if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to) {
     die("NOOO");
 }
 
-$stmt = $conn->prepare("SELECT COUNT(*) FROM `users` WHERE `UserID` = ?;");;
+$stmt = $conn->prepare("SELECT COUNT(*) FROM `users` WHERE `UserID` = ?;");
+;
 $stmt->bind_param("i", $user_id_to);
 $stmt->execute();
-if ($stmt->get_result()->fetch_row()[0] == 0)
+if ($stmt->get_result()->fetch_row()[0] == 0) {
     die("NOOO");
+}
 $stmt->close();
 
 // Check if the user has already blocked
@@ -27,7 +29,7 @@ if ($result->num_rows > 0) {
     $stmt_remove->bind_param("ii", $user_id_from, $user_id_to);
     $stmt_remove->execute();
     $stmt_remove->close();
-} else{
+} else {
     // Time to block.
     // Remove friend connections first. (soft-block)
     $stmt_delete_friends = $conn->prepare("DELETE FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 1");
@@ -46,4 +48,3 @@ if ($result->num_rows > 0) {
     $stmt_add->execute();
     $stmt_add->close();
 }
-?>

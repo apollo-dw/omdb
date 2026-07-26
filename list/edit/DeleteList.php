@@ -4,11 +4,13 @@
 
     $id = $_GET["id"];
 
-    if (!is_numeric($id))
+    if (!is_numeric($id)) {
         die(json_encode(array("error" => "id not valid")));
+    }
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die(json_encode(array("error" => "no logged in")));
+    }
 
     $stmt = $conn->prepare("SELECT UserID FROM lists WHERE UserID = ? AND ListID = ?;");
     $stmt->bind_param("ii", $userId, $id);
@@ -16,8 +18,9 @@
     $list = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($list))
+    if (is_null($list)) {
         die(json_encode(array("error" => "not yours, or doesn't exist")));
+    }
 
     $stmt = $conn->prepare("DELETE FROM list_hearts WHERE ListID = ?;");
     $stmt->bind_param("i", $id);

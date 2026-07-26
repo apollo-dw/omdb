@@ -1,6 +1,6 @@
 <?php
-	require ('base.php');
-	
+    require('base.php');
+
 function getRecommendations($beatmapID, $conn) {
     // Step 1: Get descriptors of the given BeatmapID
     $stmt = $conn->prepare("
@@ -48,7 +48,7 @@ function getRecommendations($beatmapID, $conn) {
     $userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
     $descriptorPlaceholders = implode(',', array_fill(0, count($descriptorIDs), '?'));
     $types = str_repeat('i', count($userIDs) + count($descriptorIDs) + 1 + 1 + 1);
-    
+
     $stmt = $conn->prepare("
         SELECT r.BeatmapID, b.SetID, b.DifficultyName, AVG(r.Score) as AvgScore, COUNT(r.Score) as ScoreCount,
                COUNT(DISTINCT dv.DescriptorID) as MatchingDescriptors,
@@ -68,9 +68,9 @@ function getRecommendations($beatmapID, $conn) {
         ) DESC
         LIMIT 10;
     ");
-	
-	echo $conn->error;
-    
+
+    echo $conn->error;
+
     // Bind dynamic parameters
     $params = array_merge([$beatmapID], $descriptorIDs, $userIDs, [$beatmapID], [$beatmapID]);
     $stmt->bind_param($types, ...$params);
@@ -81,7 +81,7 @@ function getRecommendations($beatmapID, $conn) {
     $recommendations = [];
     while ($row = $result->fetch_assoc()) {
         $recommendations[] = [
-			'SetID' => $row['SetID'],
+            'SetID' => $row['SetID'],
             'BeatmapID' => $row['BeatmapID'],
             'DifficultyName' => $row['DifficultyName'],
             'AvgScore' => $row['AvgScore'],
@@ -107,4 +107,3 @@ function getRecommendations($beatmapID, $conn) {
 // Example usage
 $beatmapID = $_GET['id'] ?? 131891;  // Replace with the actual BeatmapID you want recommendations for
 getRecommendations($beatmapID, $conn);
-?>

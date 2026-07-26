@@ -10,8 +10,9 @@
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
-    if (!is_array($tokensRaw))
+    if (!is_array($tokensRaw)) {
         $tokensRaw = [];
+    }
 
     $parsedTokens = parseFilterTokens($tokensRaw);
     $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
@@ -78,7 +79,9 @@
 <div id="beatmaps">
 <?php
     while ($set = $setsResult->fetch_assoc()) {
-        if ($set['SetID'] === null) continue;
+        if ($set['SetID'] === null) {
+            continue;
+        }
 
         $stmt = $conn->prepare("
             SELECT
@@ -126,7 +129,9 @@
             style="box-sizing: border-box;"
             data-rating-count="<?php echo $topMapRatingCount; ?>"
             data-chart-rank="<?php echo $topMapChartRank; ?>"
-            class="profile-top-map<?php if ($difficultyResult->num_rows > 1) echo ' clickable'; ?>"
+            class="profile-top-map<?php if ($difficultyResult->num_rows > 1) {
+                echo ' clickable';
+            } ?>"
         >
             <div class="profile-top-map-info">
                 <a href="/mapset/<?php echo $set['SetID']; ?>">
@@ -140,13 +145,19 @@
                         <?php echo $set['Artist']; ?> - <?php echo safe_htmlspecialchars($set['Title'], ENT_QUOTES); ?>
                     </a>
                     <br>
-                    <a <?php if ($topMapIsBolded) echo "style='font-weight:bolder;'"; ?>
+                    <a <?php if ($topMapIsBolded) {
+                        echo "style='font-weight:bolder;'";
+                    } ?>
                     href="/mapset/<?php echo $set['SetID']; ?>">
                         <?php echo safe_htmlspecialchars($topMap['DifficultyName'], ENT_QUOTES); ?>
                     </a>
                     <span class="subText">
                         <?php echo number_format((float)$topMap['SR'], 2, '.', ''); ?>*
-                        <?php if ($topMapIsCollab) echo "(collab)"; elseif ($topMapIsGD) echo "(GD)"; ?>
+                        <?php if ($topMapIsCollab) {
+                            echo "(collab)";
+                        } elseif ($topMapIsGD) {
+                        echo "(GD)";
+                        } ?>
                     </span><br>
                     <?php echo date("M jS, Y", strtotime($topMap['DateRanked'])); ?><br>
                 </div>
@@ -154,11 +165,15 @@
 
             <div class="profile-top-map-stats">
                 <span class="profile-top-map-rating">
-                    <?php if (isset($topMap["Score"])) echo RenderRating($topMap["Score"]); ?>
+                    <?php if (isset($topMap["Score"])) {
+                        echo RenderRating($topMap["Score"]);
+                    } ?>
                 </span>
                 <span class="profile-top-map-comments">
                     <?php echo $commentCount; ?>
-                    <span class="subText">comment<?php if ($commentCount != 1) echo 's'; ?></span>
+                    <span class="subText">comment<?php if ($commentCount != 1) {
+                        echo 's';
+                    } ?></span>
                 </span>
                 <span class="profile-top-map-weighted">
                     <?php if (isset($topMap["WeightedAvg"])): ?>
@@ -169,7 +184,9 @@
                     <?php endif; ?>
                 </span>
                 <span class="collapse-arrow"
-                      style="<?php if ($difficultyResult->num_rows == 1) echo 'visibility:hidden;'; ?>">
+                      style="<?php if ($difficultyResult->num_rows == 1) {
+                          echo 'visibility:hidden;';
+                      } ?>">
                     ◀
                 </span>
             </div>
@@ -179,13 +196,17 @@
             <?php while ($map = $difficultyResult->fetch_assoc()): ?>
                 <div class="profile-lesser-map">
                     <div class="profile-lesser-map-name">
-                        <a <?php if ($map["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && isset($map["ChartRank"])) echo "class='bolded-map'"; ?>
+                        <a <?php if ($map["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && isset($map["ChartRank"])) {
+                            echo "class='bolded-map'";
+                        } ?>
                            href="/mapset/<?php echo $set['SetID']; ?>">
                             <?php echo safe_htmlspecialchars($map['DifficultyName'], ENT_QUOTES); ?>
                         </a>
                         <span class="subText">
                             <?php echo number_format((float)$map['SR'], 2, '.', ''); ?>*
-                            <?php if ($topMapIsGD) echo "(GD)"; ?>
+                            <?php if ($topMapIsGD) {
+                                echo "(GD)";
+                            } ?>
                         </span><br>
                     </div>
                     <div class="profile-lesser-map-stats">

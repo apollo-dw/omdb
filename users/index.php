@@ -1,5 +1,5 @@
 <?php
-	require("../header.php");
+    require("../header.php");
 ?>
 
 <h2>adfgfadg </h2>
@@ -10,12 +10,12 @@
         }
 </style>
 	<?php
-	
-		$stmt = $conn->prepare("SELECT U.userid, U.username, COUNT(R.userid) AS ratings_count FROM users U LEFT JOIN ratings R ON U.userid = R.userid GROUP BY U.userid, U.username ORDER BY ratings_count DESC LIMIT 100;");
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$count = 0;
-		?>
+
+        $stmt = $conn->prepare("SELECT U.userid, U.username, COUNT(R.userid) AS ratings_count FROM users U LEFT JOIN ratings R ON U.userid = R.userid GROUP BY U.userid, U.username ORDER BY ratings_count DESC LIMIT 100;");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $count = 0;
+        ?>
 		
 		<div class="table-scroll">
 			<table style="width:100%;">
@@ -28,19 +28,19 @@
 					<th>Edit Count</th>
 				</tr>
 			
-			<?php while ($row = $result->fetch_assoc()) { 
-				$count += 1;
-				
-				$stmt = $conn->prepare("SELECT COUNT(*) as count FROM descriptor_votes WHERE UserID = ?;");
-				$stmt->bind_param("i", $row["userid"]);
-				$stmt->execute();
-				$descriptorCount = $stmt->get_result()->fetch_assoc()["count"];			
-				
-				$stmt = $conn->prepare("SELECT COUNT(*) as count FROM beatmap_edit_requests WHERE UserID = ? and Status='approved';");
-				$stmt->bind_param("i", $row["userid"]);
-				$stmt->execute();
-				$editCount = $stmt->get_result()->fetch_assoc()["count"];
-			?>
+			<?php while ($row = $result->fetch_assoc()) {
+                $count += 1;
+
+                $stmt = $conn->prepare("SELECT COUNT(*) as count FROM descriptor_votes WHERE UserID = ?;");
+                $stmt->bind_param("i", $row["userid"]);
+                $stmt->execute();
+                $descriptorCount = $stmt->get_result()->fetch_assoc()["count"];
+
+                $stmt = $conn->prepare("SELECT COUNT(*) as count FROM beatmap_edit_requests WHERE UserID = ? and Status='approved';");
+                $stmt->bind_param("i", $row["userid"]);
+                $stmt->execute();
+                $editCount = $stmt->get_result()->fetch_assoc()["count"];
+            ?>
 				<tr class='alternating-bg'>
 					<td>#<?php echo $count; ?></td>
 					<td>
@@ -61,5 +61,5 @@
 		</table>
 	</div>
 <?php
-	require("../footer.php");
+    require("../footer.php");
 ?>

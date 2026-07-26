@@ -9,14 +9,17 @@
     $stmt->execute();
     $proposal = $stmt->get_result()->fetch_assoc();
 
-    if (is_null($proposal))
+    if (is_null($proposal)) {
         die("Proposal not found");
+    }
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die("You need to be logged in");
+    }
 
-    if ($proposal["ProposerID"] != $userId)
+    if ($proposal["ProposerID"] != $userId) {
         die("This is not your proposal!");
+    }
 
 ?>
 
@@ -90,8 +93,12 @@
                 </td>
                 <td>
                     <select name="Usable">
-                        <option value="1" <?php if ($proposal["Usable"] === 1) echo "selected"; ?> >True</option>
-                        <option value="0" <?php if ($proposal["Usable"] === 0) echo "selected"; ?> >False</option>
+                        <option value="1" <?php if ($proposal["Usable"] === 1) {
+                            echo "selected";
+                        } ?> >True</option>
+                        <option value="0" <?php if ($proposal["Usable"] === 0) {
+                            echo "selected";
+                        } ?> >False</option>
                     </select><br>
                     <span class="subText">Can this descriptor be used on beatmaps? <br> Some descriptors exist as a way to group other descriptors (such as "style").</span>
                 </td>

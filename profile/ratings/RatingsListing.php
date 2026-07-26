@@ -6,12 +6,14 @@
     $order = postOrGet('o', '1');
     $rating = postOrGet('r', '');
     $tagArgument = urldecode(postOrGet('t', ''));
-    
+
     $year = postOrGet('y', 'all-time');
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
-    if (!is_array($tokensRaw)) $tokensRaw = [];
+    if (!is_array($tokensRaw)) {
+        $tokensRaw = [];
+    }
 
     $parsedTokens = parseFilterTokens($tokensRaw);
     $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
@@ -104,20 +106,22 @@
 
 <div id="ratings-list">
     <?php
-        $paginationHTML = function() use ($page, $prevPage, $nextPage, $totalPages) { ?>
+        $paginationHTML = function () use ($page, $prevPage, $nextPage, $totalPages) { ?>
         <div style="text-align:center;">
             <div class="pagination">
                 <b><span>
                     <?php
-                        if ($page > 1)
+                        if ($page > 1) {
                             echo "<a href='javascript:changePage({$prevPage})'>&laquo; </a>";
+                        }
                     ?>
                 </span></b>
                 <span id="page"><?php echo $page; ?></span>
                 <b><span>
                     <?php
-                        if ($page < $totalPages)
+                        if ($page < $totalPages) {
                             echo "<a href='javascript:changePage({$nextPage})'>&raquo; </a>";
+                        }
                     ?>
                 </span></b>
             </div>

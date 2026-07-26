@@ -2,7 +2,7 @@
 
 $envFromFile = parse_ini_file(__DIR__ . '/.env');
 if (!is_array($envFromFile)) {
-	die('Failed to parse .env');
+    die('Failed to parse .env');
 }
 
 $env = array_merge($envFromFile, $_ENV);

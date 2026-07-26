@@ -12,8 +12,9 @@
     $post = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($post))
+    if (is_null($post)) {
         die("News post not found");
+    }
 
     $PageTitle = $post["Title"];
     require "../header.php";
@@ -65,7 +66,9 @@
 
             <i
                 id="news-heart-<?php echo $newsId; ?>"
-                class="icon-heart<?php if (!$userHasLikedNews) echo "-empty"; ?> news-heart"
+                class="icon-heart<?php if (!$userHasLikedNews) {
+                    echo "-empty";
+                } ?> news-heart"
                 data-news-id="<?php echo $newsId; ?>"
             ></i>
             <?php if ($heartedUsernamesString) { ?>
@@ -131,10 +134,14 @@
             }
             ?>
             <div class="flex-container flex-child commentHeader">
-                <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
+                <div class="flex-child <?php if ($is_blocked) {
+                    echo "faded";
+                } ?>" style="height:24px;width:24px;">
                     <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                 </div>
-                <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                <div class="flex-child <?php if ($is_blocked) {
+                    echo "faded";
+                } ?>">
                     <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                 </div>
                 <div class="flex-child" style="margin-left:auto;">
@@ -150,10 +157,12 @@
             </div>
             <div class="flex-child comment" style="min-width:0;overflow: hidden;">
                 <?php
-                if (!$is_blocked)
+                if (!$is_blocked) {
                     echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
-                else
+                }
+                else {
                     echo "<p>[blocked comment]</p>";
+                }
                 ?>
             </div>
             <?php

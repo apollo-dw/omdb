@@ -4,18 +4,18 @@
     $reviewId = $_POST['rID'] ?? -1;
 
     if ($reviewId == -1) {
-        die ("NO");
+        die("NO");
     }
     if (!$loggedIn) {
-        die ("NO");
+        die("NO");
     }
 
     $stmt = $conn->prepare("SELECT ReviewID FROM `reviews` WHERE `ReviewID`= ?;");
     $stmt->bind_param("i", $reviewId);
     $stmt->execute();
 
-    if(is_null($stmt->get_result()->fetch_assoc())){
-        die ("NO");
+    if (is_null($stmt->get_result()->fetch_assoc())) {
+        die("NO");
     }
 
     $stmt->close();
@@ -45,4 +45,3 @@
     }
 
     $stmtCheckHeart->close();
-

@@ -11,8 +11,7 @@ This is public domain software.  Please see LICENSE for more details.
 
  ******************************************************************************/
 
-class BBCode
-{
+class BBCode {
     // Tag aliases.  Item on left translates to item on right.
     const TAG_ALIAS = [
         'code' => 'pre',
@@ -24,8 +23,7 @@ class BBCode
     // helper function: normalize a potential "tag"
     //  convert to lowercase and check against the alias list
     //  returns a named array with details about the tag
-    static private function decode_tag($input) : array
-    {
+    static private function decode_tag($input) : array {
         // first determine if it's opening on closing tag, then substr out the inner portion
         if ($input[1] === '/') {
             $open = 0;
@@ -37,7 +35,7 @@ class BBCode
 
         // oneliner to burst inner by spaces, then burst each of those by equals signs
         $params = array_map(
-            function($a) { return explode('=', $a, 2); },
+            function ($a) { return explode('=', $a, 2); },
             explode(' ', $inner));
 
         // first "param" is special - it's the tag name and (optionally) the default arg
@@ -51,7 +49,7 @@ class BBCode
 
         // "default" (unnamed) argument
         $args = null;
-        if (isset ($first[1])) {
+        if (isset($first[1])) {
             $args['default'] = $first[1];
         }
 
@@ -63,22 +61,20 @@ class BBCode
             $args[$k] = $v;
         }
 
-        return [ 'name' => $name, 'open' => $open, 'args' => $args ];
+        return ['name' => $name, 'open' => $open, 'args' => $args];
     }
 
     // helper function: normalize HTML entities, with newline handling
-    static private function encode($input) : string
-    {
+    static private function encode($input) : string {
         // break substring into individual unicode chars
         $characters = preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY);
 
         // append each one-at-a-time to create output
         $lf = 0;
         $output = '';
-        foreach ($characters as &$ch)
-        {
+        foreach ($characters as &$ch) {
             if ($ch === "\n") {
-                $lf ++;
+                $lf++;
             } elseif ($ch === "\r") {
                 continue;
             } else {
@@ -115,8 +111,7 @@ class BBCode
     }
 
     // Renders a BBCode string to HTML, for inclusion into a document.
-    static public function bbcode_to_html($input) : string
-    {
+    static public function bbcode_to_html($input) : string {
         // split input string into array using regex, UTF-8 aware
         //  this should give us tokens to work with
 
@@ -126,7 +121,7 @@ class BBCode
         // Square brackets are technically allowed, but excluded here, because they interfere.
         $match_count = preg_match_all("/\[[A-Za-z0-9 \-._~:\/?#@!$&'()*+,;=%]+\]/u",
             $input, $matches, PREG_OFFSET_CAPTURE);
-        if ($match_count === FALSE) {
+        if ($match_count === false) {
             throw new RuntimeException('Fatal error in preg_match_all for BBCode tags');
         }
 
@@ -135,8 +130,7 @@ class BBCode
         $input_ptr = 0;
 
         $stack = [];
-        for ($match_idx = 0; $match_idx < $match_count; $match_idx ++)
-        {
+        for ($match_idx = 0; $match_idx < $match_count; $match_idx++) {
             list($match, $offset) = $matches[0][$match_idx];
 
             // pick up chars between tags and HTML-encode them
@@ -147,11 +141,11 @@ class BBCode
             // decode the tag
             list('name' => $name, 'open' => $open, 'args' => $args) = self::decode_tag($match);
 
-            if (! $open) {
+            if (!$open) {
                 // CLOSING TAG
 
                 // Search the tag stack and see if the opening tag was pushed into it
-                if (array_search($name, $stack, TRUE) === FALSE) {
+                if (array_search($name, $stack, true) === false) {
                     // Attempted to close a tag that was not on the stack!
                     $output = $output . self::encode($match);
                 } else {
@@ -174,8 +168,8 @@ class BBCode
                     $output = $output . '<' . $name . '>';
                 } elseif ($name === 'li') {
                     // Disallow [li] outside of [ol] or [ul]
-                    if (array_search('ol', $stack, TRUE) !== FALSE ||
-                        array_search('ul', $stack, TRUE) !== FALSE) {
+                    if (array_search('ol', $stack, true) !== false ||
+                        array_search('ul', $stack, true) !== false) {
                         $stack[] = 'li';
                         $output .= '<li>';
                     } else {
@@ -183,7 +177,7 @@ class BBCode
                     }
                 } elseif ($name === 'tr') {
                     // Disallow [tr] outside of [table]
-                    if (array_search('table', $stack, TRUE) !== FALSE) {
+                    if (array_search('table', $stack, true) !== false) {
                         $stack[] = 'tr';
                         $output .= '<tr>';
                     } else {
@@ -191,9 +185,9 @@ class BBCode
                     }
                 } elseif ($name === 'td' || $name === 'th') {
                     // Disallow [th] / [td] outside of [tr] outside of [table]
-                    $tr_index = array_search('tr', $stack, TRUE);
-                    $table_index = array_search('table', $stack, TRUE);
-                    if ($tr_index !== FALSE && $table_index !== FALSE && $table_index < $tr_index) {
+                    $tr_index = array_search('tr', $stack, true);
+                    $table_index = array_search('table', $stack, true);
+                    if ($tr_index !== false && $table_index !== false && $table_index < $tr_index) {
                         $stack[] = $name;
                         $output = $output . '<' . $name . '>';
                     } else {
@@ -212,12 +206,12 @@ class BBCode
                     }
 //TODO: handle bad settings
 
-                    if (! empty($font_param)) {
+                    if (!empty($font_param)) {
                         $stack[] = 'font';
 
                         // append all css_style params
                         $css_style = [];
-                        foreach ($font_param as $name=>$value) {
+                        foreach ($font_param as $name => $value) {
                             $css_style[] = $name . ': ' . $value;
                         }
                         $output = $output . '<span style="' . implode(';', $css_style) . '">';
@@ -230,11 +224,12 @@ class BBCode
                 } elseif ($name === 'pre') {
                     // [pre] / [code] put us into RAW mode, where nothing is parsed except [/code]
 
-                    for ($i = $match_idx + 1; $i < $match_count; $i ++)
-                    {
+                    for ($i = $match_idx + 1; $i < $match_count; $i++) {
                         list($search_match, $search_offset) = $matches[0][$i];
                         $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'pre') { break; }
+                        if (!$search_tag['open'] && $search_tag['name'] === 'pre') {
+                            break;
+                        }
                     }
 
                     if ($i < $match_count) {
@@ -256,9 +251,9 @@ class BBCode
                     $buffer = null;
                     $i = $match_idx + 1;
                     if ($i < $match_count) {
-                        list($search_match, $search_offset)  = $matches[0][$i];
+                        list($search_match, $search_offset) = $matches[0][$i];
                         $search_tag = self::decode_tag($search_match);
-                        if (! $search_tag['open'] && $search_tag['name'] === 'img') {
+                        if (!$search_tag['open'] && $search_tag['name'] === 'img') {
                             $buffer = substr($input, $input_ptr, $search_offset - $input_ptr);
                         }
                     }
@@ -268,11 +263,11 @@ class BBCode
                         // Image size adjustment - accepts width and height
                         $img_param = [];
 
-                        if (isset ($args['width'])) {
+                        if (isset($args['width'])) {
                             //TODO: size validation
                             $img_param['width'] = $args['width'];
                         }
-                        if (isset ($args['height'])) {
+                        if (isset($args['height'])) {
                             //TODO: size validation
                             $img_param['height'] = $args['height'];
                         }
@@ -283,7 +278,7 @@ class BBCode
                             ? safe_htmlspecialchars($buffer, ENT_QUOTES)
                             : '';
                         $output = $output . '<img style="max-height:300px;max-width:stretch;" src="' . $src . '"';
-                        foreach ($img_param as $name=>$value) {
+                        foreach ($img_param as $name => $value) {
                             $output = $output . ' ' . $name . '="' . safe_htmlspecialchars($value, ENT_QUOTES) . '"';
                         }
                         $output .= '>';
@@ -310,8 +305,7 @@ class BBCode
         $output .= self::encode(substr($input, $input_ptr));
 
         // Close any remaining stray tags left on the stack
-        while ($stack)
-        {
+        while ($stack) {
             $tag = array_pop($stack);
             $output = $output . '</' . $tag . '>';
         }
@@ -320,7 +314,6 @@ class BBCode
     }
 }
 
-function bbcode_to_html($input) : string
-{
+function bbcode_to_html($input) : string {
     return BBCode::bbcode_to_html($input);
 }

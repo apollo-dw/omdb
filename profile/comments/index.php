@@ -4,8 +4,8 @@
     require "../../base.php";
     require '../../header.php';
 
-	$profileId = GetIntParam('id', null, "Invalid page bro");
-	$page = GetIntParam('p', 1, "Invalid page bro");
+    $profileId = GetIntParam('id', null, "Invalid page bro");
+    $page = GetIntParam('p', 1, "Invalid page bro");
 
     $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
     $stmt->bind_param("i", $profileId);
@@ -15,22 +15,23 @@
     $stmt->close();
     $isUser = true;
 
-    if ($profile == NULL)
+    if ($profile == null) {
         die("Can't view this bros friends cuz they aint an OMDB user");
+    }
 
-	$limit = 25;
-	$prevPage = $page - 1;
-	$nextPage = $page + 1;
-	$stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
-	$stmt->bind_param("i", $profileId);
-	$stmt->execute();
-	$stmt->bind_result($count);
-	$stmt->fetch();
-	$stmt->close();
+    $limit = 25;
+    $prevPage = $page - 1;
+    $nextPage = $page + 1;
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM `comments` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
 
-	$amntOfPages = floor($count / $limit) + 1;
+    $amntOfPages = floor($count / $limit) + 1;
 
-	RenderCustomThemeCss($profile);
+    RenderCustomThemeCss($profile);
 ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s comments</h1></center>
 
@@ -38,33 +39,37 @@
 
 <div style="text-align:center;">
 	<div class="pagination">
-	  <b><span><?php if($page > 1) { echo "<a href='?id={$profileId}&p={$prevPage}'>&laquo; </a>"; } ?></span></b>
+	  <b><span><?php if ($page > 1) {
+          echo "<a href='?id={$profileId}&p={$prevPage}'>&laquo; </a>";
+      } ?></span></b>
 	  <span id="page"><?php echo $page; ?></span>
-	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id={$profileId}&p={$nextPage}'>&raquo; </a>"; } ?></span></b>
+	  <b><span><?php if ($page < $amntOfPages) {
+          echo "<a href='?id={$profileId}&p={$nextPage}'>&raquo; </a>";
+      } ?></span></b>
 	</div>
 </div>
 
 <div class="flex-container commentContainer" style="width:100%;">
 	<?php
-	
-		$pageString = "LIMIT {$limit}";
-				
-		if ($page > 1){
-			$lower = ($page - 1) * $limit;
-			$pageString = "LIMIT ${lower}, {$limit}";
-		}
-				
-		$stmt = $conn->prepare("SELECT * FROM `comments` WHERE `UserID`=? ORDER BY date DESC {$pageString}");
-		$stmt->bind_param("s", $profileId);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		if ($result->num_rows != 0) {
-			while ($row = $result->fetch_assoc()) {
+
+        $pageString = "LIMIT {$limit}";
+
+        if ($page > 1) {
+            $lower = ($page - 1) * $limit;
+            $pageString = "LIMIT ${lower}, {$limit}";
+        }
+
+        $stmt = $conn->prepare("SELECT * FROM `comments` WHERE `UserID`=? ORDER BY date DESC {$pageString}");
+        $stmt->bind_param("s", $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows != 0) {
+            while ($row = $result->fetch_assoc()) {
                 $stmt = $conn->prepare("SELECT * FROM `beatmapsets` WHERE `SetID` = ?");
                 $stmt->bind_param("i", $row["SetID"]);
                 $stmt->execute();
                 $beatmap = $stmt->get_result()->fetch_assoc();
-				?>
+                ?>
 				<div class="flex-container flex-child commentHeader">
 					<div class="flex-child" style="height:24px;width:24px;">
 						<a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
@@ -83,20 +88,24 @@
 					<p><?php echo ParseCommentLinks($conn, $row["Comment"]); ?></p>
 				</div>
 				<?php
-			}
-		}
-	?>
+            }
+        }
+    ?>
 </div>
 
 <div style="text-align:center;">
 	<div class="pagination">
-	  <b><span><?php if($page > 1) { echo "<a href='?id=${profileId}&p=${prevPage}'>&laquo; </a>"; } ?></span></b>
+	  <b><span><?php if ($page > 1) {
+          echo "<a href='?id=${profileId}&p=${prevPage}'>&laquo; </a>";
+      } ?></span></b>
 	  <span id="page"><?php echo $page; ?></span>
-	  <b><span><?php if($page < $amntOfPages) { echo "<a href='?id=${profileId}&p=${nextPage}'>&raquo; </a>"; } ?></span></b>
+	  <b><span><?php if ($page < $amntOfPages) {
+          echo "<a href='?id=${profileId}&p=${nextPage}'>&raquo; </a>";
+      } ?></span></b>
 	</div>
 </div>
 
 
 <?php
-	require '../../footer.php';
+    require '../../footer.php';
 ?>

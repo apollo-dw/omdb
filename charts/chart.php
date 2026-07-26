@@ -8,7 +8,9 @@
     $order = (int)(postOrGet('o', 1));
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
-    if (!is_array($tokensRaw)) $tokensRaw = [];
+    if (!is_array($tokensRaw)) {
+        $tokensRaw = [];
+    }
 
     $parsedTokens = parseFilterTokens($tokensRaw);
     $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
@@ -24,13 +26,13 @@
         $pageString = ($page > 1) ? "LIMIT {$offset}, {$lim}" : "LIMIT {$lim}";
         $orderString = ($order == 2) ? "ASC" : "DESC";
 
-        $baseTypes = "i"; 
+        $baseTypes = "i";
         $baseParams = [$userId];
 
         $statsTypes = "";
         $statsParams = [];
 
-        $whereTypes = "i"; 
+        $whereTypes = "i";
         $whereParams = [$mode];
 
         $sqlFilters = [];
@@ -47,8 +49,12 @@
             $whereParams = array_merge($whereParams, $filter['values']);
         }
 
-        if ($ratedStatus === 'exclude') $sqlFilters[] = "r_user.Score IS NULL";
-        if ($ratedStatus === 'only')    $sqlFilters[] = "r_user.Score IS NOT NULL";
+        if ($ratedStatus === 'exclude') {
+            $sqlFilters[] = "r_user.Score IS NULL";
+        }
+        if ($ratedStatus === 'only') {
+            $sqlFilters[] = "r_user.Score IS NOT NULL";
+        }
 
         $statsJoin = "";
         $priorJoin = "";

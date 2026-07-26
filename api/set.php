@@ -27,7 +27,7 @@
     $nominatorResult = $stmt->get_result();
 
     $nominators = [];
-    while($nominator = $nominatorResult->fetch_assoc()) {
+    while ($nominator = $nominatorResult->fetch_assoc()) {
         $nominators[] = array(
             "UserID" => $nominator["UserID"],
             "Username" => $nominator["Username"]
@@ -52,7 +52,7 @@
         $stmt2->close();
 
         $rating = $ratingResult ? $ratingResult["Score"] : null;
-        
+
         $stmt3 = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
         $stmt3->bind_param("i", $beatmapID);
         $stmt3->execute();
@@ -102,4 +102,3 @@
             "Difficulties" => $difficulties
         ));
     }
-?>

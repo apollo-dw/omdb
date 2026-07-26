@@ -18,7 +18,7 @@
         $stmt->bind_param("i", $descriptorId);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($descriptor = $result->fetch_assoc()) {
             $name = htmlspecialchars($descriptor['Name']);
             $shortDescription = htmlspecialchars($descriptor['ShortDescription']);

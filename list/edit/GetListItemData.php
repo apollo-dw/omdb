@@ -5,19 +5,22 @@
     $type = $_GET["type"];
     $id = $_GET["id"];
 
-    if (is_null($type) || is_null($id))
+    if (is_null($type) || is_null($id)) {
         die(json_encode(array("error" => "missing data")));
+    }
 
-    if (!is_numeric($id))
+    if (!is_numeric($id)) {
         die(json_encode(array("error" => "id not valid")));
+    }
 
     $response = array();
 
-    switch ($type){
+    switch ($type) {
         case "person":
             $username = GetUserNameFromId($id, $conn);
-            if ($username == "")
+            if ($username == "") {
                 die(json_encode(array("error" => "user not found")));
+            }
 
             $response = array(
                 "imageUrl" => "https://s.ppy.sh/a/" . $id,
@@ -33,8 +36,9 @@
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
-            if ($result->num_rows != 1)
+            if ($result->num_rows != 1) {
                 die(json_encode(array("error" => "beatmap not found")));
+            }
 
             $map = $result->fetch_assoc();
             $title = "{$map["Artist"]} - {$map["Title"]} [{$map["DifficultyName"]}]";
@@ -49,8 +53,9 @@
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
-            if ($result->num_rows != 1)
+            if ($result->num_rows != 1) {
                 die(json_encode(array("error" => "set not found")));
+            }
 
             $set = $result->fetch_assoc();
             $title = "{$set["Artist"]} - {$set["Title"]}";

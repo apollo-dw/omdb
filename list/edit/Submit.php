@@ -28,8 +28,9 @@
             $stmt->execute();
             $existingList = $stmt->get_result()->fetch_assoc();
 
-            if (is_null($existingList))
+            if (is_null($existingList)) {
                 die(json_encode(array("error" => "not yours")));
+            }
 
             $stmt->close();
 

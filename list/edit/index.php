@@ -95,7 +95,7 @@
     }
 </style>
 
-<?php if($isNewList) { ?>
+<?php if ($isNewList) { ?>
     <h1>New list</h1>
 <?php } else { ?>
     <h1>Edit list</h1>
@@ -107,11 +107,13 @@
         <input autocomplete="off" name="ListTitle" id="ListTitle" value="<?php echo safe_htmlspecialchars($list["Title"] ?? "", ENT_QUOTES); ?>" required/><br><br>
         <label>Description:</label>
         <textarea name="ListDescription" id="ListDescription"><?php echo safe_htmlspecialchars($list["Description"] ?? "", ENT_QUOTES); ?></textarea> <br><br>
-        <input type="checkbox" id="ListPrivate" <?php if (!empty($list) && !empty($list["Private"])) echo "checked"; ?> />
+        <input type="checkbox" id="ListPrivate" <?php if (!empty($list) && !empty($list["Private"])) {
+            echo "checked";
+        } ?> />
         <label>Private list</label>
         <br><br>
 
-        <?php if(!$isNewList) { ?>
+        <?php if (!$isNewList) { ?>
             <h1><input type="button" value="Delete list" id="DeleteListButton"></h1>
         <?php } ?>
     </div>

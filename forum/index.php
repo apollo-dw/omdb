@@ -31,10 +31,10 @@ $stmt = $conn->query("SELECT
                         GROUP BY
                             ft.TopicID
                     ) tp ON ft.TopicID = tp.TopicID;");
-					
-	if ($userName !== "moonpoint") {
-		die("What");
-	}
+
+    if ($userName !== "moonpoint") {
+        die("What");
+    }
 ?>
 
 

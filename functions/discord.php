@@ -1,4 +1,4 @@
-<?php 
+<?php
     function sendDiscordWebhook(string $webhookURL, string $title, array $fields = [], ?string $url = null, int $color = 0x2F4F4F
     ) {
         $embed = [

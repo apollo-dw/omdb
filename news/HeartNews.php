@@ -42,4 +42,3 @@
     }
 
     $stmtCheckHeart->close();
-?>

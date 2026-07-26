@@ -25,10 +25,12 @@
     }
 
     $orderString = "date DESC";
-    if($order == "oldest")
+    if ($order == "oldest") {
         $orderString = "date ASC";
-    if($order == "rating")
+    }
+    if ($order == "rating") {
         $orderString = "score DESC";
+    }
 
 $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
     (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
@@ -50,7 +52,7 @@ $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user
 
     $pageString = "LIMIT {$lim}";
 
-    if ($page > 1){
+    if ($page > 1) {
         $lower = ($page - 1) * $lim;
         $pageString = "LIMIT {$lower}, {$lim}";
     }
@@ -60,7 +62,7 @@ $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user
     $stmt->execute();
     $result = $stmt->get_result();
 
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) {
 ?>
 <div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
     <div class="flex-child">
@@ -102,7 +104,7 @@ $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user
         $stmt->execute();
         $result = $stmt->get_result();
 
-        while($row = $result->fetch_assoc()){
+        while ($row = $result->fetch_assoc()) {
             $selectedString = $beatmap_id == $row['BeatmapID'] ? "selected" : "";
             $difficultyName = safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 40, "..."), ENT_QUOTES);
             echo "<option value='{$row['BeatmapID']}' {$selectedString}>{$difficultyName}</option>";
@@ -115,16 +117,26 @@ $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user
     Order:
 </label>
 <select name="rating-order" id="rating-order" onchange="updateRatings()">
-    <option value="newest" <?php if ($order === 'newest') echo 'selected'; ?>>Date (newest)</option>
-    <option value="oldest" <?php if ($order === 'oldest') echo 'selected'; ?>>Date (oldest)</option>
-    <option value="rating" <?php if ($order === 'rating') echo 'selected'; ?>>Highest score</option>
+    <option value="newest" <?php if ($order === 'newest') {
+        echo 'selected';
+    } ?>>Date (newest)</option>
+    <option value="oldest" <?php if ($order === 'oldest') {
+        echo 'selected';
+    } ?>>Date (oldest)</option>
+    <option value="rating" <?php if ($order === 'rating') {
+        echo 'selected';
+    } ?>>Highest score</option>
 </select>
 
 <div style="text-align:center;">
     <div class="pagination">
-        <b><span><?php if($page > 1) { echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>"; } ?></span></b>
+        <b><span><?php if ($page > 1) {
+            echo "<a href='javascript:lowerRatingPage()'>&laquo; </a>";
+        } ?></span></b>
         <span id="page"><?php echo $page; ?></span>
-        <b><span><?php if($page < $amountOfSetPages) { echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>"; } ?></span></b><br>
+        <b><span><?php if ($page < $amountOfSetPages) {
+            echo "<a href='javascript:increaseRatingPage()'>&raquo; </a>";
+        } ?></span></b><br>
     </div>
 </div>
 

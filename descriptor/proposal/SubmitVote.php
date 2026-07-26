@@ -1,8 +1,9 @@
 <?php
     require '../../base.php';
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die("NO");
+    }
 
     header('Content-Type: application/json');
 
@@ -14,8 +15,9 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die(array("error" => "NO PROPOSAL FOUND"));
+    }
 
     $checkVoteStmt = $conn->prepare("SELECT VoteID, Vote FROM descriptor_proposal_votes WHERE ProposalID = ? AND UserID = ?");
     $checkVoteStmt->bind_param("ii", $proposalID, $userId);

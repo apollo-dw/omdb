@@ -1,7 +1,7 @@
-<?php 
-	require_once 'base.php';
+<?php
+    require_once 'base.php';
 
-	$github_version = $env['GITHUB_COMMIT'] ?? '1';
+    $github_version = $env['GITHUB_COMMIT'] ?? '1';
 ?>
 
 <!DOCTYPE html>
@@ -49,30 +49,30 @@
 			</form>
 
 			<?php
-				function FetchOsuOauthLink($oauthClientID, $redirect_url = "/") {
-					if (empty($_SESSION["LOGIN_CSRF_TOKEN"])) {
-						$csrf_token = bin2hex(random_bytes(24));
-						$_SESSION["LOGIN_CSRF_TOKEN"] = $csrf_token;
-					}
-					$csrf_token = $_SESSION["LOGIN_CSRF_TOKEN"];
+                function FetchOsuOauthLink($oauthClientID, $redirect_url = "/") {
+                    if (empty($_SESSION["LOGIN_CSRF_TOKEN"])) {
+                        $csrf_token = bin2hex(random_bytes(24));
+                        $_SESSION["LOGIN_CSRF_TOKEN"] = $csrf_token;
+                    }
+                    $csrf_token = $_SESSION["LOGIN_CSRF_TOKEN"];
 
-					$state = array(
-						"csrf_token" => $csrf_token,
-						"redirect_url" => $redirect_url,
-					);
-					$state_encoded = urlencode(json_encode($state));
+                    $state = array(
+                        "csrf_token" => $csrf_token,
+                        "redirect_url" => $redirect_url,
+                    );
+                    $state_encoded = urlencode(json_encode($state));
 
-					// the creation of the local function scope in php was a disaster for humanity -t
-					$oauthFields = array(
-						"client_id" => $oauthClientID,
-						"redirect_uri" => relUrl("/callback.php"),
-						"response_type" => "code",
-						"scope" => "identify public",
-						"state" => $state_encoded,
-					);
-					return 'https://osu.ppy.sh/oauth/authorize?' . http_build_query($oauthFields);
-				}
-			?>
+                    // the creation of the local function scope in php was a disaster for humanity -t
+                    $oauthFields = array(
+                        "client_id" => $oauthClientID,
+                        "redirect_uri" => relUrl("/callback.php"),
+                        "response_type" => "code",
+                        "scope" => "identify public",
+                        "state" => $state_encoded,
+                    );
+                    return 'https://osu.ppy.sh/oauth/authorize?' . http_build_query($oauthFields);
+                }
+            ?>
 
 			<span class="topBarRight" style="margin-left:auto;display:flex;align-items:center;">
                 <div class="topBarDropDown hideOnMobile">
@@ -87,15 +87,19 @@
                 <div class="topBarDropDown">
                     <div class="topBarLink topBarDropDownButton">
                         <?php
-                            switch($mode){
+                            switch ($mode) {
                                 case 0:
-                                    echo "<div class='ruleset-icon osu'></div>"; break;
+                                    echo "<div class='ruleset-icon osu'></div>";
+                                    break;
                                 case 1:
-                                    echo "<div class='ruleset-icon taiko'></div>"; break;
+                                    echo "<div class='ruleset-icon taiko'></div>";
+                                    break;
                                 case 2:
-                                    echo "<div class='ruleset-icon catch'></div>"; break;
+                                    echo "<div class='ruleset-icon catch'></div>";
+                                    break;
                                 case 3:
-                                    echo "<div class='ruleset-icon mania'></div>"; break;
+                                    echo "<div class='ruleset-icon mania'></div>";
+                                    break;
                             }
                         ?>
                     </div>
@@ -107,20 +111,22 @@
                     </div>
 			    </div>
 				<?php
-					if ($loggedIn) {
-				?>
+                    if ($loggedIn) {
+                ?>
                         <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
-                        <a href="/patron/" class="topBarIconLink" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i></b></a>
+                        <a href="/patron/" class="topBarIconLink" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) {
+                            echo "-empty";
+                        } ?>"></i></b></a>
                         <a href="/settings/" class="topBarIconLink hideOnMobile" style="margin:0 1em;"><b><i class="icon-cogs"></i></b></a>
                         <a href="/profile/<?php echo $userId; ?>" class="topBarAvatarLink" style="color:white;"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $userId; ?>" style="height:2rem;vertical-align:middle;">&ZeroWidthSpace;</img></a>
                         <a class="topBarUsername hideOnMobile" href="/profile/<?php echo $userId; ?>" style="color: var(--main-theme-text-color);"><b><?php echo $userName; ?></b></a>
 				<?php
-					} else {
-				?>
+                    } else {
+                ?>
 					<b style="margin-left:1em"><a href=<?php echo FetchOsuOauthLink($env['OSU_CLIENT_ID'], $_SERVER["REQUEST_URI"]); ?>>log in</a></b>
 				<?php
-					}
-				?>
+                    }
+                ?>
 			</span>
 
 			<div class="mobileMenuPanel">
@@ -149,7 +155,9 @@
 					<a href="/dashboard/"><div class="topBarLink">dashboard</div></a>
 					<hr class="mobileMenuDivider">
 					<a href="/profile/<?php echo $userId; ?>"><div class="topBarLink"><i class="icon-user"></i> <?php echo $userName; ?></div></a>
-					<a href="/patron/"><div class="topBarLink"><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) { echo "-empty"; } ?>"></i> patron</div></a>
+					<a href="/patron/"><div class="topBarLink"><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) {
+                        echo "-empty";
+                    } ?>"></i> patron</div></a>
 					<a href="/settings/"><div class="topBarLink"><i class="icon-cogs"></i> settings</div></a>
 				<?php } ?>
 			</div>

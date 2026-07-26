@@ -1,8 +1,9 @@
 <?php
     require '../../base.php';
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die("NO");
+    }
 
     header('Content-Type: application/json');
 
@@ -15,16 +16,18 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die(array("error" => "NO BEATMAP FOUND"));
+    }
 
     $stmt = $conn->prepare("SELECT * FROM descriptors WHERE DescriptorID = ?;");
     $stmt->bind_param('i', $descriptorID);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die(array("error" => "NO DESCRIPTOR FOUND"));
+    }
 
     $checkVoteStmt = $conn->prepare("SELECT VoteID, Vote FROM descriptor_votes WHERE BeatmapID = ? AND UserID = ? AND DescriptorID = ?");
     $checkVoteStmt->bind_param("iii", $beatmapID, $userId, $descriptorID);
@@ -55,39 +58,40 @@
     $stmt->execute();
     $result = $stmt->get_result();
     $voteData = $result->fetch_assoc();
-	
-	$upvotes = (int)$voteData['upvotes'];
-	$downvotes = (int)$voteData['downvotes'];
-	$net = $upvotes - $downvotes;
 
-	if ($net > 0) {
-		$stmt = $conn->prepare("
+    $upvotes = (int)$voteData['upvotes'];
+    $downvotes = (int)$voteData['downvotes'];
+    $net = $upvotes - $downvotes;
+
+    if ($net > 0) {
+        $stmt = $conn->prepare("
 			INSERT INTO beatmap_descriptors (BeatmapID, DescriptorID, Weight)
 			VALUES (?, ?, ?)
 			ON DUPLICATE KEY UPDATE Weight = VALUES(Weight)
 		");
 
-		$stmt->bind_param('iid', $beatmapID, $descriptorID, $net);
-		$stmt->execute();
+        $stmt->bind_param('iid', $beatmapID, $descriptorID, $net);
+        $stmt->execute();
 
-	} else {
-		$stmt = $conn->prepare("
+    } else {
+        $stmt = $conn->prepare("
 			DELETE FROM beatmap_descriptors
 			WHERE BeatmapID = ? AND DescriptorID = ?
 		");
 
-		$stmt->bind_param('ii', $beatmapID, $descriptorID);
-		$stmt->execute();
-	}
+        $stmt->bind_param('ii', $beatmapID, $descriptorID);
+        $stmt->execute();
+    }
 
-    $stmt = $conn->prepare( "SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 1;");
+    $stmt = $conn->prepare("SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 1;");
     $stmt->bind_param('ii', $beatmapID, $descriptorID);
     $stmt->execute();
     $result = $stmt->get_result();
 
     $upvoteUsernames = array();
-    while ($row = $result->fetch_assoc())
+    while ($row = $result->fetch_assoc()) {
         $upvoteUsernames[] = $row['Username'];
+    }
 
     $stmt = $conn->prepare("SELECT users.Username FROM descriptor_votes INNER JOIN users ON descriptor_votes.UserID = users.UserID WHERE descriptor_votes.BeatmapID = ? AND descriptor_votes.DescriptorID = ? AND descriptor_votes.Vote = 0;");
     $stmt->bind_param('ii', $beatmapID, $descriptorID);
@@ -95,8 +99,9 @@
     $result = $stmt->get_result();
 
     $downvoteUsernames = array();
-    while ($row = $result->fetch_assoc())
+    while ($row = $result->fetch_assoc()) {
         $downvoteUsernames[] = $row['Username'];
+    }
 
     $response = array(
         'upvotes' => $voteData['upvotes'],

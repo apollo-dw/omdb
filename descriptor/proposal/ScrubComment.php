@@ -47,5 +47,3 @@
     $stmt->bind_param("ii", $commentId, $proposalID);
     $stmt->execute();
     $stmt->close();
-
-?>

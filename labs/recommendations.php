@@ -14,10 +14,12 @@
         $setId = (int)$body['setId'];
         $overrides = [];
 
-        if (!empty($body['weights']) && is_array($body['weights']))
+        if (!empty($body['weights']) && is_array($body['weights'])) {
             $overrides['weights'] = array_map('floatval', $body['weights']);
-        if (!empty($body['settings']) && is_array($body['settings']))
+        }
+        if (!empty($body['settings']) && is_array($body['settings'])) {
             $overrides['settings'] = array_map('floatval', $body['settings']);
+        }
 
         $seed = null;
         $similarMaps = GetSimilarBeatmaps($conn, $setId, 8, $seed, null, $overrides, false);
@@ -116,15 +118,15 @@
                 <?php
                 $settingMeta = [
                     "proximityMonths" => ["min" => 1,    "max" => 120, "step" => 1],
-                    "maxScoreShare"   => ["min" => 0,    "max" => 1,   "step" => 0.01],
-                    "maxScoreFloor"   => ["min" => 0,    "max" => 500, "step" => 5],
-                    "liftShrink"      => ["min" => 0,    "max" => 50,  "step" => 1],
-                    "coverageFade"    => ["min" => 1,    "max" => 500, "step" => 5],
-                    "coverageCurve"   => ["min" => 0.5,  "max" => 5,   "step" => 0.5],
-                    "corrShrink"      => ["min" => 0,    "max" => 50,  "step" => 1],
-                    "minRaters"       => ["min" => 1,    "max" => 50,  "step" => 1],
-                    "minCorrelation"  => ["min" => -1,   "max" => 1,   "step" => 0.05],
-                    "srWindow"        => ["min" => 0.05, "max" => 3,   "step" => 0.05],
+                    "maxScoreShare" => ["min" => 0,    "max" => 1,   "step" => 0.01],
+                    "maxScoreFloor" => ["min" => 0,    "max" => 500, "step" => 5],
+                    "liftShrink" => ["min" => 0,    "max" => 50,  "step" => 1],
+                    "coverageFade" => ["min" => 1,    "max" => 500, "step" => 5],
+                    "coverageCurve" => ["min" => 0.5,  "max" => 5,   "step" => 0.5],
+                    "corrShrink" => ["min" => 0,    "max" => 50,  "step" => 1],
+                    "minRaters" => ["min" => 1,    "max" => 50,  "step" => 1],
+                    "minCorrelation" => ["min" => -1,   "max" => 1,   "step" => 0.05],
+                    "srWindow" => ["min" => 0.05, "max" => 3,   "step" => 0.05],
                 ];
                 foreach ($settings as $key => $default):
                     $meta = $settingMeta[$key];

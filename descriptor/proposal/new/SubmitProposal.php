@@ -12,15 +12,15 @@
     $parentID = $_POST["ParentDescriptorID"];
     $usable = $_POST["Usable"];
     $entryComment = trim($_POST["EntryComment"] ?? "");
-    
+
     $descriptorIdTarget = isset($_POST["DescriptorID"]) && $_POST["DescriptorID"] !== "" ? intval($_POST["DescriptorID"]) : null;
     $type = !is_null($descriptorIdTarget) ? "modify" : "new";
 
-    if (strlen($entryComment ?? "") < 3){
+    if (strlen($entryComment ?? "") < 3) {
         die("comment too short");
     }
 
-    if ($parentID === ""){
+    if ($parentID === "") {
         $parentID = null;
     }
 

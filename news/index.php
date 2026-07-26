@@ -72,7 +72,9 @@
 
                     <i
                         id="news-heart-<?php echo $newsId; ?>"
-                        class="icon-heart<?php if (!$userHasLikedNews) echo "-empty"; ?> news-heart"
+                        class="icon-heart<?php if (!$userHasLikedNews) {
+                            echo "-empty";
+                        } ?> news-heart"
                         style="font-size: 13px;"
                         data-news-id="<?php echo $newsId; ?>"
                     ></i>
@@ -100,7 +102,7 @@
         </span>
         <hr>
         <div style="line-height:1.6;word-break:break-word;">
-            <?php 
+            <?php
                 $previewText = mb_strimwidth($post["Content"], 0, 200, "…");
                 echo nl2br(safe_htmlspecialchars($previewText, ENT_QUOTES));
             ?><br><a href="post.php?id=<?php echo $newsId; ?>">See full post →</a>

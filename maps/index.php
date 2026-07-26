@@ -1,27 +1,29 @@
 <?php
-	$PageTitle = "Maps";
-	require "../base.php";
-	require '../header.php';
-	
-	$month = GetIntParam('m', (int)date("m"));
-	$year = GetIntParam('y', (int)date("Y"));
-	$page = GetIntParam('p', 1);
+    $PageTitle = "Maps";
+    require "../base.php";
+    require '../header.php';
+
+    $month = GetIntParam('m', (int)date("m"));
+    $year = GetIntParam('y', (int)date("Y"));
+    $page = GetIntParam('p', 1);
 
     $minMonth = 1;
     $maxMonth = 12;
 
     // In 2007, ranked maps started in October.
-    if ($year == 2007)
+    if ($year == 2007) {
         $minMonth = 10;
+    }
 
     // In the current year, they should show up until the latest month only.
-    if ($year == date("Y"))
+    if ($year == date("Y")) {
         $maxMonth = date("m");
+    }
 
     // Clamp month value.
     $month = max($minMonth, min($maxMonth, $month));
-	
-	$limit = 20;
+
+    $limit = 20;
     $stmt = $conn->prepare("SELECT COUNT(DISTINCT s.SetID) FROM `beatmapsets` s LEFT JOIN beatmaps b ON s.SetID = b.SetID WHERE MONTH(DateRanked) = ? AND YEAR(DateRanked) = ? AND EXISTS (
                                     SELECT 1
                                     FROM `beatmaps` bm
@@ -32,11 +34,12 @@
     $stmt->bind_result($count);
     $stmt->fetch();
     $stmt->close();
-    $amntOfPages = floor($count / $limit) + 1;    $prevPage = max($page - 1, 1);
+    $amntOfPages = floor($count / $limit) + 1;
+    $prevPage = max($page - 1, 1);
     $nextPage = min($page + 1, $amntOfPages);
-	
-	$year = safe_htmlspecialchars($year, ENT_QUOTES, 'UTF-8');
-	$month = safe_htmlspecialchars($month, ENT_QUOTES, 'UTF-8');
+
+    $year = safe_htmlspecialchars($year, ENT_QUOTES, 'UTF-8');
+    $month = safe_htmlspecialchars($month, ENT_QUOTES, 'UTF-8');
 ?>
 
 <h1>Map List - <?php echo DateTime::createFromFormat('!m', $month)->format('F') . " " . $year; ?></h1>
@@ -69,19 +72,21 @@
     <div class="pagination">
         <a href="<?php echo "?m={$month}&y={$year}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
         <?php for ($i = 1; $i <= $amntOfPages; $i++) { ?>
-            <a href="<?php echo "?m={$month}&y={$year}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+            <a href="<?php echo "?m={$month}&y={$year}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
+                echo 'active';
+            } ?>"><?php echo $i ?></span></a>
         <?php } ?>
         <a href="<?php echo "?m={$month}&y={$year}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
     </div>
 </div>
 
 <?php
-	$pageString = "LIMIT {$limit}";
-			
-	if ($page > 1){
-		$lower = ($page - 1) * $limit;
-		$pageString = "LIMIT {$lower}, {$limit}";
-	}
+    $pageString = "LIMIT {$limit}";
+
+    if ($page > 1) {
+        $lower = ($page - 1) * $limit;
+        $pageString = "LIMIT {$lower}, {$limit}";
+    }
 
     $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, s.CreatorID as SetCreatorID, s.DateRanked,
                                     COUNT(DISTINCT r.BeatmapID) as RatedMapCount,
@@ -102,14 +107,16 @@
     $stmt->bind_param("iiii", $userId, $month, $year, $mode);
     $stmt->execute();
     $result = $stmt->get_result();
-    while($row = $result->fetch_assoc()) {
-			$mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
+    while ($row = $result->fetch_assoc()) {
+            $mapperName = GetUserNameFromId($row["SetCreatorID"], $conn);
 
             $userRatedState = 0;
-            if ($row["RatedMapCount"] == $row["MapCount"])
+            if ($row["RatedMapCount"] == $row["MapCount"]) {
                 $userRatedState = 2;
-            elseif ($row["RatedMapCount"] > 0)
+            }
+            elseif ($row["RatedMapCount"] > 0) {
                 $userRatedState = 1;
+            }
 ?>
 <div class="flex-container ratingContainer mapList alternating-bg">
 	<div class="flex-child" style="flex: 0 0 8%;">
@@ -145,19 +152,21 @@
     </div>
 </div>
 <?php
-		}
+        }
 ?>
 
 <div style="text-align:left;">
     <div class="pagination">
         <a href="<?php echo "?m={$month}&y={$year}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
         <?php for ($i = 1; $i <= $amntOfPages; $i++) { ?>
-            <a href="<?php echo "?m={$month}&y={$year}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+            <a href="<?php echo "?m={$month}&y={$year}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
+                echo 'active';
+            } ?>"><?php echo $i ?></span></a>
         <?php } ?>
         <a href="<?php echo "?m={$month}&y={$year}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
     </div>
 </div>
 
 <?php
-	require '../footer.php';
+    require '../footer.php';
 ?>

@@ -15,4 +15,3 @@
     } else {
         echo json_encode(array("error" => "rating not submitted"));
     }
-?>

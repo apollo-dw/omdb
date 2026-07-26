@@ -1,297 +1,301 @@
 <?php
-	include_once 'env.php';
-	include_once 'functions/shortlinks.php';
-	include_once 'functions/bbcode.php';
-	include_once 'functions/access.php';
-	include_once 'functions/customthemes.php';
-	include_once 'functions/discord.php';
-	include_once 'functions/recommendations/index.php';
-	include_once 'functions/filter/helpers.php';
+    include_once 'env.php';
+    include_once 'functions/shortlinks.php';
+    include_once 'functions/bbcode.php';
+    include_once 'functions/access.php';
+    include_once 'functions/customthemes.php';
+    include_once 'functions/discord.php';
+    include_once 'functions/recommendations/index.php';
+    include_once 'functions/filter/helpers.php';
 
-	$BOLDED_MAP_CHART_RANK_BOUNDARY = 500;
+    $BOLDED_MAP_CHART_RANK_BOUNDARY = 500;
 
-	/**
-	 * Sends a redirect header pointed to the given relative location (using the
-	 * environment variable PUBLIC_URL to determine the host), and exits.
-	 */
-	function siteRedirect(string $path = "/") {
-		header("Location: " . relUrl($path));
-		exit();
-	}
+    /**
+     * Sends a redirect header pointed to the given relative location (using the
+     * environment variable PUBLIC_URL to determine the host), and exits.
+     */
+    function siteRedirect(string $path = "/") {
+        header("Location: " . relUrl($path));
+        exit();
+    }
 
-	/**
-	 * Will try to parse the browser and OS
-	 * from a given user agent string
-	 * usually from HTTP_USER_AGENT
-	 * Returns `Browser on OS` in string
-	*/
-	function parseUserAgent(string $ua): string {
-		$browser = "Unknown Browser";
-		$os      = "Unknown OS";
+    /**
+     * Will try to parse the browser and OS
+     * from a given user agent string
+     * usually from HTTP_USER_AGENT
+     * Returns `Browser on OS` in string
+    */
+    function parseUserAgent(string $ua): string {
+        $browser = "Unknown Browser";
+        $os = "Unknown OS";
 
-		if (preg_match("/Windows NT ([\d.]+)/i", $ua, $m)) {
-			$versions = [
-				"10.0" => "Windows 10/11",
-				"6.3"  => "Windows 8.1",
-				"6.2"  => "Windows 8",
-				"6.1"  => "Windows 7",
-			];
-			$os = $versions[$m[1]] ?? "Windows";
-		} elseif (preg_match("/Mac OS X ([\d_]+)/i", $ua, $m)) {
-			$os = "macOS " . str_replace("_", ".", $m[1]);
-		} elseif (preg_match("/Android ([\d.]+)/i", $ua, $m)) {
-			$os = "Android " . $m[1];
-		} elseif (preg_match("/(?:iPhone|iPad).*OS ([\d_]+)/i", $ua, $m)) {
-			$os = "iOS " . str_replace("_", ".", $m[1]);
-		} elseif (preg_match("/Linux/i", $ua)) {
-			$os = "Linux";
-		}
+        if (preg_match("/Windows NT ([\d.]+)/i", $ua, $m)) {
+            $versions = [
+                "10.0" => "Windows 10/11",
+                "6.3" => "Windows 8.1",
+                "6.2" => "Windows 8",
+                "6.1" => "Windows 7",
+            ];
+            $os = $versions[$m[1]] ?? "Windows";
+        } elseif (preg_match("/Mac OS X ([\d_]+)/i", $ua, $m)) {
+            $os = "macOS " . str_replace("_", ".", $m[1]);
+        } elseif (preg_match("/Android ([\d.]+)/i", $ua, $m)) {
+            $os = "Android " . $m[1];
+        } elseif (preg_match("/(?:iPhone|iPad).*OS ([\d_]+)/i", $ua, $m)) {
+            $os = "iOS " . str_replace("_", ".", $m[1]);
+        } elseif (preg_match("/Linux/i", $ua)) {
+            $os = "Linux";
+        }
 
-		// Order matters cuz of https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent#browser_name_and_version
-		if (preg_match("/Edg\/([\d.]+)/i", $ua, $m)) {
-			$browser = "Edge " . $m[1];
-		} elseif (preg_match("/OPR\/([\d.]+)/i", $ua, $m)) {
-			$browser = "Opera " . $m[1];
-		} elseif (preg_match("/Seamonkey\/([\d.]+)/i", $ua, $m)) { // Bro What THe Fuck Is Seamonkey
-			$browser = "SeaMonkey " . $m[1];
-		} elseif (preg_match("/(?:FxiOS|Firefox)\/([\d.]+)/i", $ua, $m)) {
-			$browser = "Firefox " . $m[1];
-		} elseif (preg_match("/Chromium\/([\d.]+)/i", $ua, $m)) {
-			$browser = "Chromium " . $m[1];
-		} elseif (preg_match("/(?:Chrome|CriOS)\/([\d.]+)/i", $ua, $m)) {
-			$browser = "Chrome " . $m[1];
-		} elseif (preg_match("/Version\/([\d.]+)/i", $ua, $m) && preg_match("/Safari\//i", $ua)) {
-			$browser = "Safari " . $m[1];
-		}
+        // Order matters cuz of https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent#browser_name_and_version
+        if (preg_match("/Edg\/([\d.]+)/i", $ua, $m)) {
+            $browser = "Edge " . $m[1];
+        } elseif (preg_match("/OPR\/([\d.]+)/i", $ua, $m)) {
+            $browser = "Opera " . $m[1];
+        } elseif (preg_match("/Seamonkey\/([\d.]+)/i", $ua, $m)) { // Bro What THe Fuck Is Seamonkey
+            $browser = "SeaMonkey " . $m[1];
+        } elseif (preg_match("/(?:FxiOS|Firefox)\/([\d.]+)/i", $ua, $m)) {
+            $browser = "Firefox " . $m[1];
+        } elseif (preg_match("/Chromium\/([\d.]+)/i", $ua, $m)) {
+            $browser = "Chromium " . $m[1];
+        } elseif (preg_match("/(?:Chrome|CriOS)\/([\d.]+)/i", $ua, $m)) {
+            $browser = "Chrome " . $m[1];
+        } elseif (preg_match("/Version\/([\d.]+)/i", $ua, $m) && preg_match("/Safari\//i", $ua)) {
+            $browser = "Safari " . $m[1];
+        }
 
-		return $browser . " on " . $os;
-	}
+        return $browser . " on " . $os;
+    }
 
-	/**
-	 * Reads int parameter from req
-	 * Dies if the value exists but not numeric
-	 * OR if it is missing and no default was given.
-	 */
-	function GetIntParam(string $key, ?int $default = null, ?string $error = null): int {
-		$value = $_POST[$key] ?? $_GET[$key] ?? $default;
+    /**
+     * Reads int parameter from req
+     * Dies if the value exists but not numeric
+     * OR if it is missing and no default was given.
+     */
+    function GetIntParam(string $key, ?int $default = null, ?string $error = null): int {
+        $value = $_POST[$key] ?? $_GET[$key] ?? $default;
 
-		if ($value === null || !is_numeric($value))
-			die($error ?? "Invalid '{$key}' parameter");
+        if ($value === null || !is_numeric($value)) {
+            die($error ?? "Invalid '{$key}' parameter");
+        }
 
-		return (int)$value;
-	}
+        return (int)$value;
+    }
 
-	/**
-	 * Returns the requested relative location (using the environment variable
-	 * PUBLIC_URL to determine the host) as a string.
-	 */
-	function relUrl(string $path = "/") {
+    /**
+     * Returns the requested relative location (using the environment variable
+     * PUBLIC_URL to determine the host) as a string.
+     */
+    function relUrl(string $path = "/") {
         global $env;
-		$publicUrl = $env["PUBLIC_URL"];
-		return $publicUrl . $path;
-	}
+        $publicUrl = $env["PUBLIC_URL"];
+        return $publicUrl . $path;
+    }
 
-	/**
-	 * wraps htmlspecialchars to check for null cuz php 8.1 is annoying
-	 * about that now
-	 */
-	function safe_htmlspecialchars(?string $string, int $flags = ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, ?string $encoding = null, bool $double_encode = true): string {
-		return htmlspecialchars($string ?? '', $flags, $encoding, $double_encode);
-	}
+    /**
+     * wraps htmlspecialchars to check for null cuz php 8.1 is annoying
+     * about that now
+     */
+    function safe_htmlspecialchars(?string $string, int $flags = ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, ?string $encoding = null, bool $double_encode = true): string {
+        return htmlspecialchars($string ?? '', $flags, $encoding, $double_encode);
+    }
 
-	function GetBeatmapDataOsuApi(string $token, int $id){
-		$curl = curl_init();
-	
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'https://osu.ppy.sh/api/v2/beatmaps/' . strval($id),
-		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
-		  CURLOPT_RETURNTRANSFER => true,
-	      CURLOPT_ENCODING => '',
-	      CURLOPT_MAXREDIRS => 10,
-	      CURLOPT_TIMEOUT => 0,
-	      CURLOPT_FOLLOWLOCATION => true,
-	      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	      CURLOPT_CUSTOMREQUEST => 'GET',
-		));
+    function GetBeatmapDataOsuApi(string $token, int $id) {
+        $curl = curl_init();
 
-		$response = curl_exec($curl);
-		curl_close($curl);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://osu.ppy.sh/api/v2/beatmaps/' . strval($id),
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
 
-		return json_decode($response, true);
-	}
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-	function GetBeatmapsetDataOsuApi(string $token, int $id){
-		$curl = curl_init();
+        return json_decode($response, true);
+    }
 
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'https://osu.ppy.sh/api/v2/beatmapsets/' . strval($id),
-		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
-		  CURLOPT_RETURNTRANSFER => true,
-	      CURLOPT_ENCODING => '',
-	      CURLOPT_MAXREDIRS => 10,
-	      CURLOPT_TIMEOUT => 0,
-	      CURLOPT_FOLLOWLOCATION => true,
-	      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	      CURLOPT_CUSTOMREQUEST => 'GET',
-		));
+    function GetBeatmapsetDataOsuApi(string $token, int $id) {
+        $curl = curl_init();
 
-		$response = curl_exec($curl);
-		curl_close($curl);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://osu.ppy.sh/api/v2/beatmapsets/' . strval($id),
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
 
-		return json_decode($response, true);
-	}
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-	function GetOwnUserData(string $token){
-		$curl = curl_init();
-	
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'https://osu.ppy.sh/api/v2/me/',
-		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
-		  CURLOPT_RETURNTRANSFER => true,
-	      CURLOPT_ENCODING => '',
-	      CURLOPT_MAXREDIRS => 10,
-	      CURLOPT_TIMEOUT => 0,
-	      CURLOPT_FOLLOWLOCATION => true,
-	      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	      CURLOPT_CUSTOMREQUEST => 'GET',
-		));
+        return json_decode($response, true);
+    }
 
-		$response = curl_exec($curl);
-		curl_close($curl);
+    function GetOwnUserData(string $token) {
+        $curl = curl_init();
 
-		return json_decode($response, true);
-	}
-	
-	function GetRandomPlayedBeatmap(string $token){
-		$curl = curl_init();
-		
-		$sortOrder = array("_asc", "_desc");
-		$sortFields = array("artist", "creator", "ranked", "title", "difficulty");
-		$sortString = $sortFields[array_rand($sortFields)] . $sortOrder[array_rand($sortOrder)];
-		
-		$randLetter = substr(md5(microtime()),rand(0,26),1);
-		
-		$first_date = "2007-08-14 10:21:02";
-		$second_date = date('Y-m-d');
-		$first_time = strtotime($first_date);
-		$second_time = strtotime($second_date);
-		$rand_time = rand($first_time, $second_time);
-		$randDate = date('Y-m-d', $rand_time);
-		
-		$queryUrl = "https://osu.ppy.sh/api/v2/beatmapsets/search?played=played&status=ranked&sort={$sortString}&q={$randLetter}%20ranked>{$randDate}&m=0";
-		
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => $queryUrl,
-		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
-		  CURLOPT_RETURNTRANSFER => true,
-	      CURLOPT_ENCODING => '',
-	      CURLOPT_MAXREDIRS => 10,
-	      CURLOPT_TIMEOUT => 0,
-	      CURLOPT_FOLLOWLOCATION => true,
-	      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	      CURLOPT_CUSTOMREQUEST => 'GET',
-		));
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://osu.ppy.sh/api/v2/me/',
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
 
-		$response = curl_exec($curl);
-		curl_close($curl);
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-		return json_decode($response, true);
-	}
-	
-	function GetUserDataOsuApi(int $id){
-		global $env;
-		$curl = curl_init();
-	
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'https://osu.ppy.sh/api/get_user?k=' . $env['OSU_API_V1_KEY'] . '&u=' . strval($id),
-		  CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json'],
-		  CURLOPT_RETURNTRANSFER => true,
-	      CURLOPT_ENCODING => '',
-	      CURLOPT_MAXREDIRS => 10,
-	      CURLOPT_TIMEOUT => 0,
-	      CURLOPT_FOLLOWLOCATION => true,
-	      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	      CURLOPT_CUSTOMREQUEST => 'GET',
-		));
+        return json_decode($response, true);
+    }
 
-		$response = curl_exec($curl);
-		curl_close($curl);
-		
-		if ($response === "[]")
-			return;
+    function GetRandomPlayedBeatmap(string $token) {
+        $curl = curl_init();
 
-		return json_decode($response, true)[0];
-	}
-	
-	function GetHumanTime($datetime, $full = false) {
-		$now = new DateTime;
-		$ago = new DateTime($datetime);
-		$diff = $now->diff($ago);
+        $sortOrder = array("_asc", "_desc");
+        $sortFields = array("artist", "creator", "ranked", "title", "difficulty");
+        $sortString = $sortFields[array_rand($sortFields)] . $sortOrder[array_rand($sortOrder)];
 
-		$diff->w = floor($diff->d / 7);
-		$diff->d -= $diff->w * 7;
+        $randLetter = substr(md5(microtime()), rand(0, 26), 1);
 
-		$string = array(
-			'y' => 'yr',
-			'm' => 'mo',
-			'w' => 'w',
-			'd' => 'd',
-			'h' => 'h',
-			'i' => 'm',
-			's' => 's',
-		);
-		foreach ($string as $k => &$v) {
-			if ($diff->$k) {
-				$v = $diff->$k . $v;
-			} else {
-				unset($string[$k]);
-			}
-		}
+        $first_date = "2007-08-14 10:21:02";
+        $second_date = date('Y-m-d');
+        $first_time = strtotime($first_date);
+        $second_time = strtotime($second_date);
+        $rand_time = rand($first_time, $second_time);
+        $randDate = date('Y-m-d', $rand_time);
 
-		if (!$full) $string = array_slice($string, 0, 1);
-		return $string ? implode(', ', $string) . ' ago' : 'now';
-	}
+        $queryUrl = "https://osu.ppy.sh/api/v2/beatmapsets/search?played=played&status=ranked&sort={$sortString}&q={$randLetter}%20ranked>{$randDate}&m=0";
 
-	function GetUserNameFromId($id, $conn){
-		static $cache = array();
-		if (array_key_exists($id, $cache))
-			return $cache[$id];
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $queryUrl,
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $token],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
 
-		$stmt = $conn->prepare("SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
-		$stmt->bind_param("i", $id);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$row = $result->fetch_row();
-		$stmt->close();
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-		if ($row && !is_null($row[0])) {
-			$cache[$id] = $row[0];
-			return $row[0];
-		}
+        return json_decode($response, true);
+    }
 
-		$username = "ID => " . strval($id);
-		try {
-			$userData = GetUserDataOsuApi($id);
-			if ($userData) {
-				$username = $userData["username"];
-				$country = $userData["country"];
+    function GetUserDataOsuApi(int $id) {
+        global $env;
+        $curl = curl_init();
 
-				$stmt = $conn->prepare("REPLACE INTO `mappernames` VALUES (?, ?, ?)");
-				$stmt->bind_param("iss", $id, $username, $country);
-				$stmt->execute();
-				$stmt->close();
-			}
-		} catch (Exception $e) {
-			unset($e);
-		}
-		
-		$cache[$id] = $username;
-		return $username;
-	}
-	
-	function getFullCountryName($code) {
-        $countries = array
-        (
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://osu.ppy.sh/api/get_user?k=' . $env['OSU_API_V1_KEY'] . '&u=' . strval($id),
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        if ($response === "[]") {
+            return;
+        }
+
+        return json_decode($response, true)[0];
+    }
+
+    function GetHumanTime($datetime, $full = false) {
+        $now = new DateTime;
+        $ago = new DateTime($datetime);
+        $diff = $now->diff($ago);
+
+        $diff->w = floor($diff->d / 7);
+        $diff->d -= $diff->w * 7;
+
+        $string = array(
+            'y' => 'yr',
+            'm' => 'mo',
+            'w' => 'w',
+            'd' => 'd',
+            'h' => 'h',
+            'i' => 'm',
+            's' => 's',
+        );
+        foreach ($string as $k => &$v) {
+            if ($diff->$k) {
+                $v = $diff->$k . $v;
+            } else {
+                unset($string[$k]);
+            }
+        }
+
+        if (!$full) {
+            $string = array_slice($string, 0, 1);
+        }
+        return $string ? implode(', ', $string) . ' ago' : 'now';
+    }
+
+    function GetUserNameFromId($id, $conn) {
+        static $cache = array();
+        if (array_key_exists($id, $cache)) {
+            return $cache[$id];
+        }
+
+        $stmt = $conn->prepare("SELECT `Username` FROM `mappernames` WHERE `UserID` = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_row();
+        $stmt->close();
+
+        if ($row && !is_null($row[0])) {
+            $cache[$id] = $row[0];
+            return $row[0];
+        }
+
+        $username = "ID => " . strval($id);
+        try {
+            $userData = GetUserDataOsuApi($id);
+            if ($userData) {
+                $username = $userData["username"];
+                $country = $userData["country"];
+
+                $stmt = $conn->prepare("REPLACE INTO `mappernames` VALUES (?, ?, ?)");
+                $stmt->bind_param("iss", $id, $username, $country);
+                $stmt->execute();
+                $stmt->close();
+            }
+        } catch (Exception $e) {
+            unset($e);
+        }
+
+        $cache[$id] = $username;
+        return $username;
+    }
+
+    function getFullCountryName($code) {
+        $countries = array(
             'AF' => 'Afghanistan',
             'AX' => 'Aland Islands',
             'AL' => 'Albania',
@@ -542,98 +546,102 @@
         return $countries[$code] ?? null;
     }
 
-	function postOrGet(string $key, $default = null) {
-        if (isset($_POST[$key]) && $_POST[$key] !== '')
-			return $_POST[$key];
-        if (isset($_GET[$key]) && $_GET[$key] !== '')
-			return $_GET[$key];
+    function postOrGet(string $key, $default = null) {
+        if (isset($_POST[$key]) && $_POST[$key] !== '') {
+            return $_POST[$key];
+        }
+        if (isset($_GET[$key]) && $_GET[$key] !== '') {
+            return $_GET[$key];
+        }
         return $default;
     }
 
-	function CSRFField() {
-		$token = safe_htmlspecialchars($_SESSION['csrf_token'] ?? '');
-		echo "<input type='hidden' id='csrf_token' name='csrf_token' value='{$token}'>";
-	}
+    function CSRFField() {
+        $token = safe_htmlspecialchars($_SESSION['csrf_token'] ?? '');
+        echo "<input type='hidden' id='csrf_token' name='csrf_token' value='{$token}'>";
+    }
 
-	function requireCSRF() {
-		$token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-		echo $token;
-		
-		if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-			http_response_code(403);
-			die("CSRF token validation failed. Refresh the page and try again");
-		}
-	}
+    function requireCSRF() {
+        $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        echo $token;
 
-	function ParseCommentLinks($conn, $string) {
-		$string = bbcode_to_html($string);
+        if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            http_response_code(403);
+            die("CSRF token validation failed. Refresh the page and try again");
+        }
+    }
 
-		$pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
-		$replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
-		$string = preg_replace($pattern, $replacement, $string);
+    function ParseCommentLinks($conn, $string) {
+        $string = bbcode_to_html($string);
 
-		$pattern = '/https:\/\/osu\.ppy\.sh\/(?P<endpoint>beatmapsets|beatmaps|b|s)\/(?P<id1>\d+)(?:\S+)?(?:#(osu|taiko|fruits|mania)\/(?P<id2>\d+))?/';
+        $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
+        $replacement = '<a class="osuTimestamp" href="osu://edit/$0">$0</a>';
+        $string = preg_replace($pattern, $replacement, $string);
 
-		$string = preg_replace_callback($pattern, function ($matches) {
-			$setID = $matches['id1'];
-			$mapID = $matches['id2'] ?? '';
+        $pattern = '/https:\/\/osu\.ppy\.sh\/(?P<endpoint>beatmapsets|beatmaps|b|s)\/(?P<id1>\d+)(?:\S+)?(?:#(osu|taiko|fruits|mania)\/(?P<id2>\d+))?/';
 
-			if ($mapID != '')
-				return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/b/' . $mapID . '</a>';
-			else
-				return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/s/' . $setID . '</a>';
+        $string = preg_replace_callback($pattern, function ($matches) {
+            $setID = $matches['id1'];
+            $mapID = $matches['id2'] ?? '';
 
-		}, $string);
+            if ($mapID != '') {
+                return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/b/' . $mapID . '</a>';
+            }
+            else {
+                return '<a href="' . safe_htmlspecialchars($matches[0], ENT_QUOTES) . '">/s/' . $setID . '</a>';
+            }
 
-		$pattern = '/https:\/\/omdb\.nyahh\.net\/mapset\/(\d+)/';
-		$string = preg_replace_callback($pattern, function ($matches) use ($conn) {
-			$setID = $matches[1];
+        }, $string);
 
-			$stmt = $conn->prepare("SELECT Artist, Title, CreatorID FROM beatmaps b JOIN beatmapsets s ON b.SetID = s.SetID WHERE b.SetID = ? LIMIT 1;");
-			$stmt->bind_param("i", $setID);
-			$stmt->execute();
-			$beatmap = $stmt->get_result()->fetch_assoc();
+        $pattern = '/https:\/\/omdb\.nyahh\.net\/mapset\/(\d+)/';
+        $string = preg_replace_callback($pattern, function ($matches) use ($conn) {
+            $setID = $matches[1];
 
-			if (isset($beatmap)){
-				$mapper = GetUserNameFromId($beatmap["CreatorID"], $conn);
-				return "<a href='{$matches[0]}'> " . safe_htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})", ENT_QUOTES) . "</a>";
-			}
+            $stmt = $conn->prepare("SELECT Artist, Title, CreatorID FROM beatmaps b JOIN beatmapsets s ON b.SetID = s.SetID WHERE b.SetID = ? LIMIT 1;");
+            $stmt->bind_param("i", $setID);
+            $stmt->execute();
+            $beatmap = $stmt->get_result()->fetch_assoc();
 
-			return $matches[0];
-		}, $string);
+            if (isset($beatmap)) {
+                $mapper = GetUserNameFromId($beatmap["CreatorID"], $conn);
+                return "<a href='{$matches[0]}'> " . safe_htmlspecialchars("{$beatmap["Artist"]} - {$beatmap["Title"]} ({$mapper})", ENT_QUOTES) . "</a>";
+            }
 
-		$string = ParseShortlinks($conn, $string);
+            return $matches[0];
+        }, $string);
 
-		return $string;
-	}
+        $string = ParseShortlinks($conn, $string);
 
-	function RenderRating($rating){
-		$starString = "";
-		for ($i = 0; $i < 5; $i++) {
-			if ($i < $rating) {
-				if ($rating - 0.5 == $i) {
-					$starString .= "<i class='star icon-star-half'></i>";
-				} else {
-					$starString .= "<i class='star icon-star'></i>";
-				}
-			}
-		}
-		$backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
-		return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
-	}
+        return $string;
+    }
+
+    function RenderRating($rating) {
+        $starString = "";
+        for ($i = 0; $i < 5; $i++) {
+            if ($i < $rating) {
+                if ($rating - 0.5 == $i) {
+                    $starString .= "<i class='star icon-star-half'></i>";
+                } else {
+                    $starString .= "<i class='star icon-star'></i>";
+                }
+            }
+        }
+        $backgroundStars = "<div class='starBackground'><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i><i class='icon-star'></i></div>";
+        return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
+    }
 
     function RenderUserRating($conn, $ratingRow) {
         $score = $ratingRow["Score"];
 
-		$stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
-		$stmt->bind_param("i", $ratingRow["UserID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$user = $result->fetch_assoc();
-		$stmt->close();
+        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+        $stmt->bind_param("i", $ratingRow["UserID"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
 
-		$hint = "";
-        switch($score){
+        $hint = "";
+        switch ($score) {
             case 0:
                 $hint = $user["Custom00Rating"];
                 break;
@@ -669,51 +677,56 @@
                 break;
         }
 
-		$starString = RenderRating($score);
-		if (empty($hint))
-    		return $starString;
+        $starString = RenderRating($score);
+        if (empty($hint)) {
+            return $starString;
+        }
 
         $hint = safe_htmlspecialchars($hint, ENT_QUOTES);
         echo "<span title='{$hint}' style='border-bottom:1px dotted var(--main-theme-text-color);'>{$starString}</span>";
     }
 
-	function CalculatePearsonCorrelation($x, $y) {
-		$n = count($x);
-		$sum_x = array_sum($x);
-		$sum_y = array_sum($y);
-		$sum_x_sq = array_sum(array_map(function($x) { return pow($x, 2); }, $x));
-		$sum_y_sq = array_sum(array_map(function($y) { return pow($y, 2); }, $y));
-		$sum_xy = 0;
-		for ($i = 0; $i < $n; $i++) {
-			$sum_xy += $x[$i] * $y[$i];
-		}
-		$numerator = $n * $sum_xy - $sum_x * $sum_y;
-		$denominator = sqrt(($n * $sum_x_sq - pow($sum_x, 2)) * ($n * $sum_y_sq - pow($sum_y, 2)));
-		if ($denominator == 0) {
-			return null;
-		}
-		return $numerator / $denominator;
-	}
+    function CalculatePearsonCorrelation($x, $y) {
+        $n = count($x);
+        $sum_x = array_sum($x);
+        $sum_y = array_sum($y);
+        $sum_x_sq = array_sum(array_map(function ($x) { return pow($x, 2); }, $x));
+        $sum_y_sq = array_sum(array_map(function ($y) { return pow($y, 2); }, $y));
+        $sum_xy = 0;
+        for ($i = 0; $i < $n; $i++) {
+            $sum_xy += $x[$i] * $y[$i];
+        }
+        $numerator = $n * $sum_xy - $sum_x * $sum_y;
+        $denominator = sqrt(($n * $sum_x_sq - pow($sum_x, 2)) * ($n * $sum_y_sq - pow($sum_y, 2)));
+        if ($denominator == 0) {
+            return null;
+        }
+        return $numerator / $denominator;
+    }
 
-    function SubmitRating($conn, $beatmapID, $userID, $score): bool
-    {
+    function SubmitRating($conn, $beatmapID, $userID, $score): bool {
         $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
-        if (!in_array($score, $validRatings))
+        if (!in_array($score, $validRatings)) {
             return false;
+        }
 
         $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows != 1) return false;
+        if ($result->num_rows != 1) {
+            return false;
+        }
 
         $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
         $stmt->bind_param("i", $userID);
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows != 1) return false;
+        if ($result->num_rows != 1) {
+            return false;
+        }
 
-        if($score == -2){
+        if ($score == -2) {
             $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
@@ -722,11 +735,11 @@
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
             $result = $stmt->get_result();
-            if($result->num_rows == 1){
+            if ($result->num_rows == 1) {
                 $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
                 $stmt->bind_param("dii", $score, $beatmapID, $userID);
                 $stmt->execute();
-            }else{
+            }else {
                 $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
                 $stmt->bind_param("iid", $beatmapID, $userID, $score);
                 $stmt->execute();
@@ -736,7 +749,7 @@
         return true;
     }
 
-	function BeatmapsetSearchSet($conn, $setId) {
+    function BeatmapsetSearchSet($conn, $setId) {
         // GROUP_CONCAT truncates each group at 1024 bytes by default which some sets exceed
         $conn->query("SET SESSION group_concat_max_len = 65535;");
 
@@ -775,200 +788,208 @@
         return $ok;
     }
 
-	function getGenre($number) {
-		switch ($number) {
-			case 2:
-				return "Video Game";
-			case 3:
-				return "Anime";
-			case 4:
-				return "Rock";
-			case 5:
-				return "Pop";
-			case 6:
-				return "Other Genre";
-			case 7:
-				return "Novelty";
-			case 9:
-				return "Hip Hop";
-			case 10:
-				return "Electronic";
-			case 11:
-				return "Metal";
-			case 12:
-				return "Classical";
-			case 13:
-				return "Folk";
-			case 14:
-				return "Jazz";
-			default:
-				return null;
-		}
-	}
+    function getGenre($number) {
+        switch ($number) {
+            case 2:
+                return "Video Game";
+            case 3:
+                return "Anime";
+            case 4:
+                return "Rock";
+            case 5:
+                return "Pop";
+            case 6:
+                return "Other Genre";
+            case 7:
+                return "Novelty";
+            case 9:
+                return "Hip Hop";
+            case 10:
+                return "Electronic";
+            case 11:
+                return "Metal";
+            case 12:
+                return "Classical";
+            case 13:
+                return "Folk";
+            case 14:
+                return "Jazz";
+            default:
+                return null;
+        }
+    }
 
-	function getLanguage($number) {
-		switch ($number) {
-			case 2:
-				return "English";
-			case 3:
-				return "Japanese";
-			case 4:
-				return "Chinese";
-			case 5:
-				return "Instrumental";
-			case 6:
-				return "Korean";
-			case 7:
-				return "French";
-			case 8:
-				return "German";
-			case 9:
-				return "Swedish";
-			case 10:
-				return "Spanish";
-			case 11:
-				return "Italian";
-			case 12:
-				return "Russian";
-			case 13:
-				return "Polish";
-			case 14:
-				return "Other Language";
-		}
-	}
+    function getLanguage($number) {
+        switch ($number) {
+            case 2:
+                return "English";
+            case 3:
+                return "Japanese";
+            case 4:
+                return "Chinese";
+            case 5:
+                return "Instrumental";
+            case 6:
+                return "Korean";
+            case 7:
+                return "French";
+            case 8:
+                return "German";
+            case 9:
+                return "Swedish";
+            case 10:
+                return "Spanish";
+            case 11:
+                return "Italian";
+            case 12:
+                return "Russian";
+            case 13:
+                return "Polish";
+            case 14:
+                return "Other Language";
+        }
+    }
 
-	function getModeIcon($mode) {
-		switch ($mode) {
-			case 0:
-				return "<div class='ruleset-icon osu'></div>";
-			case 1:
-				return "<div class='ruleset-icon taiko'></div>";
-			case 2:
-				return "<div class='ruleset-icon catch'></div>";
-			case 3:
-				return "<div class='ruleset-icon mania'></div>";
-			default:
-				return "";
-		}
-	}
+    function getModeIcon($mode) {
+        switch ($mode) {
+            case 0:
+                return "<div class='ruleset-icon osu'></div>";
+            case 1:
+                return "<div class='ruleset-icon taiko'></div>";
+            case 2:
+                return "<div class='ruleset-icon catch'></div>";
+            case 3:
+                return "<div class='ruleset-icon mania'></div>";
+            default:
+                return "";
+        }
+    }
 
-	function RenderBeatmapCreators($beatmapID, $conn) {
-		$stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
-		$stmt->bind_param('i', $beatmapID);
-		$stmt->execute();
-		$creators = $stmt->get_result();
+    function RenderBeatmapCreators($beatmapID, $conn) {
+        $stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
+        $stmt->bind_param('i', $beatmapID);
+        $stmt->execute();
+        $creators = $stmt->get_result();
 
-		$creatorCount = $creators->num_rows;
-		$index = 0;
+        $creatorCount = $creators->num_rows;
+        $index = 0;
 
-		while ($creator = $creators->fetch_assoc()){
-			$creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
-			echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
+        while ($creator = $creators->fetch_assoc()) {
+            $creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
+            echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
-			$index++;
-			if ($index < $creatorCount - 1)
-				echo ", ";
-			elseif ($index == $creatorCount - 1)
-				echo " and ";
-		}
-	}
+            $index++;
+            if ($index < $creatorCount - 1) {
+                echo ", ";
+            }
+            elseif ($index == $creatorCount - 1) {
+                echo " and ";
+            }
+        }
+    }
 
-	function BuildDescriptorLinks($conn, $descriptors, $mobileLimit = 6) {
-		if ($descriptors instanceof mysqli_result)
-			$descriptors = $descriptors->fetch_all(MYSQLI_ASSOC);
+    function BuildDescriptorLinks($conn, $descriptors, $mobileLimit = 6) {
+        if ($descriptors instanceof mysqli_result) {
+            $descriptors = $descriptors->fetch_all(MYSQLI_ASSOC);
+        }
 
-		$html = "";
-		$index = 0;
+        $html = "";
+        $index = 0;
 
-		foreach ($descriptors as $descriptor) {
-			$name = safe_htmlspecialchars($descriptor["Name"]);
-			$id = (int)$descriptor["DescriptorID"];
-			$shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
+        foreach ($descriptors as $descriptor) {
+            $name = safe_htmlspecialchars($descriptor["Name"]);
+            $id = (int)$descriptor["DescriptorID"];
+            $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
 
-			if ($index === $mobileLimit)
-				$html .= '<span class="descriptor-overflow">';
+            if ($index === $mobileLimit) {
+                $html .= '<span class="descriptor-overflow">';
+            }
 
-			if ($index > 0)
-				$html .= ', ';
+            if ($index > 0) {
+                $html .= ', ';
+            }
 
-			$html .= '<span class="tooltip-wrapper">'
-				. '<a style="color:inherit;" href="/descriptor/?id=' . $id . '">' . $name . '</a>'
-				. '<span class="tooltip-box">' . $shortDescription . '</span>'
-				. '</span>';
+            $html .= '<span class="tooltip-wrapper">'
+                . '<a style="color:inherit;" href="/descriptor/?id=' . $id . '">' . $name . '</a>'
+                . '<span class="tooltip-box">' . $shortDescription . '</span>'
+                . '</span>';
 
-			$index++;
-		}
+            $index++;
+        }
 
-		if ($index > $mobileLimit)
-			$html .= '</span>';
+        if ($index > $mobileLimit) {
+            $html .= '</span>';
+        }
 
-		return $html;
-	}
+        return $html;
+    }
 
-	function getListItemDisplayInformation($listItem, $conn)
-	{
-		$imageUrl = "";
-		$title = "";
-		$linkUrl = "";
+    function getListItemDisplayInformation($listItem, $conn) {
+        $imageUrl = "";
+        $title = "";
+        $linkUrl = "";
 
-		switch ($listItem["Type"]) {
-			case "person":
-				$username = GetUserNameFromId($listItem["SubjectID"], $conn);
-				if ($username == "")
-					die(json_encode(array("error" => "user not found")));
+        switch ($listItem["Type"]) {
+            case "person":
+                $username = GetUserNameFromId($listItem["SubjectID"], $conn);
+                if ($username == "") {
+                    die(json_encode(array("error" => "user not found")));
+                }
 
-				$imageUrl = "https://s.ppy.sh/a/" . $listItem["SubjectID"];
-				$title = $username;
-				$linkUrl = "/profile/?id=" . $listItem["SubjectID"];
+                $imageUrl = "https://s.ppy.sh/a/" . $listItem["SubjectID"];
+                $title = $username;
+                $linkUrl = "/profile/?id=" . $listItem["SubjectID"];
 
-				break;
-			case "beatmap":
-				$stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
+                break;
+            case "beatmap":
+                $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
                         FROM `beatmapsets` s
                         INNER JOIN `beatmaps` b ON s.SetID = b.SetID
                         WHERE b.BeatmapID = ?;");
-				$stmt->bind_param("i", $listItem["SubjectID"]);
-				$stmt->execute();
-				$result = $stmt->get_result();
-				if ($result->num_rows != 1)
-					die(json_encode(array("error" => "beatmap not found")));
-				$map = $result->fetch_assoc();
+                $stmt->bind_param("i", $listItem["SubjectID"]);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows != 1) {
+                    die(json_encode(array("error" => "beatmap not found")));
+                }
+                $map = $result->fetch_assoc();
 
-				$imageUrl = "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg";
-				$title = "{$map["Artist"]} - {$map["Title"]} [{$map["DifficultyName"]}]";
-				$linkUrl = "/mapset/" . $map["SetID"];
+                $imageUrl = "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg";
+                $title = "{$map["Artist"]} - {$map["Title"]} [{$map["DifficultyName"]}]";
+                $linkUrl = "/mapset/" . $map["SetID"];
 
-				break;
-			case "beatmapset":
-				$stmt = $conn->prepare("SELECT Artist, Title FROM `beatmapsets` WHERE `SetID` = ? LIMIT 1;");
-				$stmt->bind_param("i", $listItem["SubjectID"]);
-				$stmt->execute();
-				$result = $stmt->get_result();
-				if ($result->num_rows != 1)
-					die(json_encode(array("error" => "set not found")));
+                break;
+            case "beatmapset":
+                $stmt = $conn->prepare("SELECT Artist, Title FROM `beatmapsets` WHERE `SetID` = ? LIMIT 1;");
+                $stmt->bind_param("i", $listItem["SubjectID"]);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows != 1) {
+                    die(json_encode(array("error" => "set not found")));
+                }
 
-				$set = $result->fetch_assoc();
-				$imageUrl = "https://b.ppy.sh/thumb/" . $listItem["SubjectID"] . "l.jpg";
-				$title = "{$set["Artist"]} - {$set["Title"]}";
-				$linkUrl = "/mapset/" . $listItem["SubjectID"];
+                $set = $result->fetch_assoc();
+                $imageUrl = "https://b.ppy.sh/thumb/" . $listItem["SubjectID"] . "l.jpg";
+                $title = "{$set["Artist"]} - {$set["Title"]}";
+                $linkUrl = "/mapset/" . $listItem["SubjectID"];
 
-				break;
-		}
+                break;
+        }
 
-		return [$imageUrl, $title, $linkUrl];
-	}
-	
-	function RenderLocalTime($time) { ?>
+        return [$imageUrl, $title, $linkUrl];
+    }
+
+    function RenderLocalTime($time) { ?>
 		<script type="text/javascript">
 			var myDate = new Date('<?php echo $time; ?>')
 			document.write(myDate.toLocaleString())
 		</script>
 	<?php }
 
-	function getMapOfTheDay($conn, $mode) {
-		$cacheKey = "motd_" . $mode;
+    function getMapOfTheDay($conn, $mode) {
+        $cacheKey = "motd_" . $mode;
 
-		$stmt = $conn->prepare("
+        $stmt = $conn->prepare("
 			SELECT
 				b.BeatmapID,
 				b.SetID,
@@ -988,17 +1009,17 @@
 			GROUP BY b.BeatmapID, b.SetID, s.Title, b.DifficultyName, s.DateRanked, b.ChartRank, b.ChartYearRank
 		");
 
-		$stmt->bind_param("s", $cacheKey);
-		$stmt->execute();
+        $stmt->bind_param("s", $cacheKey);
+        $stmt->execute();
 
-		$motd = $stmt->get_result()->fetch_assoc();
+        $motd = $stmt->get_result()->fetch_assoc();
 
-		$stmt->close();
+        $stmt->close();
 
-		if ($motd && $motd['WeightedAvg'] !== null) {
-			$motd['WeightedAvg'] = number_format((float)$motd['WeightedAvg'], 2);
-		}
+        if ($motd && $motd['WeightedAvg'] !== null) {
+            $motd['WeightedAvg'] = number_format((float)$motd['WeightedAvg'], 2);
+        }
 
-		return $motd ?: null;
-	}
+        return $motd ?: null;
+    }
 ?>

@@ -38,8 +38,8 @@ include 'header.php';
 <h1>news</h1>
 
 <?php
-    $editing  = null;
-    $editID   = (int)($_GET["edit"] ?? 0);
+    $editing = null;
+    $editID = (int)($_GET["edit"] ?? 0);
     if ($editID > 0) {
         $stmt = $conn->prepare("SELECT * FROM news_posts WHERE NewsID = ?");
         $stmt->bind_param("i", $editID);

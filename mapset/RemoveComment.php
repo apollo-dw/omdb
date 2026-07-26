@@ -1,15 +1,15 @@
 <?php
-	include '../base.php';
-	
-	$setId = $_POST['sID'] ?? -1;
-	$commentId = $_POST['cID'] ?? -1;
-	if ($setId == -1) {
-		die("NO - INVALID SET");
-	}
-	
-	if ($commentId == -1) {
-		die("NO - INVALID COMMENT");
-	}
+    include '../base.php';
+
+    $setId = $_POST['sID'] ?? -1;
+    $commentId = $_POST['cID'] ?? -1;
+    if ($setId == -1) {
+        die("NO - INVALID SET");
+    }
+
+    if ($commentId == -1) {
+        die("NO - INVALID COMMENT");
+    }
 
     if (!$loggedIn) {
         die("NO");
@@ -19,8 +19,8 @@
     $stmt->bind_param("ii", $commentId, $setId);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
-	
-	if (!($isModerator || $result["UserID"] === $userId)) {
+
+    if (!($isModerator || $result["UserID"] === $userId)) {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
         die("Forbidden");
@@ -47,4 +47,3 @@
     $stmt->bind_param("ii", $commentId, $setId);
     $stmt->execute();
     $stmt->close();
-?>

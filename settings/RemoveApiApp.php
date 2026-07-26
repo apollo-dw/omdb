@@ -7,14 +7,16 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if($result == null)
+    if ($result == null) {
         die("This API doesn't exist.");
+    }
 
     $row = $result->fetch_assoc();
     $apiOwner = $row["UserID"];
 
-    if($apiOwner != $userId)
+    if ($apiOwner != $userId) {
         die("You do not own this API!");
+    }
 
     $stmt = $conn->prepare("DELETE FROM `apikeys` WHERE ApiID = ? AND UserID = ?;");
     $stmt->bind_param("ii", $apiId, $userId);

@@ -19,7 +19,7 @@
     $proposal = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if ($parentID === ""){
+    if ($parentID === "") {
         $parentID = null;
     }
 

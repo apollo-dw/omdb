@@ -25,14 +25,18 @@
     if (in_array('genre', $filterConfig['categories'])) {
         for ($i = 1; $i <= 14; $i++) {
             $genre = getGenre($i);
-            if ($genre) $allFilters[] = ['type' => 'genre', 'id' => $i, 'name' => $genre, 'label' => "Genre: $genre"];
+            if ($genre) {
+                $allFilters[] = ['type' => 'genre', 'id' => $i, 'name' => $genre, 'label' => "Genre: $genre"];
+            }
         }
     }
 
     if (in_array('language', $filterConfig['categories'])) {
         for ($i = 1; $i <= 14; $i++) {
             $language = getLanguage($i);
-            if ($language) $allFilters[] = ['type' => 'language', 'id' => $i, 'name' => $language, 'label' => "Language: $language"];
+            if ($language) {
+                $allFilters[] = ['type' => 'language', 'id' => $i, 'name' => $language, 'label' => "Language: $language"];
+            }
         }
     }
 
@@ -76,7 +80,7 @@
         $allFilters = array_merge($allFilters, $filterConfig['customTokens']);
     }
 
-    usort($allFilters, function($a, $b) {
+    usort($allFilters, function ($a, $b) {
         if ($a['type'] === 'country' && $b['type'] === 'country') {
             return strcmp($a['name'], $b['name']);
         }
@@ -229,7 +233,7 @@
                             $stmt->execute();
                             $result = $stmt->get_result();
                             while ($row = $result->fetch_assoc()) {
-                                echo "<option value='".urlencode($row["Tag"])."'>".htmlspecialchars($row["Tag"])." ({$row["TagCount"]})</option>";
+                                echo "<option value='" . urlencode($row["Tag"]) . "'>" . htmlspecialchars($row["Tag"]) . " ({$row["TagCount"]})</option>";
                             }
                         }
                     ?>

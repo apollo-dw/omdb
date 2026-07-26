@@ -10,18 +10,19 @@
     $stmt->execute();
     $proposal = $stmt->get_result()->fetch_assoc();
 
-    if (is_null($proposal))
+    if (is_null($proposal)) {
         die("Proposal not found");
+    }
 
     $originalDescriptor = null;
     $originalParentDescriptor = null;
-    
+
     if ($proposal["Type"] === "modify" && !is_null($proposal["DescriptorID"])) {
         $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
         $stmt->bind_param("i", $proposal["DescriptorID"]);
         $stmt->execute();
         $originalDescriptor = $stmt->get_result()->fetch_assoc();
-        
+
         if ($originalDescriptor && !is_null($originalDescriptor["ParentID"])) {
             $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
             $stmt->bind_param("i", $originalDescriptor["ParentID"]);
@@ -41,8 +42,9 @@
     $voteResult = $stmt->get_result();
 
     $userVote = "";
-    if ($voteResult->num_rows > 0)
+    if ($voteResult->num_rows > 0) {
         $userVote = $voteResult->fetch_assoc()["Vote"];
+    }
 
     $stmt = $conn->prepare("SELECT Count(*) FROM descriptor_proposal_comments WHERE ProposalID = ?;");
     $stmt->bind_param("i", $proposal_id);
@@ -138,7 +140,7 @@
             <tr>
                 <td class="right">Parent descriptor</td>
                 <td>
-                    <?php 
+                    <?php
                     if ($parentDescriptor !== null) {
                         echo safe_htmlspecialchars($parentDescriptor["Name"], ENT_QUOTES);
                     } else {
@@ -148,7 +150,7 @@
                     if ($originalDescriptor) {
                         $oldParentId = $originalDescriptor["ParentID"];
                         $newParentId = $proposal["ParentID"];
-                        
+
                         if ($oldParentId !== $newParentId) {
                             $oldParentName = $originalParentDescriptor ? $originalParentDescriptor["Name"] : "None";
                             ?>
@@ -165,7 +167,7 @@
                 <td class="right">Usable</td>
                 <td>
                     <?php echo $proposal["Usable"] == 1 ? "True" : "False"; ?>
-                    <?php if ($originalDescriptor && $originalDescriptor["Usable"] != $proposal["Usable"]) { 
+                    <?php if ($originalDescriptor && $originalDescriptor["Usable"] != $proposal["Usable"]) {
                         $oldUsableText = $originalDescriptor["Usable"] == 1 ? "True" : "False";
                         ?>
                         <br>
@@ -196,7 +198,7 @@
                 <td><?php echo $proposal["UpdatedTimestamp"]; ?></td>
             </tr>
             <?php } ?>
-            <?php if(!is_null($proposal["EditorID"]) && $proposal["Status"] !== "pending") {
+            <?php if (!is_null($proposal["EditorID"]) && $proposal["Status"] !== "pending") {
                 $editorName = GetUserNameFromId($proposal["EditorID"], $conn);
                 ?>
                 <tr>
@@ -212,9 +214,15 @@
         <?php if ($loggedIn && $userName === "moonpoint") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
-                <option value="pending" <?php if ($proposal["Status"] === "pending") echo 'selected="selected"'; ?>>Pending</option>
-                <option value="approved" <?php if ($proposal["Status"] === "approved") echo 'selected="selected"'; ?>>Approved</option>
-                <option value="denied" <?php if ($proposal["Status"] === "denied") echo 'selected="selected"'; ?>>Denied</option>
+                <option value="pending" <?php if ($proposal["Status"] === "pending") {
+                    echo 'selected="selected"';
+                } ?>>Pending</option>
+                <option value="approved" <?php if ($proposal["Status"] === "approved") {
+                    echo 'selected="selected"';
+                } ?>>Approved</option>
+                <option value="denied" <?php if ($proposal["Status"] === "denied") {
+                    echo 'selected="selected"';
+                } ?>>Denied</option>
             </select>
         <?php } ?>
     </div>
@@ -244,8 +252,9 @@
             $voteRow = $voteResult->fetch_assoc();
 
             $votePercentage = 0.0;
-            if ($row["upvotes"] + $row["downvotes"] + $row["holds"] > 0)
+            if ($row["upvotes"] + $row["downvotes"] + $row["holds"] > 0) {
                 $votePercentage = round(($row["upvotes"] / ($row["upvotes"] + $row["downvotes"] + $row["holds"])) * 100, 2);
+            }
 
             ?>
             <div class="proposal-box">
@@ -254,10 +263,18 @@
                 <?php if ($loggedIn && $proposal["Status"] === "pending") { ?>
                     <label for="vote">Your vote:</label>
                     <select id="vote">
-                        <option value="unvoted" <?php if ($userVote === "unvoted") echo 'selected="selected"'; ?>>Select a vote</option>
-                        <option value="yes" <?php if ($userVote === "yes") echo 'selected="selected"'; ?>>Yes</option>
-                        <option value="no" <?php if ($userVote === "no") echo 'selected="selected"'; ?>>No</option>
-                        <option value="hold" <?php if ($userVote === "hold") echo 'selected="selected"'; ?>>Hold</option>
+                        <option value="unvoted" <?php if ($userVote === "unvoted") {
+                            echo 'selected="selected"';
+                        } ?>>Select a vote</option>
+                        <option value="yes" <?php if ($userVote === "yes") {
+                            echo 'selected="selected"';
+                        } ?>>Yes</option>
+                        <option value="no" <?php if ($userVote === "no") {
+                            echo 'selected="selected"';
+                        } ?>>No</option>
+                        <option value="hold" <?php if ($userVote === "hold") {
+                            echo 'selected="selected"';
+                        } ?>>Hold</option>
                     </select>
                 <?php } ?>
 
@@ -282,10 +299,12 @@
 <br>
 <div class="flex-child column-when-mobile">
     Comments (<?php echo $commentCount; ?>)<br>
-    <?php if ($proposal["Status"] !== "pending") echo "<span class='subText'>Comments are disabled for proposals with an outcome.</span><br>"; ?><br>
+    <?php if ($proposal["Status"] !== "pending") {
+        echo "<span class='subText'>Comments are disabled for proposals with an outcome.</span><br>";
+    } ?><br>
     <div class="flex-container commentContainer" style="width:100%;">
 
-        <?php if($loggedIn && ($proposal["Status"] === "pending" || $userName === "moonpoint")) { ?>
+        <?php if ($loggedIn && ($proposal["Status"] === "pending" || $userName === "moonpoint")) { ?>
             <div class="flex-child commentComposer">
                 <form>
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -317,10 +336,14 @@
 
                 ?>
                 <div class="flex-container flex-child commentHeader">
-                    <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
+                    <div class="flex-child <?php if ($is_blocked) {
+                        echo "faded";
+                    } ?>" style="height:24px;width:24px;">
                         <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                     </div>
-                    <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                    <div class="flex-child <?php if ($is_blocked) {
+                        echo "faded";
+                    } ?>">
                         <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                         <?php if (isset($row["Vote"])) {
                             $vote = $row["Vote"];
@@ -348,10 +371,12 @@
                 </div>
                 <div class="flex-child comment" style="min-width:0;overflow: hidden;">
                     <?php
-                    if (!$is_blocked)
+                    if (!$is_blocked) {
                         echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
-                    else
+                    }
+                    else {
                         echo "<p>[blocked comment]</p>";
+                    }
                     ?>
                 </div>
                 <?php

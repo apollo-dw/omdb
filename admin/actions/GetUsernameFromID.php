@@ -1,6 +1,6 @@
 <?php
-    require_once ('../../base.php');
-    require ('../base.php');
+    require_once('../../base.php');
+    require('../base.php');
 
     $id = $_GET["id"];
 

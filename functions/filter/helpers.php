@@ -59,7 +59,7 @@
                             'spinners' => 'z',
                         ];
 
-                        $prefix = $typeMap[$type]; 
+                        $prefix = $typeMap[$type];
 
                         $opStr = '';
                         foreach ($t['ops'] as $op) {
@@ -76,14 +76,16 @@
     }
 
     function decodeTokens(string $encoded): array {
-        if ($encoded === '')
+        if ($encoded === '') {
             return [];
+        }
 
         $tokens = [];
         foreach (explode(',', $encoded) as $part) {
             $part = trim($part);
-            if ($part === '')
+            if ($part === '') {
                 continue;
+            }
 
             $prefix = $part[0];
             $rest = substr($part, 1);
@@ -168,15 +170,15 @@
                         'z' => ['key' => 'spinners', 'label' => 'Spinner count: '],
                     ];
 
-                    $cfg         = $typeMap[$prefix];
-                    $typeKey     = $cfg['key'];
+                    $cfg = $typeMap[$prefix];
+                    $typeKey = $cfg['key'];
                     $labelPrefix = $cfg['label'];
 
                     $ops = [];
                     $remaining = $rest;
                     while ($remaining !== '') {
                         if (preg_match('/^(>=|<=|>|<|=)(\d+(?:\.\d+)?)(.*)$/s', $remaining, $m)) {
-                            $ops[]     = ['op' => $m[1], 'val' => (float)$m[2]];
+                            $ops[] = ['op' => $m[1], 'val' => (float)$m[2]];
                             $remaining = $m[3];
                         } else {
                             break; // fucked
@@ -188,11 +190,11 @@
                         $lower = null;
                         $upper = null;
                         $flip = [
-                            '>'  => '<',
+                            '>' => '<',
                             '>=' => '<=',
-                            '<'  => '>',
+                            '<' => '>',
                             '<=' => '>=',
-                            '='  => '=',
+                            '=' => '=',
                         ];
 
                         foreach ($ops as $op) {
@@ -230,10 +232,10 @@
                         }
 
                         $tokens[] = [
-                            'type'    => $typeKey,
-                            'id'      => $idStr,
-                            'name'    => $labelPrefix . $idStr,
-                            'ops'     => $ops,
+                            'type' => $typeKey,
+                            'id' => $idStr,
+                            'name' => $labelPrefix . $idStr,
+                            'ops' => $ops,
                             'exclude' => $exclude,
                         ];
                     }
@@ -246,22 +248,22 @@
     }
 
     function parseFilterTokens($tokensRaw) {
-		$parsed = [
-			'friendsStatus' => 'any',
-			'ratedStatus' => 'any',
-			'statusFilters' => [],
-			'statuses' => [],
-			'exStatuses' => [],
-			'selectedDescriptors' => [],
-			'descriptors' => [],
-			'exDescriptors' => [],
-			'genres' => [],
-			'exGenres' => [],
-			'languages' => [],
-			'exLanguages' => [],
-			'countries' => [],
-			'exCountries' => [],
-			'srFilters' => [],
+        $parsed = [
+            'friendsStatus' => 'any',
+            'ratedStatus' => 'any',
+            'statusFilters' => [],
+            'statuses' => [],
+            'exStatuses' => [],
+            'selectedDescriptors' => [],
+            'descriptors' => [],
+            'exDescriptors' => [],
+            'genres' => [],
+            'exGenres' => [],
+            'languages' => [],
+            'exLanguages' => [],
+            'countries' => [],
+            'exCountries' => [],
+            'srFilters' => [],
             'csFilters' => [],
             'arFilters' => [],
             'odFilters' => [],
@@ -271,31 +273,55 @@
             'circlesFilters' => [],
             'slidersFilters' => [],
             'spinnersFilters' => [],
-		];
+        ];
 
-		foreach ($tokensRaw as $t) {
-			$type = $t['type'] ?? '';
-			$id = $t['id'] ?? '';
-			$exclude = !empty($t['exclude']);
+        foreach ($tokensRaw as $t) {
+            $type = $t['type'] ?? '';
+            $id = $t['id'] ?? '';
+            $exclude = !empty($t['exclude']);
 
-			if ($type === 'meta') {
-				if ($id === 'friends') $parsed['friendsStatus'] = $exclude ? 'exclude' : 'only';
-				if ($id === 'alreadyRated') $parsed['ratedStatus'] = $exclude ? 'exclude' : 'only';
-			} elseif ($type === 'status') {
-				$parsed['statusFilters'][] = ['id' => $id, 'exclude' => $exclude];
-				foreach (explode(',', $id) as $sv) {
-					if ($exclude) $parsed['exStatuses'][] = (int)$sv; else $parsed['statuses'][] = (int)$sv;
-				}
-			} elseif ($type === 'descriptor') {
-				$parsed['selectedDescriptors'][] = $t;
-				if ($exclude) $parsed['exDescriptors'][] = (int)$id; else $parsed['descriptors'][] = (int)$id;
-			} elseif ($type === 'genre') {
-				if ($exclude) $parsed['exGenres'][] = (int)$id; else $parsed['genres'][] = (int)$id;
-			} elseif ($type === 'language') {
-				if ($exclude) $parsed['exLanguages'][] = (int)$id; else $parsed['languages'][] = (int)$id;
-			} elseif ($type === 'country') {
-				if ($exclude) $parsed['exCountries'][] = $id; else $parsed['countries'][] = $id;
-			} elseif (in_array($type, ['sr', 'cs', 'ar', 'od', 'hp', 'length', 'bpm', 'circles', 'sliders', 'spinners']) && !empty($t['ops'])) {
+            if ($type === 'meta') {
+                if ($id === 'friends') {
+                    $parsed['friendsStatus'] = $exclude ? 'exclude' : 'only';
+                }
+                if ($id === 'alreadyRated') {
+                    $parsed['ratedStatus'] = $exclude ? 'exclude' : 'only';
+                }
+            } elseif ($type === 'status') {
+                $parsed['statusFilters'][] = ['id' => $id, 'exclude' => $exclude];
+                foreach (explode(',', $id) as $sv) {
+                    if ($exclude) {
+                        $parsed['exStatuses'][] = (int)$sv;
+                    } else {
+                    $parsed['statuses'][] = (int)$sv;
+                    }
+                }
+            } elseif ($type === 'descriptor') {
+                $parsed['selectedDescriptors'][] = $t;
+                if ($exclude) {
+                    $parsed['exDescriptors'][] = (int)$id;
+                } else {
+                $parsed['descriptors'][] = (int)$id;
+                }
+            } elseif ($type === 'genre') {
+                if ($exclude) {
+                    $parsed['exGenres'][] = (int)$id;
+                } else {
+                $parsed['genres'][] = (int)$id;
+                }
+            } elseif ($type === 'language') {
+                if ($exclude) {
+                    $parsed['exLanguages'][] = (int)$id;
+                } else {
+                $parsed['languages'][] = (int)$id;
+                }
+            } elseif ($type === 'country') {
+                if ($exclude) {
+                    $parsed['exCountries'][] = $id;
+                } else {
+                $parsed['countries'][] = $id;
+                }
+            } elseif (in_array($type, ['sr', 'cs', 'ar', 'od', 'hp', 'length', 'bpm', 'circles', 'sliders', 'spinners']) && !empty($t['ops'])) {
                 $rangeConfigs = [
                     'sr' => ['col' => 'b.SR',           'filterKey' => 'srFilters'],
                     'cs' => ['col' => 'b.CircleSize',   'filterKey' => 'csFilters'],
@@ -317,7 +343,7 @@
                 foreach ($t['ops'] as $opData) {
                     $op = $opData['op'] ?? '';
                     $val = (float)($opData['val'] ?? 0);
-                    
+
                     if (in_array($op, ['<', '<=', '>', '>=', '='])) {
                         $conds[] = "{$dbCol} {$op} {$val}";
                     }
@@ -328,10 +354,10 @@
                     $parsed[$filterKey][] = $exclude ? "NOT ({$condStr})" : "({$condStr})";
                 }
             }
-		}
+        }
 
-		return $parsed;
-	}
+        return $parsed;
+    }
 
     function getDescendantDescriptorIds($descriptorId, $conn) {
         $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
@@ -416,8 +442,9 @@
 
         foreach ($parsed['descriptors'] as $dId) {
             $descendantIds = getDescendantDescriptorIds($dId, $conn);
-            if (empty($descendantIds))
+            if (empty($descendantIds)) {
                 $descendantIds = [$dId];
+            }
 
             $ph = implode(',', array_fill(0, count($descendantIds), '?'));
             $sql .= " AND EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID IN ($ph))";
@@ -426,8 +453,9 @@
         }
         foreach ($parsed['exDescriptors'] as $dId) {
             $descendantIds = getDescendantDescriptorIds($dId, $conn);
-            if (empty($descendantIds))
+            if (empty($descendantIds)) {
                 $descendantIds = [$dId];
+            }
 
             $ph = implode(',', array_fill(0, count($descendantIds), '?'));
             $sql .= " AND NOT EXISTS (SELECT 1 FROM beatmap_descriptors bd WHERE bd.BeatmapID = b.BeatmapID AND bd.DescriptorID IN ($ph))";
@@ -477,4 +505,3 @@
 
         return ['sql' => $sql, 'types' => $types, 'values' => $values];
     }
-?>

@@ -1,20 +1,23 @@
 <?php
-    if (file_exists("../../base.php"))
+    if (file_exists("../../base.php")) {
         include "../../base.php";
+    }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
-	
-	$isSelf = false;
-	if ($loggedIn)
-		$isSelf = $profileId == $userId;
+
+    $isSelf = false;
+    if ($loggedIn) {
+        $isSelf = $profileId == $userId;
+    }
 ?>
 
 <div id="tabbed-latest" class="tab">
     <?php
-	$hideBlacklistedMapsCondition = "WHERE b.Blacklisted = 0";
-	if ($isSelf)
-		$hideBlacklistedMapsCondition = "";
-	
+    $hideBlacklistedMapsCondition = "WHERE b.Blacklisted = 0";
+    if ($isSelf) {
+        $hideBlacklistedMapsCondition = "";
+    }
+
     $stmt = $conn->prepare("SELECT r.*, b.*, t.Tags, s.*
                                 FROM (
                                     SELECT r.`RatingID`, GROUP_CONCAT(t.`Tag` SEPARATOR ', ') AS Tags
@@ -47,7 +50,9 @@
                 <span class="subText"><?php echo $tags; ?></span>
             </div>
             <div class="flex-child" style="margin-left:auto;">
-				<?php if ($beatmap["Blacklisted"] && $isSelf) { echo '<span class="subText">(only you can see this rating)</span>'; } ?>
+				<?php if ($beatmap["Blacklisted"] && $isSelf) {
+                    echo '<span class="subText">(only you can see this rating)</span>';
+                } ?>
                 <?php echo GetHumanTime($beatmap["date"]); ?>
             </div>
         </div>

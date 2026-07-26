@@ -9,7 +9,7 @@
 
         $body = json_decode(file_get_contents('php://input'), true);
         $minRatings = isset($body['minRatings']) ? (int)$body['minRatings'] : 10;
-        $minRatings = max(1, min(500, $minRatings)); 
+        $minRatings = max(1, min(500, $minRatings));
 
         $stmt = $conn->prepare("SELECT u.UserID, u.Username, COUNT(r.RatingID) AS RatingCount
             FROM users u

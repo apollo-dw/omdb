@@ -1,6 +1,7 @@
 <?php
-    if (file_exists("../../base.php"))
+    if (file_exists("../../base.php")) {
         include "../../base.php";
+    }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
@@ -14,9 +15,10 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    while($row = $result->fetch_assoc()){
-        if (in_array($row["SetID"], $usedSets))
+    while ($row = $result->fetch_assoc()) {
+        if (in_array($row["SetID"], $usedSets)) {
             continue;
+        }
 
         $artist = safe_htmlspecialchars($row["Artist"], ENT_QUOTES);
         $title = safe_htmlspecialchars($row["Title"], ENT_QUOTES);
