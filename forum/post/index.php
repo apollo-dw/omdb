@@ -10,8 +10,9 @@
     $thread = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($thread))
+    if (is_null($thread)) {
         die("AHHH");
+    }
 
     $PageTitle = $thread["Title"];
     require_once '../../header.php';
@@ -115,7 +116,9 @@
     <div class="pagination">
         <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
         <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
-            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
+                echo 'active';
+            } ?>"><?php echo $i ?></span></a>
         <?php } ?>
         <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
     </div>
@@ -123,7 +126,7 @@
 <hr>
 
 <?php
-    while($post = $posts->fetch_assoc()) {
+    while ($post = $posts->fetch_assoc()) {
         ?>
         <div class="flex-container forum-post-body" id="post-<?php echo $post["PostID"]; ?>">
             <div class="forum-post-info">
@@ -188,7 +191,9 @@
     <div class="pagination">
         <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
         <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
-            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
+                echo 'active';
+            } ?>"><?php echo $i ?></span></a>
         <?php } ?>
         <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
     </div>
@@ -239,5 +244,5 @@
 </script>
 
 <?php
-require ('../../footer.php');
+require('../../footer.php');
 ?>

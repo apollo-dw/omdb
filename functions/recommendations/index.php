@@ -1,238 +1,253 @@
 <?php
-	include_once 'config.php';
+    include_once 'config.php';
 
-	// Recommends mapsets similar to the given set's highest rated difficulty
-	// Tune via weights + settings instead of editing the SQL
-	// $seed is the diff the recs are based on
-	function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = [], $useCaching = true) {
-		// Descriptor data setup from JSON used by GetSimilarBeatmaps
-		static $descriptorData = null;
-		static $nullifiedBy = null;
+    // Recommends mapsets similar to the given set's highest rated difficulty
+    // Tune via weights + settings instead of editing the SQL
+    // $seed is the diff the recs are based on
+    function GetSimilarBeatmaps($conn, $setId, $maxResults = 8, &$seed = null, $seedBeatmapId = null, $overrides = [], $useCaching = true) {
+        // Descriptor data setup from JSON used by GetSimilarBeatmaps
+        static $descriptorData = null;
+        static $nullifiedBy = null;
 
-		if ($descriptorData === null || $nullifiedBy === null) {
-			$descriptorJSON = __DIR__ . "/../../assets/descriptors.json";
-			$descriptorData = file_exists($descriptorJSON) ? json_decode(file_get_contents($descriptorJSON), true) : [];
+        if ($descriptorData === null || $nullifiedBy === null) {
+            $descriptorJSON = __DIR__ . "/../../assets/descriptors.json";
+            $descriptorData = file_exists($descriptorJSON) ? json_decode(file_get_contents($descriptorJSON), true) : [];
 
-			$stmt = $conn->prepare("SELECT DescriptorID, ParentID FROM descriptors");
-			$stmt->execute();
-			$descResult = $stmt->get_result();
+            $stmt = $conn->prepare("SELECT DescriptorID, ParentID FROM descriptors");
+            $stmt->execute();
+            $descResult = $stmt->get_result();
 
-			$allDescIds = [];
-			$childrenMap = [];
-			while ($row = $descResult->fetch_assoc()) {
-				$id = (int)$row['DescriptorID'];
-				$pid = $row['ParentID'] === null ? null : (int)$row['ParentID'];
-				$allDescIds[] = $id;
-				if ($pid !== null) {
-					$childrenMap[$pid][] = $id;
-				}
-			}
-			$stmt->close();
+            $allDescIds = [];
+            $childrenMap = [];
+            while ($row = $descResult->fetch_assoc()) {
+                $id = (int)$row['DescriptorID'];
+                $pid = $row['ParentID'] === null ? null : (int)$row['ParentID'];
+                $allDescIds[] = $id;
+                if ($pid !== null) {
+                    $childrenMap[$pid][] = $id;
+                }
+            }
+            $stmt->close();
 
-			$descendantsMap = [];
-			foreach ($allDescIds as $id) {
-				$stack = $childrenMap[$id] ?? [];
-				$descendants = [];
-				while (!empty($stack)) {
-					$curr = array_pop($stack);
-					$descendants[] = $curr;
-					if (isset($childrenMap[$curr])) {
-						foreach ($childrenMap[$curr] as $c) {
-							$stack[] = $c;
-						}
-					}
-				}
-				$descendantsMap[$id] = $descendants;
-			}
+            $descendantsMap = [];
+            foreach ($allDescIds as $id) {
+                $stack = $childrenMap[$id] ?? [];
+                $descendants = [];
+                while (!empty($stack)) {
+                    $curr = array_pop($stack);
+                    $descendants[] = $curr;
+                    if (isset($childrenMap[$curr])) {
+                        foreach ($childrenMap[$curr] as $c) {
+                            $stack[] = $c;
+                        }
+                    }
+                }
+                $descendantsMap[$id] = $descendants;
+            }
 
-			$nullifiedBy = [];
-			foreach ($allDescIds as $id) {
-				$nullifiedBy[$id] = [];
-			}
+            $nullifiedBy = [];
+            foreach ($allDescIds as $id) {
+                $nullifiedBy[$id] = [];
+            }
 
-			foreach ($descriptorData as $jsonId => $data) {
-				$a = (int)$jsonId;
-				if (!in_array($a, $allDescIds)) continue;
+            foreach ($descriptorData as $jsonId => $data) {
+                $a = (int)$jsonId;
+                if (!in_array($a, $allDescIds)) {
+                    continue;
+                }
 
-				$nullifiers = $data['nullifiers'] ?? [];
-				if (empty($nullifiers)) continue;
+                $nullifiers = $data['nullifiers'] ?? [];
+                if (empty($nullifiers)) {
+                    continue;
+                }
 
-				$vulnerableNodes = array_merge([$a], $descendantsMap[$a] ?? []);
+                $vulnerableNodes = array_merge([$a], $descendantsMap[$a] ?? []);
 
-				foreach ($nullifiers as $b) {
-					$b = (int)$b;
-					$nullifyingNodes = array_merge([$b], $descendantsMap[$b] ?? []);
+                foreach ($nullifiers as $b) {
+                    $b = (int)$b;
+                    $nullifyingNodes = array_merge([$b], $descendantsMap[$b] ?? []);
 
-					foreach ($vulnerableNodes as $v) {
-						foreach ($nullifyingNodes as $n) {
-							$nullifiedBy[$v][] = $n;
-						}
-					}
-				}
-			}
-		}
+                    foreach ($vulnerableNodes as $v) {
+                        foreach ($nullifyingNodes as $n) {
+                            $nullifiedBy[$v][] = $n;
+                        }
+                    }
+                }
+            }
+        }
 
-		global $REC_DEFAULTS;
-		$weights = array_merge($REC_DEFAULTS['weights'], $overrides["weights"] ?? []);
-		$settings = array_merge($REC_DEFAULTS['settings'], $overrides["settings"] ?? []);
+        global $REC_DEFAULTS;
+        $weights = array_merge($REC_DEFAULTS['weights'], $overrides["weights"] ?? []);
+        $settings = array_merge($REC_DEFAULTS['settings'], $overrides["settings"] ?? []);
 
-		if ($seedBeatmapId !== null) {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
-			$stmt->bind_param("ii", $setId, $seedBeatmapId);
-		} else {
-			$stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, Rating IS NULL, Rating DESC, WeightedAvg IS NULL, WeightedAvg DESC");
-			$stmt->bind_param("i", $setId);
-		}
-		$stmt->execute();
-		$seed = $stmt->get_result()->fetch_assoc();
-		$stmt->close();
+        if ($seedBeatmapId !== null) {
+            $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND BeatmapID = ? AND Blacklisted = 0 LIMIT 1");
+            $stmt->bind_param("ii", $setId, $seedBeatmapId);
+        } else {
+            $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName, Mode, Timestamp, SR, RatingCount FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY RatingCount DESC, ChartRank IS NULL, ChartRank ASC, Rating IS NULL, Rating DESC, WeightedAvg IS NULL, WeightedAvg DESC");
+            $stmt->bind_param("i", $setId);
+        }
+        $stmt->execute();
+        $seed = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-		if ($seed === null)
-			return [];
+        if ($seed === null) {
+            return [];
+        }
 
-		if ((int)$seed["RatingCount"] < 10)
-			return [];
+        if ((int)$seed["RatingCount"] < 10) {
+            return [];
+        }
 
-		if ($useCaching) {
-			$stmt = $conn->prepare("
+        if ($useCaching) {
+            $stmt = $conn->prepare("
 				SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, r.RecScore
 				FROM beatmap_recommendations r
 				INNER JOIN beatmaps b ON b.BeatmapID = r.RecMapID
 				INNER JOIN beatmapsets s ON s.SetID = b.SetID
 				WHERE r.MapID = ? AND r.ProcessDate >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND b.Blacklisted = 0
 				ORDER BY r.RecScore DESC");
-			$stmt->bind_param("i", $seed["BeatmapID"]);
-			$stmt->execute();
-			$result = $stmt->get_result();
+            $stmt->bind_param("i", $seed["BeatmapID"]);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-			$recommendations = [];
+            $recommendations = [];
 
-			while ($row = $result->fetch_assoc()) {
-				if (isset($recommendations[$row["SetID"]]))
-					continue;
+            while ($row = $result->fetch_assoc()) {
+                if (isset($recommendations[$row["SetID"]])) {
+                    continue;
+                }
 
-				$recommendations[$row["SetID"]] = $row;
-				if (count($recommendations) >= $maxResults)
-					break;
-			}
+                $recommendations[$row["SetID"]] = $row;
+                if (count($recommendations) >= $maxResults) {
+                    break;
+                }
+            }
 
-			$stmt->close();
+            $stmt->close();
 
-			if (!empty($recommendations))
-				return array_values($recommendations);
-		}
+            if (!empty($recommendations)) {
+                return array_values($recommendations);
+            }
+        }
 
-		$stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ?");
-		$stmt->bind_param("i", $seed["BeatmapID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        $stmt = $conn->prepare("SELECT DISTINCT UserID FROM ratings WHERE BeatmapID = ?");
+        $stmt->bind_param("i", $seed["BeatmapID"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		$userIDs = [];
-		while ($row = $result->fetch_assoc())
-			$userIDs[] = $row["UserID"];
-		$stmt->close();
+        $userIDs = [];
+        while ($row = $result->fetch_assoc()) {
+            $userIDs[] = $row["UserID"];
+        }
+        $stmt->close();
 
-		// If noone's rated the map yet, then we suggest beatmaps without 
-		if (empty($userIDs)) {
-			$userIDs = [0];
-		}
+        // If noone's rated the map yet, then we suggest beatmaps without
+        if (empty($userIDs)) {
+            $userIDs = [0];
+        }
 
-		$stmt = $conn->prepare("SELECT DescriptorID FROM beatmap_descriptors WHERE BeatmapID = ?");
-		$stmt->bind_param("i", $seed["BeatmapID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        $stmt = $conn->prepare("SELECT DescriptorID FROM beatmap_descriptors WHERE BeatmapID = ?");
+        $stmt->bind_param("i", $seed["BeatmapID"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		$seedDescriptorIDs = [];
-		while ($row = $result->fetch_assoc())
-			$seedDescriptorIDs[] = (int)$row["DescriptorID"];
-		$stmt->close();
+        $seedDescriptorIDs = [];
+        while ($row = $result->fetch_assoc()) {
+            $seedDescriptorIDs[] = (int)$row["DescriptorID"];
+        }
+        $stmt->close();
 
-		$seedEffective = [];
-		$nullifyListMap = [];
-		foreach ($seedDescriptorIDs as $s) {
-			$seedEffective[$s] = $descriptorData[$s]['weight'] ?? 1.0; // Default to weight 1.0 if not listed in the JSON file
-			$sNullifiers = $nullifiedBy[$s] ?? [];
-			foreach ($sNullifiers as $n) {
-				$nullifyListMap[$n] = true;
-			}
-		}
+        $seedEffective = [];
+        $nullifyListMap = [];
+        foreach ($seedDescriptorIDs as $s) {
+            $seedEffective[$s] = $descriptorData[$s]['weight'] ?? 1.0; // Default to weight 1.0 if not listed in the JSON file
+            $sNullifiers = $nullifiedBy[$s] ?? [];
+            foreach ($sNullifiers as $n) {
+                $nullifyListMap[$n] = true;
+            }
+        }
 
-		$nullifyList = array_keys($nullifyListMap);
-		$relevantTargetDescIDs = array_unique(array_merge(array_keys($seedEffective), $nullifyList));
+        $nullifyList = array_keys($nullifyListMap);
+        $relevantTargetDescIDs = array_unique(array_merge(array_keys($seedEffective), $nullifyList));
 
-		// CANCER
-		// Method: If target map has a nullifying descriptor, then descriptorScore = 0
-		// Else sum the weights of the similar descriptors
-		if (empty($relevantTargetDescIDs)) {
-			$bdJoin = "";
-			$descriptorScoreField = "0";
-			$bdCondition = "1=0";
-		} else {
-			$relevantDescList = implode(',', $relevantTargetDescIDs);
+        // CANCER
+        // Method: If target map has a nullifying descriptor, then descriptorScore = 0
+        // Else sum the weights of the similar descriptors
+        if (empty($relevantTargetDescIDs)) {
+            $bdJoin = "";
+            $descriptorScoreField = "0";
+            $bdCondition = "1=0";
+        } else {
+            $relevantDescList = implode(',', $relevantTargetDescIDs);
 
-			$scoreExprs = [];
-			foreach ($seedEffective as $s => $weight) {
-				$w = floatval($weight);
-				$scoreExprs[] = "CASE WHEN MAX(CASE WHEN DescriptorID = $s THEN 1 ELSE 0 END) = 1 THEN $w ELSE 0 END";
-			}
-			$sumSql = implode(' + ', $scoreExprs);
+            $scoreExprs = [];
+            foreach ($seedEffective as $s => $weight) {
+                $w = floatval($weight);
+                $scoreExprs[] = "CASE WHEN MAX(CASE WHEN DescriptorID = $s THEN 1 ELSE 0 END) = 1 THEN $w ELSE 0 END";
+            }
+            $sumSql = implode(' + ', $scoreExprs);
 
-			if (!empty($nullifyList)) {
-				$nullifyListStr = implode(',', $nullifyList);
-				$descriptorScoreSql = "CASE WHEN MAX(CASE WHEN DescriptorID IN ($nullifyListStr) THEN 1 ELSE 0 END) = 1 THEN 0 ELSE ($sumSql) END";
-			} else {
-				$descriptorScoreSql = $sumSql;
-			}
+            if (!empty($nullifyList)) {
+                $nullifyListStr = implode(',', $nullifyList);
+                $descriptorScoreSql = "CASE WHEN MAX(CASE WHEN DescriptorID IN ($nullifyListStr) THEN 1 ELSE 0 END) = 1 THEN 0 ELSE ($sumSql) END";
+            } else {
+                $descriptorScoreSql = $sumSql;
+            }
 
-			$bdJoin = "LEFT JOIN (
+            $bdJoin = "LEFT JOIN (
 				SELECT BeatmapID, ($descriptorScoreSql) AS DescriptorScore
 				FROM beatmap_descriptors
 				WHERE DescriptorID IN ($relevantDescList)
 				GROUP BY BeatmapID
 			) bd ON bd.BeatmapID = b.BeatmapID";
-			
-			$descriptorScoreField = "COALESCE(bd.DescriptorScore, 0)";
-			$bdCondition = "bd.BeatmapID IS NOT NULL";
-		}
 
-		$stmt = $conn->prepare("SELECT DISTINCT NominatorID FROM beatmapset_nominators WHERE SetID = ? AND Mode = ? AND NominatorID IS NOT NULL");
-		$stmt->bind_param("ii", $setId, $seed["Mode"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
+            $descriptorScoreField = "COALESCE(bd.DescriptorScore, 0)";
+            $bdCondition = "bd.BeatmapID IS NOT NULL";
+        }
 
-		$nominatorIDs = [];
-		while ($row = $result->fetch_assoc())
-			$nominatorIDs[] = $row["NominatorID"];
-		$stmt->close();
+        $stmt = $conn->prepare("SELECT DISTINCT NominatorID FROM beatmapset_nominators WHERE SetID = ? AND Mode = ? AND NominatorID IS NOT NULL");
+        $stmt->bind_param("ii", $setId, $seed["Mode"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		$stmt = $conn->prepare("SELECT CreatorID FROM beatmap_creators WHERE BeatmapID = ?");
-		$stmt->bind_param("i", $seed["BeatmapID"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        $nominatorIDs = [];
+        while ($row = $result->fetch_assoc()) {
+            $nominatorIDs[] = $row["NominatorID"];
+        }
+        $stmt->close();
 
-		$creatorIDs = [];
-		while ($row = $result->fetch_assoc())
-			$creatorIDs[] = $row["CreatorID"];
-		$stmt->close();
+        $stmt = $conn->prepare("SELECT CreatorID FROM beatmap_creators WHERE BeatmapID = ?");
+        $stmt->bind_param("i", $seed["BeatmapID"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		// empty -> IN (NULL) to keep query valid
-		if (empty($nominatorIDs))
-			$nominatorIDs = [null];
-		if (empty($creatorIDs))
-			$creatorIDs = [null];
+        $creatorIDs = [];
+        while ($row = $result->fetch_assoc()) {
+            $creatorIDs[] = $row["CreatorID"];
+        }
+        $stmt->close();
 
-		$nominatorPlaceholders = implode(',', array_fill(0, count($nominatorIDs), '?'));
-		$creatorPlaceholders = implode(',', array_fill(0, count($creatorIDs), '?'));
-		$userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
+        // empty -> IN (NULL) to keep query valid
+        if (empty($nominatorIDs)) {
+            $nominatorIDs = [null];
+        }
+        if (empty($creatorIDs)) {
+            $creatorIDs = [null];
+        }
 
-		$minRaters = (int)$settings["minRaters"];
-		$cRaters = "IF(COUNT(DISTINCT r.RatingID) >= {$minRaters}, COUNT(DISTINCT r.RatingID), 0)";
+        $nominatorPlaceholders = implode(',', array_fill(0, count($nominatorIDs), '?'));
+        $creatorPlaceholders = implode(',', array_fill(0, count($creatorIDs), '?'));
+        $userPlaceholders = implode(',', array_fill(0, count($userIDs), '?'));
 
-		// COALESCE for the case where the shared raters is below minRaters (or 0)
-		$cohortLift = "(COALESCE(AVG(r.Score), b.Rating) - COALESCE(b.Rating, 0)) * ({$cRaters} / ({$cRaters} + ?))";
+        $minRaters = (int)$settings["minRaters"];
+        $cRaters = "IF(COUNT(DISTINCT r.RatingID) >= {$minRaters}, COUNT(DISTINCT r.RatingID), 0)";
 
-		// I hope I never have to write some bullshit like this ever again
-		$stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, COALESCE(b.Rating, 0) AS GlobalAvg, (
+        // COALESCE for the case where the shared raters is below minRaters (or 0)
+        $cohortLift = "(COALESCE(AVG(r.Score), b.Rating) - COALESCE(b.Rating, 0)) * ({$cRaters} / ({$cRaters} + ?))";
+
+        // I hope I never have to write some bullshit like this ever again
+        $stmt = $conn->prepare("SELECT b.BeatmapID, b.SetID, b.DifficultyName, s.Artist, s.Title, s.CreatorID, COALESCE(AVG(r.Score), 0) AS AvgScore, COUNT(DISTINCT r.RatingID) AS ScoreCount, COALESCE(b.Rating, 0) AS GlobalAvg, (
 				COALESCE(b.Rating, 0) * ? +
 				$cohortLift * ? +
 				POW({$cRaters} / ?, ?) * ? +
@@ -279,85 +294,87 @@
 			LIMIT ?;
 		");
 
-		// Query ranks individual diffs, so a vbunch of top diffs can be in the same set
-		// So fetch extra rows to still end up with $maxResults distinct sets after deduplication
-		$candidateLimit = $maxResults * 4;
+        // Query ranks individual diffs, so a vbunch of top diffs can be in the same set
+        // So fetch extra rows to still end up with $maxResults distinct sets after deduplication
+        $candidateLimit = $maxResults * 4;
 
-		$maxScoreCount = max($settings["maxScoreFloor"], (int)ceil($settings["maxScoreShare"] * count($userIDs)));
+        $maxScoreCount = max($settings["maxScoreFloor"], (int)ceil($settings["maxScoreShare"] * count($userIDs)));
 
-		$coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
+        $coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
 
-		$selectParams = [
-			$weights["avgScore"],
-			$settings["liftShrink"], $weights["cohortLift"],
-			max(1, count($userIDs)), $settings["coverageCurve"], $coverageWeight,
-			$weights["descriptorScore"],
-			$seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"],
-			$weights["sharedNominator"],
-			count($creatorIDs), $weights["sharedMapper"],
-			$settings["corrShrink"], $weights["correlation"],
-			$seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
-		];
+        $selectParams = [
+            $weights["avgScore"],
+            $settings["liftShrink"], $weights["cohortLift"],
+            max(1, count($userIDs)), $settings["coverageCurve"], $coverageWeight,
+            $weights["descriptorScore"],
+            $seed["Timestamp"], $settings["proximityMonths"], $weights["monthProximity"],
+            $weights["sharedNominator"],
+            count($creatorIDs), $weights["sharedMapper"],
+            $settings["corrShrink"], $weights["correlation"],
+            $seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
+        ];
 
-		$types = "dididddsiddididdddd"
-			. str_repeat('i', count($userIDs))
-			. str_repeat('i', count($nominatorIDs))
-			. str_repeat('i', count($creatorIDs))
-			. "iid"
-			. "ii"
-			. "ii";
+        $types = "dididddsiddididdddd"
+            . str_repeat('i', count($userIDs))
+            . str_repeat('i', count($nominatorIDs))
+            . str_repeat('i', count($creatorIDs))
+            . "iid"
+            . "ii"
+            . "ii";
 
-		$params = array_merge(
-			$selectParams,
-			$userIDs,
-			$nominatorIDs,
-			$creatorIDs,
-			[$seed["BeatmapID"], $settings["minRaters"], $settings["minCorrelation"]],
-			[$setId, $seed["Mode"], $maxScoreCount, $candidateLimit]
-		);
+        $params = array_merge(
+            $selectParams,
+            $userIDs,
+            $nominatorIDs,
+            $creatorIDs,
+            [$seed["BeatmapID"], $settings["minRaters"], $settings["minCorrelation"]],
+            [$setId, $seed["Mode"], $maxScoreCount, $candidateLimit]
+        );
 
-		$stmt->bind_param($types, ...$params);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		$recommendations = [];
-		while ($row = $result->fetch_assoc()) {
-			if (isset($recommendations[$row["SetID"]]))
-				continue;
-			$recommendations[$row["SetID"]] = $row;
-			if (count($recommendations) >= $maxResults)
-				break;
-		}
-		$stmt->close();
+        $recommendations = [];
+        while ($row = $result->fetch_assoc()) {
+            if (isset($recommendations[$row["SetID"]])) {
+                continue;
+            }
+            $recommendations[$row["SetID"]] = $row;
+            if (count($recommendations) >= $maxResults) {
+                break;
+            }
+        }
+        $stmt->close();
 
-		$recommendations = array_values($recommendations);
-		if ($useCaching && !empty($recommendations)) {
-			$stmt = $conn->prepare("DELETE FROM beatmap_recommendations WHERE MapID = ?");
-			$stmt->bind_param("i", $seed["BeatmapID"]);
-			$stmt->execute();
-			$stmt->close();
+        $recommendations = array_values($recommendations);
+        if ($useCaching && !empty($recommendations)) {
+            $stmt = $conn->prepare("DELETE FROM beatmap_recommendations WHERE MapID = ?");
+            $stmt->bind_param("i", $seed["BeatmapID"]);
+            $stmt->execute();
+            $stmt->close();
 
-			$stmt = $conn->prepare("INSERT INTO beatmap_recommendations (MapID, RecMapID, RecScore) VALUES (?, ?, ?)");
-			foreach ($recommendations as $recommendation) {
-				$stmt->bind_param("iid", $seed["BeatmapID"], $recommendation["BeatmapID"], $recommendation["RecScore"]);
-				$stmt->execute();
-			}
+            $stmt = $conn->prepare("INSERT INTO beatmap_recommendations (MapID, RecMapID, RecScore) VALUES (?, ?, ?)");
+            foreach ($recommendations as $recommendation) {
+                $stmt->bind_param("iid", $seed["BeatmapID"], $recommendation["BeatmapID"], $recommendation["RecScore"]);
+                $stmt->execute();
+            }
 
-			$stmt->close();
-		}
+            $stmt->close();
+        }
 
-		return $recommendations;
-	}
+        return $recommendations;
+    }
 
-	function RenderSimilarMapCards($conn, $similarMaps) {
-		if (empty($similarMaps)) {
-			echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty; map needs at least 10 ratings</span>';
-			return;
-		}
+    function RenderSimilarMapCards($conn, $similarMaps) {
+        if (empty($similarMaps)) {
+            echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty; map needs at least 10 ratings</span>';
+            return;
+        }
 
-		foreach ($similarMaps as $similarMap) {
-			$similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
-			?>
+        foreach ($similarMaps as $similarMap) {
+            $similarMapper = GetUserNameFromId($similarMap["CreatorID"], $conn);
+            ?>
 			<div class="flex-child map-card">
 				<a href="/mapset/<?php echo $similarMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $similarMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1;width:90%;height:auto;" onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a><br>
 				<span class="subText">
@@ -366,6 +383,6 @@
 				</span>
 			</div>
 			<?php
-		}
-	}
+        }
+    }
 ?>

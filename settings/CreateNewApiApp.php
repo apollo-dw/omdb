@@ -3,7 +3,7 @@
 
     $name = $_GET["apiname"];
 
-    if(!$loggedIn){
+    if (!$loggedIn) {
         header("Location: index.php?success");
     }
 

@@ -17,8 +17,9 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `SetID` = ? AND Status = 'Pending';");
     $stmt->bind_param('i', $setID);
@@ -29,7 +30,7 @@ if ($isEditingSet) {
     if ($request) {
         $editDataArray = json_decode($request['EditData'], true);
         $newNominators = $editDataArray["Mappers"];
-		$newCredits = $editDataArray["Credits"];
+        $newCredits = $editDataArray["Credits"];
 
         $stmt = $conn->prepare("DELETE FROM beatmapset_nominators WHERE `SetID` = ?;");
         $stmt->bind_param('i', $setID);
@@ -40,25 +41,25 @@ if ($isEditingSet) {
         foreach ($newNominators as $nominatorID) {
             $stmt->execute();
         }
-		
-		$stmt = $conn->prepare("DELETE FROM beatmapset_credits WHERE `SetID` = ?;");
-		$stmt->bind_param('i', $setID);
-		$stmt->execute();
 
-		$stmt = $conn->prepare("INSERT INTO beatmapset_credits (`SetID`, `MapID`, `RoleID`, `UserID`) VALUES (?, NULL, ?, ?);");
-		$stmt->bind_param('iii', $setID, $roleID, $userID);
+        $stmt = $conn->prepare("DELETE FROM beatmapset_credits WHERE `SetID` = ?;");
+        $stmt->bind_param('i', $setID);
+        $stmt->execute();
 
-		foreach ($newCredits as $credit) {
-			$roleIDStmt = $conn->prepare("SELECT RoleID FROM beatmap_roles WHERE Name = ?");
-			$roleIDStmt->bind_param('s', $credit['role']);
-			$roleIDStmt->execute();
-			$roleIDResult = $roleIDStmt->get_result();
-			$roleIDRow = $roleIDResult->fetch_assoc();
-			$roleID = $roleIDRow['RoleID'];
+        $stmt = $conn->prepare("INSERT INTO beatmapset_credits (`SetID`, `MapID`, `RoleID`, `UserID`) VALUES (?, NULL, ?, ?);");
+        $stmt->bind_param('iii', $setID, $roleID, $userID);
 
-			$userID = $credit['userID'];
-			$stmt->execute();
-		}
+        foreach ($newCredits as $credit) {
+            $roleIDStmt = $conn->prepare("SELECT RoleID FROM beatmap_roles WHERE Name = ?");
+            $roleIDStmt->bind_param('s', $credit['role']);
+            $roleIDStmt->execute();
+            $roleIDResult = $roleIDStmt->get_result();
+            $roleIDRow = $roleIDResult->fetch_assoc();
+            $roleID = $roleIDRow['RoleID'];
+
+            $userID = $credit['userID'];
+            $stmt->execute();
+        }
 
         $stmt = $conn->prepare("UPDATE beatmap_edit_requests SET Status = 'Approved', EditorID = ? WHERE `EditID` = ?;");
         $stmt->bind_param('ii', $userId, $request['EditID']);
@@ -70,8 +71,9 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $setID = $result->fetch_assoc()["SetID"];
 

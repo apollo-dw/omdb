@@ -21,13 +21,14 @@ mysqli_data_seek($result, 0);
 $PageTitle = $sampleRow['Title'] . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn);
 require '../../header.php';
 
-if($mapset_id == -1){
+if ($mapset_id == -1) {
     die("Nop");
 }
 
 $difficulties = [];
-while ($row = $result->fetch_assoc())
+while ($row = $result->fetch_assoc()) {
     $difficulties[$row['BeatmapID']] = $row;
+}
 
 $mapset_id = safe_htmlspecialchars($mapset_id, ENT_QUOTES);
 
@@ -83,11 +84,14 @@ $rolesJson = json_encode($roles);
     </style>
 
     <div class="tabbed-container-nav">
-        <button <?php if ($setHasEditRequest) echo "class='pending-changes'"; ?> onclick="openTab('set')">Mapset (General)</button><?php
-        foreach($difficulties as $beatmapID => $difficulty){
+        <button <?php if ($setHasEditRequest) {
+            echo "class='pending-changes'";
+        } ?> onclick="openTab('set')">Mapset (General)</button><?php
+        foreach ($difficulties as $beatmapID => $difficulty) {
             $class = "";
-            if ($difficulty['HasEditRequest'])
+            if ($difficulty['HasEditRequest']) {
                 $class = "class='pending-changes'";
+            }
 
             echo "<button {$class} onclick=\"openTab('{$beatmapID}')\">{$difficulty['DifficultyName']}</button>";
         }
@@ -96,15 +100,16 @@ $rolesJson = json_encode($roles);
     </div>
 
     <div id='set' class='tab' style='display:none;'>
-        <?php if($setHasEditRequest) {
+        <?php if ($setHasEditRequest) {
             $stmt = $conn->prepare("SELECT NominatorID FROM `beatmapset_nominators` WHERE SetID = ?;");
             $stmt->bind_param('i', $mapset_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
             $currentNominators = array();
-            while ($row = $result->fetch_assoc())
+            while ($row = $result->fetch_assoc()) {
                 $currentNominators[] = $row['NominatorID'];
+            }
 
             $requesterUsername = GetUserNameFromId($setRequest['UserID'], $conn);
             $data = json_decode($setRequest['EditData'], true);
@@ -135,50 +140,50 @@ $rolesJson = json_encode($roles);
                 echo "<span style='color: green;'>+ {$name} <span class='subText'>{$newlyAddedID}</span></span><br>";
             }
             echo "</div><br>";
-			
-			$stmt = $conn->prepare("SELECT UserID, br.RoleID, Name FROM `beatmapset_credits` bc LEFT JOIN `beatmap_roles` br ON bc.RoleID = br.RoleID WHERE SetID = ?;");
-			$stmt->bind_param('i', $mapset_id);
-			$stmt->execute();
-			$result = $stmt->get_result();
 
-			$currentCredits = [];
-			while ($row = $result->fetch_assoc()) {
-				$currentCredits[] = array("role" => $row['Name'], "userID" => $row['UserID']);
-			}
+            $stmt = $conn->prepare("SELECT UserID, br.RoleID, Name FROM `beatmapset_credits` bc LEFT JOIN `beatmap_roles` br ON bc.RoleID = br.RoleID WHERE SetID = ?;");
+            $stmt->bind_param('i', $mapset_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-			$data = json_decode($setRequest['EditData'], true);
-			$newCredits = $data['Credits'];
+            $currentCredits = [];
+            while ($row = $result->fetch_assoc()) {
+                $currentCredits[] = array("role" => $row['Name'], "userID" => $row['UserID']);
+            }
 
-			$deletedCredits = array_udiff($currentCredits, $newCredits, function ($a, $b) {
-				return strcmp(json_encode($a), json_encode($b));
-			});
+            $data = json_decode($setRequest['EditData'], true);
+            $newCredits = $data['Credits'];
 
-			$newlyAddedCredits = array_udiff($newCredits, $currentCredits, function ($a, $b) {
-				return strcmp(json_encode($a), json_encode($b));
-			});
+            $deletedCredits = array_udiff($currentCredits, $newCredits, function ($a, $b) {
+                return strcmp(json_encode($a), json_encode($b));
+            });
 
-			$unchangedCredits = array_uintersect($currentCredits, $newCredits, function ($a, $b) {
-				return strcmp(json_encode($a), json_encode($b));
-			});
+            $newlyAddedCredits = array_udiff($newCredits, $currentCredits, function ($a, $b) {
+                return strcmp(json_encode($a), json_encode($b));
+            });
 
-			echo "Changes to Credits:<div style='background-color:#182828;font-family: monospace;border: 1px solid white;padding: 0.5em;width: 33%;min-height:10em;'>";
+            $unchangedCredits = array_uintersect($currentCredits, $newCredits, function ($a, $b) {
+                return strcmp(json_encode($a), json_encode($b));
+            });
 
-			foreach ($deletedCredits as $deletedCredit) {
-				$name = GetUserNameFromId($deletedCredit['userID'], $conn);
-				echo "<span style='color: red;'>- {$name} <span class='subText'>{$deletedCredit['userID']}</span></span> ({$deletedCredit['role']})<br>";
-			}
+            echo "Changes to Credits:<div style='background-color:#182828;font-family: monospace;border: 1px solid white;padding: 0.5em;width: 33%;min-height:10em;'>";
 
-			foreach ($unchangedCredits as $unchangedCredit) {
-				$name = GetUserNameFromId($unchangedCredit['userID'], $conn);
-				echo "* {$name} <span class='subText'>{$unchangedCredit['userID']}</span> ({$unchangedCredit['role']})<br>";
-			}
+            foreach ($deletedCredits as $deletedCredit) {
+                $name = GetUserNameFromId($deletedCredit['userID'], $conn);
+                echo "<span style='color: red;'>- {$name} <span class='subText'>{$deletedCredit['userID']}</span></span> ({$deletedCredit['role']})<br>";
+            }
 
-			foreach ($newlyAddedCredits as $newlyAddedCredit) {
-				$name = GetUserNameFromId($newlyAddedCredit['userID'], $conn);
-				echo "<span style='color: green;'>+ {$name} <span class='subText'>{$newlyAddedCredit['userID']}</span></span> ({$newlyAddedCredit['role']})<br>";
-			}
+            foreach ($unchangedCredits as $unchangedCredit) {
+                $name = GetUserNameFromId($unchangedCredit['userID'], $conn);
+                echo "* {$name} <span class='subText'>{$unchangedCredit['userID']}</span> ({$unchangedCredit['role']})<br>";
+            }
 
-			echo "</div>";
+            foreach ($newlyAddedCredits as $newlyAddedCredit) {
+                $name = GetUserNameFromId($newlyAddedCredit['userID'], $conn);
+                echo "<span style='color: green;'>+ {$name} <span class='subText'>{$newlyAddedCredit['userID']}</span></span> ({$newlyAddedCredit['role']})<br>";
+            }
+
+            echo "</div>";
             ?>
             <hr>
             <b>Meta comment:</b>
@@ -235,12 +240,13 @@ $rolesJson = json_encode($roles);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
-                            while($row = $result->fetch_assoc())
+                            while ($row = $result->fetch_assoc()) {
                                 echo "<li>
 							<i class='icon-remove remove-button'></i> 
 							{$row["Username"]} 
 							<span class='subText mapperid'>{$row["NominatorID"]}</span>
 							</li>";
+                            }
                             ?>
                         </ul>
                     </div>
@@ -258,29 +264,30 @@ $rolesJson = json_encode($roles);
 					<div style="flex-grow: 1;">
 						<ul class="mapperList creditList" difficultyID="set">
 							<?php
-							$stmt = $conn->prepare("SELECT bc.UserID, u.Username, bc.RoleID, br.Name FROM beatmapset_credits bc LEFT JOIN mappernames u ON u.UserID = bc.UserID LEFT JOIN beatmap_roles br ON br.RoleID = bc.RoleID WHERE bc.SetID = ?");
-							$stmt->bind_param('i', $mapset_id);
-							$stmt->execute();
-							$result = $stmt->get_result();
-							
-							while ($row = $result->fetch_assoc()) {
-								echo "<li data-creatorid='{$row["UserID"]}'> 
+                            $stmt = $conn->prepare("SELECT bc.UserID, u.Username, bc.RoleID, br.Name FROM beatmapset_credits bc LEFT JOIN mappernames u ON u.UserID = bc.UserID LEFT JOIN beatmap_roles br ON br.RoleID = bc.RoleID WHERE bc.SetID = ?");
+                            $stmt->bind_param('i', $mapset_id);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<li data-creatorid='{$row["UserID"]}'> 
 								<i class='icon-remove remove-button'></i> 
 								{$row["Username"]} 
 								<span class='subText mapperid'>{$row["UserID"]}</span>
 								<select class='roles-select'>";
-                                
-								foreach ($roles as $role) {
-									$selectedString = "";
-									if ($role == $row["Name"])
-										$selectedString = "selected";
-									
-									echo "<option value='${role}' ${selectedString}>${role}</option>";
-								}
-								
-								echo "</select></li>";
-							}
-							?>
+
+                                foreach ($roles as $role) {
+                                    $selectedString = "";
+                                    if ($role == $row["Name"]) {
+                                        $selectedString = "selected";
+                                    }
+
+                                    echo "<option value='${role}' ${selectedString}>${role}</option>";
+                                }
+
+                                echo "</select></li>";
+                            }
+                            ?>
 						</ul>
 					</div>
 				</div><br>
@@ -305,11 +312,11 @@ $rolesJson = json_encode($roles);
         if ($result->num_rows == 0) {
             echo '<span class="subText">no edits</span>';
         } else {
-            while($row = $result->fetch_assoc()) {
+            while ($row = $result->fetch_assoc()) {
                 $editDataArray = json_decode($row['EditData'], true);
 
                 $status = "Pending";
-                if ($row["Status"] != "Pending"){
+                if ($row["Status"] != "Pending") {
                     $editorName = GetUserNameFromId($row["EditorID"], $conn);
                     $status = "{$row["Status"]} by {$editorName}";
                 }
@@ -326,9 +333,9 @@ $rolesJson = json_encode($roles);
     </div>
 
 <?php
-foreach($difficulties as $beatmapID => $difficulty) {
+foreach ($difficulties as $beatmapID => $difficulty) {
     echo "<div id='{$beatmapID}' class='tab' style='display:none;'>";
-    if ($difficulty['HasEditRequest']){
+    if ($difficulty['HasEditRequest']) {
         $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `BeatmapID` = ? AND Status = 'Pending';");
         $stmt->bind_param('i', $beatmapID);
         $stmt->execute();
@@ -341,8 +348,9 @@ foreach($difficulties as $beatmapID => $difficulty) {
         $result = $stmt->get_result();
 
         $currentMappers = array();
-        while ($row = $result->fetch_assoc())
+        while ($row = $result->fetch_assoc()) {
             $currentMappers[] = $row['CreatorID'];
+        }
 
         $requesterUsername = GetUserNameFromId($request['UserID'], $conn);
         $data = json_decode($request['EditData'], true);
@@ -417,8 +425,9 @@ foreach($difficulties as $beatmapID => $difficulty) {
                         $stmt->execute();
                         $result = $stmt->get_result();
 
-                        while($row = $result->fetch_assoc())
+                        while ($row = $result->fetch_assoc()) {
                             echo "<li><i class='icon-remove remove-button'></i> " . safe_htmlspecialchars($row["Username"], ENT_QUOTES) . " <span class='subText mapperid'>{$row["CreatorID"]}</span></li>";
+                        }
                         ?>
                     </ul>
                 </div>
@@ -442,11 +451,11 @@ foreach($difficulties as $beatmapID => $difficulty) {
     if ($result->num_rows == 0) {
         echo '<span class="subText">no edits</span>';
     } else {
-        while($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
             $editDataArray = json_decode($row['EditData'], true);
 
             $status = "Pending";
-            if ($row["Status"] != "Pending"){
+            if ($row["Status"] != "Pending") {
                 $editorName = GetUserNameFromId($row["EditorID"], $conn);
                 $status = "{$row["Status"]} by {$editorName}";
             }

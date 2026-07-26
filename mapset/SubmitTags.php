@@ -8,14 +8,14 @@
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
 
-    if($stmt->get_result()->fetch_row()[0] == 0){
-        die ("NO - Cant Find Map In DB");
+    if ($stmt->get_result()->fetch_row()[0] == 0) {
+        die("NO - Cant Find Map In DB");
     }
 
     $stmt->close();
 
     if ($loggedIn == false) {
-        die ("NO - Not Logged In");
+        die("NO - Not Logged In");
     }
 
     $tagList = explode(',', $tags);
@@ -31,8 +31,9 @@
     foreach ($tagList as $tag) {
         $tag = trim($tag ?? "");
 
-        if (empty($tag))
+        if (empty($tag)) {
             continue;
+        }
 
         $insertStmt->execute();
     }

@@ -1,15 +1,15 @@
 <?php
-	include '../base.php';
+    include '../base.php';
 
-	$setId = $_POST['sID'] ?? -1;
-	$reviewId = $_POST['rID'] ?? -1;
-	if ($setId == -1) {
-		die("NO - INVALID SET");
-	}
+    $setId = $_POST['sID'] ?? -1;
+    $reviewId = $_POST['rID'] ?? -1;
+    if ($setId == -1) {
+        die("NO - INVALID SET");
+    }
 
-	if ($reviewId == -1) {
-		die("NO - INVALID REVIEW");
-	}
+    if ($reviewId == -1) {
+        die("NO - INVALID REVIEW");
+    }
 
     if (!$loggedIn) {
         die("NO");
@@ -62,4 +62,3 @@
     $stmt->bind_param("i", $reviewId);
     $stmt->execute();
     $stmt->close();
-?>

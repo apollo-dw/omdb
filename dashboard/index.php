@@ -4,7 +4,7 @@
     require '../header.php';
     require 'RetrieveRecommendations.php';
 
-    if (!$loggedIn){
+    if (!$loggedIn) {
         die("log in to view this page lol");
     }
 
@@ -80,7 +80,7 @@
                     If you believe you should be seeing recommendations, and you waited longer than a week, then feel free to contact me.
                     <?php
                 } else {
-                    foreach($recommendations as $beatmap) {
+                    foreach ($recommendations as $beatmap) {
                         ?>
                         <div class='recommendation alternating-bg'>
                             <div class="flex-container">

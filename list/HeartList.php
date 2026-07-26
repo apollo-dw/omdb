@@ -4,18 +4,18 @@
     $listId = $_POST['bID'] ?? -1;
 
     if ($listId == -1) {
-        die ("NO");
+        die("NO");
     }
     if (!$loggedIn) {
-        die ("NO");
+        die("NO");
     }
 
     $stmt = $conn->prepare("SELECT ListID FROM `lists` WHERE `ListID` = ? AND (`Private` = 0 OR `UserID` = ?);");
     $stmt->bind_param("ii", $listId, $userId);
     $stmt->execute();
 
-    if(is_null($stmt->get_result()->fetch_assoc())){
-        die ("NO");
+    if (is_null($stmt->get_result()->fetch_assoc())) {
+        die("NO");
     }
 
     $stmt->close();
@@ -45,4 +45,3 @@
     }
 
     $stmtCheckHeart->close();
-

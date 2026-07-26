@@ -11,8 +11,9 @@
     $PageTitle = "Descriptor - " . $descriptor["Name"];
     require '../header.php';
 
-    if (is_null($descriptor))
+    if (is_null($descriptor)) {
         die("Descriptor not found.");
+    }
 
     function getParentTree($descriptor, $conn) {
         if ($descriptor['ParentID'] === null) {
@@ -167,11 +168,12 @@
     $chartingMapCount = $result->num_rows;
 
     $counter = 0;
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) {
         $counter += 1;
 
-        if ($counter > 9)
+        if ($counter > 9) {
             break;
+        }
 
         $difficultyName = mb_strimwidth($row['DifficultyName'], 0, 35, "...");
         ?>
@@ -268,7 +270,7 @@
         $logMax = $maxPercentage > 0 ? log10($maxPercentage + 1) : 1;
         foreach ($yearlyData as $year => $data) {
             $pct = $data['percentage'];
-            
+
             $logCurrent = $pct > 0 ? log10($pct + 1) : 0;
             $barHeight = ($logCurrent / $logMax) * 100;
             $formattedPercent = number_format($pct, 2) . '%';

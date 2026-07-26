@@ -1,7 +1,7 @@
 <?php
     $PageTitle = "Labs | Stats";
     require "../base.php";
-    require '../header.php';    
+    require '../header.php';
 ?>
 
 <h1> Stats </h1>
@@ -21,7 +21,7 @@
         $stmt->execute();
         $result = $stmt->get_result();
 
-        while($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
     ?>
 
     <div class="flex-container ratingContainer alternating-bg">

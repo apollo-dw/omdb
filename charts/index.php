@@ -45,7 +45,9 @@
     <div class="pagination">
         <span onClick="changePage(page-1)">&laquo;</span>
         <?php for ($i = 1; $i <= 9; $i++) { ?>
-            <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
+            <span class="pageLink page<?php echo $i ?><?php if ($page == $i) {
+                echo ' active';
+            } ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
         <?php } ?>
         <span onClick="changePage(page+1)">&raquo;</span>
     </div>
@@ -82,7 +84,9 @@
         <div class="pagination">
             <span onClick="changePage(page-1)">&laquo;</span>
             <?php for ($i = 1; $i <= 9; $i++) { ?>
-                <span class="pageLink page<?php echo $i ?><?php if ($page == $i) echo ' active' ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
+                <span class="pageLink page<?php echo $i ?><?php if ($page == $i) {
+                    echo ' active';
+                } ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
             <?php } ?>
             <span onClick="changePage(page+1)">&raquo;</span>
         </div>

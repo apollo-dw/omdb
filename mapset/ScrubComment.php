@@ -49,4 +49,3 @@
     $stmt->close();
 
     echo "Hello";
-?>

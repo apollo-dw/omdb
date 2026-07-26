@@ -1,6 +1,6 @@
 <?php
     require '../base.php';
-    
+
     if (!$loggedIn) {
         die("You need to be logged in to do this.");
     }
@@ -16,4 +16,3 @@
 
     header("Location: index.php");
     exit;
-?>

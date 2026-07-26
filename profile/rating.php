@@ -77,7 +77,9 @@
         <?php } ?>
     <?php } ?>
     <?php if ($nominationCount > 0) { ?>
-    <button data-tab="nominations" <?php if (!$isValidUser) { echo "class='active'"; } ?>>Nominations (<?php echo $nominationCount; ?>)</button>
+    <button data-tab="nominations" <?php if (!$isValidUser) {
+        echo "class='active'";
+    } ?>>Nominations (<?php echo $nominationCount; ?>)</button>
     <?php } ?>
     <?php if ($creditCount > 0) { ?>
         <button data-tab="credits">Credits (<?php echo $creditCount; ?>)</button>
@@ -85,9 +87,9 @@
 </div>
 
 <div id="current-tab">
-    <?php if($isValidUser) {
+    <?php if ($isValidUser) {
         include 'tabs/latest.php';
-    } else if ($nominationCount > 0) {
+    } elseif ($nominationCount > 0) {
         include 'tabs/nominations.php';
     } ?>
 </div>
@@ -108,7 +110,7 @@
         } else {
             let dataToSend = { tab: tabName };
 
-            <?php if($isValidUser) { ?>
+            <?php if ($isValidUser) { ?>
             if (tabName === "ratings") {
                 dataToSend.maxRating = <?php echo $maxRating; ?>;
             }

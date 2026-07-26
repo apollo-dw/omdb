@@ -14,8 +14,9 @@
     $stmt->close();
     $isUser = true;
 
-    if ($profile == NULL)
-    die("Can't view this bros friends cuz they aint an OMDB user");
+    if ($profile == null) {
+        die("Can't view this bros friends cuz they aint an OMDB user");
+    }
 
     $stmt = $conn->prepare("
         SELECT users.*, correlated_users.correlation

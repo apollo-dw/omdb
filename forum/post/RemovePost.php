@@ -45,4 +45,3 @@
     $stmt->bind_param("ii", $postId, $threadId);
     $stmt->execute();
     $stmt->close();
-?>

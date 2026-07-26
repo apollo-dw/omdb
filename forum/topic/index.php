@@ -10,8 +10,9 @@
     $topic = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($topic))
+    if (is_null($topic)) {
         die("AHHH");
+    }
 
     $PageTitle = $topic["Name"];
     require_once '../../header.php';
@@ -81,7 +82,7 @@
 <hr>
 
 <?php
-    while($thread = $threads->fetch_assoc()) {
+    while ($thread = $threads->fetch_assoc()) {
         ?>
         <div class="flex-container forum-thread alternating-bg">
             <div>
@@ -118,12 +119,14 @@
     <div class="pagination">
         <a href="<?php echo "?id={$topicId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
         <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
-            <a href="<?php echo "?id={$topicId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) echo 'active' ?>"><?php echo $i ?></span></a>
+            <a href="<?php echo "?id={$topicId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
+                echo 'active';
+            } ?>"><?php echo $i ?></span></a>
         <?php } ?>
         <a href="<?php echo "?id={$topicId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
     </div>
 </div>
 
 <?php
-    require ('../../footer.php');
+    require('../../footer.php');
 ?>

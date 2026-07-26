@@ -78,7 +78,7 @@
     $query3->close();
 
     $isFeaturedArtist = isset($set["track_id"]) && !is_null($set["track_id"]);
-    
+
     $allSetCreators = [];
     foreach ($set["beatmaps"] as $diff) {
         $owners = !empty($diff["owners"]) ? $diff["owners"] : [["id" => $diff["user_id"]]];
@@ -91,8 +91,8 @@
     $isMegacollab = ($uniqueCreatorsCount >= 8);
     $isCollab = (!$isMegacollab && $uniqueCreatorsCount >= 2);
 
-    foreach($set["beatmaps"] as $diff){
-        if($diff["ranked"] != -2){
+    foreach ($set["beatmaps"] as $diff) {
+        if ($diff["ranked"] != -2) {
             continue;
         }
 
@@ -196,4 +196,3 @@
 
     header("Location: ../../mapset/" . $setID);
     die();
-?>

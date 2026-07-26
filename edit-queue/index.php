@@ -2,11 +2,11 @@
     $PageTitle = "Edit Queue";
 
     include '../header.php';
-	
+
     $stmt = $conn->prepare("SELECT e.*, b.SetID as SetID, e.SetID as EditSetID, s.Title as Title, b.DifficultyName FROM beatmap_edit_requests e LEFT JOIN beatmaps b on e.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s on e.SetID = s.SetID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
-	$stmt->execute();
+    $stmt->execute();
     $result = $stmt->get_result();
-	
+
 
     ?>
 
@@ -40,16 +40,16 @@
         <?php
             while ($row = $result->fetch_assoc()) {
                 $isEditingSet = !is_null($row["EditSetID"]);
-				$setId = $row['SetID'];
-				$title = $row["Title"];
-				
-				
-				if ($isEditingSet){
-					$setId = $row['EditSetID'];
-					// Look, I know this is not good. The answer to this is just keep queue sizes small :
-					$title = $conn->query("SELECT Title FROM beatmapsets WHERE SetID = {$setId} LIMIT 1;")->fetch_assoc()["Title"];
-				}
-				
+                $setId = $row['SetID'];
+                $title = $row["Title"];
+
+
+                if ($isEditingSet) {
+                    $setId = $row['EditSetID'];
+                    // Look, I know this is not good. The answer to this is just keep queue sizes small :
+                    $title = $conn->query("SELECT Title FROM beatmapsets WHERE SetID = {$setId} LIMIT 1;")->fetch_assoc()["Title"];
+                }
+
                 $name = GetUserNameFromId($row["UserID"], $conn);
                 $mapsetLink = "../mapset/edit/?id={$setId}";
                 echo "<tr class='alternating-bg' onclick=\"window.open('{$mapsetLink}', '_blank');\" style=\"cursor: pointer;\">";

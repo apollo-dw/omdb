@@ -1,6 +1,6 @@
 <?php
 require '../../base.php';
-if(!$loggedIn){
+if (!$loggedIn) {
     die("NO");
 }
 
@@ -14,27 +14,29 @@ $isEditingSet = !is_null($setID);
 $array = [
     "Meta" => $meta,
     "Mappers" => json_decode($mappers),
-	"Credits" => json_decode($credits)
+    "Credits" => json_decode($credits)
 ];
 
 $json = json_encode($array);
 
-if ($isEditingSet){
+if ($isEditingSet) {
     $stmt = $conn->prepare("SELECT Count(*) FROM beatmaps WHERE SetID = ?;");
     $stmt->bind_param('i', $setID);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $stmt = $conn->prepare("SELECT Status FROM `beatmap_edit_requests` WHERE SetID = ? AND `Status` = 'Pending';");
     $stmt->bind_param('i', $setID);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0)
+    if ($result->num_rows > 0) {
         die("NO");
+    }
 
     $stmt = $conn->prepare("INSERT INTO `beatmap_edit_requests` (SetID, UserID, EditData) VALUES (?, ?, ?);");
     $stmt->bind_param('iis', $setID, $userId, $json);
@@ -45,8 +47,9 @@ if ($isEditingSet){
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 0)
+    if ($result->num_rows == 0) {
         die("NO");
+    }
 
     $setID = $result->fetch_assoc()["SetID"];
 
@@ -55,8 +58,9 @@ if ($isEditingSet){
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0)
+    if ($result->num_rows > 0) {
         die("NO");
+    }
 
     $stmt = $conn->prepare("INSERT INTO `beatmap_edit_requests` (BeatmapID, UserID, EditData) VALUES (?, ?, ?);");
     $stmt->bind_param('iis', $beatmapID, $userId, $json);

@@ -30,7 +30,7 @@
     $stmt->bind_param("ii", $commentId, $newsID);
     $stmt->execute();
     $stmt->close();
-    
+
     $array = array(
         "type" => "comment_deletion",
         "data" => array(
@@ -49,4 +49,3 @@
     $stmt->bind_param("is", $userId, $json);
     $stmt->execute();
     $stmt->close();
-?>

@@ -1,8 +1,9 @@
 <?php
     require '../../base.php';
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die("NO");
+    }
 
     if ($userName != "moonpoint") {
         header('HTTP/1.0 403 Forbidden');

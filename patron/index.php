@@ -26,11 +26,11 @@
 
 <?php
     if (!$loggedIn) {
-        die("log in to views this page");    
+        die("log in to views this page");
     }
 ?>
 
-<?php 
+<?php
 if ($user["IsPatron"] === 1) {
 ?>
 <hr>
@@ -39,8 +39,10 @@ if ($user["IsPatron"] === 1) {
         <span style="font-size:2em; font-weight: bolder;"><i class="icon-heart"></i> </span>
         <p>
             <b>thank you for supporting OMDB!</b> <br />
-            you have OMDB patron benefits until <?php echo(new DateTime($user["PatronToDate"]))->format("jS F Y"); ?> <br>
-            you have supported OMDB for <?php echo $user["TotalPatronMonths"]; ?> month<?php if ($user["TotalPatronMonths"] !== 1) { echo "s"; } ?>
+            you have OMDB patron benefits until <?php echo (new DateTime($user["PatronToDate"]))->format("jS F Y"); ?> <br>
+            you have supported OMDB for <?php echo $user["TotalPatronMonths"]; ?> month<?php if ($user["TotalPatronMonths"] !== 1) {
+                echo "s";
+            } ?>
         </p>
     </div>
 </div> 

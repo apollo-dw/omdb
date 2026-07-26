@@ -14,8 +14,9 @@
     $stmt->close();
     $isUser = true;
 
-    if ($profile == NULL)
+    if ($profile == null) {
         die("Can't view this bros friends cuz they aint an OMDB user");
+    }
 
     $stmt = $conn->prepare("
         SELECT u.UserID AS ID, u.Username AS username,

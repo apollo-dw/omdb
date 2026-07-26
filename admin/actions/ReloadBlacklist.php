@@ -1,6 +1,6 @@
 <?php
-    require_once ('../../base.php');
-    require ('../base.php');
+    require_once('../../base.php');
+    require('../base.php');
 
     $stmt = $conn->prepare("UPDATE beatmaps SET Blacklisted = '0' WHERE BlacklistReason = 'mapper has requested blacklist';");
     $stmt->execute();

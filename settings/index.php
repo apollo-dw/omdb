@@ -4,7 +4,7 @@
 
     require '../header.php';
 
-    if(!$loggedIn){
+    if (!$loggedIn) {
         die("You need to be logged in to view this page.");
     }
 
@@ -25,7 +25,9 @@
             <td>
                 <select name="RandomBehaviour" id="RandomBehaviour" autocomplete="off">
                     <option value="0">Prioritise Played</option>
-                    <option value="1" <?php if ($user["DoTrueRandom"]==1) { echo 'selected="selected"'; }?>>True Random</option>
+                    <option value="1" <?php if ($user["DoTrueRandom"] == 1) {
+                        echo 'selected="selected"';
+                    }?>>True Random</option>
                 </select><br>
                 <span class="subText">"Prioritise Played" only works if you have osu! supporter.</span>
             </td>
@@ -70,7 +72,9 @@
             <td>
                 <select name="HideRatings" id="HideRatings" autocomplete="off">
                     <option value="0">No</option>
-                    <option value="1" <?php if ($user["HideRatings"]==1) { echo 'selected="selected"'; }?>>Yes</option>
+                    <option value="1" <?php if ($user["HideRatings"] == 1) {
+                        echo 'selected="selected"';
+                    }?>>Yes</option>
                 </select><br>
                 <span class="subText">Disallows your ratings from appearing on the front page feed.</span>
             </td>
@@ -82,7 +86,9 @@
             <td>
                 <select name="OnlyFriendsOnFrontPage" id="OnlyFriendsOnFrontPage" autocomplete="off">
                     <option value="0">No</option>
-                    <option value="1" <?php if ($user["OnlyFriendsOnFrontPage"]==1) { echo 'selected="selected"'; }?>>Yes</option>
+                    <option value="1" <?php if ($user["OnlyFriendsOnFrontPage"] == 1) {
+                        echo 'selected="selected"';
+                    }?>>Yes</option>
                 </select><br>
                 <span class="subText">Only shows users that you have friended.</span>
             </td>
@@ -149,7 +155,7 @@
     $result = $stmt->get_result();
     if ($result->num_rows != 0) {
         while ($row = $result->fetch_assoc()) {
-			$name = safe_htmlspecialchars($row["Name"], ENT_QUOTES, 'UTF-8');
+            $name = safe_htmlspecialchars($row["Name"], ENT_QUOTES, 'UTF-8');
             echo "<details><summary>{$name} <a href='RemoveApiApp.php?id={$row["ApiID"]}'><i class='icon-remove'></i></a></summary><span class='subText'>{$row["ApiKey"]}</span></details>";
         }
     }
@@ -203,11 +209,11 @@
                 $deviceInfo = safe_htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
                 $ip = safe_htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
                 $lastAccessed = safe_htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
-                
+
                 echo "<tr>";
                 echo "<td style='padding: 5px 0;'>{$deviceInfo}<br>{$ip}" . ($isCurrentSession ? "<br><strong>(Current)</strong>" : "") . "</td>";
                 echo "<td>{$lastAccessed}</td>";
-                
+
                 if ($isCurrentSession) {
                     echo "<td><em>Current Session</em></td>";
                 } else {

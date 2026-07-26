@@ -11,8 +11,9 @@
     $list = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (is_null($list))
+    if (is_null($list)) {
         die("List not found");
+    }
 
     $title = safe_htmlspecialchars($list['Title'], ENT_QUOTES);
 
@@ -92,7 +93,9 @@
 
             <i
                 id="list-heart"
-                class="icon-heart<?php if (!$userHasLikedList) echo "-empty"; ?>"
+                class="icon-heart<?php if (!$userHasLikedList) {
+                    echo "-empty";
+                } ?>"
             ></i>
             <?php if ($heartedUsernamesString) { ?>
                 <div class="tooltip-box">
@@ -127,7 +130,7 @@
     $result = $stmt->get_result();
     $stmt->close();
 
-    while ($listItem = $result->fetch_assoc()){
+    while ($listItem = $result->fetch_assoc()) {
         list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($listItem, $conn);
         ?>
         <div class="list-item alternating-bg">

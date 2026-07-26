@@ -1,5 +1,5 @@
 <?php
-    function RetrieveRecommendations($conn, $userID){
+    function RetrieveRecommendations($conn, $userID) {
         $number_of_recommendations = 100;
 
         $stmt = $conn->prepare("SELECT IF(user1_id = ?, user2_id, user1_id) AS correlated_user, correlation FROM user_correlations
@@ -8,8 +8,9 @@
         $stmt->execute();
 
         $result = $stmt->get_result();
-        if($result->num_rows == 0)
+        if ($result->num_rows == 0) {
             return (array("error" => "No correlated users"));
+        }
 
         $correlated_users = [];
         while ($row = $result->fetch_assoc()) {
@@ -92,7 +93,7 @@
                     'DifficultyName' => $difficultyname,
                     'SR' => $sr,
                     'DateRanked' => $date,
-					'Score' => round($score, 2),
+                    'Score' => round($score, 2),
                 ];
             }
         }

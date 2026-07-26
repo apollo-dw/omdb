@@ -29,17 +29,17 @@
     $isLoved = $sampleRow["Status"] == 4;
     $isGraveyarded = $sampleRow["Status"] == -2;
     require '../header.php';
-	
-	$stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
-	$stmt->bind_param("ss", $userId, $mapset_id);
-	$stmt->execute();
-	$stmt->store_result();
-	
-	$review_comment = "";
-	if ($stmt->num_rows > 0) {
-		$stmt->bind_result($review_comment);
-		$stmt->fetch();
-	}
+
+    $stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
+    $stmt->bind_param("ss", $userId, $mapset_id);
+    $stmt->execute();
+    $stmt->store_result();
+
+    $review_comment = "";
+    if ($stmt->num_rows > 0) {
+        $stmt->bind_result($review_comment);
+        $stmt->fetch();
+    }
 
     $stmt = $conn->prepare("SELECT Count(*) FROM `ratings` WHERE BeatmapID IN (SELECT BeatmapID FROM beatmaps WHERE SetID=?) ORDER BY date DESC;");
     $stmt->bind_param("s", $mapset_id);
@@ -50,8 +50,8 @@
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_row()[0];
-	
-	$stmt = $conn->prepare("SELECT 
+
+    $stmt = $conn->prepare("SELECT 
     mn.Username,
 	mn.UserID,
     GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
@@ -66,14 +66,14 @@ WHERE
 GROUP BY 
     mn.Username, mn.UserID;
 ");
-	$stmt->bind_param("s", $mapset_id);
+    $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
-	$roleResult = $stmt->get_result();
-	
-	$credits = [];
-	while ($row = $roleResult->fetch_assoc()) {
-		$credits[] = $row;
-	}
+    $roleResult = $stmt->get_result();
+
+    $credits = [];
+    while ($row = $roleResult->fetch_assoc()) {
+        $credits[] = $row;
+    }
 
     // This will be set to true if during the display of difficulties,
     // a blocked one appears. This is so we can display a message near
@@ -117,7 +117,7 @@ GROUP BY
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" .  safe_htmlspecialchars($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" . safe_htmlspecialchars($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
@@ -128,12 +128,15 @@ GROUP BY
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset info</div>
             <div style="padding:0.25em;">
                 <?php
-                if ($isLoved)
+                if ($isLoved) {
                     echo "Submitted: ";
-                else if ($isGraveyarded)
+                }
+                elseif ($isGraveyarded) {
                     echo "Last updated: ";
-                else
+                }
+                else {
                     echo "Ranked: ";
+                }
                 echo date("M jS, Y", strtotime($sampleRow['DateRanked']));
                 ?>
                 <br>
@@ -146,13 +149,15 @@ GROUP BY
                 ?>
 
                 Average Rating: <b><?php echo $averageRating; ?></b> <span style="font-size:12px;color:grey;">/ 5.00 from <?php echo $numberOfSetRatings; ?> votes</span><br>
-                <?php echo getLanguage($sampleRow["Lang"]) . " " .  getGenre($sampleRow["Genre"]); ?> <br>
+                <?php echo getLanguage($sampleRow["Lang"]) . " " . getGenre($sampleRow["Genre"]); ?> <br>
 
                 <?php
-                    if ($isLoved)
+                    if ($isLoved) {
                         echo "Loved Mapset";
-                    if ($isGraveyarded)
+                    }
+                    if ($isGraveyarded) {
                         echo "Graved Mapset";
+                    }
                 ?>
             </div>
         </div>
@@ -192,7 +197,7 @@ GROUP BY
                     echo "</td></tr>";
                 }
                 echo "</table>";
-            } else if (!$isLoved && !$isGraveyarded) {
+            } elseif (!$isLoved && !$isGraveyarded) {
                 echo "No nominators found! This is likely because this is a old set, ranked during moddingv1.<br><a href='edit/?id={$mapset_id}'><span class='subText'><i class='icon-edit'></i> Feel free to help by deducing nominators.</span></a> ";
             }
             ?>
@@ -220,7 +225,7 @@ if (!empty($sampleRow['DateRanked']) && strtotime($sampleRow['DateRanked']) < st
     }
 }
 
-while($row = $result->fetch_assoc()) {
+while ($row = $result->fetch_assoc()) {
     $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `BeatmapID` = ? AND `UserID` = ?");
     $stmt->bind_param("ii", $row["BeatmapID"], $userId);
     $stmt->execute();
@@ -277,7 +282,7 @@ while($row = $result->fetch_assoc()) {
     $maxRating = max(array_column($scoreBuckets, "weighted"));
     $maxRating = max($maxRating, 5);
     $averageRating = 2.5;
-    
+
     if ($totalRatings > 0) {
         $stmt = $conn->prepare("SELECT SUM(r.Score * u.Weight) / SUM(u.Weight) AS avg_score
                                         FROM ratings r
@@ -309,9 +314,9 @@ while($row = $result->fetch_assoc()) {
 		ORDER BY bd.Weight DESC, bd.DescriptorID
 		LIMIT 10
 	");
-	$stmt->bind_param("i", $beatmapID);
-	$stmt->execute();
-	$descriptorResult = $stmt->get_result();
+    $stmt->bind_param("i", $beatmapID);
+    $stmt->execute();
+    $descriptorResult = $stmt->get_result();
 ?>
 
     <div class="flex-container difficulty-container alternating-bg" >
@@ -327,7 +332,9 @@ while($row = $result->fetch_assoc()) {
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
-            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && !is_null($row["ChartRank"])){ echo "class='bolded-map'"; }?>>
+            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && !is_null($row["ChartRank"])) {
+                echo "class='bolded-map'";
+            }?>>
                 <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>
@@ -340,8 +347,9 @@ while($row = $result->fetch_assoc()) {
                 $creatorsResult = $creatorStmt->get_result();
                 $creators = [];
 
-                while ($creator = $creatorsResult->fetch_assoc())
+                while ($creator = $creatorsResult->fetch_assoc()) {
                     $creators[] = $creator['CreatorID'];
+                }
 
                 if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1)) {
                     ?>
@@ -352,8 +360,8 @@ while($row = $result->fetch_assoc()) {
         </div>
 		<div class="flex-child diffBox" style="width:0;text-align:center;">
 			<?php
-			if($totalRatings > 0 && !$blackListed){
-				?>
+            if ($totalRatings > 0 && !$blackListed) {
+                ?>
 				<div class="mapsetRankingDistribution">
 
                     <?php
@@ -370,7 +378,9 @@ while($row = $result->fetch_assoc()) {
                             >
                         </div>
                             <div class="tooltip-box" style="transform: rotate(180deg);">
-                                <?php echo $score; ?>★ <br> <?php echo $count; ?> vote<?php if ($count !== 1) echo "s"; ?>
+                                <?php echo $score; ?>★ <br> <?php echo $count; ?> vote<?php if ($count !== 1) {
+                                    echo "s";
+                                } ?>
                             </div>
                         </div>
 
@@ -379,31 +389,31 @@ while($row = $result->fetch_assoc()) {
                 </div>
 				<span class="subText" style="width:100%;">Rating Distribution</span>
 				<?php
-			}
-			?>
+            }
+            ?>
 		</div>
 		<div class="flex-child diffBox" style="text-align:right;width:25%;">
 			<?php if (!$blackListed) { ?>
 				<?php
-				$averageRating = number_format((float)$averageRating, 2);
-				if ($totalRatings > 0) {
-					?>
+                $averageRating = number_format((float)$averageRating, 2);
+                if ($totalRatings > 0) {
+                    ?>
 					Rating: <b><?php echo $averageRating; ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $totalRatings; ?></span> votes</span><br>
 					<?php
-				}
-				if ($hasFriendsRatings) {
-					?>
+                }
+                if ($hasFriendsRatings) {
+                    ?>
 					Friend Rating: <b style="color:#e79ac1;"><?php echo number_format((float)$friendRatingAvg, 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $friendRatingCount; ?></span> votes</span><br>
 					<?php
-				}
-				if($hasCharted) {
-					?>
+                }
+                if ($hasCharted) {
+                    ?>
 					Ranking:
-					<b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><?php if (!is_null($row["ChartRank"])){ ?>,
+					<b>#<?php echo $row["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($row["ChartYearRank"] / 50); ?>"><?php echo $year;?></a><?php if (!is_null($row["ChartRank"])) { ?>,
 					<b>#<?php echo $row["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($row["ChartRank"] / 50); ?>">overall</a><?php } ?><br>
 					<?php
-				}
-				?>
+                }
+                ?>
 			<?php } else { ?>
 				<b>This difficulty has been blacklisted from OMDB charts.</b> <br>
 				Ratings on this difficulty are private.
@@ -428,51 +438,63 @@ while($row = $result->fetch_assoc()) {
 		</div>
 		<div class="flex-child diffBox" style="width:5%;text-align:left;">
 			<?php
-			if($loggedIn){
-				$selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
-				$selectStmt->bind_param("ii", $userId, $beatmapID);
-				$selectStmt->execute();
-				$tags_result = $selectStmt->get_result();
-				$tags_row = $tags_result->fetch_assoc();
-				$allTags = safe_htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
-				$selectStmt->close();
-				?>
+            if ($loggedIn) {
+                $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
+                $selectStmt->bind_param("ii", $userId, $beatmapID);
+                $selectStmt->execute();
+                $tags_result = $selectStmt->get_result();
+                $tags_row = $tags_result->fetch_assoc();
+                $allTags = safe_htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
+                $selectStmt->close();
+                ?>
 				<span class="identifier" style="display: inline-block;">
-					<ol class="star-rating-list <?php if(!$userHasRatedThis) { echo 'unrated'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
+					<ol class="star-rating-list <?php if (!$userHasRatedThis) {
+                        echo 'unrated';
+                    } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>" rating="<?php echo $userMapRating; ?>">
 						<li class="icon-remove" style="opacity:0;"></li>
-						<?php for ($i = 1; $i <= 5; $i++){ ?>
+						<?php for ($i = 1; $i <= 5; $i++) { ?>
 							<li class="star icon-star<?php
-							if ($userMapRating == ($i - 0.5)) {
-								echo '-half-empty';
-							} else if ($userMapRating < $i) {
-								echo '-empty';
-							}
-							?>" value="<?php echo $i; ?>"></li>
+                            if ($userMapRating == ($i - 0.5)) {
+                                echo '-half-empty';
+                            } elseif ($userMapRating < $i) {
+                                echo '-empty';
+                            }
+                            ?>" value="<?php echo $i; ?>"></li>
 						<?php } ?>
 					</ol>
 				</span>
-				<span class="starRemoveButton <?php if(!$userHasRatedThis) { echo 'disabled'; } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span>
-				<span class="star-value<?php if(!$userHasRatedThis) echo ' unrated';  ?>"><?php if($userHasRatedThis) echo $userMapRating; else echo '&ZeroWidthSpace;';  ?></span>
+				<span class="starRemoveButton <?php if (!$userHasRatedThis) {
+                    echo 'disabled';
+                } ?>" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-remove"></i></span>
+				<span class="star-value<?php if (!$userHasRatedThis) {
+                    echo ' unrated';
+                }  ?>"><?php if ($userHasRatedThis) {
+                echo $userMapRating;
+                } else {
+                echo '&ZeroWidthSpace;';
+                }  ?></span>
 				<select class="star-rating-list-mobile" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-					<option value="-2" <?php if ($userMapRating == -1) echo "selected"; ?>>...</option>
+					<option value="-2" <?php if ($userMapRating == -1) {
+                        echo "selected";
+                    } ?>>...</option>
 					<?php for ($i = 0; $i <= 5; $i += 0.5) {
-						$selected = $userMapRating == $i ? "selected" : "";
-						echo "<option value='{$i}' {$selected}>{$i}</option>";
-					} ?>
+                        $selected = $userMapRating == $i ? "selected" : "";
+                        echo "<option value='{$i}' {$selected}>{$i}</option>";
+                    } ?>
 				</select>
 				<div style="overflow:hidden;text-overflow:ellipsis;">
 					<span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
 				</div>
 				<?php
-			} else {
-				echo 'Log in to rate maps!';
-			}
-			?>
+            } else {
+                echo 'Log in to rate maps!';
+            }
+            ?>
 		</div>
 
 		<div class="flex-child diffBox" style="text-align: right;width:0%;display: contents;">
 			<?php
-				if($loggedIn) { ?>
+                if ($loggedIn) { ?>
 			<span class="tag-button" style="min-width: 1em;padding-right:1em;cursor:pointer;" beatmapid="<?php echo $row["BeatmapID"]; ?>"><i class="icon-ellipsis-vertical"></i></span>
 			<?php } ?>
 		</div>
@@ -548,8 +570,9 @@ while($row = $result->fetch_assoc()) {
                 $contributor_links[] = '<a href="/profile/' . $row['UserID'] . '">' . $safe_username . '</a>';
             }
 
-            if (sizeof($contributor_links) > 0)
+            if (sizeof($contributor_links) > 0) {
                 echo " | contributors: ";
+            }
 
             echo implode(', ', $contributor_links);
         ?>
@@ -625,16 +648,16 @@ while($row = $result->fetch_assoc()) {
 		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
             <ul>
 			<?php
-				foreach ($credits as $credit) {
-					$escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID'], $conn), ENT_QUOTES);
-					echo "<li>
+                foreach ($credits as $credit) {
+                    $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID'], $conn), ENT_QUOTES);
+                    echo "<li>
 					<a href='/profile/{$credit['UserID']}'><img class='square-thumb' src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
                     <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
 					<br>
 					<span class='subText'>{$credit['Roles']}</span>
 					</li>";
-				}
-			?>
+                }
+            ?>
 			</ul>
         </div>
         <hr />
@@ -673,7 +696,9 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child">
                             <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) echo " | private"; ?></span>
+                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) {
+                                echo " | private";
+                            } ?></span>
                         </div>
                     </div>
                     <?php
@@ -702,12 +727,16 @@ while($row = $result->fetch_assoc()) {
 
                     ?>
                     <div class="flex-container flex-child commentHeader">
-                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
-                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ??  GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+                        <div class="flex-child <?php if ($is_blocked) {
+                            echo "faded";
+                        } ?>" style="height:24px;width:24px;">
+                            <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
-                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                        <div class="flex-child <?php if ($is_blocked) {
+                            echo "faded";
+                        } ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
-                            <?php 
+                            <?php
                                 if ($row["IsPatron"] === 1) {
                                     ?>
                                     <span class="tooltip-wrapper">
@@ -735,10 +764,12 @@ while($row = $result->fetch_assoc()) {
                     </div>
                     <div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
                         <?php
-                            if (!$is_blocked)
+                            if (!$is_blocked) {
                                 echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
-                            else
+                            }
+                            else {
                                 echo "<p>[blocked comment]</p>";
+                            }
                         ?>
                     </div>
                     <?php
@@ -746,7 +777,7 @@ while($row = $result->fetch_assoc()) {
             }
             ?>
 			
-			<?php if($loggedIn) { ?>
+			<?php if ($loggedIn) { ?>
                 <div class="commentComposer">
                     <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
                         <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
@@ -786,13 +817,13 @@ while($row = $result->fetch_assoc()) {
         <?php } ?>
 		
 		<?php
-			$stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
-			$stmt->bind_param("s", $sampleRow["SetID"]);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			if ($result->num_rows != 0) {
-                
-				while ($row = $result->fetch_assoc()) {
+            $stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
+            $stmt->bind_param("s", $sampleRow["SetID"]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->num_rows != 0) {
+
+                while ($row = $result->fetch_assoc()) {
                     $is_blocked = 0;
 
                     if ($loggedIn) {
@@ -802,8 +833,9 @@ while($row = $result->fetch_assoc()) {
                         $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
                     }
 
-                    if ($is_blocked)
+                    if ($is_blocked) {
                         continue;
+                    }
 
                     $stmt = $conn->prepare("
                         SELECT
@@ -836,15 +868,19 @@ while($row = $result->fetch_assoc()) {
                     }
 
                     $heartedUsernamesString = implode(", ", $heartedUsernames);
-                    
-					?>
+
+                    ?>
                     <div class="flex-container flex-child commentHeader">
-                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>" style="height:24px;width:24px;">
+                        <div class="flex-child <?php if ($is_blocked) {
+                            echo "faded";
+                        } ?>" style="height:24px;width:24px;">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
-                        <div class="flex-child <?php if ($is_blocked) echo "faded"; ?>">
+                        <div class="flex-child <?php if ($is_blocked) {
+                            echo "faded";
+                        } ?>">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
-                            <?php 
+                            <?php
                                 if ($row["IsPatron"] === 1) {
                                     ?>
                                     <span class="tooltip-wrapper">
@@ -881,7 +917,9 @@ while($row = $result->fetch_assoc()) {
                                     <i
                                         style="cursor: pointer;"
                                         id="review-heart"
-                                        class="icon-heart<?php if (!$userHasLikedReview) echo "-empty"; ?>"
+                                        class="icon-heart<?php if (!$userHasLikedReview) {
+                                            echo "-empty";
+                                        } ?>"
                                         value="<?php echo $row["ReviewID"]; ?>"
                                     ></i>
                                 <?php } else { ?>
@@ -896,9 +934,9 @@ while($row = $result->fetch_assoc()) {
                             </div>
 					</div>
 					<?php
-				}
-			}
-		?>
+                }
+            }
+        ?>
 
         <?php } ?>
 	</div>

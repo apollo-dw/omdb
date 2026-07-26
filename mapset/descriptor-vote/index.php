@@ -10,8 +10,9 @@ $stmt->bind_param("i", $map_id);
 $stmt->execute();
 $beatmap = $stmt->get_result()->fetch_assoc();
 
-if (is_null($beatmap))
+if (is_null($beatmap)) {
     die("Beatmap not found");
+}
 
 $title = safe_htmlspecialchars($beatmap['Title'], ENT_QUOTES);
 $difficultyName = safe_htmlspecialchars($beatmap['DifficultyName'], ENT_QUOTES);
@@ -55,8 +56,9 @@ $stmt->execute();
 $voteResult = $stmt->get_result();
 
 $userVotes = array();
-while ($voteRow = $voteResult->fetch_assoc())
+while ($voteRow = $voteResult->fetch_assoc()) {
     $userVotes[$voteRow['DescriptorID']] = $voteRow['Vote'];
+}
 ?>
 
     <style>
@@ -149,14 +151,14 @@ while ($voteRow = $voteResult->fetch_assoc())
 		<input type="text" id="searchInput" placeholder="Search...">
 		<div id="descriptorTreePopover" class="popover">
 			<?php
-				$stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
-				$stmt->execute();
-				$result = $stmt->get_result();
-				$descriptors = $result->fetch_all(MYSQLI_ASSOC);
+                $stmt = $conn->prepare("SELECT descriptorID, name, ShortDescription, parentID, Usable FROM descriptors");
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $descriptors = $result->fetch_all(MYSQLI_ASSOC);
 
-				$tree = buildTree($descriptors);
-				echo generateTreeHTML($tree);
-			?>
+                $tree = buildTree($descriptors);
+                echo generateTreeHTML($tree);
+            ?>
 		</div>
 
         <a href="../../descriptors/">View all descriptors</a>
@@ -174,7 +176,7 @@ while ($voteRow = $voteResult->fetch_assoc())
             $stmt->execute();
             $result = $stmt->get_result();
 
-            while($row = $result->fetch_assoc()) {
+            while ($row = $result->fetch_assoc()) {
                 $stmt = $conn->prepare("SELECT
 										GROUP_CONCAT(CASE WHEN dv.Vote = 1 THEN u1.Username ELSE NULL END SEPARATOR ', ') AS upvoteUsernames,
 										GROUP_CONCAT(CASE WHEN dv.Vote = 0 THEN u2.Username ELSE NULL END SEPARATOR ', ') AS downvoteUsernames

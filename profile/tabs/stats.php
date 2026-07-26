@@ -1,6 +1,7 @@
 <?php
-    if (file_exists("../../base.php"))
+    if (file_exists("../../base.php")) {
         include "../../base.php";
+    }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
@@ -45,10 +46,12 @@
                         $averageRating = $years[$year]["AverageRating"];
                         $ratingCount = $years[$year]["RatingCount"];
 
-                        if ($ratingCount > 5)
+                        if ($ratingCount > 5) {
                             $value = $averageRating / 5.0;
-                        else
+                        }
+                        else {
                             $value = null;
+                        }
                     }
 
                     echo "<a href='ratings/?id={$profileId}&r=&o=1&t=&p=1&y={$year}'>";
@@ -94,10 +97,12 @@
                         $averageRating = $starRatings[$SR]["AverageRating"];
                         $ratingCount = $starRatings[$SR]["RatingCount"];
 
-                        if ($ratingCount > 5)
+                        if ($ratingCount > 5) {
                             $value = $averageRating / 5.0;
-                        else
+                        }
+                        else {
                             continue;
+                        }
                     } else {
                         continue;
                     }
@@ -111,15 +116,15 @@
                             "type" => "sr",
                             "id" => $tokenVal,
                             "name" => "SR: " . $tokenVal,
-                            "ops" => [ ["op" => ">=", "val" => 12] ]
+                            "ops" => [["op" => ">=", "val" => 12]]
                         ];
                     } else {
-                        $tokenVal = "$SR<=sr<" . ($SR+1);
+                        $tokenVal = "$SR<=sr<" . ($SR + 1);
                         $srTokens[] = [
                             "type" => "sr",
                             "id" => $tokenVal,
                             "name" => "SR: " . $tokenVal,
-                            "ops" => [ 
+                            "ops" => [
                                 ["op" => ">=", "val" => $SR],
                                 ["op" => "<", "val" => $SR + 1]
                             ]
@@ -166,8 +171,9 @@
                 for ($genre = 0; $genre <= 14; $genre++) {
                     $genreString = getGenre($genre);
 
-                    if (is_null($genreString))
+                    if (is_null($genreString)) {
                         continue;
+                    }
 
                     $averageRating = "none";
                     $ratingCount = 0;
@@ -177,8 +183,9 @@
                         $averageRating = $genres[$genre]["AverageRating"];
                         $ratingCount = $genres[$genre]["RatingCount"];
 
-                        if ($ratingCount > 5)
+                        if ($ratingCount > 5) {
                             $value = $averageRating / 5.0;
+                        }
                     }
 
                     $genreName = getGenre($genre) ?: "Genre {$genre}";
@@ -230,8 +237,9 @@
                 for ($language = 0; $language <= 14; $language++) {
                     $languageString = getLanguage($language);
 
-                    if (is_null($languageString))
+                    if (is_null($languageString)) {
                         continue;
+                    }
 
                     $averageRating = "none";
                     $ratingCount = 0;
@@ -240,10 +248,12 @@
                         $averageRating = $languages[$language]["AverageRating"];
                         $ratingCount = $languages[$language]["RatingCount"];
 
-                        if ($ratingCount > 5)
+                        if ($ratingCount > 5) {
                             $value = $averageRating / 5.0;
-                        else
+                        }
+                        else {
                             continue;
+                        }
                     } else {
                         continue;
                     }
@@ -283,8 +293,9 @@
             while ($row = $result->fetch_assoc()) {
                 $country = $row["Country"];
                 $name = getFullCountryName($row["Country"]);
-                if ($name == "")
+                if ($name == "") {
                     continue;
+                }
 
                 $countries[$country] = array(
                     "Name" => getFullCountryName($row["Country"]),
@@ -304,10 +315,12 @@
                     $averageRating = $country["AverageRating"];
                     $ratingCount = $country["RatingCount"];
 
-                    if ($ratingCount > 5)
+                    if ($ratingCount > 5) {
                         $value = $averageRating / 5.0;
-                    else
+                    }
+                    else {
                         continue;
+                    }
 
                     $countryFullName = getFullCountryName($countryCode) ?? $countryCode;
                     $countryTokens = [

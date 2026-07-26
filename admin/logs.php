@@ -30,7 +30,7 @@ include 'header.php';
             echo "<hr>";
         }
     }
-    
+
     $stmt->close();
 ?>
 

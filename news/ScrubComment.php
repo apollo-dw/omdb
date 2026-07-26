@@ -47,5 +47,3 @@
     $stmt->bind_param("ii", $commentId, $newsID);
     $stmt->execute();
     $stmt->close();
-
-?>

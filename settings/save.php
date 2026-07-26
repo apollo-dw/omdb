@@ -9,7 +9,7 @@
     $hideRatings = $body_json["hideRatings"] ?? 0;
     $customDescription = $body_json["customDescription"] ?? '';
     $onlyFriendsOnFrontPage = $body_json["onlyFriendsOnFrontPage"] ?? 0;
-    
+
     $fields = [
         "`DoTrueRandom`=?",
         "`Custom50Rating`=?",

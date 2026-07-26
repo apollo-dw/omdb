@@ -10,11 +10,13 @@
     $stmt->execute();
     $topic = $stmt->get_result()->fetch_assoc()["Name"];
 
-    if (is_null($topic))
+    if (is_null($topic)) {
         die("AHHH");
+    }
 
-    if (!$loggedIn)
+    if (!$loggedIn) {
         die("Please log in");
+    }
 ?>
 
 <style>
@@ -100,5 +102,5 @@
 </script>
 
 <?php
-    require ('../../footer.php');
+    require('../../footer.php');
 ?>

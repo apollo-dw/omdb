@@ -30,27 +30,27 @@ if ($result != null) {
         "RatingCount" => $result["RatingCount"],
         "WeightedAvg" => $result["WeightedAvg"],
     );
-    
+
     $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
     $stmt->bind_param("ii", $beatmapID, $userID);
     $stmt->execute();
     $ownRating = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    
+
     $response["OwnRating"] = $ownRating["Score"] ?? null;
-    
+
     $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
     $ratingsResult = $stmt->get_result();
     $stmt->close();
-    
+
     $ratingsCounts = array();
     while ($ratingRow = $ratingsResult->fetch_assoc()) {
         $ratingsCounts[$ratingRow["Score"]] = $ratingRow["Count"];
     }
     $response["Ratings"] = $ratingsCounts;
-    
+
     $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name
         FROM beatmap_descriptors bd
         JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
@@ -64,7 +64,7 @@ if ($result != null) {
     $stmt->close();
 
     $response["Descriptors"] = implode(', ', array_column($descriptorResult, 0));
-    
+
     $stmt = $conn->prepare("SELECT bn.NominatorID as UserID, m.Username as Username 
         FROM beatmapset_nominators bn 
         JOIN mappernames m ON bn.NominatorID = m.UserID 
@@ -75,7 +75,7 @@ if ($result != null) {
     $nominatorResult = $stmt->get_result();
 
     $nominators = [];
-    while($nominator = $nominatorResult->fetch_assoc()) {
+    while ($nominator = $nominatorResult->fetch_assoc()) {
         $nominators[] = array(
             "UserID" => $nominator["UserID"],
             "Username" => $nominator["Username"]
@@ -83,9 +83,8 @@ if ($result != null) {
     }
     $stmt->close();
     $response["Nominators"] = $nominators;
-    
+
     echo json_encode($response);
 } else {
     echo json_encode(array("error" => "Difficulty not found"));
 }
-?>

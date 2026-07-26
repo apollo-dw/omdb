@@ -1,29 +1,29 @@
 <?php
-	include_once 'base.php';
-	
-	$q=$_GET["q"] ?? "";
+    include_once 'base.php';
+
+    $q = $_GET["q"] ?? "";
     if ($q === "") {
         die("Ok Buddy");
     }
 
     // If it's a link in the query, we should just show the map.
-	if(preg_match('/https:\/\/osu\.ppy\.sh\/(beatmapsets|beatmapset|s)\/(\d+)/', $q, $matches)){
-		$setID = $matches[2];
-		
-		$stmt = $conn->prepare("SELECT SetID, Title, Artist FROM `beatmapsets` WHERE `SetID`= ?;");
-		$stmt->bind_param('s', $setID);
-		$stmt->execute();
-		$res = $stmt->get_result(); 
-		$row = $res->fetch_row();
-		$value = $row ? $row : null;
-		if ($value == null){
-			die("Mapset not found!");
-		}
-		?>
+    if (preg_match('/https:\/\/osu\.ppy\.sh\/(beatmapsets|beatmapset|s)\/(\d+)/', $q, $matches)) {
+        $setID = $matches[2];
+
+        $stmt = $conn->prepare("SELECT SetID, Title, Artist FROM `beatmapsets` WHERE `SetID`= ?;");
+        $stmt->bind_param('s', $setID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res->fetch_row();
+        $value = $row ? $row : null;
+        if ($value == null) {
+            die("Mapset not found!");
+        }
+        ?>
 		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:var(--main-theme-color);" ><?php echo safe_htmlspecialchars($value[2] . " - " . $value[1], ENT_QUOTES); ?></div></a>
 		<?php
-		die();
-	}
+        die();
+    }
     $like = "%$q%";
 
     $stmt = $conn->prepare("SELECT `DescriptorID`, `Name`
@@ -37,7 +37,7 @@
     $stmt->bind_result($descriptorID, $descriptorName);
     $stmt->store_result();
 
-    if ($stmt->num_rows > 0){
+    if ($stmt->num_rows > 0) {
         echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Descriptors</b></div>";
         while ($stmt->fetch()) {
             ?>
@@ -64,9 +64,10 @@
     if ($stmt->num_rows > 0) {
         echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Users</b></div>";
         while ($stmt->fetch()) {
-            if (isset($seenUsers[$userID])) 
+            if (isset($seenUsers[$userID])) {
                 continue;
-            
+            }
+
             $seenUsers[$userID] = true;
             ?>
             <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;">
@@ -79,7 +80,7 @@
         }
     }
     $stmt->close();
-            
+
     $modeBit = 1 << max(0, min(3, (int)$mode));
 
     $types = "i";
@@ -95,7 +96,7 @@
 
     foreach ($terms as $term) {
         $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
-        
+
         if (is_numeric($term)) {
             $termClauses[] = "(s.SearchText LIKE ? OR FIND_IN_SET(?, s.SearchIDs))";
             $types .= "si";
@@ -115,7 +116,7 @@
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($types, ...$params);
-    
+
     $stmt->execute();
     // Added $mapperName directly to the bound results
     $stmt->bind_result($setId, $title, $artist, $hostId, $mapperName);
@@ -143,7 +144,7 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0){
+    if ($result->num_rows > 0) {
         echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Lists</b></div>";
         while ($row = $result->fetch_assoc()) {
             ?>

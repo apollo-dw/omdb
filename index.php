@@ -1,6 +1,6 @@
 <?php
     $PageTitle = "Home";
-	require "base.php";
+    require "base.php";
     require 'header.php';
 ?>
 
@@ -10,7 +10,7 @@
         <span style="color:grey;">
             <?php
             $motd = getMapOfTheDay($conn, $mode);
-            
+
             $query = "SELECT 
                     COUNT(*) AS total_users,
                     SUM(CASE WHEN `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR THEN 1 ELSE 0 END) AS online_users,
@@ -23,7 +23,7 @@
                     (SELECT COUNT(*) FROM `lists`) AS total_lists
                 FROM `users`
             ";
-            
+
             $stmt = $conn->prepare($query);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -41,8 +41,8 @@
 <div class="flex-container column-when-mobile-container">
 	<div class="flex-child column-when-mobile scroll-panel" style="width:40%;">
 		<?php
-		  if ($userId !== -1) {
-				$stmt = $conn->prepare("
+          if ($userId !== -1) {
+                $stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
@@ -68,9 +68,9 @@
 					ORDER BY r.date DESC 
 					LIMIT 100
 				");
-				$stmt->bind_param("iiiii", $mode, $userId, $userId, $userId, $userId);
-			} else {
-				$stmt = $conn->prepare("
+                $stmt->bind_param("iiiii", $mode, $userId, $userId, $userId, $userId);
+            } else {
+                $stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
 					FROM `ratings` r 
 					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
@@ -82,13 +82,13 @@
 					ORDER BY r.date DESC 
 					LIMIT 60
 				");
-				$stmt->bind_param("i", $mode);
-			}
+                $stmt->bind_param("i", $mode);
+            }
           $stmt->execute();
-		  $result = $stmt->get_result();
+          $result = $stmt->get_result();
 
-		  while($row = $result->fetch_assoc()) {
-		  ?>
+          while ($row = $result->fetch_assoc()) {
+          ?>
 			<div class="flex-container ratingContainer alternating-bg">
 			    <div class="flex-child" style="margin-left:0.5em;">
 				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
@@ -118,9 +118,9 @@
                 </div>
 			</div>
 		  <?php
-		  }
-		  $stmt->close();
-		?>
+          }
+          $stmt->close();
+        ?>
 	</div>
     <div class="flex-child column-when-mobile scroll-panel" style="width:60%;">
     <?php
@@ -315,7 +315,7 @@
                 $newsStmt->execute();
                 $newsPost = $newsStmt->get_result()->fetch_assoc();
                 $newsStmt->close();
- 
+
                 if ($newsPost):
                     $newsDate = date("M j, Y H:i", strtotime($newsPost["DateCreated"]));
                     $previewText = mb_strimwidth($newsPost["Content"], 0, 200, "…");
@@ -352,11 +352,13 @@
             $stmt->execute();
             $result = $stmt->get_result();
 
-            while($row = $result->fetch_assoc()) {
-                if (in_array($row["SetID"], $usedSets))
+            while ($row = $result->fetch_assoc()) {
+                if (in_array($row["SetID"], $usedSets)) {
                     continue;
-                if (sizeof($usedSets) >= 8)
+                }
+                if (sizeof($usedSets) >= 8) {
                     break;
+                }
 
                 $artist = $row["Username"] ?? GetUserNameFromId($row["CreatorID"], $conn);
         ?>
@@ -405,7 +407,7 @@
                 $stmt->close();
             }
         ?>
-        <?php if ($motd != null) { 
+        <?php if ($motd != null) {
             $motdYear = date("Y", strtotime($motd['DateRanked']));
         ?>
         <div style="width:100%;text-align:center;">
@@ -451,7 +453,9 @@
             <br>
             <span class="subText">Resets in <span id="updateText"></span></span>
         </div>
-        <?php } else { echo "No maps found?! :("; } ?>
+        <?php } else {
+            echo "No maps found?! :(";
+        } ?>
     </div>
 
     <div class="flex-child column-when-mobile home-panel" style="width:33%;background-color: darkslategray;padding: 0.5em;box-sizing:border-box;">
@@ -473,7 +477,7 @@
             if ($result->num_rows >= 1) {
                 $result = $result->fetch_assoc();
                 $year = date("Y", strtotime($result['DateRanked']));
-                
+
                 $stmt = $conn->prepare("
                     SELECT 
                         bd.DescriptorID,
@@ -530,7 +534,9 @@
             <b><?php echo number_format((float)$result["WeightedAvg"], 2); ?></b> <span class="subText">/ 5.00 from <span style="color:white"><?php echo $result["RatingCount"]; ?></span> votes</span><br>
             <b>#<?php echo $result["ChartYearRank"]; ?></b> for <a href="/charts/?y=<?php echo $year;?>&p=<?php echo ceil($result["ChartYearRank"] / 50); ?>"><?php echo $year;?></a>, <b>#<?php echo $result["ChartRank"]; ?></b> <a href="/charts/?y=all-time&p=<?php echo ceil($result["ChartRank"] / 50); ?>">overall</a><br>
         </div>
-        <?php } else { echo "no maps for this week :("; } ?>
+        <?php } else {
+            echo "no maps for this week :(";
+        } ?>
     </div>
     <div class="flex-child column-when-mobile home-panel" style="width:34%;">
         <?php
@@ -561,9 +567,10 @@
 
         $usedSets = array();
 
-        while($row = $result->fetch_assoc()) {
-            if (in_array($row["SetID"], $usedSets))
+        while ($row = $result->fetch_assoc()) {
+            if (in_array($row["SetID"], $usedSets)) {
                 continue;
+            }
             ?>
             <div class="flex-container ratingContainer alternating-bg" style="height:4em;">
                 <div class="flex-child" style="min-width:2em;text-align:center;">
@@ -585,8 +592,9 @@
                 </div>
             </div>
             <?php
-            if (sizeof($usedSets) == 9)
+            if (sizeof($usedSets) == 9) {
                 break;
+            }
 
             $usedSets[] = $row["SetID"];
         }

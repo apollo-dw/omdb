@@ -33,4 +33,3 @@
     $stmt->bind_param("iis", $userId, $newsId, $comment);
     $stmt->execute();
     $stmt->close();
-?>

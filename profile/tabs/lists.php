@@ -1,6 +1,7 @@
 <?php
-    if (file_exists("../../base.php"))
+    if (file_exists("../../base.php")) {
         include "../../base.php";
+    }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>

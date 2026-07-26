@@ -17,11 +17,10 @@
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if($result->num_rows === 0) {
+    if ($result->num_rows === 0) {
         die(json_encode(array("error" => "Invalid api key")));
     }
 
     $row = $result->fetch_assoc();
     $userID = $row["UserID"];
     $stmt->close();
-?>

@@ -94,9 +94,9 @@
         exit();
     }
 
-    $isNumeric = is_numeric($userID); 
+    $isNumeric = is_numeric($userID);
     if (!$isNumeric) {
-        $usernameInput = strtolower(trim($userID)); 
+        $usernameInput = strtolower(trim($userID));
         $stmt = $conn->prepare("SELECT UserID, IsPatron, PatronFromDate, PatronToDate, TotalPatronMonths FROM users WHERE LOWER(Username) = ? LIMIT 1");
         $stmt->bind_param("s", $usernameInput);
     } else {
@@ -116,12 +116,12 @@
         $stmt->close();
 
         if (!$isNumeric) {
-            http_response_code(200); 
+            http_response_code(200);
             exit();
         }
 
         $username = GetUserNameFromId($userID, $conn);
-        $userID = (int)$userID; 
+        $userID = (int)$userID;
 
         $insertStmt = $conn->prepare("INSERT INTO users (UserID, Username, IsPatron, TotalPatronMonths) VALUES (?, ?, 0, 0)");
         $insertStmt->bind_param("is", $userID, $username);
@@ -176,7 +176,7 @@
     $stmt->execute();
     $stmt->close();
 
-    try{
+    try {
         sendDiscordWebhook(
             $env['DISCORD_WEBHOOK_STRIPE_PAYMENT'],
             "🎉 New Patron Payment",
