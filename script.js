@@ -26,29 +26,41 @@ function setGameMode(mode) {
   location.reload();
 }
 
-let debounceTimer;
+let searchDebounceTimer;
+let searchController;
+let lastSearchQuery = null;
 
 function showResult(str) {
-  if (str.length == 0) {
-    document.getElementById("topBarSearchResults").innerHTML = "";
-    document.getElementById("topBarSearchResults").style.display = "none";
+  const query = str.trim();
+  if (query === lastSearchQuery) return;
+  lastSearchQuery = query;
+
+  clearTimeout(searchDebounceTimer);
+  if (searchController) searchController.abort();
+
+  const results = document.getElementById("topBarSearchResults");
+
+  if (query.length === 0) {
+    results.innerHTML = "";
+    results.style.display = "none";
     return;
   }
 
-  clearTimeout(debounceTimer);
+  searchDebounceTimer = setTimeout(function () {
+    searchController = new AbortController();
 
-  debounceTimer = setTimeout(function () {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("topBarSearchResults").innerHTML =
-          this.responseText;
-        document.getElementById("topBarSearchResults").style.display = "block";
-      }
-    };
-    xmlhttp.open("GET", "/beatmapSearch.php?q=" + encodeURIComponent(str), true);
-    xmlhttp.send();
-  }, 300);
+    fetch("/beatmapSearch.php?q=" + encodeURIComponent(query), {
+      signal: searchController.signal,
+    })
+      .then(function (response) {
+        return response.ok ? response.text() : Promise.reject(response.status);
+      })
+      .then(function (html) {
+        results.innerHTML = html;
+        results.style.display = "block";
+      })
+      .catch(function () {});
+  }, 150);
 }
 
 function searchFocus() {

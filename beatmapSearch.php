@@ -80,39 +80,30 @@
     }
     $stmt->close();
             
-    $types = "";
-    $params = [];
+    $modeBit = 1 << max(0, min(3, (int)$mode));
+
+    $types = "i";
+    $params = [$modeBit];
     $sql = "SELECT s.`SetID`, s.Title, s.Artist, s.CreatorID, COALESCE(mn.Username, u.Username) AS MapperName
             FROM `beatmapsets` s
             LEFT JOIN users u ON u.UserID = s.CreatorID
             LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
-            INNER JOIN (
-                SELECT b.SetID, MAX(b.RatingCount) as MaxRating
-                FROM `beatmaps` b
-                LEFT JOIN beatmapsets s2 ON b.SetID = s2.SetID
-                LEFT JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
-                LEFT JOIN users u2 ON u2.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
-                LEFT JOIN mappernames mn2 ON mn2.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
-                WHERE b.Mode = ?";
-                
-    $types .= "i";
-    $params[] = $mode;
+            WHERE (s.ModeMask & ?) <> 0";
 
     $terms = array_slice(array_filter(explode(" ", $q)), 0, 5);
     $termClauses = [];
-    
+
     foreach ($terms as $term) {
         $likeTerm = "%" . addcslashes($term, '%_\\') . "%";
-        $textSearch = "(s2.Artist LIKE ? OR s2.Title LIKE ? OR b.DifficultyName LIKE ? OR u2.Username LIKE ? OR mn2.Username LIKE ?)";
         
         if (is_numeric($term)) {
-            $termClauses[] = "(" . $textSearch . " OR b.BeatmapID = ? OR s2.SetID = ? OR s2.CreatorID = ? OR bc.CreatorID = ?)";
-            $types .= "sssssiiii";
-            array_push($params, $likeTerm, $likeTerm, $likeTerm, $likeTerm, $likeTerm, (int)$term, (int)$term, (int)$term, (int)$term);
+            $termClauses[] = "(s.SearchText LIKE ? OR FIND_IN_SET(?, s.SearchIDs))";
+            $types .= "si";
+            array_push($params, $likeTerm, (int)$term);
         } else {
-            $termClauses[] = $textSearch;
-            $types .= "sssss";
-            array_push($params, $likeTerm, $likeTerm, $likeTerm, $likeTerm, $likeTerm);
+            $termClauses[] = "s.SearchText LIKE ?";
+            $types .= "s";
+            $params[] = $likeTerm;
         }
     }
 
@@ -120,16 +111,10 @@
         $sql .= " AND " . implode(" AND ", $termClauses);
     }
 
-    $sql .= " GROUP BY b.SetID 
-              ORDER BY MaxRating DESC 
-              LIMIT 25
-            ) as top_sets ON s.SetID = top_sets.SetID
-            ORDER BY top_sets.MaxRating DESC;";
+    $sql .= " ORDER BY s.MaxRating DESC LIMIT 25;";
 
     $stmt = $conn->prepare($sql);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
+    $stmt->bind_param($types, ...$params);
     
     $stmt->execute();
     // Added $mapperName directly to the bound results
@@ -154,19 +139,13 @@
     $stmt->close();
 
     $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, mn.Username FROM `lists` l LEFT JOIN mappernames mn on l.UserID = mn.UserID WHERE MATCH (Title) AGAINST (? IN NATURAL LANGUAGE MODE) AND (`Private` = 0 OR l.`UserID` = ?) LIMIT 5;");
-    $stmt->bind_param("si", $like, $userId);
+    $stmt->bind_param("si", $q, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0){
         echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Lists</b></div>";
         while ($row = $result->fetch_assoc()) {
-            $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
-            $stmt->bind_param("i", $row["ListID"]);
-            $stmt->execute();
-            $item = $stmt->get_result()->fetch_assoc();
-
-            list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
             ?>
             <div class="alternating-bg" style="margin:0;">
                 <div>
