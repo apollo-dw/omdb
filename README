@@ -2,3 +2,19 @@ OMDB repo
 PHP version: 8.1
 
 Recommended to join the Discord if you're contributing
+
+Format/Linting
+----------
+.editorconfig for any editor with EditorConfig support
+
+**VS Code users:** .vscode/extensions.json and .vscode/settings.json exist so use them
+
+Rules in .php-cs-fixer.dist.php don't rly use a standard one but it's pretty close to PSR-12
+
+Setup once after cloning:
+```
+composer install
+```
+
+`composer lint` for linting
+`composer fix-changed` to format the files your branch changed

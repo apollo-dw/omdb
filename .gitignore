@@ -41,3 +41,8 @@ ChartUpdate.php
 /.env
 .env
 /adventure/*
+/vendor/
+.php-cs-fixer.cache
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
