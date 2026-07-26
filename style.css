@@ -1303,12 +1303,17 @@ input[type="checkbox"]:disabled {
   }
 
   .map-card-strip {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scroll-snap-type: x proximity;
+    scrollbar-color: var(--main-theme-link-color)
+      var(--main-theme-color-even-darker);
   }
 
   .map-card {
-    flex: 0 0 calc(25% - 0.5em);
-    max-width: none !important;
+    max-width: none;
+    scroll-snap-align: start;
   }
 
   .flex-container > .flex-child {
@@ -1405,6 +1410,10 @@ input[type="checkbox"]:disabled {
 
   .map-descriptors .tooltip-wrapper {
     display: inline;
+  }
+
+  .descriptor-overflow {
+    display: none;
   }
 
   .difficulty-container > .diffBox:has(> .star-rating-list-mobile) {
@@ -1523,7 +1532,7 @@ input[type="checkbox"]:disabled {
   }
 
   .map-card {
-    flex: 0 0 calc(50% - 0.5em);
+    flex: 0 0 35%;
   }
 
   .friend-box {
