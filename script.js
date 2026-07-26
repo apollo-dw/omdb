@@ -208,6 +208,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   setupHeaderMenus();
+
+  const modal = document.getElementById("modal");
+  const modalTitle = modal.querySelector(".modal-title");
+  const modalBody = modal.querySelector(".modal-body");
+  const modalFooter = modal.querySelector(".modal-footer");
+
+  function openModal(options = {}) {
+    modalTitle.textContent = options.title || "";
+    modalBody.innerHTML = options.body || "";
+    modalFooter.innerHTML = options.footer || "";
+    modal.classList.add("active");
+  }
+
+  function closeModal() {
+    modal.classList.remove("active");
+  }
+
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+
+  modal.querySelector(".modal-backdrop").onclick = closeModal;
 });
 
 function setupHeaderMenus() {
@@ -259,3 +280,4 @@ function setupHeaderMenus() {
     closeMenus(null);
   });
 }
+

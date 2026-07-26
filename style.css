@@ -1575,3 +1575,45 @@ input[type="checkbox"]:disabled {
     padding: 0 0.5em;
   }
 }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-footer {
+  margin-top: 2em;
+  float: right;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0, 0.80);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--main-theme-color);
+  border: 1px solid var(--main-theme-color-even-darker);
+  padding: 2em;
+  min-width: 600px;
+}
+
+.modal-close {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+}
+
+.modal-title {
+  margin: 0;
+}
