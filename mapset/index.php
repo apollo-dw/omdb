@@ -414,23 +414,7 @@ while($row = $result->fetch_assoc()) {
 					<tr>
 						<th style="padding: 0;display: inline;">
 							<span class="subText" style="font-weight:normal;">
-                                <?php
-                                    $descriptorLinks = array();
-
-                                    while ($descriptor = $descriptorResult->fetch_assoc()) {
-                                        $name = safe_htmlspecialchars($descriptor["Name"]);
-                                        $id = (int)$descriptor["DescriptorID"];
-                                        $shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
-                                        $descriptorLink = '<span class="tooltip-wrapper">'
-                                                . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
-                                                . '<span class="tooltip-box">' . $shortDescription . '</span>'
-                                            . '</span>';
-
-                                        $descriptorLinks[] = $descriptorLink;
-                                    }
-
-                                    echo implode(', ', $descriptorLinks);
-                                ?>
+                                <?php echo BuildDescriptorLinks($conn, $descriptorResult); ?>
                             </span>
 						</th>
 						<?php if ($loggedIn) { ?>

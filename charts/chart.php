@@ -186,19 +186,7 @@
                 <?php echo date("M jS, Y", strtotime($row['DateRanked'])); ?><br>
                 <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?><br>
                 <span class="subText map-descriptors">
-                    <?php
-                        $descriptorLinks = [];
-                        while ($descriptor = $descriptorResult->fetch_assoc()) {
-                            $name = safe_htmlspecialchars($descriptor["Name"]);
-                            $id = (int)$descriptor["DescriptorID"];
-                            $short = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
-                            $descriptorLinks[] = '<span class="tooltip-wrapper">'
-                                . '<a style="color:inherit;" href="../descriptor/?id=' . $id . '">' . $name . '</a>'
-                                . '<span class="tooltip-box">' . $short . '</span>'
-                            . '</span>';
-                        }
-                        echo implode(', ', $descriptorLinks);
-                    ?>
+                    <?php echo BuildDescriptorLinks($conn, $descriptorResult); ?>
                 </span>
             </div>
             <div class="flex-child" style="flex:1;">

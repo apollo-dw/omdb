@@ -834,6 +834,38 @@
 		}
 	}
 
+	function BuildDescriptorLinks($conn, $descriptors, $mobileLimit = 6) {
+		if ($descriptors instanceof mysqli_result)
+			$descriptors = $descriptors->fetch_all(MYSQLI_ASSOC);
+
+		$html = "";
+		$index = 0;
+
+		foreach ($descriptors as $descriptor) {
+			$name = safe_htmlspecialchars($descriptor["Name"]);
+			$id = (int)$descriptor["DescriptorID"];
+			$shortDescription = ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"]), false);
+
+			if ($index === $mobileLimit)
+				$html .= '<span class="descriptor-overflow">';
+
+			if ($index > 0)
+				$html .= ', ';
+
+			$html .= '<span class="tooltip-wrapper">'
+				. '<a style="color:inherit;" href="/descriptor/?id=' . $id . '">' . $name . '</a>'
+				. '<span class="tooltip-box">' . $shortDescription . '</span>'
+				. '</span>';
+
+			$index++;
+		}
+
+		if ($index > $mobileLimit)
+			$html .= '</span>';
+
+		return $html;
+	}
+
 	function getListItemDisplayInformation($listItem, $conn)
 	{
 		$imageUrl = "";
