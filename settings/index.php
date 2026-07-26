@@ -17,7 +17,7 @@
 <h1>Settings</h1>
 <hr>
 <form id="settingsForm">
-    <table>
+    <table class="form-table">
         <tr>
             <td>
                 <label>Random behaviour:</label><br>
@@ -156,7 +156,7 @@
 ?>
 
 <form action="CreateNewApiApp.php" method="get">
-    <table>
+    <table class="form-table">
         <tr>
             <td>
                 <label>New Application Name:</label><br>
@@ -179,46 +179,48 @@
 <h2>Active Sessions</h2>
 <span class="subText">Manage your active logins across different devices. Revoking a session will log you out on that device.</span><br><br>
 
-<table style="width: 100%; text-align: left; border-collapse: collapse;">
-    <tr style="border-bottom: 1px solid #ccc;">
-        <th style="padding-bottom: 5px;">Device / IP</th>
-        <th style="padding-bottom: 5px;">Last Accessed</th>
-        <th style="padding-bottom: 5px;">Action</th>
-    </tr>
-<?php
-    $stmt = $conn->prepare("
-        SELECT `SessionToken`, `DeviceInfo`, `IpAddress`, `LastAccessedAt` 
-        FROM `sessions` 
-        WHERE `UserID` = ? AND `ExpiresAt` > NOW() 
-        ORDER BY `LastAccessedAt` DESC
-    ");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+<div class="table-scroll">
+    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #ccc;">
+            <th style="padding-bottom: 5px;">Device / IP</th>
+            <th style="padding-bottom: 5px;">Last Accessed</th>
+            <th style="padding-bottom: 5px;">Action</th>
+        </tr>
+    <?php
+        $stmt = $conn->prepare("
+            SELECT `SessionToken`, `DeviceInfo`, `IpAddress`, `LastAccessedAt` 
+            FROM `sessions` 
+            WHERE `UserID` = ? AND `ExpiresAt` > NOW() 
+            ORDER BY `LastAccessedAt` DESC
+        ");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result->num_rows != 0) {
-        while ($row = $result->fetch_assoc()) {
-            $isCurrentSession = ($row["SessionToken"] === $sessionToken);
-            $deviceInfo = safe_htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
-            $ip = safe_htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
-            $lastAccessed = safe_htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
-            
-            echo "<tr>";
-            echo "<td style='padding: 5px 0;'>{$deviceInfo}<br>{$ip}" . ($isCurrentSession ? "<br><strong>(Current)</strong>" : "") . "</td>";
-            echo "<td>{$lastAccessed}</td>";
-            
-            if ($isCurrentSession) {
-                echo "<td><em>Current Session</em></td>";
-            } else {
-                echo "<td><a href='KillSession.php?token={$row["SessionToken"]}' style='color: red;'>Revoke</a></td>";
+        if ($result->num_rows != 0) {
+            while ($row = $result->fetch_assoc()) {
+                $isCurrentSession = ($row["SessionToken"] === $sessionToken);
+                $deviceInfo = safe_htmlspecialchars($row["DeviceInfo"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
+                $ip = safe_htmlspecialchars($row["IpAddress"] ?? "Unknown", ENT_QUOTES, 'UTF-8');
+                $lastAccessed = safe_htmlspecialchars($row["LastAccessedAt"], ENT_QUOTES, 'UTF-8');
+                
+                echo "<tr>";
+                echo "<td style='padding: 5px 0;'>{$deviceInfo}<br>{$ip}" . ($isCurrentSession ? "<br><strong>(Current)</strong>" : "") . "</td>";
+                echo "<td>{$lastAccessed}</td>";
+                
+                if ($isCurrentSession) {
+                    echo "<td><em>Current Session</em></td>";
+                } else {
+                    echo "<td><a href='KillSession.php?token={$row["SessionToken"]}' style='color: red;'>Revoke</a></td>";
+                }
+                echo "</tr>";
             }
-            echo "</tr>";
+        } else {
+            echo "<tr><td colspan='3'>No active sessions found.</td></tr>";
         }
-    } else {
-        echo "<tr><td colspan='3'>No active sessions found.</td></tr>";
-    }
-?>
-</table>
+    ?>
+    </table>
+</div>
 
 <script>
     function saveChanges(){

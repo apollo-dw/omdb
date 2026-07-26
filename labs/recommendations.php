@@ -27,7 +27,7 @@
             exit;
         }
 
-        echo '<div class="flex-container">';
+        echo '<div class="flex-container map-card-strip">';
         RenderSimilarMapCards($conn, $similarMaps);
         echo '</div>';
         exit;
@@ -92,12 +92,12 @@
             <input type="hidden" id="selectedSetId">
         </div>
     </div>
-    <div class="flex-container" style="background-color: DarkSlateGrey;">
-        <div class="flex-child" style="flex:1;color: #ff9d00;">
+    <div class="flex-container column-when-mobile-container" style="background-color: DarkSlateGrey;">
+        <div class="flex-child column-when-mobile" style="flex:1;color: #ff9d00;">
             <h4 style="margin-top: 0;">Weights</h4>
             <div>
                 <?php foreach ($weights as $key => $default): ?>
-                <div class="flex-container" style="flex-direction:column;margin:1em;">
+                <div class="flex-container" style="flex-direction:column;padding:1em;box-sizing:border-box;">
                     <label>
                         <b><?php echo safe_htmlspecialchars($key, ENT_QUOTES); ?></b>
                         <span class="subText"> = </span>
@@ -110,7 +110,7 @@
         </div>
 
 
-        <div class="flex-child" style="flex:1;color: #00c3ff;">
+        <div class="flex-child column-when-mobile" style="flex:1;color: #00c3ff;">
             <h4 style="margin-top: 0;">Settings</h4>
             <div>
                 <?php
@@ -129,7 +129,7 @@
                 foreach ($settings as $key => $default):
                     $meta = $settingMeta[$key];
                 ?>
-                <div class="flex-container" style="flex-direction:column;margin:1em;">
+                <div class="flex-container" style="flex-direction:column;padding:1em;box-sizing:border-box;">
                     <label>
                         <b><?php echo safe_htmlspecialchars($key, ENT_QUOTES); ?></b>
                         <span class="subText"> = </span>

@@ -10,7 +10,7 @@
 
 
 <b>Most credited mappers</b>
-    <div id="credit-ranking" style="width:32em;">
+    <div id="credit-ranking" style="width:32em;max-width:100%;">
     <?php
         $stmt = $conn->prepare("SELECT mn.UserID, mn.Username, COUNT(*) AS CreditCount
                                 FROM beatmapset_credits AS bc
@@ -26,7 +26,7 @@
 
     <div class="flex-container ratingContainer alternating-bg">
         <div class="flex-child">
-            <a href="/profile/<?php echo $row["UserID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+            <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
         </div>
         <div class="flex-child" style="flex:0 0 50%;">
             <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">

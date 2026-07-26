@@ -49,7 +49,7 @@
             <div class="friend-box <?php echo $friendClass; ?>">
                 <a href="/profile/<?php echo $row["ID"]; ?>">
                     <div class="profileImage">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/><br>
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/><br>
                         <?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?>
                     </div>
                 </a>

@@ -52,8 +52,8 @@
             require "../functions/filter/index.php";
         ?>
 
-        <hr>
-        <div class="friends-list">
+        <hr class="mobile-filters-after">
+        <div class="friends-list mobile-filters-after">
             <b>Your friends</b> <br>
             <div>
                 <?php

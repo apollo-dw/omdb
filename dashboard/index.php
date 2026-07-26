@@ -181,10 +181,21 @@
                 starValue.html('&ZeroWidthSpace;');
                 starValue.addClass("unrated");
             }
+            const mobileSelect = $("<select>").addClass("star-rating-list-mobile")
+                .attr("beatmapid", map.id);
+            mobileSelect.append(
+                $("<option>").attr("value", "-2").text("...").prop("selected", userMapRating == "-1")
+            );
+            for (let i = 0; i <= 5; i += 0.5) {
+                mobileSelect.append(
+                    $("<option>").attr("value", i).text(i).prop("selected", userMapRating == i)
+                );
+            }
 
             identifierElement.append(spanElement);
             identifierElement.append(removeButton);
             identifierElement.append(starValue);
+            identifierElement.append(mobileSelect);
 
             mapElement.append(imageElement, versionLinkElement, identifierElement);
 
@@ -314,6 +325,47 @@
             xhttp.send("bID=" + bID + "&rating=" + rating);
             $this.parent().parent().find('.star-value').html("rating...");
 
+        });
+
+        $(document).on("change", ".star-rating-list-mobile", function(event) {
+            var $this = $(this);
+            var bID = $this.attr("beatmapid");
+            var rating = parseFloat($this.val());
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(this.responseText);
+
+                    var $identifier = $this.closest(".flex-child");
+                    var $list = $identifier.find(".star-rating-list");
+                    var $value = $identifier.find(".star-value");
+
+                    if (rating == -2) {
+                        $list.attr("rating", "").addClass("unrated");
+                        $value.html("&ZeroWidthSpace;").addClass("unrated");
+                        $identifier.find(".starRemoveButton").addClass("disabled");
+                    } else {
+                        $list.attr("rating", rating.toFixed(1)).removeClass("unrated");
+                        $value.html(rating.toFixed(1)).removeClass("unrated");
+                        $identifier.find(".starRemoveButton").removeClass("disabled");
+                    }
+
+                    var $stars = $list.find(".star");
+                    for (var i = 0; i < 5; i++) {
+                        if (i < rating) {
+                            $stars.eq(i).attr('class', rating - 0.5 == i
+                                ? 'star icon-star-half-empty' : 'star icon-star');
+                        } else {
+                            $stars.eq(i).attr('class', 'star icon-star-empty');
+                        }
+                    }
+                }
+            };
+
+            xhttp.open("POST", "../mapset/SubmitRating.php", true);
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("bID=" + bID + "&rating=" + rating);
         });
 
         setInterval(fetchRecentScores, 10000);

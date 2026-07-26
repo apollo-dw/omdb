@@ -126,7 +126,7 @@
             <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
 		</div>
 		<div class="profileImage">
-			<img src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
+			<img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
 		</div>
 		
 		<?php if ($isValidUser && !IS_NULL($profile['UserTitle'])) { ?>
@@ -413,7 +413,7 @@
                     ?>
                     <div class="flex-child" style="text-align:center;flex:0 0 auto;flex-wrap:wrap;padding:0.5em;flex-direction:column;min-width:0;">
                         <div class="profileImage">
-                            <a href="/profile/<?php echo $row["ID"]; ?>"><img src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="max-width:5em;aspect-ratio:1/1;object-fit:cover;max-width:5em;width:100%;" loading="lazy" /></a><br>
+                            <a href="/profile/<?php echo $row["ID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="max-width:5em;aspect-ratio:1/1;object-fit:cover;max-width:5em;width:100%;" loading="lazy" /></a><br>
                             <a href="/profile/<?php echo $row["ID"]; ?>" style="width:100%;display:block;overflow:hidden;text-overflow:ellipsis;"><?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?></a>
                         </div>
                     </div>
@@ -586,7 +586,7 @@
                     </div>
                     <div class="flex-child">
                         <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-                            <img src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+                            <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
                         </a>
                     </div>
                     <div class="flex-child" style="flex:0 0 66%;">

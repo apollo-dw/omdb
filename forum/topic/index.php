@@ -95,7 +95,7 @@
             <div style="margin-left:auto;display:flex;align-items:center;">
                 <div style="margin-right: 6em;display:flex;align-items:center;">
                     <a href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>"/>
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $thread["LatestPostUserID"]; ?>" style="height:32px;width:32px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>"/>
                     </a>
                     <div style="margin-left: 0.5em;">
                         <a style="display:flex;" href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">

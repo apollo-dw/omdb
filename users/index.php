@@ -17,47 +17,49 @@
 		$count = 0;
 		?>
 		
-		<table style="width:100%;">
-			<tr class='alternating-bg'>
-				<th></th>
-				<th></th>
-				<th>Username</th>
-				<th>Ratings Count</th>
-				<th>Descriptor Vote Count</th>
-				<th>Edit Count</th>
-			</tr>
-		
-		<?php while ($row = $result->fetch_assoc()) { 
-			$count += 1;
+		<div class="table-scroll">
+			<table style="width:100%;">
+				<tr class='alternating-bg'>
+					<th></th>
+					<th></th>
+					<th>Username</th>
+					<th>Ratings Count</th>
+					<th>Descriptor Vote Count</th>
+					<th>Edit Count</th>
+				</tr>
 			
-			$stmt = $conn->prepare("SELECT COUNT(*) as count FROM descriptor_votes WHERE UserID = ?;");
-			$stmt->bind_param("i", $row["userid"]);
-			$stmt->execute();
-			$descriptorCount = $stmt->get_result()->fetch_assoc()["count"];			
-			
-			$stmt = $conn->prepare("SELECT COUNT(*) as count FROM beatmap_edit_requests WHERE UserID = ? and Status='approved';");
-			$stmt->bind_param("i", $row["userid"]);
-			$stmt->execute();
-			$editCount = $stmt->get_result()->fetch_assoc()["count"];
-		?>
-			<tr class='alternating-bg'>
-				<td>#<?php echo $count; ?></td>
-				<td>
-					<a style="display:flex;" href="/profile/<?php echo $row["userid"]; ?>">
-                        <img src="https://s.ppy.sh/a/<?php echo $row["userid"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["userid"], $conn), ENT_QUOTES); ?>"/>
-                    </a>
-				</td>
-				<td>
-					<a href="/profile/<?php echo $row["userid"]; ?>">
-						<?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?>
-					</a>
-				</td>
-				<td><?php echo $row["ratings_count"]; ?></td>
-				<td><?php echo $descriptorCount; ?></td>
-				<td><?php echo $editCount; ?></td>
-			</tr>
-		<?php } ?>
-	</table>
+			<?php while ($row = $result->fetch_assoc()) { 
+				$count += 1;
+				
+				$stmt = $conn->prepare("SELECT COUNT(*) as count FROM descriptor_votes WHERE UserID = ?;");
+				$stmt->bind_param("i", $row["userid"]);
+				$stmt->execute();
+				$descriptorCount = $stmt->get_result()->fetch_assoc()["count"];			
+				
+				$stmt = $conn->prepare("SELECT COUNT(*) as count FROM beatmap_edit_requests WHERE UserID = ? and Status='approved';");
+				$stmt->bind_param("i", $row["userid"]);
+				$stmt->execute();
+				$editCount = $stmt->get_result()->fetch_assoc()["count"];
+			?>
+				<tr class='alternating-bg'>
+					<td>#<?php echo $count; ?></td>
+					<td>
+						<a style="display:flex;" href="/profile/<?php echo $row["userid"]; ?>">
+							<img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["userid"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars(GetUserNameFromId($row["userid"], $conn), ENT_QUOTES); ?>"/>
+						</a>
+					</td>
+					<td>
+						<a href="/profile/<?php echo $row["userid"]; ?>">
+							<?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?>
+						</a>
+					</td>
+					<td><?php echo $row["ratings_count"]; ?></td>
+					<td><?php echo $descriptorCount; ?></td>
+					<td><?php echo $editCount; ?></td>
+				</tr>
+			<?php } ?>
+		</table>
+	</div>
 <?php
 	require("../footer.php");
 ?>
