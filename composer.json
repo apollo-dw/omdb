@@ -10,6 +10,6 @@
     "scripts": {
         "lint": "php-cs-fixer check --diff",
         "fix": "php-cs-fixer fix",
-        "fix-changed": "git diff --name-only --diff-filter=ACMR master... -- '*.php' | xargs -r php-cs-fixer fix --config=.php-cs-fixer.dist.php --"
+        "fix-changed": "git diff --name-only --diff-filter=ACMR origin/master... -- '*.php' | xargs -r php-cs-fixer fix --config=.php-cs-fixer.dist.php --"
     }
 }
