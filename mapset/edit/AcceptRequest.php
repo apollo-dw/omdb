@@ -101,4 +101,6 @@ if ($isEditingSet) {
     }
 }
 
+BeatmapsetSearchSet($conn, $setID);
+
 header('Location: ../edit/?id=' . $setID);

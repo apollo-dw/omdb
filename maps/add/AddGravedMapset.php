@@ -192,6 +192,8 @@
     $rebuild_desc_stmt->execute();
     $rebuild_desc_stmt->close();
 
+    BeatmapsetSearchSet($conn, $setID);
+
     header("Location: ../../mapset/" . $setID);
     die();
 ?>

@@ -88,6 +88,10 @@ CREATE TABLE `beatmapsets` (
   `HasVideo` tinyint(1) DEFAULT '0',
   `CreatorName` varchar(50) DEFAULT NULL,
   `IsNSFW` tinyint(1) DEFAULT NULL,
+  `SearchText` varchar(2048) DEFAULT NULL,
+  `SearchIDs` varchar(2048) DEFAULT NULL,
+  `MaxRating` int NOT NULL DEFAULT '0',
+  `ModeMask` tinyint UNSIGNED NOT NULL DEFAULT '0',
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -563,7 +567,8 @@ ALTER TABLE `beatmaps` ADD FULLTEXT KEY `Artist` (`DifficultyName`);
 -- Indexes for table `beatmapsets`
 --
 ALTER TABLE `beatmapsets`
-  ADD PRIMARY KEY (`SetID`);
+  ADD PRIMARY KEY (`SetID`),
+  ADD KEY `idx_maxrating` (`MaxRating` DESC);
 
 --
 -- Indexes for table `beatmapset_credits`

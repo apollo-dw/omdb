@@ -736,6 +736,45 @@
         return true;
     }
 
+	function BeatmapsetSearchSet($conn, $setId) {
+        // GROUP_CONCAT truncates each group at 1024 bytes by default which some sets exceed
+        $conn->query("SET SESSION group_concat_max_len = 65535;");
+
+        $stmt = $conn->prepare("
+            UPDATE `beatmapsets` s
+            LEFT JOIN (
+                SELECT b.SetID AS SetID,
+                    BIT_OR(1 << b.Mode) AS ModeMask,
+                    LEFT(CONCAT_WS(' ',
+                        s2.Artist,
+                        s2.Title,
+                        GROUP_CONCAT(DISTINCT b.DifficultyName SEPARATOR ' '),
+                        GROUP_CONCAT(DISTINCT COALESCE(mn.Username, u.Username) SEPARATOR ' ')
+                    ), 2048) AS SearchText,
+                    LEFT(CONCAT_WS(',',
+                        b.SetID,
+                        GROUP_CONCAT(DISTINCT b.BeatmapID),
+                        GROUP_CONCAT(DISTINCT COALESCE(bc.CreatorID, s2.CreatorID))
+                    ), 2048) AS SearchIDs
+                FROM `beatmaps` b
+                LEFT JOIN `beatmapsets` s2 ON b.SetID = s2.SetID
+                LEFT JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
+                LEFT JOIN `users` u ON u.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
+                LEFT JOIN `mappernames` mn ON mn.UserID = COALESCE(bc.CreatorID, s2.CreatorID)
+                WHERE b.SetID = ?
+                GROUP BY b.SetID
+            ) t ON t.SetID = s.SetID
+            SET s.SearchText = t.SearchText,
+                s.SearchIDs = t.SearchIDs,
+                s.ModeMask = COALESCE(t.ModeMask, 0)
+            WHERE s.SetID = ?;");
+        $stmt->bind_param("ii", $setId, $setId);
+        $ok = $stmt->execute();
+        $stmt->close();
+
+        return $ok;
+    }
+
 	function getGenre($number) {
 		switch ($number) {
 			case 2:
