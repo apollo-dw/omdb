@@ -327,7 +327,7 @@ while($row = $result->fetch_assoc()) {
             <span style="position:relative;top:2px;">
                 <?php echo getModeIcon($row['Mode']); ?>
             </span>
-            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= 250 && !is_null($row["ChartRank"])){ echo "class='bolded'"; }?>>
+            <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && !is_null($row["ChartRank"])){ echo "class='bolded-map'"; }?>>
                 <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>
@@ -877,6 +877,9 @@ while($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
+                            if ($loggedIn && $isModerator) { ?>
+                                <i class="icon-comment convertReview" style="color:#f94141;cursor: pointer;" value="<?php echo $row["ReviewID"]; ?>"></i>
+                            <?php }
                             if ($row["UserID"] == $userId || $isModerator) { ?>
                                 <i class="icon-remove removeReview" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
                             <?php }
@@ -1005,6 +1008,26 @@ while($row = $result->fetch_assoc()) {
         };
 
         xhttp.open("POST", "RemoveReview.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&rID=" + $this.attr('value'));
+    });
+
+    $(".convertReview").click(function(event){
+        var $this = $(this);
+
+        if (!confirm("Are you sure you want to convert this review into a comment?")) {
+            return;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                location.reload();
+            }
+        };
+
+        xhttp.open("POST", "ConvertReview.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&rID=" + $this.attr('value'));
     });

@@ -8,6 +8,8 @@
 	include_once 'functions/recommendations/index.php';
 	include_once 'functions/filter/helpers.php';
 
+	$BOLDED_MAP_CHART_RANK_BOUNDARY = 500;
+
 	/**
 	 * Sends a redirect header pointed to the given relative location (using the
 	 * environment variable PUBLIC_URL to determine the host), and exits.

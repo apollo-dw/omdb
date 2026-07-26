@@ -1,5 +1,6 @@
 <?php
     $CUSTOM_THEME_FONTS = [
+        'Open Sans'          => 'OpenSans, sans-serif',
         'Arial'              => 'Arial, sans-serif',
         'Verdana'            => 'Verdana, sans-serif',
         'Helvetica'          => 'Helvetica, Arial, sans-serif',
@@ -27,7 +28,7 @@
         'main-theme-link-color' => '#6fffea',
         'main-theme-star-color' => 'white',
         'main-theme-patron-pink' => '#ecb4f5',
-        'main-theme-text-font-family' => 'Verdana, sans-serif',
+        'main-theme-text-font-family' => 'OpenSans, sans-serif',
     ];
 
     function GetOmdbLogoFilters(string $hex): array {

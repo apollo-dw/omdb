@@ -1,9 +1,19 @@
+@font-face {
+  font-family: OpenSans;
+  src: url("./assets/OpenSans.ttf");
+}
+@font-face {
+  font-family: OpenSans;
+  font-style: italic;
+  src: url("./assets/OpenSans-Italic.ttf");
+}
+
 :root {
   --main-theme-color: DarkSlateGray;
   --main-theme-color-darker: #203838;
   --main-theme-color-even-darker: #0c1515;
   --main-theme-text-color: white;
-  --main-theme-text-font-family: Verdana;
+  --main-theme-text-font-family: OpenSans;
   --main-theme-background-color: black;
   --main-theme-subtext-color: #a8a8a8;
   --main-theme-link-color: #6fffea;
@@ -809,10 +819,6 @@ td input {
   padding: 0.05em;
 }
 
-.bolded {
-  font-weight: bold;
-}
-
 .starRatingDisplay {
   display: inline-block;
   white-space: nowrap;
@@ -1115,6 +1121,10 @@ input[type="checkbox"]:checked::after {
 input[type="checkbox"]:disabled {
   opacity: 0.5;
   cursor: initial;
+}
+
+.bolded-map {
+  font-weight: 750;
 }
 
 @media only screen and (max-width: 1050px) {

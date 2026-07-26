@@ -116,7 +116,7 @@
         $stmt2->close();
 
         $topMap = $difficultyResult->fetch_assoc();
-        $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= 250;
+        $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY;
         $topMapIsGD = $set["CreatorID"] != $profileId;
         $topMapIsCollab = $topMap["NumCreators"] > 1;
         $topMapRatingCount = $topMap["RatingCount"] ?? 0;
@@ -179,7 +179,7 @@
             <?php while ($map = $difficultyResult->fetch_assoc()): ?>
                 <div class="profile-lesser-map">
                     <div class="profile-lesser-map-name">
-                        <a <?php if ($map["ChartRank"] <= 250 && isset($map["ChartRank"])) echo "style='font-weight:bolder;'"; ?>
+                        <a <?php if ($map["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && isset($map["ChartRank"])) echo "class='bolded-map'"; ?>
                            href="/mapset/<?php echo $set['SetID']; ?>">
                             <?php echo safe_htmlspecialchars($map['DifficultyName'], ENT_QUOTES); ?>
                         </a>

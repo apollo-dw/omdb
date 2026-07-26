@@ -80,24 +80,40 @@
         $stmt_relation_from_profile_user->close();
 
         if ($profileId != $userId) {
-            $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
-                        FROM `ratings` r1
-                        JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
-                        JOIN `beatmaps` b ON r1.`BeatmapID` = b.`BeatmapID`
-                        WHERE r1.`UserID` = ? AND r2.`UserID` = ? AND b.`Mode` = ?");
-            $stmt->bind_param("iii", $userId, $profileId, $mode);
+            $correlation = null;
+            $sharedMapCount = 0;
+
+            $lowId  = min($userId, $profileId);
+            $highId = max($userId, $profileId);
+
+            $stmt = $conn->prepare("SELECT `correlation`, `count`
+                FROM `user_correlations`
+                WHERE user1_id = ? AND user2_id = ?");
+            $stmt->bind_param("ii", $lowId, $highId);
             $stmt->execute();
-            $resultSet = $stmt->get_result();
-
-            // Fetch and store the scores in arrays
-            $rows = $resultSet->fetch_all(MYSQLI_NUM);
-
-            $userScores = array_column($rows, 0);
-            $profileScores = array_column($rows, 1);
-
+            $cached = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            $correlation = CalculatePearsonCorrelation($userScores, $profileScores);
+            if ($cached !== null) {
+                $correlation = (float)$cached["correlation"];
+                $sharedMapCount = (int)$cached["count"];
+            } else {
+                $stmt = $conn->prepare("SELECT r1.`Score`, r2.`Score`
+                            FROM `ratings` r1
+                            JOIN `ratings` r2 ON r1.`BeatmapID` = r2.`BeatmapID`
+                            JOIN `beatmaps` b ON r1.`BeatmapID` = b.`BeatmapID`
+                            WHERE r1.`UserID` = ? AND r2.`UserID` = ? AND b.`Mode` = ?");
+                $stmt->bind_param("iii", $userId, $profileId, $mode);
+                $stmt->execute();
+                $rows = $stmt->get_result()->fetch_all(MYSQLI_NUM);
+                $stmt->close();
+
+                $sharedMapCount = count($rows);
+                $correlation = CalculatePearsonCorrelation(
+                    array_column($rows, 0),
+                    array_column($rows, 1)
+                );
+            }
         }
     }
 
@@ -342,7 +358,7 @@
                 </div>
 				<div style="margin-bottom:1em;">
                     <div style="margin-bottom:0.5em;"><span class="subText"><?php echo round($correlation, 3); ?></span></div>
-					Rating Similarity To You<br>
+					Rating Similarity To You<br><span class="subText">based on <?php echo $sharedMapCount; ?> map<?php echo $sharedMapCount === 1 ? '' : 's'; ?></span>
 				</div>
 			<?php } elseif ($profileId == $userId) {
                     ?>
