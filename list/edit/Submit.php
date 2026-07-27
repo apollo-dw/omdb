@@ -16,6 +16,10 @@
         $items = $decodedData["items"];
         $listId = $decodedData["listId"] ?? "";
 
+        if (!is_array($items) || count($items) === 0) {
+            die(json_encode(array("error" => "at least one item required")));
+        }
+
         if ($listId === "") {
             $stmt = $conn->prepare("INSERT INTO lists (Title, Description, UserID, Private) VALUES (?, ?, ?, ?);");
             $stmt->bind_param("ssii", $listTitle, $listDescription, $userId, $listPrivate);
