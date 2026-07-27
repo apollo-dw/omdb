@@ -43,6 +43,29 @@
     $filterTypes .= $filter['types'];
     $filterValues = array_merge($filterValues, $filter['values']);
 
+    if ($loggedIn) {
+        if ($parsedTokens['ratedStatus'] !== 'any') {
+            $ratedExists = ($parsedTokens['ratedStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
+            $filterConditions .= " AND {$ratedExists} (
+                SELECT 1 FROM ratings r_meta
+                WHERE r_meta.BeatmapID = b.BeatmapID AND r_meta.UserID = ?
+            )";
+            $filterTypes .= "i";
+            $filterValues[] = $userId;
+        }
+
+        if ($parsedTokens['friendsStatus'] !== 'any') {
+            $friendsExists = ($parsedTokens['friendsStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
+            $filterConditions .= " AND {$friendsExists} (
+                SELECT 1 FROM ratings r_friend
+                JOIN user_relations ur_meta ON ur_meta.UserIDTo = r_friend.UserID AND ur_meta.Type = 1 AND ur_meta.UserIDFrom = ?
+                WHERE r_friend.BeatmapID = b.BeatmapID
+            )";
+            $filterTypes .= "i";
+            $filterValues[] = $userId;
+        }
+    }
+
     switch ($order) {
         case '2':
             $orderSQL = "s.Timestamp ASC";
@@ -52,6 +75,12 @@
             break;
         case '4':
             $orderSQL = "MAX(b.Rating) ASC,  MAX(b.WeightedAvg) ASC";
+            break;
+        case '5':
+            $orderSQL = "MAX(COALESCE(b.RatingCount, 0)) DESC, s.Timestamp DESC";
+            break;
+        case '6':
+            $orderSQL = "MAX(COALESCE(b.RatingCount, 0)) ASC, s.Timestamp DESC";
             break;
         default: $orderSQL = "s.Timestamp DESC";
     }
