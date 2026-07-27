@@ -367,11 +367,9 @@
         ];
     }
 
-    // beatmap_descriptors.BeatmapID is varchar
-    // TODO: Make it NOT varchar
     function filterDescriptorCountCondition(string $op, float $val): string {
         $exists = "EXISTS (SELECT 1 FROM beatmap_descriptors bd_c WHERE bd_c.BeatmapID = b.BeatmapID)";
-        $count = "(SELECT COUNT(*) FROM beatmap_descriptors bd_c WHERE bd_c.BeatmapID = CAST(b.BeatmapID AS CHAR))";
+        $count = "(SELECT COUNT(*) FROM beatmap_descriptors bd_c WHERE bd_c.BeatmapID = b.BeatmapID)";
 
         if (($op === '=' && $val == 0) || ($op === '<=' && $val == 0) || ($op === '<' && $val > 0 && $val <= 1)) {
             return "NOT {$exists}";
