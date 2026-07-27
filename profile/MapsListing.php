@@ -103,17 +103,24 @@
     $stmt->execute();
     $setsResult = $stmt->get_result();
     $stmt->close();
-?>
 
-<div id="beatmaps">
-<?php
+    $sets = [];
+    $setIds = [];
     while ($set = $setsResult->fetch_assoc()) {
         if ($set['SetID'] === null) {
             continue;
         }
+        $sets[] = $set;
+        $setIds[] = (int)$set['SetID'];
+    }
 
+    $difficultiesBySet = [];
+    $commentCounts = [];
+
+    if (!empty($setIds)) {
         $stmt = $conn->prepare("
             SELECT
+                b.SetID,
                 b.BeatmapID,
                 s.DateRanked,
                 b.DifficultyName,
@@ -127,27 +134,46 @@
             LEFT JOIN beatmapsets s ON b.SetID = s.SetID
             INNER JOIN beatmap_creators bc ON b.BeatmapID = bc.BeatmapID
             LEFT JOIN ratings r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
-            WHERE b.SetID = ? AND bc.CreatorID = ?
+            WHERE bc.CreatorID = ?
             {$filterConditions}
-            ORDER BY b.ChartRank IS NULL, b.ChartRank ASC, b.RatingCount DESC
+            ORDER BY b.ChartRank IS NULL, b.ChartRank ASC, b.RatingCount DESC, b.BeatmapID ASC
         ");
-        $diffTypes = "iii" . $filterTypes;
         if (!empty($filterTypes)) {
-            $stmt->bind_param($diffTypes, $userId, $set["SetID"], $profileId, ...$filterValues);
+            $stmt->bind_param("ii" . $filterTypes, $userId, $profileId, ...$filterValues);
         } else {
-            $stmt->bind_param("iii", $userId, $set["SetID"], $profileId);
+            $stmt->bind_param("ii", $userId, $profileId);
         }
         $stmt->execute();
         $difficultyResult = $stmt->get_result();
+        while ($map = $difficultyResult->fetch_assoc()) {
+            $difficultiesBySet[$map["SetID"]][] = $map;
+        }
         $stmt->close();
 
-        $stmt2 = $conn->prepare("SELECT COUNT(*) FROM comments WHERE SetID = ?");
-        $stmt2->bind_param("i", $set["SetID"]);
-        $stmt2->execute();
-        $commentCount = $stmt2->get_result()->fetch_row()[0];
-        $stmt2->close();
+        $placeholders = implode(',', array_fill(0, count($setIds), '?'));
+        $stmt = $conn->prepare("SELECT SetID, COUNT(*) AS CommentCount FROM comments WHERE SetID IN ({$placeholders}) GROUP BY SetID");
+        $stmt->bind_param(str_repeat('i', count($setIds)), ...$setIds);
+        $stmt->execute();
+        $commentResult = $stmt->get_result();
+        while ($row = $commentResult->fetch_assoc()) {
+            $commentCounts[$row["SetID"]] = $row["CommentCount"];
+        }
+        $stmt->close();
+    }
+?>
 
-        $topMap = $difficultyResult->fetch_assoc();
+<div id="beatmaps">
+<?php
+    foreach ($sets as $set) {
+        $difficulties = $difficultiesBySet[$set["SetID"]] ?? [];
+        if (empty($difficulties)) {
+            continue;
+        }
+
+        $difficultyCount = count($difficulties);
+        $commentCount = $commentCounts[$set["SetID"]] ?? 0;
+
+        $topMap = array_shift($difficulties);
         $topMapIsBolded = isset($topMap["ChartRank"]) && $topMap["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY;
         $topMapIsGD = $set["CreatorID"] != $profileId;
         $topMapIsCollab = $topMap["NumCreators"] > 1;
@@ -158,7 +184,7 @@
             style="box-sizing: border-box;"
             data-rating-count="<?php echo $topMapRatingCount; ?>"
             data-chart-rank="<?php echo $topMapChartRank; ?>"
-            class="profile-top-map<?php if ($difficultyResult->num_rows > 1) {
+            class="profile-top-map<?php if ($difficultyCount > 1) {
                 echo ' clickable';
             } ?>"
         >
@@ -213,7 +239,7 @@
                     <?php endif; ?>
                 </span>
                 <span class="collapse-arrow"
-                      style="<?php if ($difficultyResult->num_rows == 1) {
+                      style="<?php if ($difficultyCount == 1) {
                           echo 'visibility:hidden;';
                       } ?>">
                     ◀
@@ -222,7 +248,7 @@
         </div>
 
         <div class="lesser-maps" style="display:none;">
-            <?php while ($map = $difficultyResult->fetch_assoc()): ?>
+            <?php foreach ($difficulties as $map): ?>
                 <div class="profile-lesser-map">
                     <div class="profile-lesser-map-name">
                         <a <?php if ($map["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && isset($map["ChartRank"])) {
@@ -254,7 +280,7 @@
                         </span>
                     </div>
                 </div>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </div>
 <?php
     }
