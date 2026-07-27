@@ -78,12 +78,32 @@
         ];
     }
 
-    function ParseCSSValueEscapes(string $value): string {
-        return str_replace(
-            ['</style', '<', '>', "\0"],
-            ['<\/style', '\3C ', '\3E ', ''],
-            $value
-        );
+    function SanitizeCSSValue($variable, $value) {
+        switch ($variable) {
+            case 'main-theme-color':
+            case 'main-theme-color-darker':
+            case 'main-theme-color-even-darker':
+            case 'main-theme-text-color':
+            case 'main-theme-background-color':
+            case 'main-theme-subtext-color':
+            case 'main-theme-link-color':
+            case 'main-theme-star-color':
+            case 'main-theme-patron-pink':
+                if (!preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
+                    return null;
+                }
+                return $value;
+
+            case 'main-theme-text-font-family':
+                global $CUSTOM_THEME_FONTS;
+                if (!in_array($value, array_values($CUSTOM_THEME_FONTS), true)) {
+                    return null;
+                }
+                return $value;
+
+            default:
+                return null;
+        }
     }
 
     function ParseCSSVariableNames(string $name): string {
@@ -107,13 +127,20 @@
 
         echo "<style>\n";
         echo ":root {\n";
+
         foreach ($activeTheme as $variable => $value) {
+            $safeValue = SanitizeCSSValue($variable, (string)$value);
+            if ($safeValue === null) {
+                continue;
+            }
+
             echo "--" .
                 ParseCSSVariableNames($variable) .
                 ": " .
-                ParseCSSValueEscapes((string)$value) .
+                $safeValue .
                 ";\n";
         }
+
         echo "--top-bar-icon-hue: " . (float)$imageFilter['rotation'] . "deg;\n";
         echo "--top-bar-icon-saturation: " . (float)$imageFilter['saturation'] . ";\n";
         echo "--top-bar-icon-brightness: " . (float)$imageFilter['brightness'] . ";\n";
