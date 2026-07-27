@@ -47,7 +47,7 @@ CREATE TABLE `beatmaps` (
   `Mode` tinyint UNSIGNED NOT NULL DEFAULT '0',
   `Status` tinyint NOT NULL DEFAULT '0',
   `SR` float NOT NULL DEFAULT '0',
-  `Rating` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
+  `Rating` float DEFAULT NULL,
   `ChartRank` int DEFAULT NULL,
   `ChartYearRank` int DEFAULT NULL,
   `Timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -91,7 +91,7 @@ CREATE TABLE `beatmapsets` (
   `SearchText` varchar(2048) DEFAULT NULL,
   `SearchIDs` varchar(2048) DEFAULT NULL,
   `MaxRating` int NOT NULL DEFAULT '0',
-  `ModeMask` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `ModeMask` tinyint UNSIGNED NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -448,7 +448,7 @@ CREATE TABLE `rating_tags` (
 CREATE TABLE `reviews` (
   `ReviewID` int NOT NULL,
   `UserID` int NOT NULL,
-  `SetID` varchar(32) NOT NULL,
+  `SetID` mediumint UNSIGNED NOT NULL,
   `Comment` text,
   `date` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -560,6 +560,7 @@ ALTER TABLE `beatmaps`
   ADD PRIMARY KEY (`BeatmapID`),
   ADD KEY `beatmapset_id` (`SetID`),
   ADD KEY `idx_Mode` (`Mode`),
+  ADD KEY `idx_mode_rating` (`Mode`, `Rating` DESC, `BeatmapID`),
   ADD KEY `blacklisted_index` (`Blacklisted`);
 ALTER TABLE `beatmaps` ADD FULLTEXT KEY `Artist` (`DifficultyName`);
 
@@ -599,7 +600,8 @@ ALTER TABLE `beatmap_creators`
 ALTER TABLE `beatmap_descriptors`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_beatmap_descriptor` (`BeatmapID`,`DescriptorID`),
-  ADD KEY `idx_bd_beatmap_weight` (`BeatmapID`,`Weight` DESC);
+  ADD KEY `idx_bd_beatmap_weight` (`BeatmapID`,`Weight` DESC),
+  ADD KEY `idx_bd_descriptor_beatmap` (`DescriptorID`,`BeatmapID`);
 
 --
 -- Indexes for table `beatmap_edit_requests`
@@ -974,4 +976,4 @@ CREATE TABLE `stripe_payments` (
   KEY `IX_StripePaymentIntentID` (`StripePaymentIntentID`),
   KEY `IX_StripeCustomerID` (`StripeCustomerID`),
   KEY `IX_UserID` (`UserID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
