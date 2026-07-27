@@ -11,7 +11,7 @@
             <?php
             $motd = getMapOfTheDay($conn, $mode);
 
-            $query = "SELECT 
+            $query = "SELECT
                     COUNT(*) AS total_users,
                     SUM(CASE WHEN `LastAccessedSite` >= NOW() - INTERVAL 24 HOUR THEN 1 ELSE 0 END) AS online_users,
                     (SELECT COUNT(DISTINCT UserID) FROM ratings WHERE `date` >= NOW() - INTERVAL 24 HOUR) AS active_raters,
@@ -35,7 +35,7 @@
             <span title='<?php echo (int)$stats["ratings_today"]; ?> within the last day' style='border-bottom:1px dotted var(--main-theme-text-color);'><?php echo (int)$stats["total_ratings"]; ?> ratings</span>,
             <span title='<?php echo (int)$stats["comments_today"]; ?> within the last day' style='border-bottom:1px dotted var(--main-theme-text-color);'><?php echo (int)$stats["total_comments"]; ?> comments</span>, <?php echo (int)$stats["total_reviews"]; ?> reviews, <?php echo (int)$stats["total_lists"]; ?> lists
         </span>
-    </div>  
+    </div>
 </div>
 <hr>
 <div class="flex-container column-when-mobile-container">
@@ -44,42 +44,42 @@
           if ($userId !== -1) {
                 $stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
-					FROM `ratings` r 
-					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
-					INNER JOIN `users` u ON r.UserID = u.UserID 
+					FROM `ratings` r
+					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+					INNER JOIN `users` u ON r.UserID = u.UserID
                     LEFT JOIN mappernames m ON m.UserID = r.UserID
-					WHERE b.Mode = ? 
-					  AND b.blacklisted = 0 
+					WHERE b.Mode = ?
+					  AND b.blacklisted = 0
 					  AND u.HideRatings = 0
                       AND NOT EXISTS (
-                        SELECT 1 
-                        FROM user_relations ur 
+                        SELECT 1
+                        FROM user_relations ur
                         WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
                     )
 					  AND (
 						  (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
 						  OR r.UserID IN (
-							  SELECT UserIDTo 
-							  FROM user_relations 
+							  SELECT UserIDTo
+							  FROM user_relations
 							  WHERE UserIDFrom = ? AND type = 1
 						  )
 						  OR r.UserID = ?
 					  )
-					ORDER BY r.date DESC 
+					ORDER BY r.date DESC
 					LIMIT 100
 				");
                 $stmt->bind_param("iiiii", $mode, $userId, $userId, $userId, $userId);
             } else {
                 $stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
-					FROM `ratings` r 
-					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
-					INNER JOIN `users` u ON r.UserID = u.UserID 
+					FROM `ratings` r
+					INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
+					INNER JOIN `users` u ON r.UserID = u.UserID
                     LEFT JOIN mappernames m ON m.UserID = r.UserID
-					WHERE b.Mode = ? 
-					  AND b.blacklisted = 0 
+					WHERE b.Mode = ?
+					  AND b.blacklisted = 0
 					  AND u.HideRatings = 0
-					ORDER BY r.date DESC 
+					ORDER BY r.date DESC
 					LIMIT 60
 				");
                 $stmt->bind_param("i", $mode);
@@ -140,15 +140,11 @@
                 JOIN beatmapsets bs ON bs.SetID = c.SetID
                 LEFT JOIN mappernames m ON m.UserID = c.UserID
                 WHERE NOT EXISTS (
-                    SELECT 1 
-                    FROM user_relations r 
+                    SELECT 1
+                    FROM user_relations r
                     WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
                 )
-                AND EXISTS (
-                    SELECT 1
-                    FROM beatmaps b
-                    WHERE b.SetID = c.SetID AND b.Mode = ?
-                )
+                AND (bs.ModeMask & (1 << ?)) <> 0
                 AND (
                     ? = 0
                     OR c.UserID IN (
@@ -167,8 +163,8 @@
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
                 LEFT JOIN mappernames m ON m.UserID = dpc.UserID
                 WHERE NOT EXISTS (
-                    SELECT 1 
-                    FROM user_relations r 
+                    SELECT 1
+                    FROM user_relations r
                     WHERE dpc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
                 )
                 ORDER BY Timestamp DESC LIMIT 40
@@ -180,8 +176,8 @@
                 JOIN news_posts np ON np.NewsID = nc.NewsID
                 LEFT JOIN mappernames m ON m.UserID = nc.UserID
                 WHERE NOT EXISTS (
-                    SELECT 1 
-                    FROM user_relations r 
+                    SELECT 1
+                    FROM user_relations r
                     WHERE nc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
                 )
                 ORDER BY Timestamp DESC LIMIT 40
@@ -193,15 +189,11 @@
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
                 LEFT JOIN mappernames m ON m.UserID = r.UserID
                 WHERE NOT EXISTS (
-                    SELECT 1 
-                    FROM user_relations ur 
+                    SELECT 1
+                    FROM user_relations ur
                     WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
                 )
-                AND EXISTS (
-                    SELECT 1
-                    FROM beatmaps b
-                    WHERE b.SetID = r.SetID AND b.Mode = ?
-                )
+                AND (bs.ModeMask & (1 << ?)) <> 0
                 AND (
                     ? = 0
                     OR r.UserID IN (
@@ -364,9 +356,9 @@
         ?>
         <div class="flex-child map-card">
             <a href="/mapset/<?php echo $row["SetID"]; ?>">
-                <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
-                class="diffThumb" 
-                style="aspect-ratio: 1 / 1;width:90%;height:auto;" 
+                <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
+                class="diffThumb"
+                style="aspect-ratio: 1 / 1;width:90%;height:auto;"
                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                 loading="lazy" />
             </a><br>
@@ -391,7 +383,7 @@
         <?php
             if ($motd != null) {
                 $stmt = $conn->prepare("
-                    SELECT 
+                    SELECT
                         bd.DescriptorID,
                         d.Name,
                         d.ShortDescription
@@ -412,8 +404,8 @@
         ?>
         <div style="width:100%;text-align:center;">
             <a href="/mapset/<?php echo $motd["SetID"]; ?>">
-                <img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg" 
-                style="width:100%;" 
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $motd["SetID"]; ?>/covers/cover.jpg"
+                style="width:100%;"
                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                 loading="lazy" />
             </a>
@@ -479,7 +471,7 @@
                 $year = date("Y", strtotime($result['DateRanked']));
 
                 $stmt = $conn->prepare("
-                    SELECT 
+                    SELECT
                         bd.DescriptorID,
                         d.Name,
 						            d.ShortDescription
@@ -501,8 +493,8 @@
         <?php if ($result != null) { ?>
         <div style="width:100%;text-align:center;">
             <a href="/mapset/<?php echo $result["SetID"]; ?>">
-                <img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg" 
-                style="width:100%;" 
+                <img src="https://assets.ppy.sh/beatmaps/<?php echo $result["SetID"]; ?>/covers/cover.jpg"
+                style="width:100%;"
                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                 loading="lazy" />
             </a>
@@ -541,18 +533,18 @@
     <div class="flex-child column-when-mobile home-panel" style="width:34%;">
         <?php
         $stmt = $conn->prepare("
-                SELECT 
-                    b.BeatmapID, 
-                    b.SetID, 
-                    s.Title, 
-                    b.DifficultyName, 
+                SELECT
+                    b.BeatmapID,
+                    b.SetID,
+                    s.Title,
+                    b.DifficultyName,
                     top_maps.num_ratings
                 FROM (
                     SELECT r.BeatmapID, COUNT(*) as num_ratings
                     FROM ratings r
                     JOIN beatmaps b ON r.BeatmapID = b.BeatmapID
                     WHERE r.date >= NOW() - INTERVAL 1 WEEK
-                    AND b.Mode = ? 
+                    AND b.Mode = ?
                     AND b.blacklisted = 0
                     GROUP BY r.BeatmapID
                     ORDER BY num_ratings DESC
@@ -578,8 +570,8 @@
                 </div>
                 <div class="flex-child">
                     <a href="/mapset/<?php echo $row["SetID"]; ?>">
-                        <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" 
-                        class="diffThumb" 
+                        <img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg"
+                        class="diffThumb"
                         onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"
                         loading="lazy" />
                     </a>
