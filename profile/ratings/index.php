@@ -32,7 +32,7 @@
         ],
         'showRating' => true,
         'showTag' => true,
-        'categories' => ['status', 'descriptor', 'genre', 'language', 'country']
+        'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user']
     ];
     require "../../functions/filter/index.php";
 ?><br>
@@ -67,14 +67,14 @@
             params.set('tokens', encodeTokens(payload.tokens));
         return params;
     }
-    
+
     function loadRatings(page) {
         var params = buildRatingsParams(page);
         history.replaceState(null, '', '?' + params.toString());
-    
+
         var $list = $('#ratings-list');
         $list.css('opacity', 0.5);
-    
+
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if (this.readyState !== 4 || this.status !== 200)
@@ -88,7 +88,7 @@
                 location.reload();
             $('#ratings-list').css('opacity', 1);
         };
-    
+
         xhr.open('POST', 'RatingsListing.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.send(params.toString());
@@ -99,11 +99,11 @@
             page = 1;
         loadRatings(page);
     }
-    
+
     const debouncedLoadRatings = debounce(function() {
         loadRatings(1);
     }, 100);
-    
+
     $(document).on('omdbFiltersSubmitted', function() {
         debouncedLoadRatings();
     });

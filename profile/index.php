@@ -651,8 +651,10 @@
                 '2' => 'Oldest',
                 '3' => 'Highest rated',
                 '4' => 'Lowest rated',
+                '5' => 'Most rated',
+                '6' => 'Least rated',
             ],
-            'categories' => ['genre', 'language', 'descriptor', 'status'],
+            'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
         ];
         require "../functions/filter/index.php";
     ?>

@@ -139,8 +139,8 @@ CREATE TABLE `beatmap_creators` (
 
 CREATE TABLE `beatmap_descriptors` (
   `id` int UNSIGNED NOT NULL,
-  `BeatmapID` varchar(255) NOT NULL,
-  `DescriptorID` varchar(255) NOT NULL,
+  `BeatmapID` mediumint UNSIGNED NOT NULL,
+  `DescriptorID` int NOT NULL,
   `Weight` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

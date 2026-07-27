@@ -39,7 +39,8 @@
     }
 ?>
 
-<h1 id="heading"><?php echo "Highest Rated Maps of " . safe_htmlspecialchars($yearString, ENT_QUOTES, "UTF-8"); ?></h1>
+<h1 id="heading" style="margin-bottom:0;"><?php echo "Highest Rated Maps of " . safe_htmlspecialchars($yearString, ENT_QUOTES, "UTF-8"); ?></h1>
+<div id="chart-subheading" class="subText" style="display:none;margin-bottom:0.5em;"></div>
 
 <div style="text-align:left;">
     <div class="pagination">
@@ -124,14 +125,24 @@
         var orderString = orderLabels[order] || "Highest Rated ";
         var genreName = "";
         var languageName = "";
+        var headingSkip = [];
 
         tokens.forEach(function(t) {
-            if (t.type === "genre" && !t.exclude) genreName = t.name + " ";
-            if (t.type === "language" && !t.exclude) languageName = t.name + " ";
+            if (t.type === "genre" && !t.exclude) {
+                genreName = t.name + " ";
+                headingSkip.push("genre");
+            }
+            if (t.type === "language" && !t.exclude) {
+                languageName = t.name + " ";
+                headingSkip.push("language");
+            }
         });
 
         var yearString = (year === "all-time") ? "All Time" : year;
         $("#heading").html(orderString + languageName + genreName + "Maps of " + yearString);
+
+        var summary = window.describeOmdbFilters ? window.describeOmdbFilters(payload || { tokens: [] }, { skip: headingSkip }) : [];
+        $("#chart-subheading").html(summary.join(" | ")).toggle(summary.length > 0);
 
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -157,11 +168,11 @@
         urlParams.set("y", payload.year);
         urlParams.set("p", currentPage);
         urlParams.set("o", payload.order);
-        
+
         if (payload.tokens.length > 0) {
-            urlParams.set("tokens", tokensJSON); 
+            urlParams.set("tokens", tokensJSON);
         }
-        
+
         window.history.replaceState({}, document.title, "?" + urlParams.toString());
 
         var xmlhttp = new XMLHttpRequest();
