@@ -932,7 +932,7 @@
                             return;
                         if (scoped.scope && scoped.scope !== cat)
                             return;
-                        if (!scoped.scope && query.length < 2)
+                        if (!scoped.scope && query.length <= 2)
                             return;
                         if (scoped.scope === cat && cat === 'user' && query.length === 0)
                             return;
