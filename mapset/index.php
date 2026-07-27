@@ -31,7 +31,7 @@
     require '../header.php';
 
     $stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
-    $stmt->bind_param("ss", $userId, $mapset_id);
+    $stmt->bind_param("ii", $userId, $mapset_id);
     $stmt->execute();
     $stmt->store_result();
 
@@ -818,7 +818,7 @@ while ($row = $result->fetch_assoc()) {
 		
 		<?php
             $stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
-            $stmt->bind_param("s", $sampleRow["SetID"]);
+            $stmt->bind_param("i", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->num_rows != 0) {
