@@ -24,8 +24,17 @@
 
 <div>
     <?php
-    $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.Description, l.UserID, l.Private, (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount, (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount 
+    $stmt = $conn->prepare("SELECT
+        li.*,
+        l.ListID,
+        l.Title,
+        l.Description,
+        l.UserID,
+        l.Private,
+        (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount,
+        (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount
     FROM lists l
+    LEFT JOIN list_items li ON li.ListID = l.ListID AND li.`order` = 1
     WHERE l.Private = 0 OR l.UserID = ?
     ORDER BY COALESCE(l.UpdatedAt, l.CreatedAt) DESC;");
     $stmt->bind_param("i", $userId);
@@ -34,12 +43,7 @@
     $stmt->close();
 
     while ($row = $result->fetch_assoc()) {
-        $stmt = $conn->prepare("SELECT * FROM list_items WHERE `ListID` = ? AND `order` = 1;");
-        $stmt->bind_param("i", $row["ListID"]);
-        $stmt->execute();
-        $item = $stmt->get_result()->fetch_assoc();
-
-        list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
+        list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($row, $conn);
         ?>
         <div class="flex-container alternating-bg list-container">
             <div class="flex-child">
