@@ -419,7 +419,7 @@
                     parts.push(`d${ex}${t.id}`);
                     break;
                 case 'status':
-                    parts.push(`s${ex}${String(t.id).replace(/,/g, '~')}`);
+                    parts.push(`s${ex}${String(t.id).replace(/,/g, '~').replace(/-/g, '_')}`);
                     break;
                 case 'country':
                     parts.push(`c${ex}${t.id}`);
@@ -511,7 +511,7 @@
                 case 's':
                     tokens.push({
                         type: 'status',
-                        id: rest.replace(/~/g, ','),
+                        id: rest.replace(/~/g, ',').replace(/_/g, '-'),
                         exclude
                     });
                     break;
@@ -890,7 +890,10 @@
                        !activeTokens.some(t => t.id == f.id && t.type === f.type);
             });
 
-            if (matches.length > 0 || !query || scoped.scope) {
+            // Mappers and tags live server-side, so a query that matches nothing locally from the other cats still has to reach the user/tag lookup before we give up on it
+            const mayLookUp = asyncCategories.length > 0 && (scoped.scope || query.length >= 3);
+
+            if (matches.length > 0 || !query || scoped.scope || mayLookUp) {
                 const groups = { status: [], meta: [], genre: [], language: [], descriptor: [], country: [] };
 
                 matches.forEach(m => {

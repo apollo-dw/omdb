@@ -92,7 +92,8 @@
 
                 case 'status':
                     // Replace commas in multi-value status IDs with ~
-                    $encoded = str_replace(',', '~', $id);
+                    // Replace negative status with _
+                    $encoded = str_replace([',', '-'], ['~', '_'], $id);
                     $parts[] = "s{$ex}{$encoded}";
                     break;
 
@@ -207,8 +208,8 @@
                     break;
 
                 case 's':
-                    // Restore commas from ~
-                    $statusId = str_replace('~', ',', $rest);
+                    // Restore commas from ~ and negative statuses from _
+                    $statusId = str_replace(['~', '_'], [',', '-'], $rest);
                     $tokens[] = [
                         'type' => 'status',
                         'id' => $statusId,
