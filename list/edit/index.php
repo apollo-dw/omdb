@@ -319,6 +319,8 @@
         });
 
         if (data.length === 0) {
+            alert("NO ITEMS?");
+            $('#submitButton').removeAttr('disabled');
             return;
         }
 
