@@ -31,6 +31,6 @@
 		VALUES (?, ?, ?)
 		ON DUPLICATE KEY UPDATE Comment = VALUES(Comment);
 	");
-    $stmt->bind_param("sss", $userId, $set_id, $comment);
+    $stmt->bind_param("iis", $userId, $set_id, $comment);
     $stmt->execute();
     $stmt->close();
