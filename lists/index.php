@@ -32,9 +32,9 @@
         l.UserID,
         l.Private,
         (SELECT COUNT(*) FROM list_hearts lh WHERE lh.ListID = l.ListID) AS HeartCount,
-        (SELECT COUNT(*) FROM list_items li WHERE li.ListID = l.ListID) AS ItemCount
+        (SELECT COUNT(*) FROM list_items li_cnt WHERE li_cnt.ListID = l.ListID) AS ItemCount
     FROM lists l
-    LEFT JOIN list_items li ON li.ListID = l.ListID AND li.`order` = 1
+    INNER JOIN list_items li ON li.ListID = l.ListID AND li.`order` = 1
     WHERE l.Private = 0 OR l.UserID = ?
     ORDER BY COALESCE(l.UpdatedAt, l.CreatedAt) DESC;");
     $stmt->bind_param("i", $userId);
