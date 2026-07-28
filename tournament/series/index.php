@@ -48,6 +48,13 @@
 
     $stmt->close();
 ?>
+
+<?php if ($loggedIn) { ?>
+    <span class="subText"><a href="edit/create.php?id=<?php echo $seriesId; ?>"><i class="icon-plus"></i> Add tournament</a></span>
+    |
+    <span class="subText"><a href="edit/create.php?id=<?php echo $seriesId; ?>"><i class="icon-edit"></i> Edit series</a></span>
+<?php } ?>
+
 <?php
     require "../../footer.php";
 ?>

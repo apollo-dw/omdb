@@ -370,7 +370,7 @@ while ($row = $result->fetch_assoc()) {
                 <div class="tooltip-wrapper tooltip-left">
                     <i class="icon-trophy" style="font-size: 1.5em;"></i>
                     <div class="tooltip-box">
-                        As featured in
+                        Featured in
                         <?php
                             $links = [];
                             foreach ($tournaments as $tournamentID => $acronym) {
