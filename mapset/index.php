@@ -21,7 +21,8 @@
             s.*,
             mn.Username,
             t.TournamentID,
-            t.Acronym AS TournamentAcronym
+            t.Acronym AS TournamentAcronym,
+            tm.Slot as TournamentSlot
         FROM `beatmaps` b
         JOIN beatmapsets s ON b.SetID = s.SetID
         LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
@@ -377,7 +378,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
                 if ($row["TournamentID"]) {
                 ?>
-                    <span class="subText">Custom tournament map for <a href="/tournaments/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournaments/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
                 <?php
                 }
             ?>
