@@ -1,14 +1,42 @@
 <?php
     require "../base.php";
 
-    $profileId = GetIntParam('id', -1, "Invalid page bro");
+    $profileId = $_GET['id'];
 
-    $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $profile = $result->fetch_assoc();
-    $stmt->close();
+    $idStmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+    $usernameStmt = $conn->prepare("SELECT UserID FROM `users` WHERE `Username` = ?");
+
+    if (str_contains($profileId, "@") || preg_match("/[a-z]/i", $profileId)) {
+        if ($profileId[0] === "@") {
+            $profileId = substr($profileId, 1);
+        }
+
+        $usernameStmt->bind_param("s", $profileId);
+        $usernameStmt->execute();
+        $result = $usernameStmt->get_result();
+        $profile = $result->fetch_assoc();
+        $usernameStmt->close();
+
+        if ($profile === null) {
+            http_response_code(404);
+            exit();
+        }
+
+        header('Location: ./' . $profile["UserID"]);
+        exit();
+    }
+
+    if (ctype_digit($profileId)) {
+        $idStmt->bind_param("i", $profileId);
+        $idStmt->execute();
+        $result = $idStmt->get_result();
+        $profile = $result->fetch_assoc();
+    } else {
+        http_response_code(404);
+        exit();
+    }
+
+    $idStmt->close();
     $isValidUser = $profile !== null;
 
     $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
@@ -128,7 +156,7 @@
 		<div class="profileImage">
 			<img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
 		</div>
-		
+
 		<?php if ($isValidUser && !IS_NULL($profile['UserTitle'])) { ?>
 		<div class="profileUserTitle">
 			<span class="subText" style="font-weight:bolder;"><?php echo $profile['UserTitle']; ?></span>
@@ -142,7 +170,7 @@
             </a>
         </div>
 		<?php } ?>
-		
+
 		<?php if ($profileId != $userId && $isValidUser && $loggedIn) { ?>
         <div class="profileActions">
             <?php
@@ -164,7 +192,7 @@
             ?>
         </div>
 		<?php } ?>
-		
+
         <?php
             $stmt = $conn->prepare("
                 SELECT
@@ -469,7 +497,7 @@
             ?>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"></a>
                 <b><a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><?php echo safe_htmlspecialchars(mb_strimwidth("{$highestMap["Artist"]} - {$highestMap["Title"]} [{$highestMap["DifficultyName"]}]", 0, 75, "..."), ENT_QUOTES); ?></a></b>
-                
+
                 <span class="subText map-descriptors">
                     <?php
                     $highestMapDescLinks = array();
@@ -563,39 +591,39 @@
             <?php
                 if ($loggedIn) {
                     $stmt = $conn->prepare("
-                        SELECT r.*, b.DifficultyName, b.SetID 
-                        FROM `ratings` r 
-                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        SELECT r.*, b.DifficultyName, b.SetID
+                        FROM `ratings` r
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
-                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        INNER JOIN `users` u ON r.UserID = u.UserID
                         WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
                         AND r.UserID NOT IN (
-                            SELECT UserIDTo 
-                            FROM user_relations 
+                            SELECT UserIDTo
+                            FROM user_relations
                             WHERE UserIDFrom = ? AND type = 2
                         )
                         AND (
                             (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
                             OR r.UserID IN (
-                                SELECT UserIDTo 
-                                FROM user_relations 
+                                SELECT UserIDTo
+                                FROM user_relations
                                 WHERE UserIDFrom = ? AND type = 1
                             )
                             OR r.UserID = ?
                         )
-                        ORDER BY r.date DESC 
+                        ORDER BY r.date DESC
                         LIMIT 60
                     ");
                     $stmt->bind_param("iiiiii", $profileId, $mode, $userId, $userId, $userId, $userId);
                 } else {
                     $stmt = $conn->prepare("
-                        SELECT r.*, b.DifficultyName, b.SetID 
-                        FROM `ratings` r 
-                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID 
+                        SELECT r.*, b.DifficultyName, b.SetID
+                        FROM `ratings` r
+                        INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
-                        INNER JOIN `users` u ON r.UserID = u.UserID 
+                        INNER JOIN `users` u ON r.UserID = u.UserID
                         WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
-                        ORDER BY r.date DESC 
+                        ORDER BY r.date DESC
                         LIMIT 60
                     ");
                     $stmt->bind_param("ii", $profileId, $mode);
@@ -708,7 +736,7 @@
 
                 maps.sort((a, b) => {
                     if (a.rank !== b.rank) {
-                        return a.rank - b.rank; 
+                        return a.rank - b.rank;
                     }
                     return b.count - a.count;
                 });
@@ -789,10 +817,10 @@
 
             var url = '?' + params.toString();
             history.replaceState(null, '', url);
-        
+
             var $beatmaps = $('#beatmaps');
             $beatmaps.css('opacity', 0.5);
-        
+
             params.set('id', <?php echo $profileId; ?>);
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
