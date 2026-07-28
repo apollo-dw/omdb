@@ -777,3 +777,38 @@ CREATE TABLE `users` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-07-28 10:03:07
+
+CREATE TABLE tournaments (
+TournamentID smallint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+Name varchar(50) NOT NULL,
+Acronym varchar(10),
+StartDate DATE,
+EndDate DATE,
+SeriesID smallint UNSIGNED,
+CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tournament_series (
+SeriesID smallint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+Name varchar(50) NOT NULL,
+Acronym varchar(10),
+CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tournament_stages (
+StageID tinyint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+TournamentID smallint UNSIGNED NOT NULL,
+Name varchar(30) NOT NULL,
+Acronym varchar(10),
+SortOrder smallint UNSIGNED NOT NULL
+);
+
+CREATE TABLE tournament_maps (
+BeatmapID int UNSIGNED NOT NULL,
+TournamentID smallint UNSIGNED NOT NULL,
+StageID tinyint UNSIGNED NOT NULL,
+Slot varchar(10),
+SortOrder smallint UNSIGNED NOT NULL
+);
