@@ -1,21 +1,23 @@
-OMDB repo
-PHP version: 8.1
-Needs composer installed to run tests and linting
+<div style="text-align: center;">
+  <img style="width: 128px;" src="assets/img/omdb-512x512.png" alt="OMDB logo">
+</div>
 
-Recommended to join the Discord if you're contributing
+# OMDB
 
-Format/Linting
-----------
-.editorconfig for any editor with EditorConfig support
+- PHP version: 8.1
+- Needs [Composer](https://getcomposer.org/) installed to run tests and linting
+- Recommended to join the [Discord](https://discord.gg/PWVGrQRq2w) if you're contributing
 
-**VS Code users:** .vscode/extensions.json and .vscode/settings.json exist so use them
+## Format/Linting
 
-Rules in .php-cs-fixer.dist.php don't rly use a standard one but it's pretty close to PSR-12
+`.editorconfig` for any editor with [EditorConfig](https://editorconfig.org/) support
+
+**VS Code users:** `.vscode/extensions.json` and `.vscode/settings.json` are available
 
 Setup once after cloning:
-```
+```shell
 composer install
 ```
 
-`composer lint` for linting
-`composer fix-changed` to format the files your branch changed
+- `composer lint` for linting
+- `composer fix-changed` to format the files your branch changed
