@@ -1,14 +1,11 @@
 <?php
-    $PageTitle = "Edit Queue";
-
+    $PageTitle = "Mapset edit queue";
     include '../header.php';
 
     $stmt = $conn->prepare("SELECT e.*, b.SetID as SetID, e.SetID as EditSetID, s.Title as Title, b.DifficultyName FROM beatmap_edit_requests e LEFT JOIN beatmaps b on e.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s on e.SetID = s.SetID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
     $stmt->execute();
     $result = $stmt->get_result();
-
-
-    ?>
+?>
 
     <style>
         table, tr, td {
@@ -25,7 +22,7 @@
         }
     </style>
 
-    <h1>Edit queue</h1>
+    <h1>Mapset edit queue</h1>
 
     <table style="width:100%;">
         <thead>
