@@ -12,7 +12,8 @@
     require '../header.php';
 
     if (is_null($descriptor)) {
-        die("Descriptor not found.");
+        http_response_code(404);
+        exit();
     }
 
     function getParentTree($descriptor, $conn) {
@@ -212,7 +213,7 @@
                 JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
             ),
             TotalMapsPerYear AS (
-                SELECT 
+                SELECT
                     YEAR(s.DateRanked) AS Year,
                     COUNT(DISTINCT b.BeatmapID) AS TotalCount
                 FROM beatmaps b
@@ -231,7 +232,7 @@
                 WHERE b.Mode = ?
                 GROUP BY Year
             )
-            SELECT 
+            SELECT
                 t.Year,
                 COALESCE(d.DescriptorCount, 0) AS BeatmapCount,
                 t.TotalCount,

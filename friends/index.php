@@ -3,7 +3,8 @@
     include '../header.php';
 
     if (!$loggedIn) {
-        die("You have to be logged in to view this page!");
+        http_response_code(401);
+        exit();
     }
 
     $stmt_check = $conn->prepare("SELECT u.Username, u.UserID FROM user_relations r LEFT JOIN users u ON r.UserIDTo = u.UserID WHERE UserIDFrom = ? AND type = 1 ORDER BY u.LastAccessedSite DESC;");

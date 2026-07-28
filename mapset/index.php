@@ -2,7 +2,8 @@
     require '../base.php';
     $mapset_id = GetIntParam('mapset_id', -1);
     if ($mapset_id == -1) {
-        die("WHAT");
+        http_response_code(404);
+        exit();
     }
 
     // gives just the similar maps for a diff if wanted but its basically for the select box in similar maps
@@ -21,7 +22,8 @@
     $sampleRow = $result->fetch_assoc();
     mysqli_data_seek($result, 0);
     if (!$sampleRow) {
-        die("Mapset not found");
+        http_response_code(404);
+        exit();
     }
 
     $PageTitle = $sampleRow['Title'] . " by " . ($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn));
@@ -51,19 +53,19 @@
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_row()[0];
 
-    $stmt = $conn->prepare("SELECT 
+    $stmt = $conn->prepare("SELECT
     mn.Username,
 	mn.UserID,
     GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
-FROM 
+FROM
     beatmapset_credits bc
-LEFT JOIN 
+LEFT JOIN
     beatmap_roles br ON br.RoleID = bc.RoleID
-LEFT JOIN 
+LEFT JOIN
     mappernames mn ON mn.UserID = bc.UserID
-WHERE 
+WHERE
     bc.SetID = ?
-GROUP BY 
+GROUP BY
     mn.Username, mn.UserID;
 ");
     $stmt->bind_param("s", $mapset_id);
@@ -104,12 +106,12 @@ GROUP BY
     .light-bg {
         background-color: DarkSlateGrey;
     }
-	
+
 	.credits-list ul {
 		margin: 0.25em;
 		padding: 0;
 	}
-	
+
 	.credits-list li {
 		display: block;
 		margin-left: 0;
@@ -304,7 +306,7 @@ while ($row = $result->fetch_assoc()) {
 
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
 
-    $stmt = $conn->prepare("SELECT 
+    $stmt = $conn->prepare("SELECT
 			bd.DescriptorID,
 			d.Name,
             d.ShortDescription
@@ -370,7 +372,7 @@ while ($row = $result->fetch_assoc()) {
                         $height = ($data["weighted"] / $maxRating) * 90;
                         $count = $data["count"];
                         ?>
-                        
+
                         <div class="tooltip-wrapper" style="width: calc(100% / 11);">
                             <div
                                 class="mapsetRankingDistributionBar"
@@ -776,7 +778,7 @@ while ($row = $result->fetch_assoc()) {
                 }
             }
             ?>
-			
+
 			<?php if ($loggedIn) { ?>
                 <div class="commentComposer">
                     <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
@@ -808,14 +810,14 @@ while ($row = $result->fetch_assoc()) {
 
 		<h4 style="margin-bottom: 0;">Reviews</h4>
 
-        
+
 		<?php if ($loggedIn) { ?>
             <form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
                 <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
                 <input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
             </form>
         <?php } ?>
-		
+
 		<?php
             $stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
             $stmt->bind_param("i", $sampleRow["SetID"]);
@@ -964,7 +966,7 @@ while ($row = $result->fetch_assoc()) {
             xhttp.send("sID=" + <?php echo $sampleRow["SetID"]; ?> + "&comment=" + encodeURIComponent(text));
         }
     }
-	
+
 	function submitReview() {
 		var text = document.getElementById('reviewForm').value;
 		if (text.length > 3) {

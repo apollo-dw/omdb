@@ -2,7 +2,8 @@
     include '../../base.php';
 
     if (!$loggedIn) {
-        die('Goodbye');
+        http_response_code(401);
+        exit();
     }
 
     $requestedRaw = trim($_GET["id"] ?? "");
@@ -178,9 +179,9 @@
 
     $rebuild_desc_stmt = $conn->prepare("
         INSERT INTO beatmap_descriptors (BeatmapID, DescriptorID, Weight)
-        SELECT 
-            descriptor_votes.BeatmapID, 
-            descriptor_votes.DescriptorID, 
+        SELECT
+            descriptor_votes.BeatmapID,
+            descriptor_votes.DescriptorID,
             SUM(CASE WHEN Vote = 1 THEN 1 ELSE -1 END) AS net
         FROM descriptor_votes
         INNER JOIN beatmaps b ON descriptor_votes.BeatmapID = b.BeatmapID

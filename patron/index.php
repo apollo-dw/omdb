@@ -21,12 +21,13 @@
                 Whenever I mention that I own and manage a site with this many people, I often hear "you should put advertisements on it!". Well, that's never gonna happen. I would never do that to any of you. This site will forever be free to use without any advertisement, but to anyone who wishes to support the site somehow then this option is available. Thank you so much if you choose to do this!
             </p>
         </div>
-    </div>  
+    </div>
 </div>
 
 <?php
     if (!$loggedIn) {
-        die("log in to views this page");
+        http_response_code(401);
+        exit();
     }
 ?>
 
@@ -45,7 +46,7 @@ if ($user["IsPatron"] === 1) {
             } ?>
         </p>
     </div>
-</div> 
+</div>
 <?php
 }
 ?>
@@ -70,7 +71,7 @@ if ($user["IsPatron"] === 1) {
             please get in touch if there are any issues
         </p>
     </div>
-</div> 
+</div>
 
 
 <hr>
@@ -89,7 +90,7 @@ if ($user["IsPatron"] === 1) {
     </div>
     <div class="alternating-bg" style="width: 50%; text-align: center;">
         <p>
-            <b>Profile theme</b><br> 
+            <b>Profile theme</b><br>
             Customize the colour theme of your profile for anyone visiting
         </p>
     </div>

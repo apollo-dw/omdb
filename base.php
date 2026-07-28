@@ -23,7 +23,8 @@
     $mode = isset($_COOKIE["mode"]) ? $_COOKIE["mode"] : 0;
 
     if ($loggedIn && $user["banned"]) {
-        die("ur banned");
+        http_response_code(403);
+        exit();
     }
 
     // Should be database'd instead

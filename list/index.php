@@ -12,7 +12,8 @@
     $stmt->close();
 
     if (is_null($list)) {
-        die("List not found");
+        http_response_code(404);
+        exit();
     }
 
     $title = safe_htmlspecialchars($list['Title'], ENT_QUOTES);

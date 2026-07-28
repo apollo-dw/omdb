@@ -15,7 +15,8 @@
     $isUser = true;
 
     if ($profile == null) {
-        die("Can't view this bros friends cuz they aint an OMDB user");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("

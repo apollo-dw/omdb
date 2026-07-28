@@ -15,19 +15,20 @@
     $isUser = true;
 
     if ($profile == null) {
-        die("Can't view this bros friends cuz they aint an OMDB user");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("
         SELECT users.*, correlated_users.correlation
-        FROM users 
+        FROM users
         INNER JOIN (
             SELECT IF(user1_id = ?, user2_id, user1_id) AS id, correlation
-            FROM user_correlations 
-            WHERE ? IN (user1_id, user2_id) 
-            ORDER BY correlation DESC 
+            FROM user_correlations
+            WHERE ? IN (user1_id, user2_id)
+            ORDER BY correlation DESC
             LIMIT 50
-        ) AS correlated_users 
+        ) AS correlated_users
         ON users.UserID = correlated_users.id;
     ");
 

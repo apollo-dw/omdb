@@ -10,15 +10,18 @@
     $proposal = $stmt->get_result()->fetch_assoc();
 
     if (is_null($proposal)) {
-        die("Proposal not found");
+        http_response_code(404);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("You need to be logged in");
+        http_response_code(401);
+        exit();
     }
 
     if ($proposal["ProposerID"] != $userId) {
-        die("This is not your proposal!");
+        http_response_code(403);
+        exit();
     }
 
 ?>

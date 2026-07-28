@@ -5,7 +5,8 @@
     require '../header.php';
 
     if (!$loggedIn) {
-        die("You need to be logged in to view this page.");
+        http_response_code(401);
+        exit();
     }
 
     $profileTheme = [];
@@ -194,9 +195,9 @@
         </tr>
     <?php
         $stmt = $conn->prepare("
-            SELECT `SessionToken`, `DeviceInfo`, `IpAddress`, `LastAccessedAt` 
-            FROM `sessions` 
-            WHERE `UserID` = ? AND `ExpiresAt` > NOW() 
+            SELECT `SessionToken`, `DeviceInfo`, `IpAddress`, `LastAccessedAt`
+            FROM `sessions`
+            WHERE `UserID` = ? AND `ExpiresAt` > NOW()
             ORDER BY `LastAccessedAt` DESC
         ");
         $stmt->bind_param("i", $userId);
@@ -274,7 +275,7 @@
             }
         });
     }
-	
+
 	function insertTag(tag, param = '') {
         var textarea = document.getElementById("CustomDescription");
         var cursorPos = textarea.selectionStart;
@@ -299,13 +300,13 @@
 
     function resetTheme() {
         document.getElementById('theme-color').value = '#2F4F4F';
-        document.getElementById('theme-color-darker').value = '#203838';     
-        document.getElementById('theme-color-even-darker').value = '#0c1515';     
-        document.getElementById('theme-text-color').value = '#ffffff';       
-        document.getElementById('theme-background-color').value = '#000000'; 
-        document.getElementById('theme-subtext-color').value = '#a8a8a8';    
-        document.getElementById('theme-link-color').value = '#6fffea';       
-        document.getElementById('theme-star-color').value = '#ffffff';       
+        document.getElementById('theme-color-darker').value = '#203838';
+        document.getElementById('theme-color-even-darker').value = '#0c1515';
+        document.getElementById('theme-text-color').value = '#ffffff';
+        document.getElementById('theme-background-color').value = '#000000';
+        document.getElementById('theme-subtext-color').value = '#a8a8a8';
+        document.getElementById('theme-link-color').value = '#6fffea';
+        document.getElementById('theme-star-color').value = '#ffffff';
         document.getElementById('theme-patron-pink').value = '#ecb4f5';
         document.getElementById('theme-text-font-family').value = 'OpenSans, sans-serif';
     }

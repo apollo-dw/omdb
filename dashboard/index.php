@@ -5,7 +5,8 @@
     require 'RetrieveRecommendations.php';
 
     if (!$loggedIn) {
-        die("log in to view this page lol");
+        http_response_code(401);
+        exit();
     }
 
     $recommendations = RetrieveRecommendations($conn, $userId);

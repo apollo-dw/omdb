@@ -11,7 +11,8 @@
     $proposal = $stmt->get_result()->fetch_assoc();
 
     if (is_null($proposal)) {
-        die("Proposal not found");
+        http_response_code(404);
+        exit();
     }
 
     $originalDescriptor = null;
@@ -122,7 +123,7 @@
                 <td>
                     <?php echo nl2br(ParseShortLinks($conn, safe_htmlspecialchars($proposal["ShortDescription"], ENT_QUOTES))); ?>
                     <?php if ($originalDescriptor && $originalDescriptor["ShortDescription"] !== $proposal["ShortDescription"]) { ?>
-                        <br>    
+                        <br>
                         <span class="diff-old-value">(was: <?php echo nl2br(ParseShortLinks($conn, safe_htmlspecialchars($originalDescriptor["ShortDescription"], ENT_QUOTES))); ?>)</span>
                     <?php } ?>
                 </td>
@@ -132,7 +133,7 @@
                 <td>
                     <?php echo nl2br(ParseShortLinks($conn, safe_htmlspecialchars($proposal["LongDescription"], ENT_QUOTES))); ?>
                     <?php if ($originalDescriptor && $originalDescriptor["LongDescription"] !== $proposal["LongDescription"]) { ?>
-                        <br>    
+                        <br>
                         <span class="diff-old-value">(was: <?php echo nl2br(ParseShortLinks($conn, safe_htmlspecialchars($originalDescriptor["LongDescription"], ENT_QUOTES))); ?>)</span>
                     <?php } ?>
                 </td>
@@ -229,7 +230,7 @@
     <div class="column-when-mobile" style="width:40%;">
         <div id="proposal-box-container">
             <?php
-            $stmt = $conn->prepare("SELECT COALESCE(SUM(CASE WHEN Vote = 'yes' THEN 1 ELSE 0 END), 0) AS upvotes, 
+            $stmt = $conn->prepare("SELECT COALESCE(SUM(CASE WHEN Vote = 'yes' THEN 1 ELSE 0 END), 0) AS upvotes,
                                                  COALESCE(SUM(CASE WHEN Vote = 'no' THEN 1 ELSE 0 END), 0) AS downvotes,
                                                  COALESCE(SUM(CASE WHEN Vote = 'hold' THEN 1 ELSE 0 END), 0) AS holds
                                                  FROM descriptor_proposal_votes pv
@@ -315,9 +316,9 @@
         <?php } ?>
 
         <?php
-        $stmt = $conn->prepare("SELECT CommentID, dpc.UserID, Comment, Vote, dpc.Timestamp FROM descriptor_proposal_comments dpc 
-								LEFT JOIN descriptor_proposal_votes dpv on dpc.UserID = dpv.UserID AND dpv.ProposalID = dpc.ProposalID 
-								WHERE dpc.ProposalID = ? 
+        $stmt = $conn->prepare("SELECT CommentID, dpc.UserID, Comment, Vote, dpc.Timestamp FROM descriptor_proposal_comments dpc
+								LEFT JOIN descriptor_proposal_votes dpv on dpc.UserID = dpv.UserID AND dpv.ProposalID = dpc.ProposalID
+								WHERE dpc.ProposalID = ?
 								ORDER BY dpc.Timestamp DESC");
         $stmt->bind_param("i", $proposal_id);
         $stmt->execute();

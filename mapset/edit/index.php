@@ -3,14 +3,15 @@ require '../../base.php';
 $mapset_id = GetIntParam('id', -1);
 
 if (!$loggedIn) {
-    die("You need to be logged in to view this page.");
+    http_response_code(401);
+    exit();
 }
 
 $stmt = $conn->prepare("SELECT b.*, ber.`BeatmapID` AS `HasEditRequest`, s.`Title`, s.`CreatorID`
                            FROM `beatmaps` b
                            JOIN beatmapsets s on b.SetID = s.SetID
                            LEFT JOIN `beatmap_edit_requests` ber ON b.`BeatmapID` = ber.`BeatmapID` AND ber.`Status` = 'Pending'
-                           WHERE b.`SetID` = ? 
+                           WHERE b.`SetID` = ?
                            ORDER BY b.`Mode`, b.`SR` DESC;");
 $stmt->bind_param("s", $mapset_id);
 $stmt->execute();
@@ -22,7 +23,8 @@ $PageTitle = $sampleRow['Title'] . " by " . GetUserNameFromId($sampleRow['Creato
 require '../../header.php';
 
 if ($mapset_id == -1) {
-    die("Nop");
+    http_response_code(404);
+    exit();
 }
 
 $difficulties = [];
@@ -242,8 +244,8 @@ $rolesJson = json_encode($roles);
 
                             while ($row = $result->fetch_assoc()) {
                                 echo "<li>
-							<i class='icon-remove remove-button'></i> 
-							{$row["Username"]} 
+							<i class='icon-remove remove-button'></i>
+							{$row["Username"]}
 							<span class='subText mapperid'>{$row["NominatorID"]}</span>
 							</li>";
                             }
@@ -270,9 +272,9 @@ $rolesJson = json_encode($roles);
                             $result = $stmt->get_result();
 
                             while ($row = $result->fetch_assoc()) {
-                                echo "<li data-creatorid='{$row["UserID"]}'> 
-								<i class='icon-remove remove-button'></i> 
-								{$row["Username"]} 
+                                echo "<li data-creatorid='{$row["UserID"]}'>
+								<i class='icon-remove remove-button'></i>
+								{$row["Username"]}
 								<span class='subText mapperid'>{$row["UserID"]}</span>
 								<select class='roles-select'>";
 
@@ -475,7 +477,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 
     <script>
 		const roles = <?php echo $rolesJson; ?>;
-		
+
         $(document).on("submit", "form", function(event) {
             event.preventDefault();
 			let isValid = true;
@@ -486,7 +488,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
                 const mapperID = $(this).find(".mapperid").text();
                 mapperListData.push(mapperID);
             });
-			
+
 			const creditsListData = [];
 			form.find(".creditList li").each(function() {
 				const userID = $(this).attr('data-creatorid');
@@ -498,7 +500,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 				}
 				creditsListData.push({ userID: userID, role: selectedRole });
 			});
-			
+
 			if (!isValid) {
 				return;
 			}
@@ -578,11 +580,11 @@ foreach ($difficulties as $beatmapID => $difficulty) {
                         const listItem = `<li data-creatorid='${creator.id}'><i class='icon-remove remove-button'></i>  ${creator.username} <span class='subText mapperid'>${creator.id}</span></li>`;
                         list.append(listItem);
                     });
-                    
+
                 }
             });
         }
-		
+
 		function addCreditItem(button) {
 			const beatmapID = $(button).attr("id").split("-").pop();
 			const input = $(`#add-credit-input-${beatmapID}`);
@@ -600,12 +602,12 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 							roles.forEach(function(role) {
 								options += `<option value="${role}">${role}</option>`;
 							});
-						
+
 							const listItem = `
 								<li data-creatorid='${value}'>
-									<i class='icon-remove remove-button'></i> 
-									${username} 
-									<span class='subText mapperid'>${value}</span> 
+									<i class='icon-remove remove-button'></i>
+									${username}
+									<span class='subText mapperid'>${value}</span>
 									<select class='roles-select'>
 									<option value="" selected disabled>Select role</option>
                                     ${options}

@@ -76,7 +76,8 @@
         $value = $_POST[$key] ?? $_GET[$key] ?? $default;
 
         if ($value === null || !is_numeric($value)) {
-            die($error ?? "Invalid '{$key}' parameter");
+            http_response_code(400);
+            exit();
         }
 
         return (int)$value;

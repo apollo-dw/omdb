@@ -1,7 +1,8 @@
 <?php
     require "../../base.php";
     if (!$loggedIn) {
-        die("Sorry you need to log in");
+        http_response_code(401);
+        exit();
     }
 
     $title = $_POST["PostSubject"];

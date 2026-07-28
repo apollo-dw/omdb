@@ -13,7 +13,8 @@
     $stmt->close();
 
     if (is_null($post)) {
-        die("News post not found");
+        http_response_code(404);
+        exit();
     }
 
     $PageTitle = $post["Title"];

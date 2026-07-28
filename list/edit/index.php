@@ -9,13 +9,15 @@
     $list = $stmt->get_result()->fetch_assoc();
 
     if (!$loggedIn) {
-        die("You have to be logged in to do list stuff");
+        http_response_code(401);
+        exit();
     }
 
     $isNewList = is_null($list);
     if (!$isNewList) {
         if ($list["UserID"] != $userId) {
-            die("Not your list");
+            http_response_code(403);
+            exit();
         }
         $stmt = $conn->prepare("SELECT * FROM `list_items` WHERE `ListID` = ?;");
         $stmt->bind_param("i", $list["ListID"]);
