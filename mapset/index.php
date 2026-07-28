@@ -369,7 +369,7 @@ while ($row = $result->fetch_assoc()) {
         <div style="position: relative; width: 0; align-self: center; flex-grow: 0;">
             <div style="position: absolute; transform: translateY(-50%); margin-left: 1em;">
                 <div class="tooltip-wrapper tooltip-left">
-                    <i class="icon-bullseye" style="font-size: 1.5em;"></i>
+                    <i class="icon-trophy" style="font-size: 1.5em;"></i>
                     <div class="tooltip-box">
                         As featured in
                         <?php
