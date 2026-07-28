@@ -810,5 +810,6 @@ BeatmapID int UNSIGNED NOT NULL,
 TournamentID smallint UNSIGNED NOT NULL,
 StageID tinyint UNSIGNED NOT NULL,
 Slot varchar(10),
-SortOrder smallint UNSIGNED NOT NULL
+SortOrder smallint UNSIGNED NOT NULL,
+IsCustom TINYINT(1) NOT NULL DEFAULT 0
 );
