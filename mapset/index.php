@@ -15,7 +15,22 @@
     }
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT *, mn.Username FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
+    $stmt = $conn->prepare("
+        SELECT
+            b.*,
+            s.*,
+            mn.Username,
+            t.TournamentID,
+            t.Acronym AS TournamentAcronym
+        FROM `beatmaps` b
+        JOIN beatmapsets s ON b.SetID = s.SetID
+        LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
+        LEFT JOIN tournament_maps tm ON tm.BeatmapID = b.BeatmapID AND tm.IsCustom = 1
+        LEFT JOIN tournaments t ON t.TournamentID = tm.TournamentID
+        WHERE b.SetID = ?
+        ORDER BY b.Mode, b.SR DESC;
+    ");
+
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -355,8 +370,15 @@ while ($row = $result->fetch_assoc()) {
 
                 if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1)) {
                     ?>
-                    <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span>
+                    <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span><br>
                     <?php
+                }
+            ?>
+            <?php
+                if ($row["TournamentID"]) {
+                ?>
+                    <span class="subText">Custom tournament map for <a href="/tournaments/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                <?php
                 }
             ?>
         </div>
