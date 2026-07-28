@@ -76,7 +76,9 @@
 <div class="container">
     <h1><?php echo htmlspecialchars($tournament["Name"]); ?></h1>
     <span class="subText">
-        <?php echo htmlspecialchars($tournament["SeriesName"]); ?>
+        <a href="series/?id=<?php echo $tournament["SeriesID"]; ?>">
+            <?php echo htmlspecialchars($tournament["SeriesName"]); ?>
+        </a>
         //
         <?php echo htmlspecialchars($tournament["StartDate"]); ?> - <?php echo htmlspecialchars($tournament["EndDate"]); ?>
     </span>
