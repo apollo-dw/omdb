@@ -348,7 +348,6 @@ while ($row = $result->fetch_assoc()) {
             FROM tournament_maps tm
             INNER JOIN tournaments t ON tm.TournamentID = t.TournamentID
             WHERE tm.BeatmapID = ?
-            AND tm.IsCustom = 0
             ORDER BY t.StartDate;
     ");
     $stmt->bind_param("i", $beatmapID);
@@ -427,7 +426,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
                 if ($row["TournamentID"]) {
                 ?>
-                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournaments/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
                 <?php
                 }
             ?>
