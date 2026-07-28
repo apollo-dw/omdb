@@ -27,6 +27,30 @@
     }
 
     $stmt->close();
+
+    $stmt = $conn->prepare("
+        SELECT TournamentID, Acronym
+        FROM tournaments
+        WHERE SeriesID = ? AND TournamentID < ?
+        ORDER BY TournamentID DESC
+        LIMIT 1
+    ");
+    $stmt->bind_param("ii", $tournament['SeriesID'], $tournamentId);
+    $stmt->execute();
+    $prevTournament = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $stmt = $conn->prepare("
+        SELECT TournamentID, Acronym
+        FROM tournaments
+        WHERE SeriesID = ? AND TournamentID > ?
+        ORDER BY TournamentID ASC
+        LIMIT 1
+    ");
+    $stmt->bind_param("ii", $tournament['SeriesID'], $tournamentId);
+    $stmt->execute();
+    $nextTournament = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 ?>
 
 <style>
@@ -50,14 +74,29 @@
 </style>
 
 <div class="container">
-    <h1><?php echo $tournament["Name"]; ?></h1>
+    <h1><?php echo htmlspecialchars($tournament["Name"]); ?></h1>
     <span class="subText">
-        a part of <?php echo $tournament["SeriesName"]; ?>
+        <?php echo htmlspecialchars($tournament["SeriesName"]); ?>
         //
-        <?php echo $tournament["Acronym"]; ?>
-        //
-        <?php echo $tournament["StartDate"]; ?> - <?php echo $tournament["EndDate"]; ?>
+        <?php echo htmlspecialchars($tournament["StartDate"]); ?> - <?php echo htmlspecialchars($tournament["EndDate"]); ?>
     </span>
+
+    <br><br>
+
+    <?php if ($prevTournament) { ?>
+        <a href="?id=<?php echo $prevTournament['TournamentID']; ?>" title="Previous Tournament">
+            <?php echo htmlspecialchars($prevTournament['Acronym']); ?>
+        </a> <
+    <?php } ?>
+
+    <strong><?php echo htmlspecialchars($tournament["Acronym"]); ?></strong>
+
+    <?php if ($nextTournament) { ?>
+        >
+        <a href="?id=<?php echo $nextTournament['TournamentID']; ?>" title="Next Tournament">
+            <?php echo htmlspecialchars($nextTournament['Acronym']); ?>
+        </a>
+    <?php } ?>
 </div>
 
 <br>
