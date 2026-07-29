@@ -84,15 +84,15 @@
 
             while ($map = $mapResults->fetch_assoc()) {
                 $stage['Maps'][] = [
-                    'BeatmapID'      => (int)$map['BeatmapID'],
-                    'Slot'           => $map['Slot'],
-                    'SortOrder'      => (int)$map['SortOrder'],
-                    'IsCustom'       => (int)$map['IsCustom'],
-                    'SetID'          => (int)$map['SetID'],
-                    'Title'          => $map['Title'],
-                    'Artist'         => $map['Artist'],
+                    'BeatmapID' => (int)$map['BeatmapID'],
+                    'Slot' => $map['Slot'],
+                    'SortOrder' => (int)$map['SortOrder'],
+                    'IsCustom' => (int)$map['IsCustom'],
+                    'SetID' => (int)$map['SetID'],
+                    'Title' => $map['Title'],
+                    'Artist' => $map['Artist'],
                     'DifficultyName' => $map['DifficultyName'],
-                    'ImageUrl'       => "https://b.ppy.sh/thumb/" . $map['SetID'] . "l.jpg"
+                    'ImageUrl' => "https://b.ppy.sh/thumb/" . $map['SetID'] . "l.jpg"
                 ];
             }
             $mapStmt->close();
@@ -106,6 +106,11 @@
         $stmt->execute();
         $series = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        if (is_null($series)) {
+            http_response_code(404);
+            exit();
+        }
     }
 ?>
 
@@ -183,15 +188,19 @@
 <form id="tournamentForm" action="SubmitEdit.php" method="POST">
     <input type="hidden" name="EditData" id="EditData" value="" />
     <input type="hidden" name="TournamentID" value="<?php echo safe_htmlspecialchars($tournamentId ?? ''); ?>" />
-    <input type="hidden" name="SeriesID" value="<?php echo safe_htmlspecialchars($seriesId ?? ''); ?>" />
+    <input type="hidden" name="SeriesID" value="<?php echo safe_htmlspecialchars($series['SeriesID'] ?? ''); ?>" />
 
     <div class="container">
         <label>Tournament Name:</label><br>
         <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required/><br><br>
         <label>Acronym:</label><br>
         <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required/><br><br>
+        <label>Start Date:</label><br>
+        <input autocomplete="off" id="TournamentStartDate" value="<?php echo safe_htmlspecialchars($tournament['StartDate'] ?? ''); ?>" required placeholder="YYYY-MM-DD" /><br><br>
+        <label>End Date:</label><br>
+        <input autocomplete="off" id="TournamentEndDate" value="<?php echo safe_htmlspecialchars($tournament['EndDate'] ?? ''); ?>" placeholder="YYYY-MM-DD" /><br><br>
         <label>Tournament Series:</label> <br>
-        <input disabled value="<?php echo $series["Name"]; ?>" style="color: var(--main-theme-subtext-color);"/>
+        <input disabled value="<?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?>" style="color: var(--main-theme-subtext-color);"/>
     </div>
 
     <br>
@@ -453,7 +462,9 @@
             Tournament: {
                 Name: document.getElementById("TournamentName").value,
                 Acronym: document.getElementById("TournamentAcronym").value,
-                SeriesID: seriesInput && seriesInput.value !== "" ? parseInt(seriesInput.value, 10) : null
+                SeriesID: seriesInput && seriesInput.value !== "" ? parseInt(seriesInput.value, 10) : null,
+                StartDate: document.getElementById("TournamentStartDate").value,
+                EndDate: document.getElementById("TournamentEndDate").value
             },
             Stages: stages.map((stage, stageIndex) => ({
                 StageID: stage.StageID || null,
@@ -470,7 +481,6 @@
             Meta: document.getElementById("MetaComment").value
         };
 
-        console.log(payload);
         document.getElementById("EditData").value = JSON.stringify(payload);
     });
 

@@ -53,22 +53,25 @@ try {
     $tData = $data['Tournament'];
     $tournamentID = $request['TournamentID'];
     $seriesID = isset($tData['SeriesID']) && $tData['SeriesID'] !== '' ? (int)$tData['SeriesID'] : null;
+    $startDate = $tData['StartDate'] !== '' ? $tData['StartDate'] : null;
+    $endDate = $tData['EndDate'] !== '' ? $tData['EndDate'] : null;
 
     if ($tournamentID !== null) {
         $stmt = $conn->prepare("
             UPDATE tournaments
-            SET Name = ?, Acronym = ?, SeriesID = ?
+            SET Name = ?, Acronym = ?, SeriesID = ?, StartDate = ?, EndDate = ?, UpdatedAt = CURRENT_TIMESTAMP
             WHERE TournamentID = ?
         ");
-        $stmt->bind_param("ssii", $tData['Name'], $tData['Acronym'], $seriesID, $tournamentID);
+
+        $stmt->bind_param("ssssii", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate, $tournamentID);
         $stmt->execute();
         $stmt->close();
     } else {
         $stmt = $conn->prepare("
-            INSERT INTO tournaments (Name, Acronym, SeriesID)
-            VALUES (?, ?, ?)
+            INSERT INTO tournaments (Name, Acronym, SeriesID, StartDate, EndDate)
+            VALUES (?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("ssi", $tData['Name'], $tData['Acronym'], $seriesID);
+        $stmt->bind_param("ssiss", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate);
         $stmt->execute();
         $tournamentID = $conn->insert_id;
         $stmt->close();
@@ -111,6 +114,7 @@ try {
                     $beatmapID = (int)$map['BeatmapID'];
                     $slot = $map['Slot'];
                     $isCustom = isset($map['IsCustom']) ? (int)$map['IsCustom'] : 0;
+
 
                     $mapStmt->bind_param("iiissi", $tournamentID, $newStageID, $beatmapID, $slot, $mapOrder, $isCustom);
                     $mapStmt->execute();

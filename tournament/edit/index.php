@@ -26,6 +26,22 @@
             );
         }
 
+        if (isset($newTournament['StartDate']) && $newTournament['StartDate'] !== $tournament['StartDate']) {
+            $diffs[] = sprintf(
+                'Start date changed from <b>%s</b> to <b>%s</b>',
+                htmlspecialchars($tournament['StartDate'] ?? "None"),
+                htmlspecialchars($newTournament['StartDate'])
+            );
+        }
+
+        if (isset($newTournament['EndDate']) && $newTournament['EndDate'] !== $tournament['EndDate']) {
+            $diffs[] = sprintf(
+                'End date changed from <b>%s</b> to <b>%s</b>',
+                htmlspecialchars($tournament['EndDate'] ?? "None"),
+                htmlspecialchars($newTournament['EndDate'])
+            );
+        }
+
         $dbStagesById = [];
         foreach ($tournamentStages as $stage) {
             $dbStagesById[$stage['StageID']] = $stage;
@@ -290,7 +306,7 @@
 
 <br>
 
-<?php if (!is_null($changelog) && $edit["Status"] === 'Pending' ){ ?>
+<?php if (!is_null($changelog) && $edit["Status"] === 'Pending') { ?>
     <div class="bordered-container">
         <h2 style="margin:0">Changelog</h2>
         <ul>
@@ -322,7 +338,7 @@
             <br>
         <?php } ?>
 
-        <?php if ($loggedIn && $userName === "apollodw") { ?>
+        <?php if ($loggedIn && $userName === "moonpoint") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
                 <option value="Pending" <?php if ($edit["Status"] === "Pending") {

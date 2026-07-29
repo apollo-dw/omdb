@@ -80,7 +80,7 @@
             <?php echo htmlspecialchars($tournament["SeriesName"]); ?>
         </a>
         //
-        <?php echo htmlspecialchars($tournament["StartDate"]); ?> - <?php echo htmlspecialchars($tournament["EndDate"]); ?>
+        <?php echo htmlspecialchars($tournament["StartDate"]); ?> - <?php echo htmlspecialchars($tournament["EndDate"] ?? "N/A"); ?>
     </span>
 
     <br><br>

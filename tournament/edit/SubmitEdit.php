@@ -50,6 +50,21 @@ if ($tournamentID !== null) {
     $stmt->close();
 }
 
+$stmt = $conn->prepare("
+    SELECT SeriesID
+    FROM tournament_series
+    WHERE SeriesID = ? LIMIT 1
+");
+$stmt->bind_param("i", $seriesID);
+$stmt->execute();
+$series = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (is_null($series)) {
+    http_response_code(400);
+    exit();
+}
+
 $targetEditID = null;
 
 if ($existingEditID !== null) {
