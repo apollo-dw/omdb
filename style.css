@@ -1038,6 +1038,13 @@ ol.star-rating-list > li {
   bottom: calc(100% + 8px);
 }
 
+.tooltip-left .tooltip-box {
+    top: 50%;
+    right: calc(100% + 8px);
+    bottom: auto;
+    transform: translateY(-50%);
+}
+
 .tooltip-box::before {
   content: "";
   position: absolute;
@@ -1045,6 +1052,16 @@ ol.star-rating-list > li {
   right: 0;
   height: 12px;
   top: 100%;
+}
+
+.tooltip-left .tooltip-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 12px;
+    height: auto;
 }
 
 .tooltip-wrapper:hover .tooltip-box, .tooltip-wrapper:focus-visible .tooltip-box, .tooltip-wrapper.tooltip-open .tooltip-box {

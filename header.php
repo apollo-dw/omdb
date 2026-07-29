@@ -35,6 +35,7 @@
 			<div class="topBarDropDown hideOnMobile">
 				<div class="topBarLink topBarDropDownButton">maps</div>
 				<div class="dropdown-content">
+					<a href="/tournament/series/list.php">tournaments</a>
 					<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
 					<a href="/random/">random</a>
 				</div>
@@ -138,6 +139,7 @@
 				<div class="topBarDropDown">
 					<div class="topBarLink topBarDropDownButton">maps</div>
 					<div class="dropdown-content">
+                        <a href="/tournament/series/list.php">tournaments</a>
 						<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
 						<a href="/random/">random</a>
 					</div>
@@ -162,7 +164,7 @@
 				<?php } ?>
 			</div>
 		</div>
-		
+
 		<div class="content" style="margin-top:5em;">
 
 		<!--
@@ -170,4 +172,3 @@
                 <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">welcome back!<br><a href="/update.php">read more</a></span>
             </div>
 		-->
-		

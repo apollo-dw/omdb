@@ -1,72 +1,54 @@
 <?php
-    $PageTitle = "Edit Queue";
-
+    $PageTitle = "Edit queues";
     include '../header.php';
 
-    $stmt = $conn->prepare("SELECT e.*, b.SetID as SetID, e.SetID as EditSetID, s.Title as Title, b.DifficultyName FROM beatmap_edit_requests e LEFT JOIN beatmaps b on e.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s on e.SetID = s.SetID WHERE e.Status = 'Pending' ORDER BY e.`Timestamp`;");
+    $stmt = $conn->prepare("SELECT
+           (SELECT COUNT(*) FROM `beatmap_edit_requests` WHERE Status = 'Pending') AS beatmaps,
+           (SELECT COUNT(*) FROM `descriptor_proposals` WHERE Status = 'Pending') AS descriptors,
+           (SELECT COUNT(*) FROM `tournament_edit_requests` WHERE Status = 'Pending') AS tournaments,
+           (SELECT COUNT(*) FROM `tournament_series_edit_requests` WHERE Status = 'Pending') AS tournament_series");
     $stmt->execute();
     $result = $stmt->get_result();
+    $stats = $result->fetch_assoc();
+    $stmt->close();
 
+?>
 
-    ?>
+<style>
+    h1 {
+        margin: 0;
+    }
+</style>
 
-    <style>
-        table, tr, td {
-            border-spacing: 0;
-            padding: 0.5em;
-        }
+<h1>Edit queues</h1>
+<hr>
 
-        tr:nth-of-type(odd):hover{
-            background-color: #406565;
-        }
-
-        tr:nth-of-type(even):hover{
-            background-color: #537e7e;
-        }
-    </style>
-
-    <h1>Edit queue</h1>
-
-    <table style="width:100%;">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Title</th>
-            <th>Difficulty</th>
-            <th>Date</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php
-            while ($row = $result->fetch_assoc()) {
-                $isEditingSet = !is_null($row["EditSetID"]);
-                $setId = $row['SetID'];
-                $title = $row["Title"];
-
-
-                if ($isEditingSet) {
-                    $setId = $row['EditSetID'];
-                    // Look, I know this is not good. The answer to this is just keep queue sizes small :
-                    $title = $conn->query("SELECT Title FROM beatmapsets WHERE SetID = {$setId} LIMIT 1;")->fetch_assoc()["Title"];
-                }
-
-                $name = GetUserNameFromId($row["UserID"], $conn);
-                $mapsetLink = "../mapset/edit/?id={$setId}";
-                echo "<tr class='alternating-bg' onclick=\"window.open('{$mapsetLink}', '_blank');\" style=\"cursor: pointer;\">";
-                echo "<td>" . safe_htmlspecialchars($name, ENT_QUOTES) . "</td>";
-                echo "<td>" . safe_htmlspecialchars($title, ENT_QUOTES) . "</td>";
-                if ($isEditingSet) {
-                    echo "<td>Mapset (general edit)</td>";
-                } else {
-                    echo "<td>" . safe_htmlspecialchars($row["DifficultyName"], ENT_QUOTES) . "</td>";
-                }
-                echo "<td>{$row["Timestamp"]}</td>";
-                echo "</tr>";
-            }
-        ?>
-        </tbody>
-    </table>
+<div style="max-width:33%;">
+    <div class="alternating-bg" style="padding:0.5em;">
+        <a href="mapsets.php">Mapsets</a>
+        <div style="float: right;">
+            <span class="subText"><?php echo $stats["beatmaps"]; ?> open</span>
+        </div>
+    </div>
+    <div class="alternating-bg" style="padding:0.5em;">
+        <a href="../descriptor/proposal/list/">Descriptors</a>
+        <div style="float: right;">
+            <span class="subText"><?php echo $stats["descriptors"]; ?> open</span>
+        </div>
+    </div>
+    <div class="alternating-bg" style="padding:0.5em;">
+        <a href="tournaments.php">Tournaments</a>
+        <div style="float: right;">
+            <span class="subText"><?php echo $stats["tournaments"]; ?> open</span>
+        </div>
+    </div>    <div class="alternating-bg" style="padding:0.5em;">
+        <a href="tournament-series.php">Tournament series</a>
+        <div style="float: right;">
+            <span class="subText"><?php echo $stats["tournament_series"]; ?> open</span>
+        </div>
+    </div>
+</div>
 
 <?php
-include '../footer.php';
+    include '../footer.php';
 ?>

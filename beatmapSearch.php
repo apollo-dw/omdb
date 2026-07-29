@@ -47,6 +47,27 @@
     }
     $stmt->close();
 
+    $stmt = $conn->prepare("SELECT `TournamentID`, `Name`
+        FROM `tournaments`
+        WHERE `Name` LIKE ? OR `Acronym` LIKE ?
+        ORDER BY (`Name` = ?) DESC, LENGTH(`Name`) ASC
+        LIMIT 10;
+    ");
+    $stmt->bind_param("sss", $like, $like, $q);
+    $stmt->execute();
+    $stmt->bind_result($tournamentID, $tournamentName);
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        echo "<div style='background-color: var(--main-theme-color-even-darker);'><b>Tournaments</b></div>";
+        while ($stmt->fetch()) {
+            ?>
+            <div class="alternating-bg" style="padding:0.25em;margin:0;" ><a href="/tournament/?id=<?php echo $tournamentID; ?>" style="display:block;width:100%;height:100%;"><?php echo safe_htmlspecialchars($tournamentName, ENT_QUOTES); ?></a></div>
+            <?php
+        }
+    }
+    $stmt->close();
+
     $sql = "
         (SELECT `UserID`, `Username` FROM users WHERE username LIKE ? LIMIT 5)
         UNION ALL
@@ -72,7 +93,7 @@
             ?>
             <div class="alternating-bg" style="padding:0.25em;display:flex;vertical-align: middle;">
                 <a href="/profile/<?php echo $userID; ?>" style="display:inline-block;width:100%;height:100%;margin:0;padding:0;">
-                    <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/> 
+                    <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $userID; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>"/>
                     <?php echo safe_htmlspecialchars($username, ENT_QUOTES); ?>
                 </a>
             </div>

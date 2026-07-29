@@ -15,7 +15,23 @@
     }
 
     $foundSet = false;
-    $stmt = $conn->prepare("SELECT *, mn.Username FROM `beatmaps` b JOIN beatmapsets s on b.SetID = s.SetID LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID WHERE b.SetID=? ORDER BY b.Mode, b.SR DESC;");
+    $stmt = $conn->prepare("
+        SELECT
+            b.*,
+            s.*,
+            mn.Username,
+            t.TournamentID,
+            t.Acronym AS TournamentAcronym,
+            tm.Slot as TournamentSlot
+        FROM `beatmaps` b
+        JOIN beatmapsets s ON b.SetID = s.SetID
+        LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
+        LEFT JOIN tournament_maps tm ON tm.BeatmapID = b.BeatmapID AND tm.IsCustom = 1
+        LEFT JOIN tournaments t ON t.TournamentID = tm.TournamentID
+        WHERE b.SetID = ?
+        ORDER BY b.Mode, b.SR DESC;
+    ");
+
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -233,6 +249,8 @@ while ($row = $result->fetch_assoc()) {
     $stmt->execute();
     $ratedQueryResult = $stmt->get_result();
 
+    $stmt->close();
+
     $blackListed = $row["Blacklisted"];
     $hasCharted = $row["ChartYearRank"] != null;
 
@@ -280,6 +298,7 @@ while ($row = $result->fetch_assoc()) {
         }
     }
 
+    $stmt->close();
 
     $maxRating = max(array_column($scoreBuckets, "weighted"));
     $maxRating = max($maxRating, 5);
@@ -293,6 +312,7 @@ while ($row = $result->fetch_assoc()) {
         $stmt->bind_param("i", $row["BeatmapID"]);
         $stmt->execute();
         $averageRating = number_format((float)$stmt->get_result()->fetch_assoc()["avg_score"], 2);
+        $stmt->close();
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) as count, AVG(Score) as avg FROM `ratings` WHERE `BeatmapID`=? AND `UserID` IN (SELECT `UserIDTo` FROM `user_relations` WHERE `UserIDFrom` = ? AND `type`=1)");
@@ -303,6 +323,7 @@ while ($row = $result->fetch_assoc()) {
     $friendRatingResult = $stmt->get_result()->fetch_assoc();
     $friendRatingCount = $friendRatingResult["count"];
     $friendRatingAvg = $friendRatingResult["avg"];
+    $stmt->close();
 
     $hasFriendsRatings = $loggedIn && $friendRatingCount > 0;
 
@@ -319,9 +340,52 @@ while ($row = $result->fetch_assoc()) {
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
     $descriptorResult = $stmt->get_result();
+
+    $stmt->close();
+
+    $stmt = $conn->prepare("
+            SELECT t.Acronym, t.TournamentID
+            FROM tournament_maps tm
+            INNER JOIN tournaments t ON tm.TournamentID = t.TournamentID
+            WHERE tm.BeatmapID = ?
+            ORDER BY t.StartDate;
+    ");
+    $stmt->bind_param("i", $beatmapID);
+    $stmt->execute();
+    $tournamentMapResult = $stmt->get_result();
+
+    $tournaments = [];
+    while ($tournamentRow = $tournamentMapResult->fetch_assoc()) {
+        $tournaments[$tournamentRow['TournamentID']] = $tournamentRow["Acronym"];
+    }
+
+    $stmt->close();
 ?>
 
     <div class="flex-container difficulty-container alternating-bg" >
+
+        <?php if (count($tournaments) > 0) { ?>
+        <div style="position: relative; width: 0; align-self: center; flex-grow: 0;">
+            <div style="position: absolute; transform: translateY(-50%); margin-left: 1em;">
+                <div class="tooltip-wrapper tooltip-left">
+                    <i class="icon-trophy" style="font-size: 1.5em;"></i>
+                    <div class="tooltip-box">
+                        Featured in
+                        <?php
+                            $links = [];
+                            foreach ($tournaments as $tournamentID => $acronym) {
+                                $links[] = '<a href="/tournament/?id=' . (int)$tournamentID . '">' .
+                                    htmlspecialchars($acronym) .
+                                    '</a>';
+                            }
+                            echo implode(', ', $links);
+                        ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php } ?>
+
         <div class="flex-child diffBox" style="text-align:center;width:20%;">
             <?php if (in_array($row["BeatmapID"], $motdBeatmapIDs)) { ?>
             <span class="tooltip-wrapper">
@@ -355,8 +419,15 @@ while ($row = $result->fetch_assoc()) {
 
                 if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1)) {
                     ?>
-                    <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span>
+                    <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span><br>
                     <?php
+                }
+            ?>
+            <?php
+                if ($row["TournamentID"]) {
+                ?>
+                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                <?php
                 }
             ?>
         </div>
