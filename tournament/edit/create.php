@@ -18,6 +18,7 @@
         $stmt->close();
 
         if (is_null($tournament)) {
+            echo "no tournament";
             http_response_code(404);
             exit();
         }
@@ -29,6 +30,7 @@
         $stmt->close();
 
         if ($pendingEdit) {
+            echo "pending";
             http_response_code(400);
             exit();
         }
@@ -192,7 +194,12 @@
             <input id="NewBeatmapID" name="NewBeatmapID"/> <br>
             <label>Slot:</label> <br>
             <input id="NewBeatmapSlot" name="NewBeatmapSlot"/> <br><br>
-            <input type="button" id="addNewButton" value="Add beatmap" onclick="addBeatmapToActiveStage()" /> <br><br>
+            <label>Is custom map:</label> <br>
+            <input id="NewBeatmapIsCustom" name="NewBeatmapIsCustom" type="checkbox" /> <br><br>
+            <input type="button" id="addNewButton" value="Add beatmap" onclick="addBeatmapToActiveStage()" />
+            <hr>
+            <b><label>Meta comment</label></b>
+            <textarea id="MetaComment" name="meta" style="width:100%;" rows=5 placeholder="Place any sources for this edit (e.g. osu!wiki, forum post, spreadsheet)" ></textarea>
         </div>
     </div>
     <div class="container" style="margin-top: 1em;">
@@ -319,6 +326,8 @@
             const imageUrl = map.ImageUrl || (map.SetID ? `https://b.ppy.sh/thumb/${map.SetID}l.jpg` : '/assets/img/missing-map-thumbnail.png');
             const displayTitle = map.Artist ? `${map.Artist} - ${map.Title} [${map.DifficultyName}]` : (map.Title || `Beatmap #${map.BeatmapID}`);
 
+            const customBadge = map.IsCustom ? `<span class="badge" title="Custom Map">Custom</span>` : ``;
+
             row.innerHTML = `
                 <div>
                     <i class="icon-reorder" style="cursor: grab; margin-right: 0.5em;"></i>
@@ -333,7 +342,8 @@
                          onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';" />
                 </div>
                 <div style="flex-grow: 1;">
-                    <b>${escapeHtml(displayTitle)}</b>
+                    <b>${escapeHtml(displayTitle)}</b> ${customBadge} <br>
+                    Beatmap ID: <code>${escapeHtml(map.BeatmapID)}</code>
                 </div>
                 <div>
                     <i class="icon-remove" style="cursor: pointer;" title="Remove map"></i>
@@ -363,9 +373,11 @@
     function addBeatmapToActiveStage() {
         const mapIdInput = document.getElementById("NewBeatmapID");
         const slotInput = document.getElementById("NewBeatmapSlot");
+        const customInput = document.getElementById("NewBeatmapIsCustom")
 
         const beatmapID = parseInt(mapIdInput.value);
         const slot = slotInput.value.trim();
+        const isCustom = customInput.checked;
 
         if (!beatmapID || !slot) {
             alert("Please enter a valid Beatmap ID and Slot.");
@@ -383,7 +395,7 @@
                 const newMap = {
                     BeatmapID: beatmapID,
                     Slot: slot,
-                    IsCustom: 0,
+                    IsCustom: isCustom,
                     SetID: data.SetID || data.setId || null,
                     Title: data.Title || data.itemTitle || "Unknown Title",
                     Artist: data.Artist || "",
@@ -395,6 +407,7 @@
 
                 mapIdInput.value = "";
                 slotInput.value = "";
+                customInput.checked = false;
                 renderActiveStageMaps();
             })
             .catch((err) => {
@@ -425,7 +438,8 @@
                     SortOrder: mapIndex + 1,
                     IsCustom: map.IsCustom || 0
                 }))
-            }))
+            })),
+            Meta: document.getElementById("MetaComment").textContent
         };
 
         document.getElementById("EditData").value = JSON.stringify(payload);
