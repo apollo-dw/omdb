@@ -813,3 +813,27 @@ Slot varchar(10),
 SortOrder smallint UNSIGNED NOT NULL,
 IsCustom TINYINT(1) NOT NULL DEFAULT 0
 );
+
+CREATE TABLE `tournament_series_edit_requests` (
+`EditID` int NOT NULL AUTO_INCREMENT,
+`SeriesID` int DEFAULT NULL,
+`EditData` json NOT NULL,
+`Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
+`EditorID` int DEFAULT NULL,
+`AdminID` int DEFAULT NULL,
+CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`EditID`)
+);
+
+CREATE TABLE `tournament_edit_requests` (
+`EditID` int NOT NULL AUTO_INCREMENT,
+`TournamentID` int DEFAULT NULL,
+`EditData` json NOT NULL,
+`Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
+`EditorID` int DEFAULT NULL,
+`AdminID` int DEFAULT NULL,
+CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`EditID`)
+);
