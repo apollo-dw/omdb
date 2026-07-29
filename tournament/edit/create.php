@@ -1,0 +1,518 @@
+<?php
+    require "../../base.php";
+    $PageTitle = "Edit tournament";
+    require "../../header.php";
+
+    if (!$loggedIn) {
+        http_response_code(401);
+        exit();
+    }
+
+    $tournamentId = $_GET["id"] ?? null;
+
+    if ($tournamentId !== null) {
+        $stmt = $conn->prepare("SELECT * FROM tournaments WHERE TournamentID = ?;");
+        $stmt->bind_param("i", $tournamentId);
+        $stmt->execute();
+        $tournament = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (is_null($tournament)) {
+            http_response_code(404);
+            exit();
+        }
+
+        $stmt = $conn->prepare("SELECT EditID FROM tournament_edit_requests WHERE TournamentID = ? AND Status = 'Pending' LIMIT 1;");
+        $stmt->bind_param("i", $tournamentId);
+        $stmt->execute();
+        $pendingEdit = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if ($pendingEdit) {
+            http_response_code(400);
+            exit();
+        }
+
+        $stmt = $conn->prepare("SELECT * FROM tournament_stages WHERE TournamentID = ? ORDER BY SortOrder ASC;");
+        $stmt->bind_param("i", $tournamentId);
+        $stmt->execute();
+        $stageResults = $stmt->get_result();
+
+        while ($stage = $stageResults->fetch_assoc()) {
+            $stageId = $stage['StageID'];
+            $stage['Maps'] = [];
+
+            $mapStmt = $conn->prepare("
+                SELECT
+                    tm.BeatmapID,
+                    tm.Slot,
+                    tm.SortOrder,
+                    tm.IsCustom,
+                    b.SetID,
+                    b.DifficultyName,
+                    s.Artist,
+                    s.Title
+                FROM tournament_maps tm
+                INNER JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
+                INNER JOIN beatmapsets s ON b.SetID = s.SetID
+                WHERE tm.StageID = ?
+                ORDER BY tm.SortOrder ASC;
+            ");
+            $mapStmt->bind_param("i", $stageId);
+            $mapStmt->execute();
+            $mapResults = $mapStmt->get_result();
+
+            while ($map = $mapResults->fetch_assoc()) {
+                $stage['Maps'][] = [
+                    'BeatmapID'      => (int)$map['BeatmapID'],
+                    'Slot'           => $map['Slot'],
+                    'SortOrder'      => (int)$map['SortOrder'],
+                    'IsCustom'       => (int)$map['IsCustom'],
+                    'SetID'          => (int)$map['SetID'],
+                    'Title'          => $map['Title'],
+                    'Artist'         => $map['Artist'],
+                    'DifficultyName' => $map['DifficultyName'],
+                    'ImageUrl'       => "https://b.ppy.sh/thumb/" . $map['SetID'] . "l.jpg"
+                ];
+            }
+            $mapStmt->close();
+
+            $stages[] = $stage;
+        }
+        $stmt->close();
+    }
+?>
+
+<style>
+    .container {
+        width: 100%;
+        background-color: DarkSlateGrey;
+        padding: 1.5em;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .container td {
+        padding: 0.5em;
+    }
+
+    textarea {
+        border: 1px solid white;
+        background-color: #203838;
+        color: white;
+        width: 100%;
+    }
+
+    .container select{
+        border: 1px solid white;
+        background-color: #203838;
+    }
+
+    .draggable-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .draggable {
+        margin: 0.5em 0 0;
+        border: 1px solid #999;
+        cursor: grab;
+        box-sizing: border-box;
+        min-height: 12em;
+        display:flex;
+        align-items: center;
+        padding-right: 1em;
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
+
+    .draggable>div {
+        margin-left:1em;
+    }
+
+    .draggable .icon-reorder, .draggable .icon-remove {
+        font-size: 2em;
+    }
+
+    .draggable .icon-remove {
+        color: firebrick;
+    }
+
+    .dragging {
+        opacity: 0.5;
+    }
+
+    #DeleteListButton {
+        background-color: firebrick;
+        float: right;
+    }
+
+    #DeleteListButton:hover {
+        background-color: #722020;
+    }
+</style>
+
+<form id="tournamentForm" action="SubmitEdit.php" method="POST">
+    <input type="hidden" name="EditData" id="EditData" value="" />
+    <input type="hidden" name="TournamentID" value="<?php echo $tournamentId ?? ''; ?>" />
+
+    <div class="container">
+        <label>Tournament Name:</label><br>
+        <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required/><br><br>
+        <label>Acronym:</label><br>
+        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required/>
+    </div>
+
+    <br>
+
+    <div class="tabbed-container-nav" id="stageTabsNav">
+    </div>
+
+    <div class="flex-container">
+        <div id="container" class="draggable-container" style="width:80%;">
+        </div>
+        <div style="width:20%;margin: 0.5em 0 0.5em 0.5em;padding: 1em;min-height:24em;">
+            <b>Current stage</b><br>
+            <label>Name</label> <br>
+            <input autocomplete="off" id="CurrentStageName" oninput="updateActiveStageInfo()" /> <br>
+            <label>Acronym</label> <br>
+            <input autocomplete="off" id="CurrentStageAcronym" oninput="updateActiveStageInfo()" /> <br>
+            <br>
+            <button id="MoveStageLeft" type="button" class="add-stage-btn" onclick="moveStageLeft()"> << </button>
+            <button id="MoveStageRight" type="button" class="add-stage-btn" onclick="moveStageRight()"> >> </button> <br><br>
+            <button type="button" class="add-stage-btn" onclick="addNewStage()">+ Add new stage</button> <br> <br>
+            <button type="button" class="btn btn-danger" onclick="removeActiveStage()" id="removeStageBtn">
+               - Remove current stage
+            </button>
+            <hr>
+            <b>Add new map to current stage</b><br>
+            <label>Beatmap ID:</label> <br>
+            <input id="NewBeatmapID" name="NewBeatmapID"/> <br>
+            <label>Slot:</label> <br>
+            <input id="NewBeatmapSlot" name="NewBeatmapSlot"/> <br><br>
+            <input type="button" id="addNewButton" value="Add beatmap" onclick="addBeatmapToActiveStage()" /> <br><br>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 1em;">
+        <input type="submit" id="submitButton" value="Submit tournament edit" />
+    </div>
+</form>
+
+<script>
+    let stages = <?php
+        $formattedStages = [];
+        if (!empty($stages)) {
+            foreach ($stages as $sId => $s) {
+                $formattedStages[] = [
+                    'StageID' => $sId,
+                    'Name' => $s['Name'],
+                    'Acronym' => $s['Acronym'],
+                    'Maps' => $s['Maps'] ?? []
+                ];
+            }
+        }
+        echo json_encode($formattedStages);
+    ?>;
+
+    console.log(stages);
+
+    let activeStageIndex = 0;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (stages.length === 0) {
+            addNewStage("Qualifiers", "QUAL");
+        } else {
+            renderTabs();
+        }
+    });
+
+    function renderTabs() {
+        const nav = document.getElementById("stageTabsNav");
+        nav.innerHTML = "";
+
+        stages.forEach((stage, index) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = index === activeStageIndex ? "active" : "";
+            btn.textContent = stage.Acronym || stage.Name || `Stage ${index + 1}`;
+            btn.onclick = () => switchStage(index);
+            nav.appendChild(btn);
+        });
+
+        if (stages[activeStageIndex]) {
+            document.getElementById("CurrentStageName").value = stages[activeStageIndex].Name;
+            document.getElementById("CurrentStageAcronym").value = stages[activeStageIndex].Acronym;
+        } else {
+            document.getElementById("CurrentStageName").value = "";
+            document.getElementById("CurrentStageAcronym").value = "";
+        }
+
+        renderActiveStageMaps();
+    }
+
+    function switchStage(index) {
+        activeStageIndex = index;
+        renderTabs();
+    }
+
+    function updateActiveStageInfo() {
+        if (!stages[activeStageIndex]) return;
+        stages[activeStageIndex].Name = document.getElementById("CurrentStageName").value;
+        stages[activeStageIndex].Acronym = document.getElementById("CurrentStageAcronym").value;
+
+        const activeTabBtn = document.querySelectorAll("#stageTabsNav button")[activeStageIndex];
+        if (activeTabBtn) {
+            activeTabBtn.textContent = stages[activeStageIndex].Acronym || stages[activeStageIndex].Name || `Stage ${activeStageIndex + 1}`;
+        }
+    }
+
+    function addNewStage(defaultName = "New Stage", defaultAcronym = "NEW") {
+        stages.push({
+            StageID: null,
+            Name: defaultName,
+            Acronym: defaultAcronym,
+            Maps: []
+        });
+        activeStageIndex = stages.length - 1;
+        renderTabs();
+    }
+
+    function moveStageLeft() {
+        if (activeStageIndex <= 0) return;
+
+        const temp = stages[activeStageIndex];
+        stages[activeStageIndex] = stages[activeStageIndex - 1];
+        stages[activeStageIndex - 1] = temp;
+
+        activeStageIndex--;
+        renderTabs();
+    }
+
+    function moveStageRight() {
+        if (activeStageIndex >= stages.length - 1) return;
+
+        const temp = stages[activeStageIndex];
+        stages[activeStageIndex] = stages[activeStageIndex + 1];
+        stages[activeStageIndex + 1] = temp;
+
+        activeStageIndex++;
+        renderTabs();
+    }
+
+    function renderActiveStageMaps() {
+        const container = document.getElementById("container");
+        container.innerHTML = "";
+
+        const activeStage = stages[activeStageIndex];
+        if (!activeStage || !activeStage.Maps) return;
+
+        activeStage.Maps.forEach((map, index) => {
+            const row = document.createElement("div");
+            row.className = "draggable alternating-bg flex-container";
+            row.style.alignItems = "center";
+            row.style.padding = "0.5em";
+            row.setAttribute("data-beatmap-id", map.BeatmapID);
+            row.setAttribute("draggable", "true");
+
+            const imageUrl = map.ImageUrl || (map.SetID ? `https://b.ppy.sh/thumb/${map.SetID}l.jpg` : '/assets/img/missing-map-thumbnail.png');
+            const displayTitle = map.Artist ? `${map.Artist} - ${map.Title} [${map.DifficultyName}]` : (map.Title || `Beatmap #${map.BeatmapID}`);
+
+            row.innerHTML = `
+                <div>
+                    <i class="icon-reorder" style="cursor: grab; margin-right: 0.5em;"></i>
+                </div>
+                <div style="min-width: 4em; text-align: center;">
+                    <b>${escapeHtml(map.Slot)}</b>
+                </div>
+                <div style="padding: 0 1em; box-sizing: content-box;">
+                    <img src="${imageUrl}"
+                         class="diffThumb"
+                         style="aspect-ratio: 1 / 1; width: 80px; height: auto;"
+                         onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';" />
+                </div>
+                <div style="flex-grow: 1;">
+                    <b>${escapeHtml(displayTitle)}</b>
+                </div>
+                <div>
+                    <i class="icon-remove" style="cursor: pointer;" title="Remove map"></i>
+                </div>
+            `;
+
+            row.querySelector(".icon-remove").addEventListener("click", () => {
+                if (confirm("Are you sure you want to remove this map from the stage?")) {
+                    removeMapFromActiveStage(index);
+                }
+            });
+
+            container.appendChild(row);
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function addBeatmapToActiveStage() {
+        const mapIdInput = document.getElementById("NewBeatmapID");
+        const slotInput = document.getElementById("NewBeatmapSlot");
+
+        const beatmapID = parseInt(mapIdInput.value);
+        const slot = slotInput.value.trim();
+
+        if (!beatmapID || !slot) {
+            alert("Please enter a valid Beatmap ID and Slot.");
+            return;
+        }
+
+        fetch(`GetBeatmapData.php?id=${beatmapID}`)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.error || !data) {
+                    alert(data.error || "Failed to load beatmap data.");
+                    return;
+                }
+
+                const newMap = {
+                    BeatmapID: beatmapID,
+                    Slot: slot,
+                    IsCustom: 0,
+                    SetID: data.SetID || data.setId || null,
+                    Title: data.Title || data.itemTitle || "Unknown Title",
+                    Artist: data.Artist || "",
+                    DifficultyName: data.DifficultyName || data.version || "",
+                    ImageUrl: data.ImageUrl || data.imageUrl || `https://b.ppy.sh/thumb/${data.SetID}l.jpg`
+                };
+
+                stages[activeStageIndex].Maps.push(newMap);
+
+                mapIdInput.value = "";
+                slotInput.value = "";
+                renderActiveStageMaps();
+            })
+            .catch((err) => {
+                console.error("Error fetching beatmap data:", err);
+                alert("An error occurred while fetching beatmap information.");
+            });
+    }
+
+    function removeMapFromActiveStage(index) {
+        stages[activeStageIndex].Maps.splice(index, 1);
+        renderActiveStageMaps();
+    }
+
+    document.getElementById("tournamentForm").addEventListener("submit", function (e) {
+        const payload = {
+            Tournament: {
+                Name: document.getElementById("TournamentName").value,
+                Acronym: document.getElementById("TournamentAcronym").value
+            },
+            Stages: stages.map((stage, stageIndex) => ({
+                StageID: stage.StageID,
+                Name: stage.Name,
+                Acronym: stage.Acronym,
+                SortOrder: stageIndex + 1,
+                Maps: stage.Maps.map((map, mapIndex) => ({
+                    BeatmapID: map.BeatmapID,
+                    Slot: map.Slot,
+                    SortOrder: mapIndex + 1,
+                    IsCustom: map.IsCustom || 0
+                }))
+            }))
+        };
+
+        document.getElementById("EditData").value = JSON.stringify(payload);
+    });
+
+    let draggingElement = null;
+    const container = document.getElementById("container");
+
+    container.addEventListener("dragstart", (e) => {
+        const draggable = e.target.closest(".draggable");
+        if (draggable) {
+            draggingElement = draggable;
+            draggable.classList.add("dragging");
+        }
+    });
+
+    container.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        if (!draggingElement) return;
+
+        const afterElement = getDragAfterElement(container, e.clientY);
+        if (afterElement == null) {
+            container.appendChild(draggingElement);
+        } else {
+            container.insertBefore(draggingElement, afterElement);
+        }
+    });
+
+    container.addEventListener("dragend", (e) => {
+        if (draggingElement) {
+            draggingElement.classList.remove("dragging");
+            draggingElement = null;
+        }
+        syncMapOrderFromDOM();
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll(".draggable:not(.dragging)")];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function syncMapOrderFromDOM() {
+        const activeStage = stages[activeStageIndex];
+        if (!activeStage || !activeStage.Maps) return;
+
+        const domRows = [...container.querySelectorAll(".draggable")];
+        const newMapsArray = [];
+
+        domRows.forEach((row) => {
+            const beatmapID = parseInt(row.getAttribute("data-beatmap-id"));
+
+            const mapObj = activeStage.Maps.find(m => m.BeatmapID === beatmapID);
+            if (mapObj) {
+                newMapsArray.push(mapObj);
+            }
+        });
+
+        activeStage.Maps = newMapsArray;
+    }
+
+    function removeActiveStage() {
+        if (stages.length === 0) {
+            alert("No stages available to remove.");
+            return;
+        }
+
+        const currentStageName = stages[activeStageIndex]?.Name || `Stage #${activeStageIndex + 1}`;
+
+        if (!confirm(`Are you sure you want to delete "${currentStageName}" and all its maps?`)) {
+            return;
+        }
+
+        stages.splice(activeStageIndex, 1);
+
+        if (activeStageIndex >= stages.length) {
+            activeStageIndex = Math.max(0, stages.length - 1);
+        }
+
+        renderTabs();
+    }
+</script>
