@@ -66,7 +66,10 @@
         ");
         $stmt->bind_param("isi", $seriesId, $editData, $editorId);
         $stmt->execute();
+
+        $editId = $conn->insert_id;
         $stmt->close();
     }
 
+    header('Location: ./?id=' . $editId ?? $existingEditId);
     exit();

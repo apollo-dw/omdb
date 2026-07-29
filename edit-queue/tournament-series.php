@@ -32,7 +32,7 @@
                 </b>
             </span>
 
-            <a href="#">
+            <a href="../tournament/series/edit/?id=<?php echo $edit['EditID']; ?>">
                 <b><?php echo safe_htmlspecialchars($seriesName, ENT_QUOTES); ?></b>
                 <?php if ($seriesAcronym !== '') { ?>
                     <span class="subText">(<?php echo safe_htmlspecialchars($seriesAcronym, ENT_QUOTES); ?>)</span>

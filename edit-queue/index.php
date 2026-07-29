@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="alternating-bg" style="padding:0.5em;">
-        <a href="#">Tournament series</a>
+        <a href="tournament-series.php">Tournament series</a>
         <div style="float: right;">
             <span class="subText"><?php echo $stats["tournament_series"]; ?> open</span>
         </div>
