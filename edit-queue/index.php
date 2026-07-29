@@ -5,6 +5,7 @@
     $stmt = $conn->prepare("SELECT
            (SELECT COUNT(*) FROM `beatmap_edit_requests` WHERE Status = 'Pending') AS beatmaps,
            (SELECT COUNT(*) FROM `descriptor_proposals` WHERE Status = 'Pending') AS descriptors,
+           (SELECT COUNT(*) FROM `tournament_edit_requests` WHERE Status = 'Pending') AS tournaments,
            (SELECT COUNT(*) FROM `tournament_series_edit_requests` WHERE Status = 'Pending') AS tournament_series");
     $stmt->execute();
     $result = $stmt->get_result();
@@ -36,6 +37,11 @@
         </div>
     </div>
     <div class="alternating-bg" style="padding:0.5em;">
+        <a href="tournaments.php">Tournaments</a>
+        <div style="float: right;">
+            <span class="subText"><?php echo $stats["tournaments"]; ?> open</span>
+        </div>
+    </div>    <div class="alternating-bg" style="padding:0.5em;">
         <a href="tournament-series.php">Tournament series</a>
         <div style="float: right;">
             <span class="subText"><?php echo $stats["tournament_series"]; ?> open</span>

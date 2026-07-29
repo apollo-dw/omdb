@@ -6,7 +6,7 @@ if (!$loggedIn) {
     exit();
 }
 
-$editorID = $_SESSION['UserID'];
+$editorID = $userId;
 
 $tournamentID = isset($_POST['TournamentID']) && $_POST['TournamentID'] !== '' ? (int)$_POST['TournamentID'] : null;
 $editDataRaw = $_POST['EditData'] ?? '';
@@ -25,7 +25,7 @@ if (json_last_error() !== JSON_ERROR_NONE || empty($parsedData['Tournament']['Na
 $editData = json_encode($parsedData, JSON_UNESCAPED_UNICODE);
 
 $existingEditID = null;
-$existingEditorID = null;
+    $existingEditorID = null;
 
 if ($tournamentID !== null) {
     $stmt = $conn->prepare("

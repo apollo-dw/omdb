@@ -1,5 +1,4 @@
 <?php
-session_start();
 require "../../base.php";
 
 if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
@@ -8,8 +7,8 @@ if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     die("Forbidden");
 }
 
-$editID = isset($_POST['EditID']) ? (int)$_POST['EditID'] : null;
-$action = $_POST['Action'] ?? '';
+$editID = $_POST['EditID'] ?? $_GET['EditID'] ?? null;
+$newStatus = $_POST['Status'] ?? $_GET['Status'] ?? null;
 
 if (!$editID || !in_array($newStatus, ['Pending', 'Approved', 'Denied'], true)) {
     http_response_code(400);
@@ -20,7 +19,7 @@ try {
     $stmt = $conn->prepare("
         SELECT EditID, TournamentID, EditData, Status
         FROM tournament_edit_requests
-        WHERE EditID = ? AND Status = 'Pending'
+        WHERE EditID = ?
         LIMIT 1
     ");
     $stmt->bind_param("i", $editID);
@@ -33,9 +32,9 @@ try {
         exit();
     }
 
-    if ($action === 'Denied' || $action === 'Pending') {
+    if ($newStatus === 'Denied' || $newStatus === 'Pending') {
         $stmt = $conn->prepare("UPDATE tournament_edit_requests SET Status = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE EditID = ?");
-        $stmt->bind_param("si", $action, $editID);
+        $stmt->bind_param("si", $newStatus, $editID);
         $stmt->execute();
         $stmt->close();
 
@@ -96,8 +95,8 @@ try {
         ");
 
         $mapStmt = $conn->prepare("
-            INSERT INTO tournament_maps (StageID, BeatmapID, Slot, SortOrder, IsCustom)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO tournament_maps (TournamentID, StageID, BeatmapID, Slot, SortOrder, IsCustom)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
 
         foreach ($data['Stages'] as $stageIdx => $stage) {
@@ -113,7 +112,7 @@ try {
                     $slot = $map['Slot'];
                     $isCustom = isset($map['IsCustom']) ? (int)$map['IsCustom'] : 0;
 
-                    $mapStmt->bind_param("iissi", $newStageID, $beatmapID, $slot, $mapOrder, $isCustom);
+                    $mapStmt->bind_param("iiissi", $tournamentID, $newStageID, $beatmapID, $slot, $mapOrder, $isCustom);
                     $mapStmt->execute();
                 }
             }
@@ -141,5 +140,5 @@ try {
     $conn->rollback();
     error_log("Approval transaction error in UpdateStatus.php: " . $e->getMessage());
     http_response_code(500);
-    die("An unexpected database error occurred during approval.");
+    die($e->getMessage());
 }

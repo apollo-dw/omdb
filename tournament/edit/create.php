@@ -213,7 +213,7 @@
         if (!empty($stages)) {
             foreach ($stages as $sId => $s) {
                 $formattedStages[] = [
-                    'StageID' => $sId,
+                    'StageID' => $s['StageID'],
                     'Name' => $s['Name'],
                     'Acronym' => $s['Acronym'],
                     'Maps' => $s['Maps'] ?? []
@@ -222,8 +222,6 @@
         }
         echo json_encode($formattedStages);
     ?>;
-
-    console.log(stages);
 
     let activeStageIndex = 0;
 
@@ -428,7 +426,7 @@
                 Acronym: document.getElementById("TournamentAcronym").value
             },
             Stages: stages.map((stage, stageIndex) => ({
-                StageID: stage.StageID,
+                StageID: stage.StageID || null,
                 Name: stage.Name,
                 Acronym: stage.Acronym,
                 SortOrder: stageIndex + 1,
@@ -439,7 +437,7 @@
                     IsCustom: map.IsCustom || 0
                 }))
             })),
-            Meta: document.getElementById("MetaComment").textContent
+            Meta: document.getElementById("MetaComment").value
         };
 
         document.getElementById("EditData").value = JSON.stringify(payload);
@@ -530,3 +528,7 @@
         renderTabs();
     }
 </script>
+
+<?php
+    require "../../footer.php";
+?>

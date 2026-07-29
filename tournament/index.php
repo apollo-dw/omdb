@@ -123,7 +123,7 @@
 
         echo "<div id='{$stageId}' class='tab' style='display: {$display};'>";
         ?>
-            <h2><?= htmlspecialchars($stage['Name']) ?></h2>
+            <h2><?php echo safe_htmlspecialchars($stage['Name']) ?></h2>
             <hr />
             <?php
                 $stmt = $conn->prepare("SELECT tm.*, b.DifficultyName, b.SetID, s.Artist, s.Title FROM tournament_maps tm
