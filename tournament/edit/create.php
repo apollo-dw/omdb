@@ -185,6 +185,9 @@
     }
 </style>
 
+<h1 style="margin:0;">Create new tournament for <?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?></h1>
+<hr>
+
 <form id="tournamentForm" action="SubmitEdit.php" method="POST">
     <input type="hidden" name="EditData" id="EditData" value="" />
     <input type="hidden" name="TournamentID" value="<?php echo safe_htmlspecialchars($tournamentId ?? ''); ?>" />
@@ -192,9 +195,9 @@
 
     <div class="container">
         <label>Tournament Name:</label><br>
-        <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required/><br><br>
+        <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required maxlength="50"/><br><br>
         <label>Acronym:</label><br>
-        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required/><br><br>
+        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required maxlength="10"/><br><br>
         <label>Start Date:</label><br>
         <input autocomplete="off" id="TournamentStartDate" value="<?php echo safe_htmlspecialchars($tournament['StartDate'] ?? ''); ?>" required placeholder="YYYY-MM-DD" /><br><br>
         <label>End Date:</label><br>
@@ -263,7 +266,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         if (stages.length === 0) {
-            addNewStage("Qualifiers", "QUAL");
+            addNewStage("Qualifiers", "Q");
         } else {
             renderTabs();
         }

@@ -23,12 +23,12 @@
     }
 </style>
 
-<h1><?php echo $series["Name"]; ?></h1>
-<span class="subText"><?php echo $series["Acronym"]; ?></span>
+<h1><?php echo safe_htmlspecialchars($series["Name"]); ?></h1>
+<span class="subText"><?php echo safe_htmlspecialchars($series["Acronym"]); ?></span>
 <hr>
 
 <?php
-    $stmt = $conn->prepare("SELECT * from tournaments WHERE SeriesID = ? ORDER BY EndDate ASC;");
+    $stmt = $conn->prepare("SELECT * from tournaments WHERE SeriesID = ? ORDER BY StartDate ASC;");
     $stmt->bind_param("i", $seriesId);
     $stmt->execute();
     $results = $stmt->get_result();
@@ -37,7 +37,7 @@
         ?>
         <div class="alternating-bg" style="padding: 1em; box-sizing: content-box;">
             <a href="../?id=<?php echo $tournament["TournamentID"]; ?>">
-                <?php echo $tournament["Name"]; ?>
+                <?php echo safe_htmlspecialchars($tournament["Name"]); ?>
             </a>
             <span class="subText">
                 <?php echo $tournament["StartDate"]; ?>
@@ -50,7 +50,7 @@
 ?>
 
 <?php if ($loggedIn) { ?>
-    <span class="subText"><a href="edit/create.php?id=<?php echo $seriesId; ?>"><i class="icon-plus"></i> Add tournament</a></span>
+    <span class="subText"><a href="../edit/create.php?seriesID=<?php echo $seriesId; ?>"><i class="icon-plus"></i> Add tournament</a></span>
     |
     <span class="subText"><a href="edit/create.php?id=<?php echo $seriesId; ?>"><i class="icon-edit"></i> Edit series</a></span>
 <?php } ?>

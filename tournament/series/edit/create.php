@@ -96,7 +96,7 @@
                     <label>Series name:</label><br>
                 </td>
                 <td>
-                    <input autocomplete="off" name="SeriesName" id="SeriesName" placeholder="osu! World Cup" value="<?php echo $seriesName; ?>" maxlength="40" required/>
+                    <input autocomplete="off" name="SeriesName" id="SeriesName" placeholder="osu! World Cup" value="<?php echo $seriesName; ?>" maxlength="50" required/>
                 </td>
             </tr>
             <tr>
@@ -104,7 +104,7 @@
                     <label>Series acronym:</label>
                 </td>
                 <td>
-                    <input autocomplete="off" name="SeriesAcronym" id="SeriesAcronym" placeholder="OWC" value="<?php echo $seriesAcronym; ?>" maxlength="40" required/>
+                    <input autocomplete="off" name="SeriesAcronym" id="SeriesAcronym" placeholder="OWC" value="<?php echo $seriesAcronym; ?>" maxlength="10" required/>
                 </td>
             </tr>
             <tr>

@@ -178,6 +178,9 @@
     $editData = json_decode($edit['EditData'] ?? '{}', true);
     $tournamentName = $editData['Tournament']['Name'] ?? 'Unknown Tournament';
     $tournamentAcronym = $editData['Tournament']['Acronym'] ?? '';
+    $tournamentStartDate = $editData['Tournament']['StartDate'] ?? 'None';
+    $tournamentEndDate = $editData['Tournament']['EndDate'] ?? 'None';
+
     $tournamentSeriesId = $editData['Tournament']['SeriesID'] ?? '';
     $requestType = empty($edit['TournamentID']) ? 'New' : 'Edit';
     $meta = trim($editData['Meta'] ?? '');
@@ -328,7 +331,9 @@
                 <span class="subText"; ><?php echo safe_htmlspecialchars($tournamentAcronym) ?></span>
             <?php } ?>
         </h2>
-        <?php echo $series["Name"]; ?> <br>
+        <?php echo nl2br(safe_htmlspecialchars($series["Name"])); ?> <br>
+        <span class="subText"><?php echo safe_htmlspecialchars($tournamentStartDate); ?> - <?php echo safe_htmlspecialchars($tournamentEndDate); ?></span> <br>
+
         <?php if ($meta !== '') { ?>
             <br>
             <b>Meta comment:</b>
