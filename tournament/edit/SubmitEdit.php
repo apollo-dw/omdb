@@ -1,5 +1,5 @@
 <?php
-    require "../../base.php";
+require "../../base.php";
 
 if (!$loggedIn) {
     http_response_code(401);
@@ -9,6 +9,7 @@ if (!$loggedIn) {
 $editorID = $userId;
 
 $tournamentID = isset($_POST['TournamentID']) && $_POST['TournamentID'] !== '' ? (int)$_POST['TournamentID'] : null;
+$seriesID = isset($_POST['SeriesID']) && $_POST['SeriesID'] !== '' ? (int)$_POST['SeriesID'] : null;
 $editDataRaw = $_POST['EditData'] ?? '';
 
 if (empty($editDataRaw)) {
@@ -22,10 +23,14 @@ if (json_last_error() !== JSON_ERROR_NONE || empty($parsedData['Tournament']['Na
     die("Invalid JSON data format.");
 }
 
+if (!isset($parsedData['Tournament']['SeriesID'])) {
+    $parsedData['Tournament']['SeriesID'] = $seriesID;
+}
+
 $editData = json_encode($parsedData, JSON_UNESCAPED_UNICODE);
 
 $existingEditID = null;
-    $existingEditorID = null;
+$existingEditorID = null;
 
 if ($tournamentID !== null) {
     $stmt = $conn->prepare("
@@ -45,10 +50,12 @@ if ($tournamentID !== null) {
     $stmt->close();
 }
 
+$targetEditID = null;
+
 if ($existingEditID !== null) {
     if ($editorID !== $existingEditorID && !($isAdmin ?? false)) {
         http_response_code(403);
-        die("Forbidden: You do not have permission to modify this pending edit request.");
+        exit();
     }
 
     $stmt = $conn->prepare("
@@ -61,6 +68,8 @@ if ($existingEditID !== null) {
     $stmt->bind_param("sii", $editData, $editorID, $existingEditID);
     $stmt->execute();
     $stmt->close();
+
+    $targetEditID = $existingEditID;
 } else {
     $stmt = $conn->prepare("
         INSERT INTO tournament_edit_requests
@@ -68,13 +77,13 @@ if ($existingEditID !== null) {
         VALUES
             (?, ?, 'Pending', ?)
     ");
+
     $stmt->bind_param("isi", $tournamentID, $editData, $editorID);
     $stmt->execute();
 
-    $editID = $conn->insert_id;
+    $targetEditID = $conn->insert_id;
     $stmt->close();
 }
 
-header('Location: ./?id=' . $editID ?? $existingEditID);
+header('Location: ./?id=' . $targetEditID);
 exit();
-

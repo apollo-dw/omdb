@@ -52,22 +52,23 @@ try {
 
     $tData = $data['Tournament'];
     $tournamentID = $request['TournamentID'];
+    $seriesID = isset($tData['SeriesID']) && $tData['SeriesID'] !== '' ? (int)$tData['SeriesID'] : null;
 
     if ($tournamentID !== null) {
         $stmt = $conn->prepare("
             UPDATE tournaments
-            SET Name = ?, Acronym = ?
+            SET Name = ?, Acronym = ?, SeriesID = ?
             WHERE TournamentID = ?
         ");
-        $stmt->bind_param("ssi", $tData['Name'], $tData['Acronym'], $tournamentID);
+        $stmt->bind_param("ssii", $tData['Name'], $tData['Acronym'], $seriesID, $tournamentID);
         $stmt->execute();
         $stmt->close();
     } else {
         $stmt = $conn->prepare("
-            INSERT INTO tournaments (Name, Acronym)
-            VALUES (?, ?)
+            INSERT INTO tournaments (Name, Acronym, SeriesID)
+            VALUES (?, ?, ?)
         ");
-        $stmt->bind_param("ss", $tData['Name'], $tData['Acronym']);
+        $stmt->bind_param("ssi", $tData['Name'], $tData['Acronym'], $seriesID);
         $stmt->execute();
         $tournamentID = $conn->insert_id;
         $stmt->close();
@@ -87,7 +88,6 @@ try {
     $stmt->execute();
     $stmt->close();
 
-
     if (!empty($data['Stages']) && is_array($data['Stages'])) {
         $stageStmt = $conn->prepare("
             INSERT INTO tournament_stages (TournamentID, Name, Acronym, SortOrder)
@@ -100,14 +100,14 @@ try {
         ");
 
         foreach ($data['Stages'] as $stageIdx => $stage) {
-            $stageOrder = $stageIdx + 1;
+            $stageOrder = isset($stage['SortOrder']) ? (int)$stage['SortOrder'] : ($stageIdx + 1);
             $stageStmt->bind_param("issi", $tournamentID, $stage['Name'], $stage['Acronym'], $stageOrder);
             $stageStmt->execute();
             $newStageID = $conn->insert_id;
 
             if (!empty($stage['Maps']) && is_array($stage['Maps'])) {
                 foreach ($stage['Maps'] as $mapIdx => $map) {
-                    $mapOrder = $mapIdx + 1;
+                    $mapOrder = isset($map['SortOrder']) ? (int)$map['SortOrder'] : ($mapIdx + 1);
                     $beatmapID = (int)$map['BeatmapID'];
                     $slot = $map['Slot'];
                     $isCustom = isset($map['IsCustom']) ? (int)$map['IsCustom'] : 0;
@@ -138,7 +138,7 @@ try {
 
 } catch (mysqli_sql_exception $e) {
     $conn->rollback();
-    error_log("Approval transaction error in UpdateStatus.php: " . $e->getMessage());
+    error_log("Approval transaction error in ChangeStatus.php: " . $e->getMessage());
     http_response_code(500);
     die($e->getMessage());
 }

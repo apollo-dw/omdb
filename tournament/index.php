@@ -100,6 +100,7 @@
         </a>
     <?php } ?>
 </div>
+
 <?php if ($loggedIn) { ?>
     <span class="subText"><a href="edit/create.php?id=<?php echo $tournamentId; ?>"><i class="icon-edit"></i> Edit tournament</a></span>
     <br>

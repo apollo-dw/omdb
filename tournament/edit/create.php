@@ -9,6 +9,25 @@
     }
 
     $tournamentId = $_GET["id"] ?? null;
+    $seriesId = $_GET["seriesID"] ?? null;
+
+    if ($tournamentId === null && $seriesId === null) {
+        http_response_code(400);
+        exit();
+    }
+
+    if ($seriesId !== null) {
+        $stmt = $conn->prepare("SELECT * FROM tournament_series WHERE SeriesID = ?;");
+        $stmt->bind_param("i", $seriesId);
+        $stmt->execute();
+        $series = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (is_null($series)) {
+            http_response_code(400);
+            exit();
+        }
+    }
 
     if ($tournamentId !== null) {
         $stmt = $conn->prepare("SELECT * FROM tournaments WHERE TournamentID = ?;");
@@ -18,7 +37,6 @@
         $stmt->close();
 
         if (is_null($tournament)) {
-            echo "no tournament";
             http_response_code(404);
             exit();
         }
@@ -81,6 +99,12 @@
 
             $stages[] = $stage;
         }
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM tournament_series WHERE SeriesID = ?;");
+        $stmt->bind_param("i", $tournament["SeriesID"]);
+        $stmt->execute();
+        $series = $stmt->get_result()->fetch_assoc();
         $stmt->close();
     }
 ?>
@@ -158,13 +182,16 @@
 
 <form id="tournamentForm" action="SubmitEdit.php" method="POST">
     <input type="hidden" name="EditData" id="EditData" value="" />
-    <input type="hidden" name="TournamentID" value="<?php echo $tournamentId ?? ''; ?>" />
+    <input type="hidden" name="TournamentID" value="<?php echo safe_htmlspecialchars($tournamentId ?? ''); ?>" />
+    <input type="hidden" name="SeriesID" value="<?php echo safe_htmlspecialchars($seriesId ?? ''); ?>" />
 
     <div class="container">
         <label>Tournament Name:</label><br>
         <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required/><br><br>
         <label>Acronym:</label><br>
-        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required/>
+        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required/><br><br>
+        <label>Tournament Series:</label> <br>
+        <input disabled value="<?php echo $series["Name"]; ?>" style="color: var(--main-theme-subtext-color);"/>
     </div>
 
     <br>
@@ -420,10 +447,13 @@
     }
 
     document.getElementById("tournamentForm").addEventListener("submit", function (e) {
+        const seriesInput = document.querySelector("input[name='SeriesID']");
+
         const payload = {
             Tournament: {
                 Name: document.getElementById("TournamentName").value,
-                Acronym: document.getElementById("TournamentAcronym").value
+                Acronym: document.getElementById("TournamentAcronym").value,
+                SeriesID: seriesInput && seriesInput.value !== "" ? parseInt(seriesInput.value, 10) : null
             },
             Stages: stages.map((stage, stageIndex) => ({
                 StageID: stage.StageID || null,
@@ -440,6 +470,7 @@
             Meta: document.getElementById("MetaComment").value
         };
 
+        console.log(payload);
         document.getElementById("EditData").value = JSON.stringify(payload);
     });
 

@@ -3,8 +3,7 @@
     $PageTitle = "Tournament edit";
     require "../../header.php";
 
-    function generateChangelog(array $EditData, array $tournament, array $tournamentStages, array $tournamentMaps): array
-    {
+    function generateChangelog(array $EditData, array $tournament, array $tournamentStages, array $tournamentMaps): array {
         $diffs = [];
 
         $newTournament = $EditData['Tournament'] ?? [];
@@ -163,11 +162,19 @@
     $editData = json_decode($edit['EditData'] ?? '{}', true);
     $tournamentName = $editData['Tournament']['Name'] ?? 'Unknown Tournament';
     $tournamentAcronym = $editData['Tournament']['Acronym'] ?? '';
+    $tournamentSeriesId = $editData['Tournament']['SeriesID'] ?? '';
     $requestType = empty($edit['TournamentID']) ? 'New' : 'Edit';
     $meta = trim($editData['Meta'] ?? '');
     $stages = $editData['Stages'] ?? [];
 
     $originalTournament = null;
+    $changelog = null;
+
+    $stmt = $conn->prepare("SELECT * FROM `tournament_series` WHERE `SeriesID` = ?;");
+    $stmt->bind_param("i", $tournamentSeriesId);
+    $stmt->execute();
+    $series = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
     if (!is_null($edit["TournamentID"])) {
         $stmt = $conn->prepare("SELECT * FROM `tournaments` WHERE `TournamentID` = ?;");
@@ -283,7 +290,7 @@
 
 <br>
 
-<?php if (!is_null($changelog) ){ ?>
+<?php if (!is_null($changelog) && $edit["Status"] === 'Pending' ){ ?>
     <div class="bordered-container">
         <h2 style="margin:0">Changelog</h2>
         <ul>
@@ -294,9 +301,8 @@
         ?>
         </ul>
     </div class="bordered-container">
+    <br>
 <?php } ?>
-
-<br>
 
 <div class="bordered-container">
     <div>
@@ -306,6 +312,7 @@
                 <span class="subText"; ><?php echo safe_htmlspecialchars($tournamentAcronym) ?></span>
             <?php } ?>
         </h2>
+        <?php echo $series["Name"]; ?> <br>
         <?php if ($meta !== '') { ?>
             <br>
             <b>Meta comment:</b>
@@ -315,7 +322,7 @@
             <br>
         <?php } ?>
 
-        <?php if ($loggedIn && $userName === "moonpoint") { ?>
+        <?php if ($loggedIn && $userName === "apollodw") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
                 <option value="Pending" <?php if ($edit["Status"] === "Pending") {
