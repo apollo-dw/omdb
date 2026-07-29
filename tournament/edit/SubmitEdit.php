@@ -75,6 +75,6 @@ if ($existingEditID !== null) {
     $stmt->close();
 }
 
-header('Location: ./?id=' . $editId ?? $existingEditId);
+header('Location: ./?id=' . $editID ?? $existingEditID);
 exit();
 
