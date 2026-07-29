@@ -70,9 +70,9 @@
     while ($proposal = $historicalProposals->fetch_assoc()) {
     ?>
 		<div class="alternating-bg" style="padding:1em;">
-			<span style="display: inline-block; width: 8em; text-align: center; margin-right: 1em; center; border-right: 1px solid white;">
+			<span style="display: inline-block; width: 8em; text-align: center; margin-right: 1em; border-right: 1px solid white;">
 				<b style="color: <?php echo $proposal['status'] === 'approved' ? '#85C1A2' : ($proposal['status'] === 'denied' ? '#E5B7B7' : 'inherit'); ?>;">
-					<?php echo htmlspecialchars($proposal['status']); ?>
+					<?php echo safe_htmlspecialchars($proposal['status']); ?>
 				</b>
 			</span>
 			<a href="../?id=<?php echo $proposal["ProposalID"]; ?>"><b><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></b></a>

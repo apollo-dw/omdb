@@ -74,29 +74,29 @@
 </style>
 
 <div class="container">
-    <h1><?php echo htmlspecialchars($tournament["Name"]); ?></h1>
+    <h1><?php echo safe_htmlspecialchars($tournament["Name"]); ?></h1>
     <span class="subText">
         <a href="series/?id=<?php echo $tournament["SeriesID"]; ?>">
-            <?php echo htmlspecialchars($tournament["SeriesName"]); ?>
+            <?php echo safe_htmlspecialchars($tournament["SeriesName"]); ?>
         </a>
         //
-        <?php echo htmlspecialchars($tournament["StartDate"]); ?> - <?php echo htmlspecialchars($tournament["EndDate"] ?? "N/A"); ?>
+        <?php echo safe_htmlspecialchars($tournament["StartDate"]); ?> - <?php echo safe_htmlspecialchars($tournament["EndDate"] ?? "N/A"); ?>
     </span>
 
     <br><br>
 
     <?php if ($prevTournament) { ?>
         <a href="?id=<?php echo $prevTournament['TournamentID']; ?>" title="Previous Tournament">
-            <?php echo htmlspecialchars($prevTournament['Acronym']); ?>
+            <?php echo safe_htmlspecialchars($prevTournament['Acronym']); ?>
         </a> <
     <?php } ?>
 
-    <strong><?php echo htmlspecialchars($tournament["Acronym"]); ?></strong>
+    <strong><?php echo safe_htmlspecialchars($tournament["Acronym"]); ?></strong>
 
     <?php if ($nextTournament) { ?>
         >
         <a href="?id=<?php echo $nextTournament['TournamentID']; ?>" title="Next Tournament">
-            <?php echo htmlspecialchars($nextTournament['Acronym']); ?>
+            <?php echo safe_htmlspecialchars($nextTournament['Acronym']); ?>
         </a>
     <?php } ?>
 </div>
