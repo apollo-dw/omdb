@@ -361,9 +361,6 @@
                     </div>
                     <div class="flex-child" style="margin-left:auto;">
                         <?php
-                        if ($loggedIn && $userName == "moonpoint") { ?>
-                            <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
-                        <?php }
                         if ($row["UserID"] == $userId || $userName == "moonpoint") { ?>
                             <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                         <?php }
@@ -467,26 +464,6 @@
         };
 
         xhttp.open("POST", "RemoveComment.php", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send("pID=" + <?php echo $proposal_id; ?> + "&cID=" + $this.attr('value'));
-    });
-
-    $(".scrubComment").click(function(event){
-        var $this = $(this);
-
-        if (!confirm("Are you sure you want to scrub this comment?")) {
-            return;
-        }
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
-                location.reload();
-            }
-        };
-
-        xhttp.open("POST", "ScrubComment.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("pID=" + <?php echo $proposal_id; ?> + "&cID=" + $this.attr('value'));
     });

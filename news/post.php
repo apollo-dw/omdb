@@ -147,9 +147,6 @@
                 </div>
                 <div class="flex-child" style="margin-left:auto;">
                     <?php
-                    if ($loggedIn && $userName == "moonpoint") { ?>
-                        <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
-                    <?php }
                     if ($row["UserID"] == $userId || $userName == "moonpoint") { ?>
                         <i class="icon-remove removeComment" style="color:#f94141;cursor:pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
                     <?php }
@@ -230,26 +227,6 @@
         $.ajax({
             type: "POST",
             url: "RemoveComment.php",
-            data: {
-                nID: <?php echo $newsId; ?>,
-                cID: $this.attr('value')
-            },
-            success: function() {
-                location.reload();
-            }
-        });
-    });
-
-    $(".scrubComment").click(function(){
-        var $this = $(this);
-
-        if (!confirm("Are you sure you want to scrub this comment?")) {
-            return;
-        }
-
-        $.ajax({
-            type: "POST",
-            url: "ScrubComment.php",
             data: {
                 nID: <?php echo $newsId; ?>,
                 cID: $this.attr('value')

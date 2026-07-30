@@ -511,6 +511,7 @@ while ($row = $result->fetch_assoc()) {
 		</div>
 		<div class="flex-child diffBox" style="width:5%;text-align:left;">
 			<?php
+            $allTags = "";
             if ($loggedIn) {
                 $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
                 $selectStmt->bind_param("ii", $userId, $beatmapID);
@@ -519,7 +520,7 @@ while ($row = $result->fetch_assoc()) {
                 $tags_row = $tags_result->fetch_assoc();
                 $allTags = safe_htmlspecialchars($tags_row['AllTags'] ?? "", ENT_QUOTES, "ISO-8859-1");
                 $selectStmt->close();
-                ?>
+            ?>
 				<span class="identifier" style="display: inline-block;">
 					<ol class="star-rating-list <?php if (!$userHasRatedThis) {
                         echo 'unrated';
@@ -826,9 +827,6 @@ while ($row = $result->fetch_assoc()) {
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
                             <?php
-                            if ($loggedIn && $isModerator) { ?>
-                                <i class="icon-magic scrubComment" style="color:#f94141;cursor: pointer;" value="<?php echo $row["CommentID"]; ?>"></i>
-                            <?php }
                             if ($row["UserID"] == $userId || $isModerator) { ?>
                                 <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
