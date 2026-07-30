@@ -14,7 +14,7 @@
         exit();
     }
 
-    $stmt = $conn->prepare("SELECT BeatmapID FROM `beatmaps` WHERE `BeatmapID`= ?;");
+    $stmt = $conn->prepare("SELECT Count(*) FROM `beatmaps` WHERE `BeatmapID`= ?;");
     $stmt->bind_param("i", $beatmapId);
     $stmt->execute();
 
