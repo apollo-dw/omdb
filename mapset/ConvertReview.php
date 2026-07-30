@@ -4,21 +4,24 @@
     $setId = $_POST['sID'] ?? -1;
     $reviewId = $_POST['rID'] ?? -1;
     if ($setId == -1) {
-        die("NO - INVALID SET");
+        http_response_code(400);
+        exit();
     }
 
     if ($reviewId == -1) {
-        die("NO - INVALID REVIEW");
+        http_response_code(400);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     if (!$isModerator) {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
-        die("Forbidden");
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM `reviews` WHERE `ReviewID` = ? and `SetID` = ?;");
@@ -28,7 +31,8 @@
     $stmt->close();
 
     if (!$result) {
-        die("NO - INVALID REVIEW");
+        http_response_code(404);
+        exit();
     }
 
     $array = array(

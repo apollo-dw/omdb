@@ -4,7 +4,7 @@ require "../../base.php";
 if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
-    die("Forbidden");
+    exit();
 }
 
 $editID = $_POST['EditID'] ?? $_GET['EditID'] ?? null;
@@ -45,7 +45,7 @@ try {
     $data = json_decode($request['EditData'], true);
     if (json_last_error() !== JSON_ERROR_NONE || empty($data['Tournament'])) {
         http_response_code(400);
-        die("Corrupted request payload.");
+        exit();
     }
 
     $conn->begin_transaction();
@@ -144,5 +144,5 @@ try {
     $conn->rollback();
     error_log("Approval transaction error in ChangeStatus.php: " . $e->getMessage());
     http_response_code(500);
-    die($e->getMessage());
+    exit();
 }

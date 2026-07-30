@@ -1,7 +1,9 @@
 <?php
 require '../../base.php';
+
 if (!$loggedIn) {
-    die("NO");
+    http_response_code(401);
+    exit();
 }
 
 $mappers = $_POST["mapperListData"] ?? "{}";
@@ -26,7 +28,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT Status FROM `beatmap_edit_requests` WHERE SetID = ? AND `Status` = 'Pending';");
@@ -35,7 +38,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("INSERT INTO `beatmap_edit_requests` (SetID, UserID, EditData) VALUES (?, ?, ?);");
@@ -48,7 +52,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $setID = $result->fetch_assoc()["SetID"];
@@ -59,7 +64,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("INSERT INTO `beatmap_edit_requests` (BeatmapID, UserID, EditData) VALUES (?, ?, ?);");

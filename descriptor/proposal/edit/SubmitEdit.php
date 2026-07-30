@@ -3,7 +3,8 @@
     include '../../../base.php';
 
     if (!$loggedIn) {
-        die("Not logged in");
+        http_response_code(401);
+        exit();
     }
 
     $proposalID = $_POST['ProposalID'];

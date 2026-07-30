@@ -3,7 +3,8 @@
     include '../../../base.php';
 
     if (!$loggedIn) {
-        die("Not logged in");
+        http_response_code(401);
+        exit();
     }
 
     $descriptorName = $_POST["DescriptorName"];
@@ -17,7 +18,8 @@
     $type = !is_null($descriptorIdTarget) ? "modify" : "new";
 
     if (strlen($entryComment ?? "") < 3) {
-        die("comment too short");
+        http_response_code(400);
+        exit();
     }
 
     if ($parentID === "") {

@@ -2,7 +2,8 @@
     require '../../base.php';
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     header('Content-Type: application/json');
@@ -17,7 +18,8 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die(array("error" => "NO BEATMAP FOUND"));
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM descriptors WHERE DescriptorID = ?;");
@@ -26,7 +28,8 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die(array("error" => "NO DESCRIPTOR FOUND"));
+        http_response_code(404);
+        exit();
     }
 
     $checkVoteStmt = $conn->prepare("SELECT VoteID, Vote FROM descriptor_votes WHERE BeatmapID = ? AND UserID = ? AND DescriptorID = ?");

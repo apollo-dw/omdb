@@ -4,7 +4,7 @@ require '../../base.php';
 if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
-    die("Forbidden");
+    exit();
 }
 
 $beatmapID = $_GET["BeatmapID"];
@@ -12,13 +12,15 @@ $setID = $_GET["SetID"] ?? null;
 $isEditingSet = !is_null($setID);
 
 if ($isEditingSet) {
-    $stmt = $conn->prepare("SELECT Count(*) FROM beatmaps WHERE SetID = ?;");
+    $stmt = $conn->prepare("SELECT Count(*) FROM beatmaps WHERE SetID = ? LIMIT 1;");
     $stmt->bind_param('i', $setID);
     $stmt->execute();
     $result = $stmt->get_result();
+    $stmt->close();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `SetID` = ? AND Status = 'Pending';");
@@ -26,6 +28,7 @@ if ($isEditingSet) {
     $stmt->execute();
     $result = $stmt->get_result();
     $request = $result->fetch_assoc();
+    $stmt->close();
 
     if ($request) {
         $editDataArray = json_decode($request['EditData'], true);
@@ -70,9 +73,11 @@ if ($isEditingSet) {
     $stmt->bind_param('i', $beatmapID);
     $stmt->execute();
     $result = $stmt->get_result();
+    $stmt->close();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $setID = $result->fetch_assoc()["SetID"];

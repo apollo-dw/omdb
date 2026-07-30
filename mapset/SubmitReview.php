@@ -5,11 +5,13 @@
     $comment = trim($_POST['comment'] ?? "");
 
     if (strlen($comment ?? "") < 3) {
-        die("SHORT");
+        http_response_code(400);
+        exit();
     }
 
     if (strlen($comment ?? "") > 40000) {
-        die("LONG");
+        http_response_code(400);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT COUNT(*) FROM `beatmaps` WHERE `SetID`= ?;");
@@ -17,13 +19,15 @@
     $stmt->execute();
 
     if ($stmt->get_result()->fetch_row()[0] == 0) {
-        die("NO - Cant Find Map In DB");
+        http_response_code(404);
+        exit();
     }
 
     $stmt->close();
 
     if ($loggedIn == false) {
-        die("not logged in");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("

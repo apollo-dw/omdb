@@ -4,7 +4,7 @@ require '../../../base.php';
 if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
-    die("Forbidden");
+    exit();
 }
 
 $editID = $_POST['EditID'] ?? $_GET['EditID'] ?? null;

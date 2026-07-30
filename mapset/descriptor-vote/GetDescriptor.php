@@ -2,7 +2,8 @@
     require '../../base.php';
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     header('Content-Type: application/json');

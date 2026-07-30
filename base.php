@@ -32,5 +32,5 @@
     $ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
     if ($maintenance && (!isset($_COOKIE['maintenance_access']) || $_COOKIE['maintenance_access'] !== $env['MAINTENANCE_BYPASS_CODE'])) {
         include_once 'maintenance.php';
-        die("");
+        exit();
     }

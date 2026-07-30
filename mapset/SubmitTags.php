@@ -9,13 +9,15 @@
     $stmt->execute();
 
     if ($stmt->get_result()->fetch_row()[0] == 0) {
-        die("NO - Cant Find Map In DB");
+        http_response_code(404);
+        exit();
     }
 
     $stmt->close();
 
     if ($loggedIn == false) {
-        die("NO - Not Logged In");
+        http_response_code(401);
+        exit();
     }
 
     $tagList = explode(',', $tags);

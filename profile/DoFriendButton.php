@@ -5,7 +5,8 @@ $user_id_from = $_POST['user_id_from'];
 $user_id_to = $_POST['user_id_to'];
 
 if ($user_id_from != $userId || !$loggedIn || $user_id_from == $user_id_to) {
-    die("NOOO");
+    http_response_code(403);
+    exit();
 }
 
 $stmt = $conn->prepare("SELECT COUNT(*) FROM `users` WHERE `UserID` = ?;");
@@ -13,7 +14,8 @@ $stmt = $conn->prepare("SELECT COUNT(*) FROM `users` WHERE `UserID` = ?;");
 $stmt->bind_param("i", $user_id_to);
 $stmt->execute();
 if ($stmt->get_result()->fetch_row()[0] == 0) {
-    die("NOOO");
+    http_response_code(404);
+    exit();
 }
 $stmt->close();
 

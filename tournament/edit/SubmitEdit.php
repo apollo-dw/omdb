@@ -14,13 +14,13 @@ $editDataRaw = $_POST['EditData'] ?? '';
 
 if (empty($editDataRaw)) {
     http_response_code(400);
-    die("Missing edit payload data.");
+    exit();
 }
 
 $parsedData = json_decode($editDataRaw, true);
 if (json_last_error() !== JSON_ERROR_NONE || empty($parsedData['Tournament']['Name'])) {
     http_response_code(400);
-    die("Invalid JSON data format.");
+    exit();
 }
 
 if (!isset($parsedData['Tournament']['SeriesID'])) {

@@ -33,7 +33,8 @@ $stmt = $conn->query("SELECT
                     ) tp ON ft.TopicID = tp.TopicID;");
 
     if ($userName !== "moonpoint") {
-        die("What");
+        http_response_code(403);
+        exit();
     }
 ?>
 
@@ -55,7 +56,7 @@ $stmt = $conn->query("SELECT
 <hr>
 
 <?php
-    $thread_stmt = $conn->prepare("SELECT ft.ThreadID, ft.Title AS ThreadTitle, ft.CreatedAt AS ThreadCreatedAt, 
+    $thread_stmt = $conn->prepare("SELECT ft.ThreadID, ft.Title AS ThreadTitle, ft.CreatedAt AS ThreadCreatedAt,
                                     fp.PostID, fp.UserID AS PostUserID, fp.CreatedAt AS PostCreatedAt
                             FROM forum_threads ft
                             LEFT JOIN forum_posts fp ON ft.ThreadID = fp.ThreadID

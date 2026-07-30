@@ -9,7 +9,8 @@
     $requestedRaw = trim($_GET["id"] ?? "");
 
     if ($requestedRaw === "") {
-        die("No");
+        http_response_code(400);
+        exit();
     }
 
     if (ctype_digit($requestedRaw)) {
@@ -17,7 +18,8 @@
     } elseif (preg_match('~^https?://osu\.ppy\.sh/(?:s|beatmapsets)/(?P<setid>\d+)~', $requestedRaw, $matches)) {
         $requestedSetId = (int)$matches['setid'];
     } else {
-        die("No");
+        http_response_code(400);
+        exit();
     }
 
     $set = GetBeatmapsetDataOsuApi($token, $requestedSetId);
@@ -196,4 +198,4 @@
     BeatmapsetSearchSet($conn, $setID);
 
     header("Location: ../../mapset/" . $setID);
-    die();
+    exit();

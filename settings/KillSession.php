@@ -2,7 +2,8 @@
     require '../base.php';
 
     if (!$loggedIn) {
-        die("You need to be logged in to do this.");
+        http_response_code(401);
+        exit();
     }
 
     if (isset($_GET['token'])) {

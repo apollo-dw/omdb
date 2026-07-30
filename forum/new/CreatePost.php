@@ -21,4 +21,4 @@
     $stmt->close();
 
     header("Location: ../post/?id=" . $threadId);
-    die();
+    exit();

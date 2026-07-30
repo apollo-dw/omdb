@@ -44,7 +44,7 @@
 
     if ($profileId === 0) {
         require "./OMDBBotUser.php";
-        die();
+        exit();
     }
 
     $ratingCounts = [];

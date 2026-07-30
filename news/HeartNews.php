@@ -4,10 +4,12 @@
     $newsId = $_POST['bID'] ?? -1;
 
     if ($newsId == -1) {
-        die("BREAKING NEWS: UR TROLLING");
+        http_response_code(400);
+        exit();
     }
     if (!$loggedIn) {
-        die("BREAKING NEWS: UR TROLLING");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT NewsID FROM `news_posts` WHERE `NewsID` = ?;");
@@ -15,7 +17,8 @@
     $stmt->execute();
 
     if (is_null($stmt->get_result()->fetch_assoc())) {
-        die("BREAKING NEWS: UR TROLLING");
+        http_response_code(404);
+        exit();
     }
 
     $stmt->close();

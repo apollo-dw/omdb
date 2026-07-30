@@ -9,5 +9,7 @@ $conn = new mysqli(
     'omdb',
 );
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    error_log("Connection failed: " . $conn->connect_error);
+    http_response_code(500);
+    exit();
 }

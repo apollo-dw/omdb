@@ -3,7 +3,7 @@
 
     $q = $_GET["q"] ?? "";
     if ($q === "") {
-        die("Ok Buddy");
+        exit();
     }
 
     // If it's a link in the query, we should just show the map.
@@ -19,10 +19,11 @@
         if ($value == null) {
             die("Mapset not found!");
         }
+
         ?>
 		<a href="/mapset/<?php echo $setID; ?>"><div style="margin:0;background-color:var(--main-theme-color);" ><?php echo safe_htmlspecialchars($value[2] . " - " . $value[1], ENT_QUOTES); ?></div></a>
 		<?php
-        die();
+        exit();
     }
     $like = "%$q%";
 

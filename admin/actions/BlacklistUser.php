@@ -52,4 +52,4 @@ $stmt = $conn->prepare("UPDATE beatmaps AS bm
 $stmt->execute();
 
 //header("Location: ../blacklist.php");
-die();
+exit();

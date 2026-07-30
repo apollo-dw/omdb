@@ -11,7 +11,8 @@ $stmt->execute();
 $beatmap = $stmt->get_result()->fetch_assoc();
 
 if (is_null($beatmap)) {
-    die("Beatmap not found");
+    http_response_code(404);
+    exit();
 }
 
 $title = safe_htmlspecialchars($beatmap['Title'], ENT_QUOTES);
@@ -165,9 +166,9 @@ while ($voteRow = $voteResult->fetch_assoc()) {
 
         <div id="descriptor-box-container">
             <?php
-            $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name, d.ShortDescription, 
+            $stmt = $conn->prepare("SELECT d.DescriptorID, d.Name, d.ShortDescription,
                                           SUM(CASE WHEN Vote = 1 THEN 1 ELSE 0 END) AS upvotes, SUM(CASE WHEN Vote = 0 THEN 1 ELSE 0 END) AS downvotes
-                                          FROM descriptor_votes 
+                                          FROM descriptor_votes
                                           JOIN descriptors d on descriptor_votes.DescriptorID = d.DescriptorID
                                           WHERE BeatmapID = ?
                                           GROUP BY DescriptorID
@@ -259,7 +260,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
         searchInput.addEventListener('input', (e) => {
             const searchKeyword = searchInput.value.toLowerCase();
             const listItems = descriptorTreePopover.querySelectorAll('li');
-            
+
             listItems.forEach(li => {
                 const text = li.textContent.toLowerCase();
                 li.style.display = text.includes(searchKeyword) ? '' : 'none';
@@ -268,7 +269,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
             const validItems = getVisibleValidItems();
             if (searchKeyword.trim() !== '') {
                 removeActiveStyles(validItems);
-                currentFocusIndex = -1; 
+                currentFocusIndex = -1;
             }
         });
 
@@ -289,7 +290,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
                 setActiveItem(validItems);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                
+
                 let targetItem = null;
 
                 if (currentFocusIndex > -1 && validItems[currentFocusIndex]) {
@@ -301,7 +302,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
                 if (targetItem) {
                     const targetEl = targetItem.classList.contains('descriptor') ? targetItem : targetItem.querySelector('.descriptor') || targetItem;
                     const descriptorID = targetEl.dataset.descriptorId;
-                    
+
                     if (descriptorID) {
                         handleDescriptorClick(descriptorID);
                         searchInput.value = '';

@@ -11,7 +11,8 @@
     $stmt->close();
 
     if (is_null($thread)) {
-        die("AHHH");
+        http_response_code(404);
+        exit();
     }
 
     $PageTitle = $thread["Title"];

@@ -15,4 +15,4 @@
     $stmt->close();
 
     header("Location: ../post/?id=" . $threadId . "#post-" . $postId);
-    die();
+    exit();

@@ -4,15 +4,18 @@
     $threadId = $_POST['tID'] ?? -1;
     $postId = $_POST['pID'] ?? -1;
     if ($threadId == -1) {
-        die("NO - INVALID THREAD");
+        http_response_code(400);
+        exit();
     }
 
     if ($postId == -1) {
-        die("NO - INVALID POST");
+        http_response_code(400);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("NO - LOG IN!");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM `forum_posts` WHERE `PostID` = ? and `ThreadID` = ?;");
@@ -21,7 +24,8 @@
     $result = $stmt->get_result()->fetch_assoc();
 
     if (!($result["UserID"] === $userId || $userId === 9558549)) {
-        die("NO");
+        http_response_code(403);
+        exit();
     }
 
     $array = array(

@@ -2,7 +2,8 @@
     require '../../base.php';
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     header('Content-Type: application/json');
@@ -16,7 +17,8 @@
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die(array("error" => "NO PROPOSAL FOUND"));
+        http_response_code(404);
+        exit();
     }
 
     $checkVoteStmt = $conn->prepare("SELECT VoteID, Vote FROM descriptor_proposal_votes WHERE ProposalID = ? AND UserID = ?");

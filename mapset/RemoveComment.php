@@ -4,15 +4,18 @@
     $setId = $_POST['sID'] ?? -1;
     $commentId = $_POST['cID'] ?? -1;
     if ($setId == -1) {
-        die("NO - INVALID SET");
+        http_response_code(400);
+        exit();
     }
 
     if ($commentId == -1) {
-        die("NO - INVALID COMMENT");
+        http_response_code(400);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM `comments` WHERE `CommentID` = ? and `SetID` = ?;");
@@ -23,7 +26,7 @@
     if (!($isModerator || $result["UserID"] === $userId)) {
         header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
-        die("Forbidden");
+        exit();
     }
 
     $array = array(

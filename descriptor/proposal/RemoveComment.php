@@ -4,15 +4,18 @@
     $proposalID = $_POST['pID'] ?? -1;
     $commentId = $_POST['cID'] ?? -1;
     if ($proposalID == -1) {
-        die("NO - INVALID SET");
+        http_response_code(400);
+        exit();
     }
 
     if ($commentId == -1) {
-        die("NO - INVALID COMMENT");
+        http_response_code(400);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM `descriptor_proposal_comments` WHERE `CommentID` = ? and `ProposalID` = ?;");
@@ -21,9 +24,8 @@
     $result = $stmt->get_result()->fetch_assoc();
 
     if ($result["UserID"] != $userId && $userName != "moonpoint") {
-        header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
-        die("Forbidden");
+        exit();
     }
 
     $array = array(
@@ -37,8 +39,6 @@
         ));
 
     $json = json_encode($array);
-
-    echo $json;
 
     $stmt = $conn->prepare("INSERT INTO logs (UserID, LogData) VALUES (?, ?);");
     $stmt->bind_param("is", $userId, $json);

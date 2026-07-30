@@ -147,7 +147,9 @@
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
-            die("<pre>" . $conn->error . "\n\n" . safe_htmlspecialchars($sql) . "</pre>");
+            error_log("Chart query error: " . $conn->error);
+            http_response_code(500);
+            exit();
         }
 
         $stmt->bind_param($finalTypes, ...$finalParams);

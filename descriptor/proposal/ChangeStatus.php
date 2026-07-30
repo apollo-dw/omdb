@@ -2,13 +2,13 @@
     require '../../base.php';
 
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     if ($userName != "moonpoint") {
-        header('HTTP/1.0 403 Forbidden');
         http_response_code(403);
-        die("Forbidden");
+        exit();
     }
 
     header('Content-Type: application/json');

@@ -11,7 +11,8 @@
     $stmt->close();
 
     if (is_null($topic)) {
-        die("AHHH");
+        http_response_code(404);
+        exit();
     }
 
     $PageTitle = $topic["Name"];

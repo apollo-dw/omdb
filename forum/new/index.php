@@ -11,11 +11,13 @@
     $topic = $stmt->get_result()->fetch_assoc()["Name"];
 
     if (is_null($topic)) {
-        die("AHHH");
+        http_response_code(404);
+        exit();
     }
 
     if (!$loggedIn) {
-        die("Please log in");
+        http_response_code(401);
+        exit();
     }
 ?>
 

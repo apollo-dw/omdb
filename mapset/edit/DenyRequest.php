@@ -12,7 +12,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT * FROM beatmap_edit_requests WHERE `SetID` = ? AND Status = 'Pending';");
@@ -21,7 +22,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO SET");
+        http_response_code(404);
+        exit();
     }
 
 } else {
@@ -31,7 +33,8 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $setID = $result->fetch_assoc()["SetID"];
@@ -42,16 +45,16 @@ if ($isEditingSet) {
     $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
-        die("NO MAP");
+        http_response_code(404);
+        exit();
     }
 }
 
 $request = $result->fetch_assoc();
-if (!$loggedIn || !(isIdEditRequestAdmin($userId) ||
-                    $userId == $request['UserID'])) {
+if (!$loggedIn || !(isIdEditRequestAdmin($userId) || $userId == $request['UserID'])) {
     header('HTTP/1.0 403 Forbidden');
     http_response_code(403);
-    die("Forbidden");
+    exit();
 }
 
 if ($request) {

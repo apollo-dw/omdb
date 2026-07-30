@@ -4,10 +4,13 @@
     $reviewId = $_POST['rID'] ?? -1;
 
     if ($reviewId == -1) {
-        die("NO");
+        http_response_code(400);
+        exit();
     }
+
     if (!$loggedIn) {
-        die("NO");
+        http_response_code(401);
+        exit();
     }
 
     $stmt = $conn->prepare("SELECT ReviewID FROM `reviews` WHERE `ReviewID`= ?;");
@@ -15,7 +18,8 @@
     $stmt->execute();
 
     if (is_null($stmt->get_result()->fetch_assoc())) {
-        die("NO");
+        http_response_code(404);
+        exit();
     }
 
     $stmt->close();
