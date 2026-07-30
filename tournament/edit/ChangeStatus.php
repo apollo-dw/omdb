@@ -63,7 +63,7 @@ try {
             WHERE TournamentID = ?
         ");
 
-        $stmt->bind_param("ssssii", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate, $tournamentID);
+        $stmt->bind_param("ssissi", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate, $tournamentID);
         $stmt->execute();
         $stmt->close();
     } else {
@@ -128,10 +128,10 @@ try {
 
     $stmt = $conn->prepare("
         UPDATE tournament_edit_requests
-        SET TournamentID = ?, Status = 'Approved', UpdatedAt = CURRENT_TIMESTAMP
+        SET TournamentID = ?, AdminID = ?, Status = 'Approved', UpdatedAt = CURRENT_TIMESTAMP
         WHERE EditID = ?
     ");
-    $stmt->bind_param("ii", $tournamentID, $editID);
+    $stmt->bind_param("iii", $tournamentID, $userId, $editID);
     $stmt->execute();
     $stmt->close();
 
