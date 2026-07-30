@@ -128,10 +128,10 @@ try {
 
     $stmt = $conn->prepare("
         UPDATE tournament_edit_requests
-        SET TournamentID = ?, Status = 'Approved', UpdatedAt = CURRENT_TIMESTAMP
+        SET TournamentID = ?, AdminID = ?, Status = 'Approved', UpdatedAt = CURRENT_TIMESTAMP
         WHERE EditID = ?
     ");
-    $stmt->bind_param("ii", $tournamentID, $editID);
+    $stmt->bind_param("iii", $tournamentID, $userId, $editID);
     $stmt->execute();
     $stmt->close();
 

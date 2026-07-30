@@ -114,15 +114,15 @@
             <td><?php echo $edit["UpdatedAt"]; ?></td>
         </tr>
         <?php } ?>
-        <?php if (!is_null($edit["EditorID"]) && $edit["Status"] !== "Pending") {
-            $editorName = GetUserNameFromId($edit["EditorID"], $conn);
+        <?php if (!is_null($edit["AdminID"]) && $edit["Status"] !== "Pending") {
+            $adminName = GetUserNameFromId($edit["AdminID"], $conn);
             ?>
             <tr>
                 <td class="right">
                     Status
                 </td>
                 <td>
-                    <?php echo safe_htmlspecialchars("{$edit["Status"]} by {$editorName}", ENT_QUOTES); ?>
+                    <?php echo safe_htmlspecialchars("{$edit["Status"]} by {$adminName}", ENT_QUOTES); ?>
                 </td>
             </tr>
         <?php } ?>
