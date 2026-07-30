@@ -44,24 +44,30 @@
             JOIN DescendantDescriptors dd
                 ON d.ParentID = dd.DescriptorID
         )
-        SELECT COUNT(DISTINCT bd.BeatmapID) AS count
+        SELECT
+            COUNT(DISTINCT bd.BeatmapID) AS count,
+            AVG(r.Score) AS average_rating
         FROM beatmap_descriptors bd
         JOIN beatmaps b
             ON b.BeatmapID = bd.BeatmapID
         JOIN DescendantDescriptors dd
             ON bd.DescriptorID = dd.DescriptorID
+        LEFT JOIN ratings r
+            ON r.BeatmapID = bd.BeatmapID
         WHERE b.Mode = ?
     ");
     $stmt->bind_param("ii", $descriptor_id, $mode);
     $stmt->execute();
-    $beatmapCount = $stmt->get_result()->fetch_assoc()["count"];
+    $result = $stmt->get_result()->fetch_assoc();
+    $beatmapCount = $result["count"] ?? 0;
+    $averageRating = $result["average_rating"] !== null ? round((float)$result["average_rating"], 2) : null;
     $stmt->close();
 
     $parentTree = getParentTree($descriptor, $conn);
 
     echo "<h1>" . safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
     echo "<span class='subText' style='float: right;'>[Descriptor" . $descriptor["DescriptorID"] . "]</span>";
-    echo "<h3 style='color:#a8a8a8; margin-bottom: 0;'>{$beatmapCount} beatmaps</h3>";
+    echo "<h3 style='color:#a8a8a8; margin-bottom: 0;'>{$beatmapCount} beatmaps // {$averageRating} average</h3>";
     echo "<span class='subText'>" . $parentTree . "</span><hr>";
     echo "<div id='descriptorDescription'>";
     echo ParseShortLinks($conn, safe_htmlspecialchars($descriptor["ShortDescription"], ENT_QUOTES));
