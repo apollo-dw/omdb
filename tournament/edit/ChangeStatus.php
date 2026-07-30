@@ -63,7 +63,7 @@ try {
             WHERE TournamentID = ?
         ");
 
-        $stmt->bind_param("ssssii", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate, $tournamentID);
+        $stmt->bind_param("ssissi", $tData['Name'], $tData['Acronym'], $seriesID, $startDate, $endDate, $tournamentID);
         $stmt->execute();
         $stmt->close();
     } else {
