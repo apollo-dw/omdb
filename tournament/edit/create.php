@@ -442,11 +442,11 @@
     function addBeatmapToActiveStage() {
         const mapIdInput = document.getElementById("NewBeatmapID");
         const slotInput = document.getElementById("NewBeatmapSlot");
-        const customInput = document.getElementById("NewBeatmapIsCustom")
+        const customInput = document.getElementById("NewBeatmapIsCustom");
 
         const beatmapID = parseInt(mapIdInput.value);
         const slot = slotInput.value.trim();
-        const isCustom = customInput.checked;
+        const isCustom = customInput.checked ? 1 : 0;
 
         if (!beatmapID || !slot) {
             alert("Please enter a valid Beatmap ID and Slot.");
@@ -472,7 +472,16 @@
                     ImageUrl: data.ImageUrl || data.imageUrl || `https://b.ppy.sh/thumb/${data.SetID}l.jpg`
                 };
 
-                stages[activeStageIndex].Maps.push(newMap);
+                const currentMaps = stages[activeStageIndex].Maps;
+                const existingIndex = currentMaps.findIndex(
+                    m => m.Slot.trim().toLowerCase() === slot.toLowerCase()
+                );
+
+                if (existingIndex !== -1) {
+                    currentMaps[existingIndex] = newMap;
+                } else {
+                    currentMaps.push(newMap);
+                }
 
                 mapIdInput.value = "";
                 slotInput.value = "";
@@ -723,7 +732,17 @@
                     ImageUrl: data.ImageUrl || data.imageUrl || `https://b.ppy.sh/thumb/${data.SetID}l.jpg`
                 };
 
-                stages[activeStageIndex].Maps.push(newMap);
+                const currentMaps = stages[activeStageIndex].Maps;
+                const existingIndex = currentMaps.findIndex(
+                    m => m.Slot.trim().toLowerCase() === entry.slot.trim().toLowerCase()
+                );
+
+                if (existingIndex !== -1) {
+                    currentMaps[existingIndex] = newMap;
+                } else {
+                    currentMaps.push(newMap);
+                }
+
                 addedCount++;
             } catch (err) {
                 console.error(err);
