@@ -696,7 +696,15 @@
         for (const entry of parsedEntries) {
             try {
                 const response = await fetch(`GetBeatmapData.php?id=${entry.beatmapID}`);
-                const data = await response.json();
+                const rawText = await response.text();
+                let data;
+
+                try {
+                    data = JSON.parse(rawText);
+                } catch (parseError) {
+                    failedCount++;
+                    continue;
+                }
 
                 if (data.error || !data) {
                     console.error(data.error);

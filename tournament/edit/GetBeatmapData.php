@@ -3,20 +3,35 @@
     header('Content-Type: application/json');
 
     $id = $_GET["id"];
-
     if (is_null($id)) {
         die(json_encode(array("error" => "missing data")));
     }
 
-    $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
-                FROM `beatmapsets` s
-                INNER JOIN `beatmaps` b ON s.SetID = b.SetID
-                WHERE b.BeatmapID = ?;");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    function getMapFromDb($conn, int $id) {
+        $stmt = $conn->prepare("SELECT s.SetID, s.Artist, s.Title, b.DifficultyName
+                    FROM `beatmapsets` s
+                    INNER JOIN `beatmaps` b ON s.SetID = b.SetID
+                    WHERE b.BeatmapID = ?;");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
 
-    if ($result->num_rows === 1) {
+    $result = getMapFromDb($conn, $id);
+    if ($result->num_rows === 0) {
+        if ($token) {
+            $mapData = GetBeatmapDataOsuApi($token, (int)$id);
+
+            if ($mapData && isset($mapData["beatmapset_id"])) {
+                $setId = $mapData["beatmapset_id"];
+                AddGraveyardSetToOMDB($conn, $token, $setId);
+
+                $result = getMapFromDb($conn, $id);
+            }
+        }
+    }
+
+    if ($result && $result->num_rows === 1) {
         $map = $result->fetch_assoc();
         $response = array(
             "BeatmapID" => (int)$id,
