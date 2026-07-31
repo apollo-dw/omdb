@@ -131,24 +131,34 @@
             <h2><?php echo safe_htmlspecialchars($stage['Name']) ?></h2>
             <hr />
             <?php
-                $stmt = $conn->prepare("SELECT tm.*, b.DifficultyName, b.SetID, s.Artist, s.Title FROM tournament_maps tm
-                                        INNER JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
-                                        INNER JOIN beatmapsets s ON b.SetID = s.SetID
+                $stmt = $conn->prepare("SELECT tm.*, b.DifficultyName, b.SetID, s.Artist, s.Title
+                                        FROM tournament_maps tm
+                                        LEFT JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
+                                        LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                                         WHERE tm.StageID = ?
                                         ORDER BY tm.SortOrder ASC;");
                 $stmt->bind_param("i", $stageId);
                 $stmt->execute();
                 $results = $stmt->get_result();
                 while ($map = $results->fetch_assoc()) {
+                    $hasSetId = !empty($map["SetID"]);
+
+                    $mapUrl = $hasSetId
+                        ? "/mapset/" . $map["SetID"]
+                        : "https://osu.ppy.sh/b/" . $map["BeatmapID"];
+
+                    $thumbUrl = $hasSetId
+                        ? "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg"
+                        : "/assets/img/missing-map-thumbnail.png";
                     ?>
                     <div class="alternating-bg flex-container" style="align-items:center; padding: 1em;">
                         <div class="flex-item" style="min-width: 4em; text-align: center;">
-                            <b><?php echo $map["Slot"]; ?></b>
+                            <b><?php echo safe_htmlspecialchars($map["Slot"]); ?></b>
                         </div>
 
                         <div class="flex-item" style="padding: 0 1em; box-sizing: content-box;">
-                            <a href="/mapset/<?php echo $map["SetID"]; ?>">
-                                <img src="https://b.ppy.sh/thumb/<?php echo $map["SetID"]; ?>l.jpg"
+                            <a href="<?php echo $mapUrl; ?>" <?php echo !$hasSetId ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
+                                <img src="<?php echo $thumbUrl; ?>"
                                 style="aspect-ratio: 1 / 1; width:100px; height:auto;"
                                 class="diffThumb"
                                 onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';">
@@ -156,18 +166,23 @@
                         </div>
 
                         <div class="flex-item">
-                            <a href="/mapset/<?php echo $map["SetID"]; ?>">
-                                <?php echo safe_htmlspecialchars($map["Artist"]); ?> - <?php echo safe_htmlspecialchars($map["Title"]); ?>
-                                [<?php echo safe_htmlspecialchars($map["DifficultyName"]); ?>]
+                            <a href="<?php echo $mapUrl; ?>" <?php echo !$hasSetId ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
+                                <?php if ($hasSetId) { ?>
+                                    <?php echo safe_htmlspecialchars($map["Artist"]); ?> - <?php echo safe_htmlspecialchars($map["Title"]); ?>
+                                    [<?php echo safe_htmlspecialchars($map["DifficultyName"]); ?>]
+                                <?php } else { ?>
+                                    Map not in OMDB (ID: <?php echo (int)$map["BeatmapID"]; ?>)
+                                <?php } ?>
                             </a>
 
-                            <?php if ($map["IsCustom"] === 1) { ?>
-                            <span class="badge" title="Custom Map">Custom</span>
+                            <?php if ((int)$map["IsCustom"] === 1) { ?>
+                                <span class="badge" title="Custom Map">Custom</span>
                             <?php } ?>
                         </div>
                     </div>
                     <?php
                 }
+                $stmt->close();
             ?>
 
         <?php

@@ -73,8 +73,8 @@
                     s.Artist,
                     s.Title
                 FROM tournament_maps tm
-                INNER JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
-                INNER JOIN beatmapsets s ON b.SetID = s.SetID
+                LEFT JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
+                LEFT JOIN beatmapsets s ON b.SetID = s.SetID
                 WHERE tm.StageID = ?
                 ORDER BY tm.SortOrder ASC;
             ");
@@ -83,16 +83,18 @@
             $mapResults = $mapStmt->get_result();
 
             while ($map = $mapResults->fetch_assoc()) {
+                $setId = $map['SetID'] !== null ? (int)$map['SetID'] : null;
+
                 $stage['Maps'][] = [
                     'BeatmapID' => (int)$map['BeatmapID'],
                     'Slot' => $map['Slot'],
                     'SortOrder' => (int)$map['SortOrder'],
                     'IsCustom' => (int)$map['IsCustom'],
-                    'SetID' => (int)$map['SetID'],
-                    'Title' => $map['Title'],
-                    'Artist' => $map['Artist'],
-                    'DifficultyName' => $map['DifficultyName'],
-                    'ImageUrl' => "https://b.ppy.sh/thumb/" . $map['SetID'] . "l.jpg"
+                    'SetID' => $setId,
+                    'Title' => $map['Title'] ?? $map['BeatmapID'] . ' (Map not in OMDB)',
+                    'Artist' => $map['Artist'] ?? '',
+                    'DifficultyName' => $map['DifficultyName'] ?? '',
+                    'ImageUrl' => $setId ? "https://b.ppy.sh/thumb/{$setId}l.jpg" : '/assets/img/missing-map-thumbnail.png'
                 ];
             }
             $mapStmt->close();
@@ -237,6 +239,16 @@
             <input id="NewBeatmapIsCustom" name="NewBeatmapIsCustom" type="checkbox" /> <br><br>
             <input type="button" id="addNewButton" value="Add beatmap" onclick="addBeatmapToActiveStage()" />
             <hr>
+            <b>Mass add maps to current stage</b><br>
+            <label style="font-size: 0.85em; color: #ccc;">
+                Format (1 per line):<br>
+                <code>SLOT | BEATMAPID | ISCUSTOM (optional)</code> <br>
+                <span class="subText">(you can also paste osu-wiki MD)</span>
+            </label>
+            <textarea id="MassAddInput" rows="5" placeholder="NM1 | 75&#10;NM2 | 102 | 1&#10;NM3 | 108" style="margin-top: 0.5em;"></textarea>
+            <br><br>
+            <button type="button" id="MassAddButton" onclick="massAddBeatmapsToActiveStage()">Mass Add Maps</button>
+            <hr>
             <b><label>Meta comment</label></b>
             <textarea id="MetaComment" name="meta" style="width:100%;" rows=5 placeholder="Place any sources for this edit (e.g. osu!wiki, forum post, spreadsheet)" ></textarea>
         </div>
@@ -363,29 +375,49 @@
             const imageUrl = map.ImageUrl || (map.SetID ? `https://b.ppy.sh/thumb/${map.SetID}l.jpg` : '/assets/img/missing-map-thumbnail.png');
             const displayTitle = map.Artist ? `${map.Artist} - ${map.Title} [${map.DifficultyName}]` : (map.Title || `Beatmap #${map.BeatmapID}`);
 
-            const customBadge = map.IsCustom ? `<span class="badge" title="Custom Map">Custom</span>` : ``;
-
             row.innerHTML = `
                 <div>
                     <i class="icon-reorder" style="cursor: grab; margin-right: 0.5em;"></i>
                 </div>
-                <div style="min-width: 4em; text-align: center;">
-                    <b>${escapeHtml(map.Slot)}</b>
+                <div style="width: 5em; text-align: center;">
+                    <input type="text"
+                        class="map-slot-input"
+                        value="${escapeHtml(map.Slot)}"
+                        style="width: 100%; text-align: center; box-sizing: border-box;"
+                        placeholder="Slot" />
                 </div>
                 <div style="padding: 0 1em; box-sizing: content-box;">
                     <img src="${imageUrl}"
-                         class="diffThumb"
-                         style="aspect-ratio: 1 / 1; width: 80px; height: auto;"
-                         onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';" />
+                        class="diffThumb"
+                        style="aspect-ratio: 1 / 1; width: 80px; height: auto;"
+                        onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';" />
                 </div>
                 <div style="flex-grow: 1;">
-                    <b>${escapeHtml(displayTitle)}</b> ${customBadge} <br>
+                    <b>${escapeHtml(displayTitle)}</b><br>
                     Beatmap ID: <code>${escapeHtml(map.BeatmapID)}</code>
+                    <div style="margin-top: 0.25em;">
+                        <label style="font-size: 0.85em; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="map-custom-checkbox" ${map.IsCustom ? 'checked' : ''} /> Custom Map
+                        </label>
+                    </div>
                 </div>
                 <div>
                     <i class="icon-remove" style="cursor: pointer;" title="Remove map"></i>
                 </div>
             `;
+
+            const slotInput = row.querySelector(".map-slot-input");
+            slotInput.addEventListener("input", (e) => {
+                map.Slot = e.target.value;
+            });
+
+            const customCheckbox = row.querySelector(".map-custom-checkbox");
+            customCheckbox.addEventListener("change", (e) => {
+                map.IsCustom = e.target.checked ? 1 : 0;
+            });
+
+            slotInput.addEventListener("dragstart", (e) => e.stopPropagation());
+            customCheckbox.addEventListener("dragstart", (e) => e.stopPropagation());
 
             row.querySelector(".icon-remove").addEventListener("click", () => {
                 if (confirm("Are you sure you want to remove this map from the stage?")) {
@@ -570,6 +602,136 @@
         }
 
         renderTabs();
+    }
+
+    function getAcronymForCategory(categoryStr) {
+        const clean = categoryStr.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (clean.includes("nomod")) return "NM";
+        if (clean.includes("hidden")) return "HD";
+        if (clean.includes("hardrock")) return "HR";
+        if (clean.includes("doubletime")) return "DT";
+        if (clean.includes("freemod")) return "FM";
+        if (clean.includes("tiebreaker")) return "TB";
+
+        return categoryStr.split(" ").map(w => w[0]).join("").toUpperCase() || "";
+    }
+
+    async function massAddBeatmapsToActiveStage() {
+        const textarea = document.getElementById("MassAddInput");
+        const rawText = textarea.value.trim();
+
+        if (!rawText) {
+            alert("Please enter at least one map or paste Markdown.");
+            return;
+        }
+
+        const lines = rawText.split("\n");
+        const parsedEntries = [];
+
+        const isMarkdown = rawText.includes("http") || rawText.includes("beatmapsets");
+
+        if (isMarkdown) {
+            let currentAcronym = "NM";
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                if (line.startsWith("-") && !line.includes("[")) {
+                    const category = line.replace(/^[#\-\*\s]+/, "").trim();
+                    currentAcronym = getAcronymForCategory(category);
+                    continue;
+                }
+
+                const idMatch = line.match(/(?:#osu\/|\/b\/|\/beatmaps\/)(\d+)/);
+                if (!idMatch) continue;
+
+                const beatmapID = parseInt(idMatch[1], 10);
+                const numMatch = line.match(/^(\d+)\./);
+                const slotNumber = numMatch ? numMatch[1] : (parsedEntries.filter(e => e.slot.startsWith(currentAcronym)).length + 1);
+                const slot = `${currentAcronym}${slotNumber}`;
+
+                parsedEntries.push({
+                    slot: slot,
+                    beatmapID: beatmapID,
+                    isCustom: 0
+                });
+            }
+        } else {
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const parts = line.split("|").map(p => p.trim());
+                if (parts.length < 2) {
+                    alert(`Line ${i + 1} is invalid. Required format: SLOT | BEATMAPID`);
+                    return;
+                }
+
+                const slot = parts[0];
+                const beatmapID = parseInt(parts[1], 10);
+                const isCustom = parts[2] ? (parseInt(parts[2], 10) === 1 ? 1 : 0) : 0;
+
+                if (!slot || isNaN(beatmapID)) {
+                    alert(`Line ${i + 1} is invalid`);
+                    return;
+                }
+
+                parsedEntries.push({ slot, beatmapID, isCustom });
+            }
+        }
+
+        if (parsedEntries.length === 0) {
+            alert("no maps found");
+            return;
+        }
+
+        const btn = document.getElementById("MassAddButton");
+        btn.disabled = true;
+        btn.innerText = `Adding ${parsedEntries.length} map(s)...`;
+
+        let addedCount = 0;
+        let failedCount = 0;
+
+        for (const entry of parsedEntries) {
+            try {
+                const response = await fetch(`GetBeatmapData.php?id=${entry.beatmapID}`);
+                const data = await response.json();
+
+                if (data.error || !data) {
+                    console.error(data.error);
+                    failedCount++;
+                    continue;
+                }
+
+                const newMap = {
+                    BeatmapID: entry.beatmapID,
+                    Slot: entry.slot,
+                    IsCustom: entry.isCustom,
+                    SetID: data.SetID || data.setId || null,
+                    Title: data.Title || data.itemTitle || "Unknown Title",
+                    Artist: data.Artist || "",
+                    DifficultyName: data.DifficultyName || data.version || "",
+                    ImageUrl: data.ImageUrl || data.imageUrl || `https://b.ppy.sh/thumb/${data.SetID}l.jpg`
+                };
+
+                stages[activeStageIndex].Maps.push(newMap);
+                addedCount++;
+            } catch (err) {
+                console.error(err);
+                failedCount++;
+            }
+        }
+
+        renderActiveStageMaps();
+
+        btn.disabled = false;
+        btn.innerText = "Mass Add Maps";
+        textarea.value = "";
+
+        if (failedCount > 0) {
+            alert(`Added ${addedCount} map(s). Failed to fetch ${failedCount} map(s). Check console for details.`);
+        }
     }
 </script>
 

@@ -411,7 +411,7 @@
                                                 <?php if ($info) { ?>
                                                     <?php echo safe_htmlspecialchars($info['Artist']) ?> - <?php echo safe_htmlspecialchars($info['Title']) ?> [<?php echo safe_htmlspecialchars($info['DifficultyName']) ?>]
                                                 <?php } else { ?>
-                                                    Beatmap #<?php echo $beatmapId ?>
+                                                    Beatmap ID <?php echo $beatmapId ?> (not added to OMDB)
                                                 <?php } ?>
                                             </a>
                                         </td>
