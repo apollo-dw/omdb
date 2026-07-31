@@ -34,17 +34,6 @@
         $isNsfw = $set["nsfw"];
         $dateRanked = date("Y-m-d", strtotime($set["last_updated"]));
 
-        // Blacklist + last update checks
-        $query2 = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
-        $query2->bind_param("i", $creatorID);
-        $query2->execute();
-        $query2->store_result();
-        if ($query2->num_rows > 0) {
-            $query2->close();
-            die("No");
-        }
-        $query2->close();
-
         if (strtotime($set["last_updated"]) > strtotime("-6 months")) {
             die("No - not old enough");
         }
