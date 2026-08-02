@@ -1,7 +1,13 @@
 <?php
     require "../../base.php";
 
-    $stmt = $conn->query("SELECT * from tournament_series;");
+    $stmt = $conn->query("
+        SELECT ts.*, COUNT(t.TournamentID) AS TournamentCount
+        FROM tournament_series ts
+        LEFT JOIN tournaments t ON ts.SeriesID = t.SeriesID
+        GROUP BY ts.SeriesID
+        ORDER BY TournamentCount DESC, ts.Name ASC;
+    ");
 
     $allSeries = [];
     while ($row = $stmt->fetch_assoc()) {
@@ -10,7 +16,7 @@
 
     $stmt->close();
 
-    if (is_null($allSeries)) {
+    if (is_null($allSeries) || empty($allSeries)) {
         http_response_code(404);
         exit();
     }
@@ -35,11 +41,6 @@
 <br><br>
 
 <?php
-    $stmt = $conn->prepare("SELECT * from tournaments WHERE SeriesID = ? ORDER BY EndDate ASC;");
-    $stmt->bind_param("i", $seriesId);
-    $stmt->execute();
-    $results = $stmt->get_result();
-
     foreach ($allSeries as $series) {
         ?>
         <div class="alternating-bg" style="padding: 1em; box-sizing: content-box;">
@@ -50,11 +51,12 @@
             <span class="subText">
                 <?php echo safe_htmlspecialchars($series["Acronym"]); ?>
             </span>
+            <span class="subText" style="float: right;">
+                <?php echo safe_htmlspecialchars($series["TournamentCount"]); ?> iteration<?php echo $series["TournamentCount"] == 1 ? '' : 's'; ?>
+            </span>
         </div>
         <?php
     }
-
-    $stmt->close();
 ?>
 
 <?php
