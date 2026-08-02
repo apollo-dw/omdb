@@ -20,6 +20,11 @@
             'url' => '/labs/stats.php',
             'description' => 'See some random OMDB stats!',
         ],
+        [
+            'title' => 'Tournament spreadsheet formatter',
+            'url' => '/labs/format-tournament-spreadsheets.php',
+            'description' => 'Format spreadsheet cells into a pastable format for tournament editing on OMDB',
+        ],
     ];
 ?>
 
