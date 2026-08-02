@@ -34,7 +34,7 @@
         $isNsfw = $set["nsfw"];
         $dateRanked = date("Y-m-d", strtotime($set["last_updated"]));
 
-        if (strtotime($set["last_updated"]) > strtotime("-6 months")) {
+        if (strtotime($set["last_updated"]) > strtotime("-1 month")) {
             die("No - not old enough");
         }
 
