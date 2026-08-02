@@ -284,6 +284,13 @@
         }
     });
 
+    document.getElementById("tournamentForm").onkeypress = function(e) {
+        var key = e.charCode || e.keyCode || 0;
+        if (key == 13) {
+            e.preventDefault();
+        }
+    }
+
     function renderTabs() {
         const nav = document.getElementById("stageTabsNav");
         nav.innerHTML = "";
@@ -760,6 +767,11 @@
             alert(`Added ${addedCount} map(s). Failed to fetch ${failedCount} map(s). Check console for details.`);
         }
     }
+
+    window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        e.returnValue = '';
+    });
 </script>
 
 <?php
