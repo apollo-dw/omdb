@@ -16,8 +16,7 @@
         $descriptor_stmt->bind_param("ii", $beatmapID, $descriptorID);
 
         if (!$set || sizeof($set["beatmaps"] ?? []) == 0) {
-            http_response_code(404);
-            exit();
+            return false;
         }
 
         // Set-based params
@@ -36,8 +35,7 @@
         $dateRanked = date("Y-m-d", strtotime($set["last_updated"]));
 
         if (strtotime($set["last_updated"]) > strtotime("-1 month")) {
-            http_response_code(400);
-            exit();
+            return false;
         }
 
         $query3 = $conn->prepare("SELECT * FROM beatmapsets WHERE SetID = ?");
@@ -165,4 +163,6 @@
         $rebuild_desc_stmt->close();
 
         BeatmapsetSearchSet($conn, $setID);
+
+        return true;
     }
