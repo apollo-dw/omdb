@@ -131,13 +131,14 @@
             <h2><?php echo safe_htmlspecialchars($stage['Name']) ?></h2>
             <hr />
             <?php
-                $stmt = $conn->prepare("SELECT tm.*, b.DifficultyName, b.SetID, s.Artist, s.Title
+                $stmt = $conn->prepare("SELECT tm.*, b.DifficultyName, b.SetID, s.Artist, s.Title, r_user.Score
                                         FROM tournament_maps tm
                                         LEFT JOIN beatmaps b ON tm.BeatmapID = b.BeatmapID
                                         LEFT JOIN beatmapsets s ON b.SetID = s.SetID
+                                        LEFT JOIN ratings r_user ON r_user.BeatmapID = b.BeatmapID AND r_user.UserID = ?
                                         WHERE tm.StageID = ?
                                         ORDER BY tm.SortOrder ASC;");
-                $stmt->bind_param("i", $stageId);
+                $stmt->bind_param("ii", $userId, $stageId);
                 $stmt->execute();
                 $results = $stmt->get_result();
                 while ($map = $results->fetch_assoc()) {
@@ -151,7 +152,7 @@
                         ? "https://b.ppy.sh/thumb/" . $map["SetID"] . "l.jpg"
                         : "/assets/img/missing-map-thumbnail.png";
                     ?>
-                    <div class="alternating-bg flex-container" style="align-items:center; padding: 1em;">
+                    <div class="alternating-bg flex-container" style="align-items:center; padding: 1em; box-sizing: border-box;">
                         <div class="flex-item" style="min-width: 4em; text-align: center;">
                             <b><?php echo safe_htmlspecialchars($map["Slot"]); ?></b>
                         </div>
@@ -178,6 +179,14 @@
                             <?php if ((int)$map["IsCustom"] === 1) { ?>
                                 <span class="badge" title="Custom Map">Custom</span>
                             <?php } ?>
+                        </div>
+
+                        <div style="margin-left: auto;">
+                            <?php 
+                                if (isset($map["Score"])) {
+                                    echo RenderRating($map["Score"]);
+                                }
+                            ?>
                         </div>
                     </div>
                     <?php
