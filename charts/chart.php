@@ -203,8 +203,12 @@
                     <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes
                 </span><br>
             </div>
-            <div class="flex-child" style="flex:0 0 10%">
-                <b style="font-weight:900;"><?php echo $row["Score"]; ?></b>
+            <div class="flex-child" style="flex:0 0 10%">   
+                <?php 
+                    if (isset($row["Score"])) {
+                        echo RenderRating($row["Score"]);
+                    }
+                ?>
             </div>
         </div>
         <?php } ?>
