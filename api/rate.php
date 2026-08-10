@@ -4,7 +4,7 @@
     $beatmapID = $_GET['id'] ?? null;
     $score = $_GET['score'] ?? null;
 
-    if (!$beatmapID || !$score) {
+    if ($beatmapID === null || $score === null) {
         die(json_encode(array("error" => "Missing parameters")));
     }
 
