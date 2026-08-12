@@ -8,6 +8,7 @@
     include_once 'functions/osu.php';
     include_once 'functions/recommendations/index.php';
     include_once 'functions/filter/helpers.php';
+    include_once 'functions/external/Parsedown.php';
 
     $BOLDED_MAP_CHART_RANK_BOUNDARY = 500;
 
