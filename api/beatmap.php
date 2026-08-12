@@ -56,14 +56,14 @@ if ($result != null) {
         JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
         WHERE bd.BeatmapID = ?
         ORDER BY bd.Weight DESC, bd.DescriptorID
-        LIMIT 5
+        LIMIT 10;
     ");
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
     $descriptorResult = $stmt->get_result()->fetch_all();
     $stmt->close();
 
-    $response["Descriptors"] = implode(', ', array_column($descriptorResult, 0));
+    $response["Descriptors"] = implode(', ', array_column($descriptorResult, 1));
 
     $stmt = $conn->prepare("SELECT bn.NominatorID as UserID, m.Username as Username 
         FROM beatmapset_nominators bn 
