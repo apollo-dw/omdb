@@ -38,6 +38,13 @@
 
 ?>
 
+<h1 style="margin: 0;">
+  <?php echo $metadata['Title']; ?>
+</h1>
+<hr>
+<span class="subText"><a href="https://github.com/apollo-dw/omdb/tree/master/wiki/pages" target="_blank"><i class="icon-edit"></i> Edit article</a></span>
+<br><br>
+
 <div class="container" style="background-color: var(--main-theme-color); width: 100%; box-sizing: border-box; padding: 1em;">
   <?php echo ParseShortLinks($conn, $htmlContent); ?>
 </div>
