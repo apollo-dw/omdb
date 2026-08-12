@@ -50,6 +50,7 @@
             LEFT JOIN beatmapsets s ON s.SetID = b.SetID
             WHERE fr.UserIDFrom = ? AND fr.type = 1
                 AND r.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+                AND b.blacklisted = 0
                 {$beatmapFilterSQL}
                 {$yearCond('s.DateRanked')}
         )";
