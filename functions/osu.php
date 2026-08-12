@@ -94,8 +94,8 @@
             $beatmap_stmt->execute();
 
             $owners = !empty($diff["owners"]) ? $diff["owners"] : [["id" => $diff["user_id"]]];
-            foreach ($owners as $owner) {
-                $diffCreatorID = $owner["id"];
+            $owners = array_unique(array_column($owners, 'id'));
+            foreach ($owners as $diffCreatorID) {
                 $creators_stmt->execute();
             }
 
