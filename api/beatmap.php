@@ -60,11 +60,16 @@ if ($result != null) {
     ");
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();
-    $descriptorResult = $stmt->get_result()->fetch_all();
+    $descriptorResult = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    $response["Descriptors"] = implode(', ', array_column($descriptorResult, 1));
-
+    $response["Descriptors"] = array_map(function ($descriptor) {
+        return [
+            "id" => $descriptor["DescriptorID"],
+            "name" => $descriptor["Name"]
+        ];
+    }, $descriptorResult);
+    
     $stmt = $conn->prepare("SELECT bn.NominatorID as UserID, m.Username as Username 
         FROM beatmapset_nominators bn 
         JOIN mappernames m ON bn.NominatorID = m.UserID 
