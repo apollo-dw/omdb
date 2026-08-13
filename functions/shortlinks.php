@@ -45,6 +45,14 @@
                     $text = parseUserShortLinks($conn, $id, $useLink);
                     return $cache[$key] = $text;
 
+                case 'tournament':
+                    $text = parseTournamentShortLinks($conn, $id, $useLink);
+                    return $cache[$key] = $text;
+
+                case 'tournamentseries':
+                    $text = parseTournamentSeriesShortLinks($conn, $id, $useLink);
+                    return $cache[$key] = $text;
+
                 default:
                     return $matches[0];
             }
@@ -134,6 +142,48 @@
             '<a style="font-weight: bold;" href="/list/?id=%d">%s</a>',
             $id,
             htmlspecialchars("{$list['Title']} ({$list['Username']})")
+        );
+    }
+
+    function parseTournamentShortLinks($conn, $id, $useLink = true): string {
+        $stmt = $conn->prepare("SELECT t.Name FROM tournaments t WHERE t.TournamentID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $tournament = $stmt->get_result()->fetch_assoc();
+
+        if (!$tournament) {
+            return '...';
+        }
+
+        if (!$useLink) {
+            return htmlspecialchars("{$tournament['Name']}");
+        }
+
+        return sprintf(
+            '<a style="font-weight: bold;" href="/tournament/?id=%d">%s</a>',
+            $id,
+            htmlspecialchars("{$tournament['Name']}")
+        );
+    }
+
+    function parseTournamentSeriesShortLinks($conn, $id, $useLink = true): string {
+        $stmt = $conn->prepare("SELECT t.Name FROM tournament_series t WHERE t.SeriesID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $tournament = $stmt->get_result()->fetch_assoc();
+
+        if (!$tournament) {
+            return '...';
+        }
+
+        if (!$useLink) {
+            return htmlspecialchars("{$tournament['Name']}");
+        }
+
+        return sprintf(
+            '<a style="font-weight: bold;" href="/tournament/series/?id=%d">%s</a>',
+            $id,
+            htmlspecialchars("{$tournament['Name']}")
         );
     }
 
