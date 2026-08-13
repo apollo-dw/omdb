@@ -31,11 +31,11 @@
     $stmt = $conn->prepare("
         SELECT TournamentID, Acronym
         FROM tournaments
-        WHERE SeriesID = ? AND TournamentID < ?
-        ORDER BY TournamentID DESC
+        WHERE SeriesID = ? AND StartDate < ?
+        ORDER BY StartDate DESC
         LIMIT 1
     ");
-    $stmt->bind_param("ii", $tournament['SeriesID'], $tournamentId);
+    $stmt->bind_param("is", $tournament['SeriesID'], $tournament['StartDate']);
     $stmt->execute();
     $prevTournament = $stmt->get_result()->fetch_assoc();
     $stmt->close();
@@ -43,11 +43,11 @@
     $stmt = $conn->prepare("
         SELECT TournamentID, Acronym
         FROM tournaments
-        WHERE SeriesID = ? AND TournamentID > ?
-        ORDER BY TournamentID ASC
+        WHERE SeriesID = ? AND StartDate > ?
+        ORDER BY StartDate ASC
         LIMIT 1
     ");
-    $stmt->bind_param("ii", $tournament['SeriesID'], $tournamentId);
+    $stmt->bind_param("is", $tournament['SeriesID'], $tournament['StartDate']);
     $stmt->execute();
     $nextTournament = $stmt->get_result()->fetch_assoc();
     $stmt->close();
