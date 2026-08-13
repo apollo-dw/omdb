@@ -2,6 +2,8 @@
 Title: OMDB Wiki
 ---
 
-# OMDB Wiki
+Welcome to the OMDB Wiki!
 
-the top beatmap is [Beatmap412288]
+## Articles
+
+- [[Tournaments]]
