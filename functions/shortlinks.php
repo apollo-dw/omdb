@@ -1,5 +1,11 @@
 <?php
   function ParseShortlinks(mysqli $conn, string $text, bool $useLink = true): string {
+    if ($text === '') {
+        return $text;
+    }
+
+    $text = parseWikiLinks($text, $useLink);
+
     $cache = [];
 
     return preg_replace_callback(
@@ -140,5 +146,68 @@
             '<a style="font-weight: bold;" href="/profile/%d">%s</a>',
             $id,
             htmlspecialchars(getUsernameFromId($id, $conn))
+        );
+    }
+
+    function parseWikiLinks(string $text, bool $useLink = true): string {
+        $cache = [];
+
+        return preg_replace_callback(
+            '/\[\[([^\[\]]+)\]\]/',
+            function ($matches) use (&$cache, $useLink) {
+                $articleTitle = trim($matches[1]);
+
+                $slug = strtolower($articleTitle);
+                $slug = preg_replace('/\s+/', '_', $slug);
+                $slug = preg_replace('/[^a-z0-9_-]/', '', $slug);
+
+                if ($slug === '') {
+                    return $matches[0];
+                }
+
+                if (isset($cache[$slug])) {
+                    return $cache[$slug];
+                }
+
+                $file = __DIR__ . "/../wiki/pages/{$slug}.md";
+
+                if (!is_file($file)) {
+                    return $cache[$slug] = $matches[0];
+                }
+
+                $contents = file_get_contents($file);
+
+                if ($contents === false) {
+                    return $cache[$slug] = $matches[0];
+                }
+
+                $displayTitle = $articleTitle;
+
+                if (preg_match('/\A---\s*\R.*?^Title:\s*(.+?)\s*$.*?^---\s*\R/sm', $contents, $metadata)) {
+                    $displayTitle = trim($metadata[1]);
+
+                    if (strlen($displayTitle) >= 2 && 
+                    (($displayTitle[0] === '"' && $displayTitle[-1] === '"') ||
+                    ($displayTitle[0] === "'" && $displayTitle[-1] === "'"))) {
+                        $displayTitle = substr($displayTitle, 1, -1);
+                    }
+                }
+
+                if (!$useLink) {
+                    return $cache[$slug] = htmlspecialchars(
+                        $displayTitle,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                }
+
+                $url = '/wiki/' . rawurlencode($slug);
+
+                return $cache[$slug] =
+                    '<b><a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">'
+                    . htmlspecialchars($displayTitle, ENT_QUOTES, 'UTF-8')
+                    . '</a></b>';
+            },
+            $text
         );
     }
