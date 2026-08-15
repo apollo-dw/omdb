@@ -35,18 +35,43 @@
     $mainQuery = "SELECT
                     r.*,
                     mn.Username,
+                    beatmaps.DifficultyName,
                     IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight,
                     (
                         SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t
                         WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`
                     ) AS Tags,
-                    beatmaps.DifficultyName
-        FROM `ratings` r
-        LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
-        LEFT JOIN mappernames mn ON mn.UserID = r.UserID
-        {$selectString}
-        AND beatmaps.Blacklisted = 0
-        ORDER BY order_weight DESC, {$orderString}";
+                    IF(
+                        (
+                            SELECT u.IsPrivate
+                            FROM users u
+                            WHERE u.UserID = r.UserID
+                        ) = 1
+                        AND NOT (
+                            EXISTS (
+                                SELECT 1
+                                FROM user_relations ur1
+                                WHERE ur1.UserIDFrom = ?
+                                AND ur1.UserIDTo = r.UserID
+                                AND ur1.Type = 1
+                            )
+                            AND EXISTS (
+                                SELECT 1
+                                FROM user_relations ur2
+                                WHERE ur2.UserIDFrom = r.UserID
+                                AND ur2.UserIDTo = ?
+                                AND ur2.Type = 1
+                            )
+                        ),
+                        1,
+                        0
+                    ) AS IsPrivate
+                FROM `ratings` r
+                LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
+                LEFT JOIN mappernames mn ON mn.UserID = r.UserID
+                {$selectString}
+                AND beatmaps.Blacklisted = 0
+                ORDER BY order_weight DESC, {$orderString}";
 
     $stmt = $conn->prepare($countQuery);
     $stmt->bind_param($bindParams, ...$bindValues);
@@ -64,23 +89,42 @@
     }
 
     $stmt = $conn->prepare($mainQuery . " " . $pageString);
-    $stmt->bind_param($bindParamsMain, ...$bindValuesMain);
+    $stmt->bind_param(
+        "ii" . $bindParamsMain,
+        $userId, $userId, ...$bindValuesMain
+    );
     $stmt->execute();
     $result = $stmt->get_result();
 
     while ($row = $result->fetch_assoc()) {
+        $isPrivate = $row["IsPrivate"];
+
 ?>
 <div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
     <div class="flex-child">
-        <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
+        <?php if ($isPrivate) { ?>
+            <img class="square-thumb" src="/assets/img/missing-map-thumbnail.png" style="height:24px;width:24px;"/>
+        <?php } else { ?>
+            <a href="/profile/<?php echo $row["UserID"]; ?>">
+                <img class="square-thumb" src="<?php echo "https://s.ppy.sh/a/{$row["UserID"]}"; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/>
+            </a>
+        <?php } ?>
     </div>
     <div class="flex-child" style="flex:0 0 70%;">
-        <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
-            <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
-        </a>
+        <?php if ($isPrivate) { ?>
+            <span style="display:flex; font-style: italic;">
+                hidden
+            </span>
+        <?php } else { ?>
+            <a style="display:flex;" href="/profile/<?php echo $row["UserID"]; ?>">
+                <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
+            </a>
+        <?php } ?>
+
         <?php
             echo RenderUserRating($conn, $row) . " on " . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 40, "..."), ENT_QUOTES);
         ?>
+
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
         <?php if (strlen($row["Tags"] ?? "") > 0) { ?>
