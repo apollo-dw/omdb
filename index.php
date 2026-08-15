@@ -49,9 +49,28 @@
 					INNER JOIN `users` u ON r.UserID = u.UserID
                     LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ?
-					  AND b.blacklisted = 0
-					  AND u.HideRatings = 0
-                      AND NOT EXISTS (
+					    AND b.blacklisted = 0
+					    AND u.HideRatings = 0
+                        AND (
+                            u.IsPrivate = 0
+                            OR (
+                                EXISTS (
+                                    SELECT 1
+                                    FROM user_relations ur1
+                                    WHERE ur1.UserIDFrom = ?
+                                    AND ur1.UserIDTo = r.UserID
+                                    AND ur1.type = 1
+                                )
+                                AND EXISTS (
+                                    SELECT 1
+                                    FROM user_relations ur2
+                                    WHERE ur2.UserIDFrom = r.UserID
+                                    AND ur2.UserIDTo = ?
+                                    AND ur2.type = 1
+                                )
+                            )
+                        )
+                    AND NOT EXISTS (
                         SELECT 1
                         FROM user_relations ur
                         WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
@@ -68,7 +87,7 @@
 					ORDER BY r.date DESC
 					LIMIT 100
 				");
-                $stmt->bind_param("iiiii", $mode, $userId, $userId, $userId, $userId);
+                $stmt->bind_param("iiiiiii", $mode, $userId, $userId, $userId, $userId, $userId, $userId);
             } else {
                 $stmt = $conn->prepare("
 					SELECT r.*, b.DifficultyName, b.SetID, m.Username
@@ -79,6 +98,7 @@
 					WHERE b.Mode = ?
 					  AND b.blacklisted = 0
 					  AND u.HideRatings = 0
+                      AND u.IsPrivate = 0
 					ORDER BY r.date DESC
 					LIMIT 60
 				");
@@ -138,11 +158,33 @@
                 SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM comments c
                 JOIN beatmapsets bs ON bs.SetID = c.SetID
+                JOIN users u ON u.UserID = c.UserID
                 LEFT JOIN mappernames m ON m.UserID = c.UserID
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM user_relations r
-                    WHERE c.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    WHERE c.UserID = r.UserIDTo
+                    AND r.UserIDFrom = ?
+                    AND r.type = 2
+                )
+                AND (
+                    u.IsPrivate = 0
+                    OR (
+                        EXISTS (
+                            SELECT 1
+                            FROM user_relations ur1
+                            WHERE ur1.UserIDFrom = ?
+                            AND ur1.UserIDTo = c.UserID
+                            AND ur1.type = 1
+                        )
+                        AND EXISTS (
+                            SELECT 1
+                            FROM user_relations ur2
+                            WHERE ur2.UserIDFrom = c.UserID
+                            AND ur2.UserIDTo = ?
+                            AND ur2.type = 1
+                        )
+                    )
                 )
                 AND (bs.ModeMask & (1 << ?)) <> 0
                 AND (
@@ -161,11 +203,33 @@
                 SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title, m.Username
                 FROM descriptor_proposal_comments dpc
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
+                JOIN users u ON u.UserID = dpc.UserID
                 LEFT JOIN mappernames m ON m.UserID = dpc.UserID
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM user_relations r
-                    WHERE dpc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    WHERE dpc.UserID = r.UserIDTo
+                    AND r.UserIDFrom = ?
+                    AND r.type = 2
+                )
+                AND (
+                    u.IsPrivate = 0
+                    OR (
+                        EXISTS (
+                            SELECT 1
+                            FROM user_relations ur1
+                            WHERE ur1.UserIDFrom = ?
+                            AND ur1.UserIDTo = dpc.UserID
+                            AND ur1.type = 1
+                        )
+                        AND EXISTS (
+                            SELECT 1
+                            FROM user_relations ur2
+                            WHERE ur2.UserIDFrom = dpc.UserID
+                            AND ur2.UserIDTo = ?
+                            AND ur2.type = 1
+                        )
+                    )
                 )
                 ORDER BY Timestamp DESC LIMIT 40
             )
@@ -174,11 +238,33 @@
                 SELECT nc.*, 'news' AS comment_type, np.Title as Name, nc.NewsID as ProposalID, NULL as Artist, NULL as Title, m.Username
                 FROM news_comments nc
                 JOIN news_posts np ON np.NewsID = nc.NewsID
+                JOIN users u ON u.UserID = nc.UserID
                 LEFT JOIN mappernames m ON m.UserID = nc.UserID
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM user_relations r
-                    WHERE nc.UserID = r.UserIDTo AND r.UserIDFrom = ? AND r.type = 2
+                    WHERE nc.UserID = r.UserIDTo
+                    AND r.UserIDFrom = ?
+                    AND r.type = 2
+                )
+                AND (
+                    u.IsPrivate = 0
+                    OR (
+                        EXISTS (
+                            SELECT 1
+                            FROM user_relations ur1
+                            WHERE ur1.UserIDFrom = ?
+                            AND ur1.UserIDTo = nc.UserID
+                            AND ur1.type = 1
+                        )
+                        AND EXISTS (
+                            SELECT 1
+                            FROM user_relations ur2
+                            WHERE ur2.UserIDFrom = nc.UserID
+                            AND ur2.UserIDTo = ?
+                            AND ur2.type = 1
+                        )
+                    )
                 )
                 ORDER BY Timestamp DESC LIMIT 40
             )
@@ -187,11 +273,33 @@
                 SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
                 FROM reviews r
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
+                JOIN users u ON u.UserID = r.UserID
                 LEFT JOIN mappernames m ON m.UserID = r.UserID
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM user_relations ur
-                    WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                    WHERE r.UserID = ur.UserIDTo
+                    AND ur.UserIDFrom = ?
+                    AND ur.type = 2
+                )
+                AND (
+                    u.IsPrivate = 0
+                    OR (
+                        EXISTS (
+                            SELECT 1
+                            FROM user_relations ur1
+                            WHERE ur1.UserIDFrom = ?
+                            AND ur1.UserIDTo = r.UserID
+                            AND ur1.type = 1
+                        )
+                        AND EXISTS (
+                            SELECT 1
+                            FROM user_relations ur2
+                            WHERE ur2.UserIDFrom = r.UserID
+                            AND ur2.UserIDTo = ?
+                            AND ur2.type = 1
+                        )
+                    )
                 )
                 AND (bs.ModeMask & (1 << ?)) <> 0
                 AND (
@@ -206,9 +314,16 @@
                 ORDER BY date DESC LIMIT 40
             )
             ORDER BY date DESC
-            LIMIT 40; ");
+            LIMIT 40;
+        ");
 
-        $stmt->bind_param("iiiiiiiiiiii", $userId, $mode, $onlyFriends, $userId, $userId, $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId);
+        $stmt->bind_param(
+            "iiiiiiiiiiiiiiiiiiii",
+            $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId,
+            $userId, $userId, $userId,
+            $userId, $userId, $userId,
+            $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId
+        );
         $stmt->execute();
         $result = $stmt->get_result();
 
