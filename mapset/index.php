@@ -921,10 +921,12 @@ while ($row = $result->fetch_assoc()) {
 		<h4 style="margin-bottom: 0;">Reviews</h4>
 
 
-		<?php if ($loggedIn) { ?>
+		<?php if ($loggedIn) {
+            $buttonText = strlen($review_comment) > 0 ? "Edit Review" : "Post Review";
+            ?>
             <form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
                 <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
-                <input type='button' name="reviewSubmit" id="reviewSubmit" value="Post review" onclick="submitReview()" />
+                <input type='button' name="reviewSubmit" id="reviewSubmit" value="<?php echo $buttonText; ?>" onclick="submitReview()" />
             </form>
         <?php } ?>
 
