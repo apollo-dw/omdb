@@ -16,6 +16,14 @@
         exit();
     }
 
+    if ($profile["IsPrivate"]) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
+
     RenderCustomThemeCss($profile);
 ?>
 

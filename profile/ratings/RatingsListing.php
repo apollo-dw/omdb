@@ -7,6 +7,19 @@
     $rating = postOrGet('r', '');
     $tagArgument = urldecode(postOrGet('t', ''));
 
+    $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $isPrivate = (bool)$stmt->get_result()->fetch_row()[0];
+    $stmt->close();
+    if ($isPrivate) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
+
     $year = postOrGet('y', 'all-time');
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
 

@@ -9,6 +9,19 @@
     if ($loggedIn) {
         $isSelf = $profileId == $userId;
     }
+
+    $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $isPrivate = (bool)$stmt->get_result()->fetch_row()[0];
+    $stmt->close();
+    if ($isPrivate) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
 ?>
 
 <div id="tabbed-latest" class="tab">
@@ -31,7 +44,7 @@
                                 JOIN `beatmaps` b ON r.`BeatmapID` = b.`BeatmapID`
                                 JOIN `beatmapsets` s on b.SetID = s.SetID
 								${hideBlacklistedMapsCondition}
-                                ORDER BY r.`date` DESC 
+                                ORDER BY r.`date` DESC
                                 LIMIT 50");
     $stmt->bind_param("ii", $profileId, $mode);
     $stmt->execute();

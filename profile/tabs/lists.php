@@ -4,6 +4,20 @@
     }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
+
+    $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $isPrivate = (bool)$stmt->get_result()->fetch_row()[0];
+    $stmt->close();
+    if ($isPrivate) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
+
 ?>
 
 <div id="tabbed-lists" class="lists">

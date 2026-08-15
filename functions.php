@@ -1025,4 +1025,28 @@
 
         return $motd ?: null;
     }
+
+    function GetProfilePageHiddenStatus(mysqli $conn, int $profileID, int $userID): bool {
+        if ($userID === $profileID) {
+            return false;
+        }
+
+        $stmt = $conn->prepare("
+            SELECT COUNT(*) = 2 AS is_mutual
+            FROM user_relations
+            WHERE type = 1
+            AND (
+                (UserIDFrom = ? AND UserIDTo = ?)
+                OR
+                (UserIDFrom = ? AND UserIDTo = ?)
+            )
+        ");
+
+        $stmt->bind_param("iiii", $userID, $profileID, $profileID, $userID);
+        $stmt->execute();
+        $is_mutual = (bool)$stmt->get_result()->fetch_row()[0];
+        $stmt->close();
+
+        return !$is_mutual;
+    }
 ?>

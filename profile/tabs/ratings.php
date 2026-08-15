@@ -39,6 +39,14 @@
     $mutuals = $stmt->get_result();
     $mutualCount = $mutuals->num_rows;
     $stmt->close();
+
+    if ($profile["IsPrivate"]) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
 ?>
 
 <style>

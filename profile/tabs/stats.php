@@ -4,6 +4,19 @@
     }
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
+
+    $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $isPrivate = (bool)$stmt->get_result()->fetch_row()[0];
+    $stmt->close();
+    if ($isPrivate) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
 ?>
 
 <div id="tabbed-stats" class="tab" style="padding: 2em;">
@@ -341,7 +354,7 @@
 
         <div class="flex-child" style="width:50%;">
             <?php
-            $stmt = $conn->prepare("SELECT AVG(r.`Score`) AS AverageScore, 
+            $stmt = $conn->prepare("SELECT AVG(r.`Score`) AS AverageScore,
                                        IFNULL(STDDEV(r.`Score`), 0) AS StandardDeviation
                                FROM ratings r
                                WHERE r.`UserID` = ?");
@@ -360,13 +373,13 @@
 
             Set completion: <br>
             <?php
-            $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year, 
+            $stmt = $conn->prepare("SELECT YEAR(`dateranked`) as Year,
                                       COUNT(DISTINCT s.SetID) as SetCount,
-                                      COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN s.SetID END) as RatedSetCount 
+                                      COUNT(DISTINCT CASE WHEN `BeatmapID` IN (SELECT DISTINCT `BeatmapID` FROM ratings WHERE UserID = ?) THEN s.SetID END) as RatedSetCount
                                       FROM beatmapsets s
                                       JOIN `beatmaps` b on b.SetID = s.SetID
                                       WHERE s.Status IN (1, 2)
-                                      GROUP BY YEAR(`dateranked`) 
+                                      GROUP BY YEAR(`dateranked`)
                                       ORDER BY YEAR(`dateranked`);");
             $stmt->bind_param('i', $profileId);
             $stmt->execute();

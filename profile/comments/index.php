@@ -33,6 +33,14 @@
     $amntOfPages = floor($count / $limit) + 1;
 
     RenderCustomThemeCss($profile);
+
+    if ($profile["IsPrivate"]) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
 ?>
 <center><h1><a href="/profile/<?php echo $profileId; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s comments</h1></center>
 
