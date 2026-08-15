@@ -259,15 +259,20 @@
             $descriptorVoteCount = $stats["descriptorVoteCount"];
 
             $hasRatedMaps = false;
+            $hasMaps = false;
+
             if (!$isBlacklisted) {
                 $stmt = $conn->prepare("SELECT
                         AVG(b.SR) AS AvgSR,
-                        COUNT(b.BeatmapID) AS RatedMapCount,
-                        COALESCE(SUM(b.RatingCount), 0) AS TotalRatings
+                        COUNT(CASE WHEN b.Rating IS NOT NULL THEN b.BeatmapID END) AS RatedMapCount,
+                        COUNT(b.BeatmapID) AS MapCount,
+                        COALESCE(
+                            SUM(b.RatingCount),
+                            0
+                        ) AS TotalRatings
                     FROM beatmap_creators bc
                     JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                    WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
-                ");
+                    WHERE bc.CreatorID = ? AND b.Mode = ?");
                 $stmt->bind_param("ii", $profileId, $mode);
                 $stmt->execute();
                 $mapStats = $stmt->get_result()->fetch_assoc();
@@ -290,6 +295,7 @@
                 $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
                 $stmt->close();
 
+                $hasMaps = $mapStats['MapCount'] > 0;
                 $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
                 if ($hasRatedMaps) {
                     $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
@@ -666,32 +672,39 @@
     }
 ?>
 
-<hr>
-<div style="margin-bottom: 1em;">
-    <?php
-        $filterConfig = [
-            'showYear' => true,
-            'showSR' => true,
-            'showRating' => $loggedIn,
-            'showTag' => false,
-            'sortOptions' => [
-                '1' => 'Latest',
-                '2' => 'Oldest',
-                '3' => 'Highest rated',
-                '4' => 'Lowest rated',
-                '5' => 'Most rated',
-                '6' => 'Least rated',
-            ],
-            'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
-        ];
-        require "../functions/filter/index.php";
-    ?>
-    <label>
-        <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
-    </label>
-</div>
 
-<?php include 'MapsListing.php'; ?>
+<?php
+if ($hasMaps) {
+?>
+    <hr>
+    <div style="margin-bottom: 1em;">
+        <?php
+            $filterConfig = [
+                'showYear' => true,
+                'showSR' => true,
+                'showRating' => $loggedIn,
+                'showTag' => false,
+                'sortOptions' => [
+                    '1' => 'Latest',
+                    '2' => 'Oldest',
+                    '3' => 'Highest rated',
+                    '4' => 'Lowest rated',
+                    '5' => 'Most rated',
+                    '6' => 'Least rated',
+                ],
+                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
+            ];
+            require "../functions/filter/index.php";
+        ?>
+        <label>
+            <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
+        </label>
+    </div>
+
+    <?php
+    include 'MapsListing.php';
+}
+?>
 
 <script>
     function attachCollapseHandlers() {

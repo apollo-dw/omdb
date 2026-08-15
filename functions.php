@@ -681,7 +681,7 @@
         }
 
         $starString = RenderRating($score);
-        if (empty($hint) || $ratingRow["IsPrivate"] === 1) {
+        if (empty($hint) || (isset($ratingRow["IsPrivate"]) && $ratingRow["IsPrivate"] === 1)) {
             return $starString;
         }
 
