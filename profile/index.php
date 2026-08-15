@@ -145,8 +145,118 @@
         }
     }
 
+    $shouldHideProfile = $profile["IsPrivate"] && !($is_friend && $is_friended) && $userId != $profileId;
+
+    $hasRatedMaps = false;
+    $hasMaps = false;
+
+    if (!$isBlacklisted) {
+        $stmt = $conn->prepare("SELECT
+                AVG(b.SR) AS AvgSR,
+                COUNT(CASE WHEN b.Rating IS NOT NULL THEN b.BeatmapID END) AS RatedMapCount,
+                COUNT(b.BeatmapID) AS MapCount,
+                COALESCE(
+                    SUM(b.RatingCount),
+                    0
+                ) AS TotalRatings
+            FROM beatmap_creators bc
+            JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+            WHERE bc.CreatorID = ? AND b.Mode = ?");
+        $stmt->bind_param("ii", $profileId, $mode);
+        $stmt->execute();
+        $mapStats = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT
+                YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
+                COUNT(*) as YearCount
+            FROM beatmap_creators bc
+            JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+            JOIN beatmapsets s ON b.SetID = s.SetID
+            WHERE bc.CreatorID = ? AND b.Mode = ?
+            GROUP BY ActiveYear
+            ORDER BY YearCount DESC
+            LIMIT 1
+        ");
+        $stmt->bind_param("ii", $profileId, $mode);
+        $stmt->execute();
+        $activeYearResult = $stmt->get_result()->fetch_assoc();
+        $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
+        $stmt->close();
+
+        $hasMaps = $mapStats['MapCount'] > 0;
+        $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
+        if ($hasRatedMaps) {
+            $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
+                FROM beatmap_creators bc
+                JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
+                JOIN beatmapsets s ON b.SetID = s.SetID
+                WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
+                AND (SELECT COUNT(*) FROM beatmap_creators WHERE BeatmapID = b.BeatmapID) <= 3
+                ORDER BY b.Rating DESC, b.BeatmapID DESC
+                LIMIT 1
+            ");
+
+            $stmt->bind_param("ii", $profileId, $mode);
+            $stmt->execute();
+            $highestMap = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            $highestMapDescriptors = [];
+            if ($highestMap) {
+                $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
+                    FROM beatmap_descriptors bd
+                    JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                    WHERE bd.BeatmapID = ?
+                    ORDER BY bd.Weight DESC, bd.DescriptorID
+                    LIMIT 5
+                ");
+                $stmt->bind_param("i", $highestMap["BeatmapID"]);
+                $stmt->execute();
+                $highestMapDescResult = $stmt->get_result();
+                while ($descriptor = $highestMapDescResult->fetch_assoc()) {
+                    $highestMapDescriptors[] = $descriptor;
+                }
+                $stmt->close();
+            }
+        }
+    }
+
     RenderCustomThemeCss($profile);
 ?>
+
+<?php if ($shouldHideProfile) { ?>
+
+    <center>
+        <div class="profileCard">
+            <div class="profileTitle">
+                <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
+            </div>
+            <div class="profileImage">
+                <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
+            </div>
+
+            <?php if ($isValidUser && !IS_NULL($profile['UserTitle'])) { ?>
+            <div class="profileUserTitle">
+                <span class="subText" style="font-weight:bolder;"><?php echo $profile['UserTitle']; ?></span>
+            </div>
+            <?php } ?>
+
+            <?php if ($isValidUser && $profile['IsPatron'] === 1) { ?>
+            <div class="profilePatronBadge">
+                <a href="/patron/" style="text-decoration:none;">
+                    <div style="background-color: var(--main-theme-patron-pink); border-radius: 2px; color: contrast-color(var(--main-theme-patron-pink)); font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
+                </a>
+            </div>
+            <?php } ?>
+
+            <div class="profileStats">
+                This user has a hidden OMDB presence.
+            </div>
+        </div>
+    </center>
+
+<?php } else { ?>
 
 <div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
@@ -257,81 +367,6 @@
             $mapsetCount = $stats["mapsetCount"];
             $approvedEditCount = $stats["approvedEditCount"];
             $descriptorVoteCount = $stats["descriptorVoteCount"];
-
-            $hasRatedMaps = false;
-            $hasMaps = false;
-
-            if (!$isBlacklisted) {
-                $stmt = $conn->prepare("SELECT
-                        AVG(b.SR) AS AvgSR,
-                        COUNT(CASE WHEN b.Rating IS NOT NULL THEN b.BeatmapID END) AS RatedMapCount,
-                        COUNT(b.BeatmapID) AS MapCount,
-                        COALESCE(
-                            SUM(b.RatingCount),
-                            0
-                        ) AS TotalRatings
-                    FROM beatmap_creators bc
-                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                    WHERE bc.CreatorID = ? AND b.Mode = ?");
-                $stmt->bind_param("ii", $profileId, $mode);
-                $stmt->execute();
-                $mapStats = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
-
-                $stmt = $conn->prepare("SELECT
-                        YEAR(COALESCE(s.DateRanked, s.Timestamp)) as ActiveYear,
-                        COUNT(*) as YearCount
-                    FROM beatmap_creators bc
-                    JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                    JOIN beatmapsets s ON b.SetID = s.SetID
-                    WHERE bc.CreatorID = ? AND b.Mode = ?
-                    GROUP BY ActiveYear
-                    ORDER BY YearCount DESC
-                    LIMIT 1
-                ");
-                $stmt->bind_param("ii", $profileId, $mode);
-                $stmt->execute();
-                $activeYearResult = $stmt->get_result()->fetch_assoc();
-                $activeYear = $activeYearResult ? $activeYearResult['ActiveYear'] : null;
-                $stmt->close();
-
-                $hasMaps = $mapStats['MapCount'] > 0;
-                $hasRatedMaps = $mapStats['RatedMapCount'] > 0;
-                if ($hasRatedMaps) {
-                    $stmt = $conn->prepare("SELECT b.BeatmapID, s.SetID, s.Artist, s.Title, b.DifficultyName, b.WeightedAvg, b.`RatingCount`, s.DateRanked, b.ChartRank, b.ChartYearRank
-                        FROM beatmap_creators bc
-                        JOIN beatmaps b ON bc.BeatmapID = b.BeatmapID
-                        JOIN beatmapsets s ON b.SetID = s.SetID
-                        WHERE bc.CreatorID = ? AND b.Mode = ? AND b.Rating IS NOT NULL
-                        AND (SELECT COUNT(*) FROM beatmap_creators WHERE BeatmapID = b.BeatmapID) <= 3
-                        ORDER BY b.Rating DESC, b.BeatmapID DESC
-                        LIMIT 1
-                    ");
-
-                    $stmt->bind_param("ii", $profileId, $mode);
-                    $stmt->execute();
-                    $highestMap = $stmt->get_result()->fetch_assoc();
-                    $stmt->close();
-
-                    $highestMapDescriptors = [];
-                    if ($highestMap) {
-                        $stmt = $conn->prepare("SELECT bd.DescriptorID, d.Name, d.ShortDescription
-                            FROM beatmap_descriptors bd
-                            JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
-                            WHERE bd.BeatmapID = ?
-                            ORDER BY bd.Weight DESC, bd.DescriptorID
-                            LIMIT 5
-                        ");
-                        $stmt->bind_param("i", $highestMap["BeatmapID"]);
-                        $stmt->execute();
-                        $highestMapDescResult = $stmt->get_result();
-                        while ($descriptor = $highestMapDescResult->fetch_assoc()) {
-                            $highestMapDescriptors[] = $descriptor;
-                        }
-                        $stmt->close();
-                    }
-                }
-            }
         ?>
 
         <div class="profileStats">
@@ -356,7 +391,6 @@
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
 
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
-            <hr style="margin: 0.5em 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
         </div>
 
 		<?php if ($isValidUser) { ?>
@@ -399,7 +433,7 @@
 				Rating Distribution<br>
 			</div>
         <?php
-                if ($loggedIn && $profileId != $userId && $correlation !== null) {
+                if ($loggedIn && $profileId != $userId && isset($correlation)) {
                     $widthPercentage = abs(($correlation / 2) * 100);
                     $leftMargin = 0;
 
@@ -458,7 +492,7 @@
 ?>
 
 <?php
-    if ($isValidUser && $mutualCount > 0) {
+    if ($isValidUser && isset($mutualCount) && $mutualCount > 0) {
 ?>
         <hr>
         <h2>Mutuals</h2>
@@ -488,6 +522,8 @@
          echo "<br />";
     }
 ?>
+
+<?php } ?>
 
 <?php
     if ($hasRatedMaps) {
