@@ -834,7 +834,7 @@ while ($row = $result->fetch_assoc()) {
                         $is_mutual = (int)$relation["is_mutual"];
                     }
 
-                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual)) {
+                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual && $row["UserID"] != $userId)) {
                         continue;
                     }
 
@@ -859,7 +859,7 @@ while ($row = $result->fetch_assoc()) {
                                     <?php
                                 }
 
-                                if ($row["IsPrivate"] && $is_mutual) {
+                                if ($row["IsPrivate"]) {
                                     ?>
                                     <span class="tooltip-wrapper">
                                         <span class="subText">(private user)</span>
@@ -929,7 +929,7 @@ while ($row = $result->fetch_assoc()) {
         <?php } ?>
 
 		<?php
-            $stmt = $conn->prepare("SELECT r.*, u.IsPatron FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
+            $stmt = $conn->prepare("SELECT r.*, u.IsPatron, u.IsPrivate FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
             $stmt->bind_param("i", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -979,7 +979,7 @@ while ($row = $result->fetch_assoc()) {
                         $is_mutual = (int)$relation["is_mutual"];
                     }
 
-                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual)) {
+                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual && $row["UserID"] != $userId)) {
                         continue;
                     }
 
@@ -1040,7 +1040,7 @@ while ($row = $result->fetch_assoc()) {
                                     <?php
                                 }
 
-                                if ($row["IsPrivate"] && $is_mutual) {
+                                if ($row["IsPrivate"]) {
                                     ?>
                                     <span class="tooltip-wrapper">
                                         <span class="subText">(private user)</span>

@@ -97,7 +97,7 @@
     $result = $stmt->get_result();
 
     while ($row = $result->fetch_assoc()) {
-        $isPrivate = $row["IsPrivate"];
+        $isPrivate = $row["IsPrivate"] && $row["UserID"] != $userId;
 
 ?>
 <div class="flex-container ratingContainer <?php echo ($row["order_weight"] == 2) ? 'alternating-bg-pink' : 'alternating-bg'; ?>">
