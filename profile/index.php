@@ -429,7 +429,7 @@
                     echo " - " . safe_htmlspecialchars($profile["Custom00Rating"], ENT_QUOTES);
                 } ?></a></div>
 			</div>
-			<div style="margin-bottom:1.5em;">
+			<div style="margin-top:0.5em;">
 				Rating Distribution<br>
 			</div>
         <?php
@@ -458,6 +458,12 @@
                     <?php
                 }
             } ?>
+
+            <?php
+                if ($profile["IsPrivate"]) {
+                    echo "<span style='margin-top:0.5em;' class='subText'>Profile has hidden OMDB presence.</span>";
+                }
+            ?>
 	</div>
 	<div class="ratingsCard">
 		<div id="ratingDisplay">
