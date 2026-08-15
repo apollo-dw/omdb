@@ -49,8 +49,8 @@
 					INNER JOIN `users` u ON r.UserID = u.UserID
                     LEFT JOIN mappernames m ON m.UserID = r.UserID
 					WHERE b.Mode = ?
-					    AND b.blacklisted = 0
-					    AND u.HideRatings = 0
+                        AND b.blacklisted = 0
+                        AND u.HideRatings = 0
                         AND (
                             u.IsPrivate = 0
                             OR (
@@ -70,20 +70,20 @@
                                 )
                             )
                         )
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM user_relations ur
-                        WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
-                    )
-					  AND (
-						  (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-						  OR r.UserID IN (
-							  SELECT UserIDTo
-							  FROM user_relations
-							  WHERE UserIDFrom = ? AND type = 1
-						  )
-						  OR r.UserID = ?
-					  )
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM user_relations ur
+                            WHERE r.UserID = ur.UserIDTo AND ur.UserIDFrom = ? AND ur.type = 2
+                        )
+                        AND (
+                            (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                            OR r.UserID IN (
+                                SELECT UserIDTo
+                                FROM user_relations
+                                WHERE UserIDFrom = ? AND type = 1
+                            )
+                            OR r.UserID = ?
+                        )
 					ORDER BY r.date DESC
 					LIMIT 100
 				");

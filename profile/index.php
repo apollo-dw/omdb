@@ -461,7 +461,7 @@
 
             <?php
                 if ($profile["IsPrivate"]) {
-                    echo "<span style='margin-top:0.5em;' class='subText'>Profile has hidden OMDB presence.</span>";
+                    echo "<span style='margin-top:0.5em;' class='subText'>User has hidden OMDB presence</span>";
                 }
             ?>
 	</div>
