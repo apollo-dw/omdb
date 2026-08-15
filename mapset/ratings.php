@@ -32,15 +32,21 @@
         $orderString = "score DESC";
     }
 
-$mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight, 
-    (SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t 
-     WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`) AS Tags
-    FROM `ratings` r
-    LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
-    LEFT JOIN mappernames mn ON mn.UserID = r.UserID
-    {$selectString}
-    AND beatmaps.Blacklisted = 0
-    ORDER BY order_weight DESC, {$orderString}";
+    $mainQuery = "SELECT
+                    r.*,
+                    mn.Username,
+                    IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight,
+                    (
+                        SELECT GROUP_CONCAT(t.`Tag` SEPARATOR ', ') FROM `rating_tags` t
+                        WHERE t.`BeatmapID` = r.`BeatmapID` AND t.`UserID` = r.`UserID`
+                    ) AS Tags,
+                    beatmaps.DifficultyName
+        FROM `ratings` r
+        LEFT JOIN beatmaps ON r.BeatmapID = beatmaps.BeatmapID
+        LEFT JOIN mappernames mn ON mn.UserID = r.UserID
+        {$selectString}
+        AND beatmaps.Blacklisted = 0
+        ORDER BY order_weight DESC, {$orderString}";
 
     $stmt = $conn->prepare($countQuery);
     $stmt->bind_param($bindParams, ...$bindValues);
@@ -73,12 +79,7 @@ $mainQuery = "SELECT r.*, mn.Username, IF(r.UserID IN (SELECT UserIDTo FROM user
             <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>
         </a>
         <?php
-            $stmt2 = $conn->prepare("SELECT DifficultyName FROM `beatmaps` WHERE `BeatmapID`=?");
-            $stmt2->bind_param("s", $row["BeatmapID"]);
-            $stmt2->execute();
-            $result2 = $stmt2->get_result();
-            $row2 = $result2->fetch_row();
-            echo RenderUserRating($conn, $row) . " on " . safe_htmlspecialchars(mb_strimwidth($row2[0], 0, 40, "..."), ENT_QUOTES);
+            echo RenderUserRating($conn, $row) . " on " . safe_htmlspecialchars(mb_strimwidth($row["DifficultyName"], 0, 40, "..."), ENT_QUOTES);
         ?>
     </div>
     <div class="flex-child" style="width:100%;text-align:right;">
