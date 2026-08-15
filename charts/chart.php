@@ -204,7 +204,7 @@
                 </span><br>
             </div>
             <div class="flex-child" style="flex:0 0 10%">   
-                <?php 
+                <?php
                     if (isset($row["Score"])) {
                         echo RenderRating($row["Score"]);
                     }

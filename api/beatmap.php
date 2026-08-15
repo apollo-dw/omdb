@@ -69,7 +69,7 @@ if ($result != null) {
             "name" => $descriptor["Name"]
         ];
     }, $descriptorResult);
-    
+
     $stmt = $conn->prepare("SELECT bn.NominatorID as UserID, m.Username as Username 
         FROM beatmapset_nominators bn 
         JOIN mappernames m ON bn.NominatorID = m.UserID 

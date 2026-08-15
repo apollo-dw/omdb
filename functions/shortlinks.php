@@ -236,7 +236,7 @@
                 if (preg_match('/\A---\s*\R.*?^Title:\s*(.+?)\s*$.*?^---\s*\R/sm', $contents, $metadata)) {
                     $displayTitle = trim($metadata[1]);
 
-                    if (strlen($displayTitle) >= 2 && 
+                    if (strlen($displayTitle) >= 2 &&
                     (($displayTitle[0] === '"' && $displayTitle[-1] === '"') ||
                     ($displayTitle[0] === "'" && $displayTitle[-1] === "'"))) {
                         $displayTitle = substr($displayTitle, 1, -1);

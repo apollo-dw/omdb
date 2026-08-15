@@ -182,7 +182,7 @@
                         </div>
 
                         <div style="margin-left: auto;">
-                            <?php 
+                            <?php
                                 if (isset($map["Score"])) {
                                     echo RenderRating($map["Score"]);
                                 }
