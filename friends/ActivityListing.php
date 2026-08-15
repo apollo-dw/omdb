@@ -49,14 +49,24 @@
             LEFT JOIN beatmaps b ON b.BeatmapID = r.BeatmapID
             LEFT JOIN beatmapsets s ON s.SetID = b.SetID
             WHERE fr.UserIDFrom = ? AND fr.type = 1
+                AND (
+                    u.IsPrivate = 0
+                    OR EXISTS (
+                        SELECT 1
+                        FROM user_relations mutual
+                        WHERE mutual.UserIDFrom = u.UserID
+                        AND mutual.UserIDTo = ?
+                        AND mutual.type = 1
+                    )
+                )
                 AND r.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 AND b.blacklisted = 0
                 {$beatmapFilterSQL}
                 {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
-            'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
-            'values' => array_merge([$userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
+            'types' => "ii" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
+            'values' => array_merge([$userId, $userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
         ];
     }
 
@@ -77,13 +87,23 @@
             LEFT JOIN beatmapsets s ON s.SetID = rv.SetID
             " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = s.SetID" : "") . "
             WHERE fr.UserIDFrom = ? AND fr.type = 1
+                AND (
+                    u.IsPrivate = 0
+                    OR EXISTS (
+                        SELECT 1
+                        FROM user_relations mutual
+                        WHERE mutual.UserIDFrom = u.UserID
+                        AND mutual.UserIDTo = ?
+                        AND mutual.type = 1
+                    )
+                )
                 AND rv.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
                 {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
-            'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
-            'values' => array_merge([$userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
+            'types' => "ii" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
+            'values' => array_merge([$userId, $userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
         ];
     }
 
@@ -104,13 +124,23 @@
             LEFT JOIN beatmapsets s ON s.SetID = c.SetID
             " . ($hasBeatmapFilter ? "JOIN beatmaps b ON b.SetID = s.SetID" : "") . "
             WHERE fr.UserIDFrom = ? AND fr.type = 1
+                AND (
+                    u.IsPrivate = 0
+                    OR EXISTS (
+                        SELECT 1
+                        FROM user_relations mutual
+                        WHERE mutual.UserIDFrom = u.UserID
+                        AND mutual.UserIDTo = ?
+                        AND mutual.type = 1
+                    )
+                )
                 AND c.date >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 {$beatmapFilterSQL}
                 {$yearCond('s.DateRanked')}
         )";
         $paramSets[] = [
-            'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
-            'values' => array_merge([$userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
+            'types' => "ii" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
+            'values' => array_merge([$userId, $userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
         ];
     }
 
