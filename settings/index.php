@@ -94,6 +94,20 @@
                 <span class="subText">Only shows users that you have friended.</span>
             </td>
         </tr>
+        <tr>
+            <td>
+                <label>Private mode:</label><br>
+            </td>
+            <td>
+                <select name="IsPrivate" id="IsPrivate" autocomplete="off">
+                    <option value="0">Disabled</option>
+                    <option value="1" <?php if ($user["IsPrivate"] == 1) {
+                        echo 'selected="selected"';
+                    }?>>Enabled</option>
+                </select><br>
+                <span class="subText">Hides your presence on OMDB (ratings, comments, reviews, profile). Mutuals can still see everything.</span>
+            </td>
+        </tr>
         <?php if ($user["IsPatron"] === 1) { ?>
         <tr>
             <td><hr></td>
@@ -249,6 +263,7 @@
         const hideRatings = document.getElementById("HideRatings").value;
         const customDescription = document.getElementById("CustomDescription").value;
         const onlyFriendsOnFrontPage = document.getElementById("OnlyFriendsOnFrontPage").value;
+        const isPrivate = document.getElementById("IsPrivate").value;
 
         const profileTheme = {
             'main-theme-color': document.getElementById('theme-color')?.value,
@@ -266,7 +281,7 @@
         fetch("save.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings, customDescription, onlyFriendsOnFrontPage, profileTheme }),
+            body: JSON.stringify({ randomBehaviour, ratingNames, hideRatings, customDescription, onlyFriendsOnFrontPage, profileTheme, isPrivate }),
         }).then(response => {
             if (response.status == 200) {
                 document.getElementById("statusText").textContent = "Saved!";

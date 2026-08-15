@@ -761,6 +761,7 @@ CREATE TABLE `users` (
   `PatronToDate` datetime DEFAULT NULL,
   `TotalPatronMonths` int NOT NULL DEFAULT '0',
   `ProfileTheme` json DEFAULT NULL,
+  `IsPrivate` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`UserID`),
   KEY `idx_hideratings` (`HideRatings`),
   KEY `users_HideRatings_index` (`HideRatings`)

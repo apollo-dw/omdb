@@ -9,6 +9,7 @@
     $hideRatings = $body_json["hideRatings"] ?? 0;
     $customDescription = $body_json["customDescription"] ?? '';
     $onlyFriendsOnFrontPage = $body_json["onlyFriendsOnFrontPage"] ?? 0;
+    $isPrivate = $body_json["isPrivate"] ?? 0;
 
     $fields = [
         "`DoTrueRandom`=?",
@@ -25,7 +26,8 @@
         "`Custom00Rating`=?",
         "`HideRatings`=?",
         "`CustomDescription`=?",
-        "`OnlyFriendsOnFrontPage`=?"
+        "`OnlyFriendsOnFrontPage`=?",
+        "`IsPrivate`=?"
     ];
 
     $params = [
@@ -34,10 +36,11 @@
         $ratingNames[5], $ratingNames[6], $ratingNames[7], $ratingNames[8], $ratingNames[9], $ratingNames[10],
         $hideRatings,
         $customDescription,
-        $onlyFriendsOnFrontPage
+        $onlyFriendsOnFrontPage,
+        $isPrivate
     ];
 
-    $types = "sssssssssssssss";
+    $types = "ssssssssssssssss";
 
     if (
         isset($body_json['profileTheme']) &&
