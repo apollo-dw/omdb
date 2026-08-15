@@ -365,7 +365,7 @@ while ($row = $result->fetch_assoc()) {
     <div class="flex-container difficulty-container alternating-bg" >
 
         <?php if (count($tournaments) > 0) { ?>
-        <div style="position: relative; width: 0; align-self: center; flex-grow: 0;">
+        <div class="hideOnMobile" style="position: relative; width: 0; align-self: center; flex-grow: 0;">
             <div style="position: absolute; transform: translateY(-50%); margin-left: 1em;">
                 <div class="tooltip-wrapper tooltip-left">
                     <i class="icon-trophy" style="font-size: 1.5em;"></i>
@@ -784,31 +784,66 @@ while ($row = $result->fetch_assoc()) {
         <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
 		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
 			<?php
-            $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date ASC");
+            $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username, u.IsPrivate FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->num_rows != 0) {
                 while ($row = $result->fetch_assoc()) {
-                    $is_blocked = 0;
 
+                    $is_blocked = 0;
+                    $is_mutual = 0;
                     if ($loggedIn) {
-                        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
-                        $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                        $stmt_relation_to_profile_user = $conn->prepare("
+                            SELECT
+                                EXISTS (
+                                    SELECT 1
+                                    FROM user_relations
+                                    WHERE UserIDFrom = ?
+                                    AND UserIDTo = ?
+                                    AND type = 2
+                                ) AS is_blocked,
+
+                                (
+                                    EXISTS (
+                                        SELECT 1
+                                        FROM user_relations
+                                        WHERE UserIDFrom = ?
+                                        AND UserIDTo = ?
+                                        AND type = 1
+                                    )
+                                    AND EXISTS (
+                                        SELECT 1
+                                        FROM user_relations
+                                        WHERE UserIDFrom = ?
+                                        AND UserIDTo = ?
+                                        AND type = 1
+                                    )
+                                ) AS is_mutual");
+
+                        $stmt_relation_to_profile_user->bind_param(
+                            "iiiiii",
+                            $userId, $row["UserID"],
+                            $userId, $row["UserID"],
+                            $row["UserID"], $userId
+                        );
                         $stmt_relation_to_profile_user->execute();
-                        $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+                        $relation = $stmt_relation_to_profile_user->get_result()->fetch_assoc();
+
+                        $is_blocked = (int)$relation["is_blocked"];
+                        $is_mutual = (int)$relation["is_mutual"];
+                    }
+
+                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual)) {
+                        continue;
                     }
 
                     ?>
                     <div class="flex-container flex-child commentHeader">
-                        <div class="flex-child <?php if ($is_blocked) {
-                            echo "faded";
-                        } ?>" style="height:24px;width:24px;">
+                        <div class="flex-child" style="height:24px;width:24px;">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["UserID"]; ?>" style="height:24px;width:24px;" title="<?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?>"/></a>
                         </div>
-                        <div class="flex-child <?php if ($is_blocked) {
-                            echo "faded";
-                        } ?>">
+                        <div class="flex-child">
                             <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>
                             <?php
                                 if ($row["IsPatron"] === 1) {
@@ -819,6 +854,17 @@ while ($row = $result->fetch_assoc()) {
                                         </a>
                                         <span class="tooltip-box">
                                             OMDB patron
+                                        </span>
+                                    </span>
+                                    <?php
+                                }
+
+                                if ($row["IsPrivate"] && $is_mutual) {
+                                    ?>
+                                    <span class="tooltip-wrapper">
+                                        <span class="subText">(private user)</span>
+                                        <span class="tooltip-box">
+                                            Only this user's mutuals can see their activity on OMDB
                                         </span>
                                     </span>
                                     <?php
@@ -835,12 +881,7 @@ while ($row = $result->fetch_assoc()) {
                     </div>
                     <div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
                         <?php
-                            if (!$is_blocked) {
-                                echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
-                            }
-                            else {
-                                echo "<p>[blocked comment]</p>";
-                            }
+                            echo "<p>" . ParseCommentLinks($conn, $row["Comment"]) . "</p>";
                         ?>
                     </div>
                     <?php
@@ -896,15 +937,49 @@ while ($row = $result->fetch_assoc()) {
 
                 while ($row = $result->fetch_assoc()) {
                     $is_blocked = 0;
-
+                    $is_mutual = 0;
                     if ($loggedIn) {
-                        $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ? AND type = 2");
-                        $stmt_relation_to_profile_user->bind_param("ii", $userId, $row["UserID"]);
+                        $stmt_relation_to_profile_user = $conn->prepare("
+                            SELECT
+                                EXISTS (
+                                    SELECT 1
+                                    FROM user_relations
+                                    WHERE UserIDFrom = ?
+                                    AND UserIDTo = ?
+                                    AND type = 2
+                                ) AS is_blocked,
+
+                                (
+                                    EXISTS (
+                                        SELECT 1
+                                        FROM user_relations
+                                        WHERE UserIDFrom = ?
+                                        AND UserIDTo = ?
+                                        AND type = 1
+                                    )
+                                    AND EXISTS (
+                                        SELECT 1
+                                        FROM user_relations
+                                        WHERE UserIDFrom = ?
+                                        AND UserIDTo = ?
+                                        AND type = 1
+                                    )
+                                ) AS is_mutual");
+
+                        $stmt_relation_to_profile_user->bind_param(
+                            "iiiiii",
+                            $userId, $row["UserID"],
+                            $userId, $row["UserID"],
+                            $row["UserID"], $userId
+                        );
                         $stmt_relation_to_profile_user->execute();
-                        $is_blocked = $stmt_relation_to_profile_user->get_result()->num_rows > 0;
+                        $relation = $stmt_relation_to_profile_user->get_result()->fetch_assoc();
+
+                        $is_blocked = (int)$relation["is_blocked"];
+                        $is_mutual = (int)$relation["is_mutual"];
                     }
 
-                    if ($is_blocked) {
+                    if ($is_blocked || ($row["IsPrivate"] && !$is_mutual)) {
                         continue;
                     }
 
@@ -960,6 +1035,17 @@ while ($row = $result->fetch_assoc()) {
                                         </a>
                                         <span class="tooltip-box">
                                             OMDB patron
+                                        </span>
+                                    </span>
+                                    <?php
+                                }
+
+                                if ($row["IsPrivate"] && $is_mutual) {
+                                    ?>
+                                    <span class="tooltip-wrapper">
+                                        <span class="subText">(private user)</span>
+                                        <span class="tooltip-box">
+                                            Only this user's mutuals can see their activity on OMDB
                                         </span>
                                     </span>
                                     <?php
