@@ -8,7 +8,7 @@
     $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
-    $isPrivate = (bool)$stmt->get_result()->fetch_row()[0];
+    $isPrivate = (bool)($stmt->get_result()->fetch_row()[0] ?? 0);
     $stmt->close();
     if ($isPrivate) {
         $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);

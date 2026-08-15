@@ -145,7 +145,7 @@
         }
     }
 
-    $shouldHideProfile = $profile["IsPrivate"] && !($is_friend && $is_friended) && $userId != $profileId;
+    $shouldHideProfile = isset($profile) && $profile["IsPrivate"] && !($is_friend && $is_friended) && $userId != $profileId;
 
     $hasRatedMaps = false;
     $hasMaps = false;
@@ -639,24 +639,43 @@
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
                         INNER JOIN `users` u ON r.UserID = u.UserID
                         WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
-                        AND r.UserID NOT IN (
-                            SELECT UserIDTo
-                            FROM user_relations
-                            WHERE UserIDFrom = ? AND type = 2
-                        )
-                        AND (
-                            (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
-                            OR r.UserID IN (
+                            AND r.UserID NOT IN (
                                 SELECT UserIDTo
                                 FROM user_relations
-                                WHERE UserIDFrom = ? AND type = 1
+                                WHERE UserIDFrom = ? AND type = 2
                             )
-                            OR r.UserID = ?
-                        )
+                            AND (
+                                (SELECT OnlyFriendsOnFrontPage FROM users WHERE UserID = ?) = 0
+                                OR r.UserID IN (
+                                    SELECT UserIDTo
+                                    FROM user_relations
+                                    WHERE UserIDFrom = ? AND type = 1
+                                )
+                                OR r.UserID = ?
+                            )
+                            AND (
+                                u.IsPrivate = 0
+                                OR (
+                                    EXISTS (
+                                        SELECT 1
+                                        FROM user_relations ur1
+                                        WHERE ur1.UserIDFrom = ?
+                                        AND ur1.UserIDTo = r.UserID
+                                        AND ur1.type = 1
+                                    )
+                                    AND EXISTS (
+                                        SELECT 1
+                                        FROM user_relations ur2
+                                        WHERE ur2.UserIDFrom = r.UserID
+                                        AND ur2.UserIDTo = ?
+                                        AND ur2.type = 1
+                                    )
+                                )
+                            )
                         ORDER BY r.date DESC
                         LIMIT 60
                     ");
-                    $stmt->bind_param("iiiiii", $profileId, $mode, $userId, $userId, $userId, $userId);
+                    $stmt->bind_param("iiiiiiii", $profileId, $mode, $userId, $userId, $userId, $userId, $userId, $userId);
                 } else {
                     $stmt = $conn->prepare("
                         SELECT r.*, b.DifficultyName, b.SetID
@@ -664,7 +683,7 @@
                         INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
                         INNER JOIN `users` u ON r.UserID = u.UserID
-                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0
+                        WHERE bc.CreatorID = ? AND b.Mode = ? AND u.HideRatings = 0 AND u.IsPrivate = 0
                         ORDER BY r.date DESC
                         LIMIT 60
                     ");
