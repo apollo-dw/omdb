@@ -7,6 +7,15 @@
         die(json_encode(array("error" => "Invalid request")));
     }
 
+    $stmt = $conn->prepare("SELECT IsPrivate FROM users WHERE UserID = ?");
+    $stmt->bind_param("i", $targetUserID);
+    $stmt->execute();
+    $isPrivate = (bool)($stmt->get_result()->fetch_row()[0] ?? 0);
+    $stmt->close();
+    if ($isPrivate) {
+        die(json_encode(array("error" => "User has privated ratings")));
+    }
+
     $query = "SELECT r.*, b.SetID, s.Artist, s.Title, b.DifficultyName FROM ratings r INNER JOIN beatmaps b ON r.BeatmapID = b.BeatmapID LEFT JOIN beatmapsets s ON b.SetID = s.SetID WHERE r.UserID = ? AND b.Blacklisted = 0";
 
     $year = $_GET["year"] ?? -1;
