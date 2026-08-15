@@ -125,13 +125,38 @@
         $expiresIn = (int)$json['expires_in'];
         $tokenExpiresAt = date('Y-m-d H:i:s', time() + $expiresIn);
 
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://osu.ppy.sh/api/v2/me/osu',
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'Authorization: Bearer ' . $newAccessToken],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $json = json_decode($response, true);
+        $username = $json["username"];
+        $country = $json["country"];
+
         $stmt = $conn->prepare("
 			UPDATE `users`
-			SET `AccessToken` = ?, `RefreshToken` = ?, `TokenExpiresAt` = ?
+			SET `AccessToken` = ?, `RefreshToken` = ?, `TokenExpiresAt` = ?, `Username` = ?
 			WHERE `UserID` = ?
 		");
-        $stmt->bind_param("sssi", $newAccessToken, $newRefreshToken, $tokenExpiresAt, $userId);
+        $stmt->bind_param("ssssi", $newAccessToken, $newRefreshToken, $tokenExpiresAt, $username, $userId);
         $stmt->execute();
+
+        $stmt = $conn->prepare("UPDATE `mappernames` SET `Username` = ?, `Country` = ? WHERE `UserID` = ?");
+        $stmt->bind_param("ssi", $username, $country["code"], $userId);
+        $stmt->execute();
+        $stmt->close();
 
         return [
             'access_token' => $newAccessToken,
