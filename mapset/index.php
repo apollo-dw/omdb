@@ -735,7 +735,15 @@ while ($row = $result->fetch_assoc()) {
 			</ul>
         </div>
         <hr />
-		<?php } ?>
+		<?php } elseif ($sampleRow["CreatorID"] == $userId) { ?>
+        <h4 style="margin-bottom: 0;">Credits</h4>
+		<div class="credits-list" style="background-color:DarkSlateGrey; padding: 0.25em; margin-bottom:0.5em;text-align: center;">
+            <div style="padding-top:2em; padding-bottom: 2em; font-style: italic;">
+                Your mapset currently has no credits. <b><a href="edit/?id=1576337">Add them?</a></b>
+            </div>
+        </div>
+        <hr />
+        <?php } ?>
         <?php
                 $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private, mn.Username
                 FROM lists l
