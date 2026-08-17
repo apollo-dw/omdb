@@ -460,7 +460,7 @@
                     echo " - " . safe_htmlspecialchars($profile["Custom00Rating"], ENT_QUOTES);
                 } ?></a></div>
 			</div>
-			<div style="margin-top:0.5em;">
+			<div style="margin-bottom:2em;">
 				Rating Distribution<br>
 			</div>
         <?php
@@ -480,7 +480,7 @@
 				    <span class="verticalLine"></span>
                 </div>
 				<div style="margin-bottom:1em;">
-                    <div style="margin-bottom:0.5em;"><span class="subText"><?php echo round($correlation, 3); ?></span></div>
+                    <div><span class="subText"><?php echo round($correlation, 3); ?></span></div>
 					Rating Similarity To You<br><span class="subText">based on <?php echo $sharedMapCount; ?> map<?php echo $sharedMapCount === 1 ? '' : 's'; ?></span>
 				</div>
 			<?php } elseif ($profileId == $userId) {
