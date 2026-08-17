@@ -1,5 +1,5 @@
 <?php
-    function AddGraveyardSetToOMDB($conn, string $token, $requestedSetId) {
+    function AddGraveyardSetToOMDB(mysqli $conn, string $token, int $requestedSetId) {
         $set = GetBeatmapsetDataOsuApi($token, $requestedSetId);
 
         $beatmap_stmt = $conn->prepare("INSERT INTO `beatmaps` (BeatmapID, SetID, SR, DifficultyName, Mode, Status, Blacklisted, BlacklistReason, Timestamp, ApproachRate, CircleSize, Drain, OverallDifficulty, CircleCount, SpinnerCount, SliderCount, PlayTime, Bpm)
@@ -49,18 +49,6 @@
 
         $isFeaturedArtist = isset($set["track_id"]) && !is_null($set["track_id"]);
 
-        $allSetCreators = [];
-        foreach ($set["beatmaps"] as $diff) {
-            $owners = !empty($diff["owners"]) ? $diff["owners"] : [["id" => $diff["user_id"]]];
-            foreach ($owners as $owner) {
-                $allSetCreators[] = $owner["id"];
-            }
-        }
-        $uniqueCreatorsCount = count(array_unique($allSetCreators));
-
-        $isMegacollab = ($uniqueCreatorsCount >= 8);
-        $isCollab = (!$isMegacollab && $uniqueCreatorsCount >= 2);
-
         foreach ($set["beatmaps"] as $diff) {
             if ($diff["ranked"] != -2) {
                 continue;
@@ -98,6 +86,10 @@
             foreach ($owners as $diffCreatorID) {
                 $creators_stmt->execute();
             }
+
+            $uniqueCreatorsCount = count($owners);
+            $isMegacollab = ($uniqueCreatorsCount >= 8);
+            $isCollab = (!$isMegacollab && $uniqueCreatorsCount >= 2);
 
             $votesToInsert = [];
 
