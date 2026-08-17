@@ -86,6 +86,8 @@
     }
 
     $is_friend = $is_blocked = $is_friended = 0;
+    $correlation = null;
+    $sharedMapCount = 0;
     if ($loggedIn) {
         $stmt_relation_to_profile_user = $conn->prepare("SELECT * FROM user_relations WHERE UserIDFrom = ? AND UserIDTo = ?");
         $stmt_relation_to_profile_user->bind_param("ii", $userId, $profileId);
@@ -108,9 +110,6 @@
         $stmt_relation_from_profile_user->close();
 
         if ($profileId != $userId) {
-            $correlation = null;
-            $sharedMapCount = 0;
-
             $lowId = min($userId, $profileId);
             $highId = max($userId, $profileId);
 
@@ -230,7 +229,7 @@
     <center>
         <div class="profileCard">
             <div class="profileTitle">
-                <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
+                <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></a>
             </div>
             <div class="profileImage">
                 <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
@@ -250,6 +249,28 @@
             </div>
             <?php } ?>
 
+            <?php if ($profileId != $userId && $isValidUser && $loggedIn) { ?>
+            <div class="profileActions">
+                <?php
+                    if (!$is_blocked) {
+                        if ($is_friend && $is_friended) {
+                            echo '<button id="friendButton" class="mutual">Mutual</button> ';
+                        } elseif ($is_friend && !$is_friended) {
+                            echo '<button id="friendButton">Friend</button> ';
+                        } else {
+                            echo '<button id="friendButton">Add Friend</button> ';
+                        }
+                    }
+
+                    if ($is_blocked) {
+                        echo '<button id="blockButton" class="blocked">Unblock</button>';
+                    } else {
+                        echo '<button id="blockButton">Block</button>';
+                    }
+                ?>
+            </div>
+            <?php } ?>
+
             <div class="profileStats">
                 This user has a hidden OMDB presence.
             </div>
@@ -261,7 +282,7 @@
 <div class="profileContainer column-when-mobile-container">
 	<div class="profileCard">
 		<div class="profileTitle">
-            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><i class="icon-external-link" style="font-size:10px;"></i></a>
+            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></i></a>
 		</div>
 		<div class="profileImage">
 			<img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
@@ -370,27 +391,37 @@
         ?>
 
         <div class="profileStats">
+            <?php if ($isValidUser) { ?>
             <a href="friends/?id=<?php echo $profileId; ?>">
                 <b>Friends:</b> <?php echo $friendCount; ?>
             </a><br>
+            <?php } ?>
 
+            <?php if ($isValidUser && $ratingCount > 0) { ?>
             <a href="ratings/?id=<?php echo $profileId; ?>&p=1">
                 <b>Ratings:</b> <?php echo $ratingCount; ?>
             </a><br>
+            <?php } ?>
 
+            <?php if ($isValidUser && $commentCount > 0) { ?>
             <a href="comments/?id=<?php echo $profileId; ?>">
                 <b>Comments:</b> <?php echo $commentCount; ?>
             </a><br>
+            <?php } ?>
 
+            <?php if ($isValidUser && $reviewCount > 0) { ?>
             <a href="reviews/?id=<?php echo $profileId; ?>">
                 <b>Reviews:</b> <?php echo $reviewCount; ?>
             </a><br>
+            <?php } ?>
 
-            <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
-
+            <?php if ($isValidUser && $approvedEditCount > 0) { ?>
             <b>Approved Edits:</b> <?php echo $approvedEditCount; ?><br>
+            <?php } ?>
 
+            <?php if ($isValidUser && $approvedEditCount > 0) { ?>
             <b>Descriptor votes:</b> <?php echo $descriptorVoteCount; ?><br>
+            <?php } ?>
         </div>
 
 		<?php if ($isValidUser) { ?>
@@ -460,7 +491,7 @@
             } ?>
 
             <?php
-                if ($profile["IsPrivate"]) {
+                if ($isValidUser && $profile["IsPrivate"]) {
                     echo "<span style='margin-top:0.5em;' class='subText'>User has hidden OMDB presence</span>";
                 }
             ?>
@@ -540,7 +571,7 @@
         <div class="flex-container" style="background-color:var(--main-theme-color-darker); flex:1; text-align:center; box-sizing:border-box; flex-direction:column; justify-content:center; padding:0.25em;">
             <h3 style="margin:0;">Highest Rated</h3>
             <span class="subText">Excl. collabs with 4+ mappers</span>
-            <?php if ($highestMap) {
+            <?php if (isset($highestMap)) {
                 $highestMapYear = date("Y", strtotime($highestMap['DateRanked']));
             ?>
                 <a href="/mapset/<?php echo $highestMap["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $highestMap["SetID"]; ?>l.jpg" class="diffThumb" style="aspect-ratio: 1 / 1; width:90%; max-width:140px; height:auto; margin:0.5em;" onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';"></a>
@@ -581,15 +612,16 @@
         </div>
 
         <div style="background-color:var(--main-theme-color-darker); flex:1; text-align:center; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; padding:0.25em;">
-            <div>
+            <div style="margin-bottom: 1em;">
+                <?php if ($mapsetCount > 0) { ?>
+                    <b>Ranked Mapsets:</b> <?php echo $mapsetCount; ?><br>
+                <?php } ?>
                 <b>Total Ratings Received:</b> <?php echo $mapStats['TotalRatings']; ?><br>
                 <b>Average Star Rating:</b> <?php echo number_format((float)$mapStats['AvgSR'], 2); ?>*<br>
                 <?php if ($activeYear) { ?>
                     <b>Most Active Year:</b> <?php echo $activeYear; ?>
                 <?php } ?>
             </div>
-
-            <br>
 
             <b>Top Descriptors</b>
             <span class="subText">
