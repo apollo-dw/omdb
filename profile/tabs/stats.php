@@ -349,7 +349,65 @@
                     echo "</a>";
                 }
                 ?>
-            </div>
+            </div> <br>
+
+            Descriptor affinities:
+            <?php
+            $query = "
+                WITH DescriptorRatings AS (
+                    SELECT
+                        d.DescriptorID,
+                        d.Name AS DescriptorName,
+                        COUNT(r.RatingID) AS TotalRatings,
+                        AVG(r.Score) AS AvgScoreWithDescriptor,
+                        SUM(r.Score * bd.Weight) / NULLIF(SUM(bd.Weight), 0) AS WeightedAvgScore
+                    FROM ratings r
+                    JOIN beatmap_descriptors bd ON r.BeatmapID = bd.BeatmapID
+                    JOIN descriptors d ON bd.DescriptorID = d.DescriptorID
+                    WHERE r.UserID = ?
+                    AND d.Usable = 1
+                    GROUP BY d.DescriptorID, d.Name
+                )
+                SELECT
+                    dr.DescriptorID,
+                    dr.DescriptorName,
+                    dr.TotalRatings,
+                    ROUND(dr.AvgScoreWithDescriptor, 2) AS DescriptorAvgScore,
+                    ROUND(dr.AvgScoreWithDescriptor - 2.5, 2) AS RawAffinity,
+                    ROUND(((dr.AvgScoreWithDescriptor - 2.5) / 2.5) * 100, 1) AS AffinityPercentage
+                FROM DescriptorRatings dr
+                WHERE dr.TotalRatings >= 5
+                ORDER BY AffinityPercentage DESC, dr.TotalRatings DESC;";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param('i', $profileId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $affinityPercent = (float)$row["AffinityPercentage"];
+
+                $widthPercentage = min(50, abs($affinityPercent) / 2);
+                $leftMargin = 50;
+
+                if ($affinityPercent < 0) {
+                    $leftMargin = 50 - $widthPercentage;
+                }
+
+                $formattedName = htmlspecialchars($row["DescriptorName"]);
+                $sign = $affinityPercent >= 0 ? "+" : "";
+            ?>
+                <div style="margin-top: 0.5em;">
+                    <div style="display: flex; justify-content: space-between;" class="subText">
+                        <span><b><?php echo $formattedName; ?></b></span>
+                        <span><?php echo $sign . $affinityPercent; ?>% (<?php echo $row["TotalRatings"]; ?> rated)</span>
+                    </div>
+
+                    <div class="profileRankingDistribution" style="margin-bottom:0.5em;height:1.5em; border: 1px solid var(--main-theme-color-darker); text-align: center;">
+                        <div class="profileRankingDistributionBar" style="width: <?php echo $widthPercentage; ?>%;height:1.5em;position:relative;margin-left:<?php echo $leftMargin; ?>%;padding:0px;box-sizing: border-box;"></div>
+                        <span class="verticalLine"></span>
+                    </div>
+                </div>
+            <?php } ?>
         </div>
 
         <div class="flex-child" style="width:50%;">
