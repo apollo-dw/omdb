@@ -228,7 +228,7 @@
         return json_decode($response, true)[0];
     }
 
-    function GetHumanTime($datetime, $full = false) {
+    function GetHumanTime(string $datetime, $full = false) {
         $now = new DateTime;
         $ago = new DateTime($datetime);
         $diff = $now->diff($ago);
@@ -259,7 +259,7 @@
         return $string ? implode(', ', $string) . ' ago' : 'now';
     }
 
-    function GetUserNameFromId($id, $conn) {
+    function GetUserNameFromId(int $id, mysqli $conn) {
         static $cache = array();
         if (array_key_exists($id, $cache)) {
             return $cache[$id];
@@ -297,7 +297,7 @@
         return $username;
     }
 
-    function getFullCountryName($code) {
+    function getFullCountryName(string $code) {
         $countries = array(
             'AF' => 'Afghanistan',
             'AX' => 'Aland Islands',
@@ -574,7 +574,7 @@
         }
     }
 
-    function ParseCommentLinks($conn, $string) {
+    function ParseCommentLinks(mysqli $conn, string $string) {
         $string = bbcode_to_html($string);
 
         $pattern = '/(\d+):(\d{2}):(\d{3})\s*(\(((\d,?)+)\))?/';
@@ -618,7 +618,7 @@
         return $string;
     }
 
-    function RenderRating($rating) {
+    function RenderRating(float $rating) {
         $starString = "";
         for ($i = 0; $i < 5; $i++) {
             if ($i < $rating) {
@@ -633,7 +633,7 @@
         return "<div class='starRatingDisplay'>" . $backgroundStars . "<div class='starForeground'>" . $starString . "</div></div>";
     }
 
-    function RenderUserRating($conn, $ratingRow) {
+    function RenderUserRating(mysqli $conn, mixed $ratingRow) {
         $score = $ratingRow["Score"];
 
         $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
@@ -707,7 +707,7 @@
         return $numerator / $denominator;
     }
 
-    function SubmitRating($conn, $beatmapID, $userID, $score): bool {
+    function SubmitRating(mysqli $conn, int $beatmapID, int $userID, float $score): bool {
         $validRatings = array(-2, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5);
         if (!in_array($score, $validRatings)) {
             return false;
@@ -752,7 +752,7 @@
         return true;
     }
 
-    function BeatmapsetSearchSet($conn, $setId) {
+    function BeatmapsetSearchSet(mysqli $conn, int $setId) {
         // GROUP_CONCAT truncates each group at 1024 bytes by default which some sets exceed
         $conn->query("SET SESSION group_concat_max_len = 65535;");
 
@@ -791,7 +791,7 @@
         return $ok;
     }
 
-    function getGenre($number) {
+    function getGenre(int $number) {
         switch ($number) {
             case 2:
                 return "Video Game";
@@ -822,7 +822,7 @@
         }
     }
 
-    function getLanguage($number) {
+    function getLanguage(int $number) {
         switch ($number) {
             case 2:
                 return "English";
@@ -853,7 +853,7 @@
         }
     }
 
-    function getModeIcon($mode) {
+    function getModeIcon(int $mode) {
         switch ($mode) {
             case 0:
                 return "<div class='ruleset-icon osu'></div>";
@@ -868,7 +868,7 @@
         }
     }
 
-    function RenderBeatmapCreators($beatmapID, $conn) {
+    function RenderBeatmapCreators(int $beatmapID, mysqli $conn) {
         $stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
         $stmt->bind_param('i', $beatmapID);
         $stmt->execute();
@@ -891,7 +891,7 @@
         }
     }
 
-    function BuildDescriptorLinks($conn, $descriptors, $mobileLimit = 6) {
+    function BuildDescriptorLinks(mysqli $conn, mixed $descriptors, $mobileLimit = 6) {
         if ($descriptors instanceof mysqli_result) {
             $descriptors = $descriptors->fetch_all(MYSQLI_ASSOC);
         }
@@ -927,7 +927,7 @@
         return $html;
     }
 
-    function getListItemDisplayInformation($listItem, $conn) {
+    function getListItemDisplayInformation(mixed $listItem, mysqli $conn) {
         $imageUrl = "";
         $title = "";
         $linkUrl = "";
@@ -982,14 +982,14 @@
         return [$imageUrl, $title, $linkUrl];
     }
 
-    function RenderLocalTime($time) { ?>
+    function RenderLocalTime(string $time) { ?>
 		<script type="text/javascript">
 			var myDate = new Date('<?php echo $time; ?>')
 			document.write(myDate.toLocaleString())
 		</script>
 	<?php }
 
-    function getMapOfTheDay($conn, $mode) {
+    function getMapOfTheDay(mysqli $conn, int $mode) {
         $cacheKey = "motd_" . $mode;
 
         $stmt = $conn->prepare("
