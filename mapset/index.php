@@ -202,7 +202,7 @@ GROUP BY
             if (!empty($nominators)) {
                 echo "<table>";
                 foreach ($nominators as $mode => $modeNominators) {
-                    $modeString = getModeIcon($mode);
+                    $modeString = getModeIcon((int)$mode);
 
                     echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
                     $nominatorLinks = array();
