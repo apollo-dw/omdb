@@ -1,14 +1,9 @@
 <?php
-    $loggedIn = true;
-    $isModerator = true;
-    $userId = 9558549;
-    $userName = "apollodw";
+    $loggedIn = false;
+    $isModerator = false;
+    $userId = -1;
+    $userName = "";
     $token = "";
-
-    $stmt = $conn->prepare("SELECT * FROM `users` WHERE UserID = 9558549 LIMIT 1");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
 
     if (isset($_COOKIE["SessionToken"])) {
         $sessionToken = $_COOKIE["SessionToken"];

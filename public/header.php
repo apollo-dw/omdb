@@ -7,7 +7,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title><?php echo safe_htmlspecialchars($PageTitle, ENT_QUOTES); ?> | OMDaB</title>
+		<title><?php echo safe_htmlspecialchars($PageTitle, ENT_QUOTES); ?> | OMDB</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="description" content="osu! map database is a platform that allows for the rating of osu! beatmaps."/>
