@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $newsId = $_POST['nID'] ?? -1;
     $comment = trim($_POST['comment'] ?? "");

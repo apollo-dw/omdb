@@ -1,5 +1,5 @@
 <?php
-require '../../../base.php';
+require_once __DIR__ . '/../../../../app/base.php';
 
 if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     header('HTTP/1.0 403 Forbidden');

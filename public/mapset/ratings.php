@@ -1,7 +1,5 @@
 <?php
-    include_once '../connection.php';
-    include_once '../functions.php';
-    include_once '../userConnect.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $page = GetIntParam('p', 1, "NOO");
     $mapset_id = GetIntParam('id', $mapset_id ?? null, "NOO");

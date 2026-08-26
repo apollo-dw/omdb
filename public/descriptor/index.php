@@ -1,5 +1,5 @@
 <?php
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
     $descriptor_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");

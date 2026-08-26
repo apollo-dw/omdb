@@ -1,6 +1,6 @@
 <?php
-    include_once 'connection.php';
-    include_once 'functions.php';
+    include_once 'config/connection.php';
+    include_once 'functions/functions.php';
     include_once 'userConnect.php';
 
     if (!empty($env['DEBUG']) && $env['DEBUG'] == true) {

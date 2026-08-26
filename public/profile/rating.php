@@ -1,6 +1,5 @@
 <?php
-    include_once '../connection.php';
-    include_once '../functions.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $stmt = $conn->prepare("
         SELECT

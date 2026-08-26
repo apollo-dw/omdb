@@ -1,5 +1,5 @@
 <?php
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
 
     $profileId = $_GET['id'];
 
@@ -787,7 +787,7 @@ if ($hasMaps) {
                 ],
                 'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
             ];
-            require "../functions/filter/index.php";
+            require __DIR__ . '/../../app/functions/filter/index.php';
         ?>
         <label>
             <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>

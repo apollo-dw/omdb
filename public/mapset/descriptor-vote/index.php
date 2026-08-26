@@ -1,6 +1,5 @@
 <?php
 $PageTitle = "Vote Descriptors";
-require "../../base.php";
 require '../../header.php';
 
 $map_id = GetIntParam('id', -1);

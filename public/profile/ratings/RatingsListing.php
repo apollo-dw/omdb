@@ -1,5 +1,5 @@
 <?php
-    include_once '../../base.php';
+    require_once __DIR__ . '/../../../app/base.php';
 
     $profileId = (int)(postOrGet('id', -1));
     $page = max(1, (int)(postOrGet('p', 1)));

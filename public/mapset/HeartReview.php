@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
     header('Content-Type: application/json');
     $reviewId = $_POST['rID'] ?? -1;
 

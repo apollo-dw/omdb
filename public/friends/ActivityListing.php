@@ -1,5 +1,5 @@
 <?php
-    include_once '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $ratings = filter_var($_POST['ratings'] ?? true, FILTER_VALIDATE_BOOLEAN);
     $reviews = filter_var($_POST['reviews'] ?? true, FILTER_VALIDATE_BOOLEAN);

@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Maps";
-    require "../base.php";
     require '../header.php';
 
     $month = GetIntParam('m', (int)date("m"));
@@ -94,14 +93,14 @@
                             FROM `beatmapsets` s
                             LEFT JOIN `beatmaps` b ON s.SetID = b.SetID
                             LEFT JOIN `ratings` r ON b.BeatmapID = r.BeatmapID AND r.UserID = ?
-                            WHERE MONTH(s.DateRanked) = ? AND YEAR(s.DateRanked) = ? 
+                            WHERE MONTH(s.DateRanked) = ? AND YEAR(s.DateRanked) = ?
                                 AND EXISTS (
                                     SELECT 1
                                     FROM `beatmaps` bm
                                     WHERE bm.SetID = s.SetID AND bm.Mode = ?
                                 )
                             GROUP BY s.SetID
-                            ORDER BY s.DateRanked DESC 
+                            ORDER BY s.DateRanked DESC
                             {$pageString};");
 
     $stmt->bind_param("iiii", $userId, $month, $year, $mode);

@@ -1,5 +1,5 @@
 <?php
-require '../../base.php';
+require_once __DIR__ . '/../../../app/base.php';
 $mapset_id = GetIntParam('id', -1);
 
 if (!$loggedIn) {

@@ -1,6 +1,5 @@
 <?php
-    require "../base.php";
-
+    require_once __DIR__ . '/../../app/base.php';
     $newsId = GetIntParam('id', -1, "Y U POST CRINGE");
 
     $stmt = $conn->prepare("SELECT n.NewsID, n.Title, n.Content, n.DateCreated, n.DateEdited, n.AuthorID

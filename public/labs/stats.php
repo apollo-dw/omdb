@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Labs | Stats";
-    require "../base.php";
     require '../header.php';
 ?>
 

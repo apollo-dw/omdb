@@ -1,5 +1,5 @@
 <?php
-    include_once '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $year = postOrGet('y', 2026);
     $year = ($year === 'all-time') ? 'all-time' : (int)$year;
@@ -203,7 +203,7 @@
                     <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes
                 </span><br>
             </div>
-            <div class="flex-child" style="flex:0 0 10%">   
+            <div class="flex-child" style="flex:0 0 10%">
                 <?php
                     if (isset($row["Score"])) {
                         echo RenderRating($row["Score"]);

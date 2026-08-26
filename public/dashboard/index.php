@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Dashboard";
-    require "../base.php";
     require '../header.php';
     require 'RetrieveRecommendations.php';
 

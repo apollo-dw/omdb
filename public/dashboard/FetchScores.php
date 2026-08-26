@@ -1,5 +1,5 @@
 <?php
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
     header('Content-Type: application/json; charset=utf-8');
 
     $curl = curl_init();

@@ -219,7 +219,7 @@
                     return $cache[$slug];
                 }
 
-                $file = __DIR__ . "/../wiki/pages/{$slug}.md";
+                $file = __DIR__ . "/../../public/wiki/pages/{$slug}.md";
 
                 if (!is_file($file)) {
                     return $cache[$slug] = $matches[0];

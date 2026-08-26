@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "News";
-    require "../base.php";
     require "../header.php";
 ?>
 

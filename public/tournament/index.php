@@ -1,5 +1,5 @@
 <?php
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
 
     $tournamentId = GetIntParam('id', -1);
     $stmt = $conn->prepare("SELECT t.*, s.Name as SeriesName, s.Acronym as SeriesAcronym from tournaments t INNER JOIN tournament_series s ON s.SeriesID = t.SeriesID WHERE t.TournamentID = ?;");

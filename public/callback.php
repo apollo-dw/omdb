@@ -1,7 +1,5 @@
 <?php
-    require_once 'base.php';
-    require_once 'connection.php';
-    require_once 'functions.php';
+    require_once __DIR__ . '/../app/base.php';
 
     $state = json_decode(urldecode($_GET["state"]), true);
     $csrf_token = $state["csrf_token"];

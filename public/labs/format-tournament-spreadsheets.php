@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Labs | Tournament formatter";
-    require "../base.php";
     require '../header.php';
 ?>
 

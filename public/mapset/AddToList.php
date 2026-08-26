@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $beatmapId = $_POST['beatmapId'] ?? -1;
     $listId = $_POST['listId'] ?? -1;

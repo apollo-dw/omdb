@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $body = file_get_contents('php://input');
     $body_json = json_decode($body, true);

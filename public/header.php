@@ -1,5 +1,5 @@
 <?php
-    require_once 'base.php';
+    require_once __DIR__ . '/../app/base.php';
 
     $github_version = $env['GITHUB_COMMIT'] ?? '1';
 ?>
@@ -7,7 +7,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title><?php echo safe_htmlspecialchars($PageTitle, ENT_QUOTES); ?> | OMDB</title>
+		<title><?php echo safe_htmlspecialchars($PageTitle, ENT_QUOTES); ?> | OMDaB</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="description" content="osu! map database is a platform that allows for the rating of osu! beatmaps."/>

@@ -1,5 +1,5 @@
 <?php
-require '../../base.php';
+require_once __DIR__ . '/../../../app/base.php';
 
 $beatmapID = $_GET["BeatmapID"] ?? null;
 $setID = $_GET["SetID"] ?? null;

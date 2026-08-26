@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "List";
-    require "../base.php";
     require '../header.php';
 
     $listId = GetIntParam('id', -1, "How dare you");

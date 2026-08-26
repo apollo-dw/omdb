@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $beatmapId = $_POST['bID'] ?? -1;
     $rating = $_POST['rating'] ?? -1;

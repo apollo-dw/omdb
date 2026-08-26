@@ -1,5 +1,4 @@
 <?php
-    require "../../base.php";
     $PageTitle = "Edit tournament";
     require "../../header.php";
 

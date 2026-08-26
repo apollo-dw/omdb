@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $setId = $_POST['sID'] ?? -1;
     $reviewId = $_POST['rID'] ?? -1;

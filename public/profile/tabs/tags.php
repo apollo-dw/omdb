@@ -1,7 +1,5 @@
 <?php
-    if (file_exists("../../base.php")) {
-        include "../../base.php";
-    }
+    require_once __DIR__ . '/../../../app/base.php';
 
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
 

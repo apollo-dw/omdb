@@ -1,7 +1,5 @@
 <?php
     $PageTitle = "Reviews";
-
-    require "../../base.php";
     require '../../header.php';
 
     $profileId = GetIntParam('id', -1, "Invalid page bro");

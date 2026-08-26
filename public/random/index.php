@@ -1,5 +1,5 @@
 <?php
-    require '../base.php';
+    require_once __DIR__ . '../../app/base.php';
 
     if ($loggedIn && $user["DoTrueRandom"] == 0) {
         $isSupporter = GetOwnUserData($token)["is_supporter"];

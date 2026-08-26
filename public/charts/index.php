@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Charts";
-    require "../base.php";
     require "../header.php";
 
     $year = ($_GET["y"] ?? "") === "all-time" ? "all-time" : GetIntParam("y", 2026, "NOO");
@@ -64,7 +63,8 @@
             $filterConfig = [
                 'defaultYear' => $year
             ];
-            require "../functions/filter/index.php";
+
+            require_once __DIR__ . '/../../app/functions/filter/index.php';
         ?>
         <div style="width: 100%; text-align:right;">
             <button id="update-chart-button" value="Update chart" onClick="pressUpdateChartButton()" disabled>

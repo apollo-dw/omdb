@@ -1,5 +1,5 @@
 <?php
-    require "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
 
     $seriesId = GetIntParam('id', -1);
     $stmt = $conn->prepare("SELECT * from tournament_series WHERE SeriesID = ?;");

@@ -1,6 +1,6 @@
 <?php
     $PageTitle = "Descriptor Proposal";
-    require "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
     require '../../header.php';
 
     $proposal_id = GetIntParam('id', -1, "Y U POST CRINGE");

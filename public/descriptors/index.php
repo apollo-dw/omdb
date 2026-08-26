@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Descriptors";
-    require "../base.php";
     require '../header.php';
 
     function generateTreeHTML($tree) {

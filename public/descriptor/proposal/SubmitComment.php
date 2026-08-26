@@ -1,5 +1,5 @@
 <?php
-    include '../../base.php';
+    require_once __DIR__ . '/../../../app/base.php';
 
     $proposalID = $_POST['pID'] ?? -1;
     $comment = trim($_POST['comment'] ?? "");

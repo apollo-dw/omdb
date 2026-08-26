@@ -1,7 +1,5 @@
 <?php
-    require '../base.php';
     $PageTitle = "Settings";
-
     require '../header.php';
 
     if (!$loggedIn) {

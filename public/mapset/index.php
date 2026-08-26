@@ -1,5 +1,5 @@
 <?php
-    require '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
     $mapset_id = GetIntParam('mapset_id', -1);
     if ($mapset_id == -1) {
         http_response_code(404);

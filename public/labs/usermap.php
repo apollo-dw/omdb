@@ -1,7 +1,7 @@
 <?php
     $PageTitle = "Labs | User Map";
 
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
 
     // Provides the nodes and links
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

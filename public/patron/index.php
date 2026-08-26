@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Patron";
-    require "../base.php";
     require "../header.php";
 ?>
 

@@ -1,7 +1,7 @@
 <?php
     $PageTitle = "Labs | Recommendations";
 
-    require "../base.php";
+    require_once __DIR__ . '/../../app/base.php';
 
     // For the POST reqs this page does
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,9 +42,9 @@
 ?>
 
 <style>
-    .formula-container { 
+    .formula-container {
         padding: 15px;
-        font-family: monospace; 
+        font-family: monospace;
         font-size: 14px;
         line-height: 1.5;
         margin-bottom: 20px;
@@ -186,15 +186,15 @@
             <hr style="border-color: #333;">
             <div class="math-line">
                 <strong>Total Recommendation Score (S<sub>total</sub>):</strong><br>
-                S<sub>total</sub> = 
-                (<span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span> &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) + 
-                (L &times; <span class="var-w f_w_cohortLift" title="Weight: cohortLift"></span>) + 
+                S<sub>total</sub> =
+                (<span class="var-d" title="Data: Global WeightedAvg">GlobalAvg</span> &times; <span class="var-w f_w_avgScore" title="Weight: avgScore"></span>) +
+                (L &times; <span class="var-w f_w_cohortLift" title="Weight: cohortLift"></span>) +
                 (<span class="var-w f_w_cohortCoverage" title="Weight: cohortCoverage"></span> &times; C) + <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Descriptor Match Score">D</span> &times; <span class="var-w f_w_descriptorScore" title="Weight: descriptorScore"></span>) + 
-                (T &times; <span class="var-w f_w_monthProximity" title="Weight: monthProximity"></span>) + 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Descriptor Match Score">D</span> &times; <span class="var-w f_w_descriptorScore" title="Weight: descriptorScore"></span>) +
+                (T &times; <span class="var-w f_w_monthProximity" title="Weight: monthProximity"></span>) +
                 (<span class="var-d" title="Data: Shared Nominators">SharedNoms</span> &times; <span class="var-w f_w_sharedNominator" title="Weight: sharedNominator"></span>) + <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Shared Mappers">SharedMappers</span> &times; <span class="var-w f_w_sharedMapper" title="Weight: sharedMapper"></span>) + 
-                (Corr &times; <span class="var-w f_w_correlation" title="Weight: correlation"></span>) + 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="var-d" title="Data: Shared Mappers">SharedMappers</span> &times; <span class="var-w f_w_sharedMapper" title="Weight: sharedMapper"></span>) +
+                (Corr &times; <span class="var-w f_w_correlation" title="Weight: correlation"></span>) +
                 (P &times; <span class="var-w f_w_srProximity" title="Weight: srProximity"></span>)
             </div>
         </div>

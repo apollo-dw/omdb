@@ -1,5 +1,5 @@
 <?php
-    require "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
 
     $stmt = $conn->query("
         SELECT ts.*, COUNT(t.TournamentID) AS TournamentCount

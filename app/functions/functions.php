@@ -1,14 +1,14 @@
 <?php
-    include_once 'env.php';
-    include_once 'functions/shortlinks.php';
-    include_once 'functions/bbcode.php';
-    include_once 'functions/access.php';
-    include_once 'functions/customthemes.php';
-    include_once 'functions/discord.php';
-    include_once 'functions/osu.php';
-    include_once 'functions/recommendations/index.php';
-    include_once 'functions/filter/helpers.php';
-    include_once 'functions/external/Parsedown.php';
+    include_once __DIR__ . '/../config/env.php';
+    include_once 'shortlinks.php';
+    include_once 'bbcode.php';
+    include_once 'access.php';
+    include_once 'customthemes.php';
+    include_once 'discord.php';
+    include_once 'osu.php';
+    include_once 'recommendations/index.php';
+    include_once 'filter/helpers.php';
+    include_once 'external/Parsedown.php';
 
     $BOLDED_MAP_CHART_RANK_BOUNDARY = 500;
 

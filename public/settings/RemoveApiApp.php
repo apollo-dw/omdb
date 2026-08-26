@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $apiId = $_GET["id"];
     $stmt = $conn->prepare("SELECT * FROM `apikeys` WHERE ApiID = ?;");

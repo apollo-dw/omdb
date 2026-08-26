@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Ratings";
-    require "../../base.php";
     require '../../header.php';
 
     $profileId = GetIntParam('id', null, "Invalid page bro");
@@ -43,7 +42,7 @@
         'showTag' => true,
         'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user']
     ];
-    require "../../functions/filter/index.php";
+    require __DIR__ . "/../../../app/functions/filter/index.php";
 ?><br>
 
 <?php include 'RatingsListing.php'; ?>

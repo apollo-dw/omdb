@@ -1,6 +1,14 @@
 <?php
 
-$envFromFile = parse_ini_file(__DIR__ . '/.env');
+$envFilePath = dirname(__DIR__, 2) . '/.env';
+
+if (!file_exists($envFilePath)) {
+    error_log('Missing .env file at project root');
+    http_response_code(500);
+    exit();
+}
+
+$envFromFile = parse_ini_file($envFilePath);
 if (!is_array($envFromFile)) {
     error_log('Failed to parse .env');
     http_response_code(500);

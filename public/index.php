@@ -1,6 +1,6 @@
 <?php
     $PageTitle = "Home";
-    require "base.php";
+    require_once __DIR__ . '/../app/base.php';
     require 'header.php';
 ?>
 

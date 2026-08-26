@@ -1,5 +1,5 @@
 <?php
-    include '../base.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $tags = $_POST['tags'];
     $beatmapID = $_POST['beatmapID'];

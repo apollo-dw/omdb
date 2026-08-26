@@ -1,7 +1,5 @@
 <?php
     $PageTitle = "Labs";
-
-    require "../base.php";
     require '../header.php';
 
     $labsPages = [
