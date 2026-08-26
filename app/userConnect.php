@@ -58,9 +58,13 @@
             $token = $user['AccessToken'];
 
             if ((time() - strtotime($row['LastAccessedAt'])) > 60) {
-                $ip = $_SERVER['HTTP_CLIENT_IP']
-                    ?? $_SERVER['HTTP_X_FORWARDED_FOR']
-                    ?? $_SERVER['REMOTE_ADDR'];
+                $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                    $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                    $ip = trim($ipList[0]);
+                } elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                    $ip = trim($_SERVER['HTTP_CLIENT_IP']);
+                }
 
                 $newExpiry = time() + 30 * 24 * 3600;
                 $newExpiryDate = date('Y-m-d H:i:s', $newExpiry);
