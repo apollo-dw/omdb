@@ -18,7 +18,7 @@
     $ratedStatus = $parsedTokens['ratedStatus'];
 ?>
 
-<div class="flex-item" style="padding:0.5em;">
+<div>
     <?php
         $lim = 50;
         $offset = ($page > 1) ? ($page - 1) * $lim : 0;

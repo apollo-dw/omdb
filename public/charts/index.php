@@ -54,11 +54,11 @@
 </div>
 
 <div class="flex-container column-when-mobile-container">
-	<div id="chart-container" class="flex-item" style="flex: 0 0 75%; padding:0.25em;">
+	<div id="chart-container" class="flex-item" style="flex: 0 0 75%;">
 		<?php include 'chart.php'; ?>
 	</div>
 
-	<div style="padding-top:0.5em;" class="flex-item column-when-mobile mobile-filters">
+	<div style="padding-left:0.5em;" class="flex-item column-when-mobile mobile-filters">
         <?php
             $filterConfig = [
                 'defaultYear' => $year
