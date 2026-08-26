@@ -22,10 +22,13 @@ jobs:
             fi
 
             cd /var/www/omdb
-            git pull origin master
+            git fetch origin master
+            git reset --hard origin/master
+            git clean -fd
 
             # write env file
             cat <<EOF > .env
+            DATABASE_HOST="${{ secrets.DATABASE_HOST }}"
             DATABASE_USER="${{ secrets.DATABASE_USER }}"
             DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}"
             MAINTENANCE_BYPASS_CODE="${{ secrets.MAINTENANCE_BYPASS_CODE }}"
@@ -36,3 +39,5 @@ jobs:
             STRIPE_PAYMENT_WEBHOOK_SECRET="${{ secrets.STRIPE_PAYMENT_WEBHOOK_SECRET }}"
             GITHUB_COMMIT="${{ github.sha }}"
             EOF
+
+            docker compose up --build -d omdb
