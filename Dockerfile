@@ -8,3 +8,14 @@ RUN echo '<Directory /var/www/html/public>\n\
 </Directory>' >> /etc/apache2/apache2.conf
 RUN docker-php-ext-install mysqli
 RUN a2enmod rewrite
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY scripts/python-requirements.txt /tmp/python-requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r /tmp/python-requirements.txt
