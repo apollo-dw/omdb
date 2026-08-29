@@ -172,7 +172,7 @@
             $counter++;
         ?>
         <div class="flex-container chart-container alternating-bg" style="padding:0.5em 0;">
-            <div class="flex-child" style="text-align:right;flex:0 0 3%">
+            <div class="flex-child" style="text-align:right;flex:0 0 5%">
                 <b><?php echo "#" . $counter; ?></b>
             </div>
             <div class="flex-child" style="flex:0 0 80px;">
