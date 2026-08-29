@@ -1,7 +1,7 @@
 <?php
     $timeForPageExecution = microtime(true) - $timeAtPageLoad;
 ?>
-		
+
 		</div>
 
         <div class="modal" id="modal">
@@ -21,12 +21,12 @@
         </div>
 
 		<div class="footerBar">
-            <a href="/labs">labs</a> |
+            <a href="/labs/">labs</a> |
 			<a href="https://discord.gg/PWVGrQRq2w" target="_blank">discord</a> |
             <a href="https://github.com/apollo-dw/omdb/" target="_blank">github</a> |
             <a href="/rules/">rules</a> |
-            <a href="/descriptors">descriptors</a> |
-            <a href="/edit-queue">edit queue</a> <br>
+            <a href="/descriptors/">descriptors</a> |
+            <a href="/edit-queue/">edit queue</a> <br>
             <span style="opacity:0;"><?php echo $timeForPageExecution; ?>s</span>
 		</div>
     </body>
