@@ -128,7 +128,7 @@
         <?php if (strlen($row["Tags"] ?? "") > 0) { ?>
             <i title='<?php echo safe_htmlspecialchars($row["Tags"], ENT_QUOTES) ?>' style='border-bottom:1px dotted var(--main-theme-text-color);' class="icon-tags"></i>
         <?php } ?>
-        <?php echo GetHumanTime($row["date"]); ?>
+        <?php RenderHumanTime($row["date"]); ?>
     </div>
 </div>
 

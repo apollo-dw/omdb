@@ -64,7 +64,7 @@
 				<?php if ($beatmap["Blacklisted"] && $isSelf) {
                     echo '<span class="subText">(only you can see this rating)</span>';
                 } ?>
-                <?php echo GetHumanTime($beatmap["date"]); ?>
+                <?php RenderHumanTime($beatmap["date"]); ?>
             </div>
         </div>
         <?php
@@ -73,4 +73,3 @@
     <a href="ratings/?id=<?php echo $profileId; ?>&p=1"><span style="float:right;margin:1em;">... see more!</span></a>
     <br>
 </div>
-

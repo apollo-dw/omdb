@@ -103,7 +103,7 @@
                         <a style="display:flex;" href="/profile/<?php echo $thread["LatestPostUserID"]; ?>">
                             <?php echo safe_htmlspecialchars(GetUserNameFromId($thread["LatestPostUserID"], $conn), ENT_QUOTES); ?>
                         </a>
-                        <span class="subText"><?php echo GetHumanTime($thread["LatestPostCreatedAt"]); ?></span>
+                        <span class="subText"><?php RenderHumanTime($thread["LatestPostCreatedAt"]); ?></span>
                     </div>
 
                 </div>

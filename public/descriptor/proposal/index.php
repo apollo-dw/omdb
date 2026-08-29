@@ -364,7 +364,7 @@
                         if ($row["UserID"] == $userId || $userName == "moonpoint") { ?>
                             <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                         <?php }
-                        echo GetHumanTime($row["Timestamp"]); ?>
+                        RenderHumanTime($row["Timestamp"]); ?>
                     </div>
                 </div>
                 <div class="flex-child comment" style="min-width:0;overflow: hidden;">

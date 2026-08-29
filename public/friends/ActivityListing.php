@@ -371,7 +371,7 @@
             }
 
             echo '<div style="font-size:11px;color:#999;margin-top:2px;">';
-            echo GetHumanTime($row["ActivityDate"]);
+            RenderHumanTime($row["ActivityDate"]);
             echo '</div>';
 
             echo '</div>';

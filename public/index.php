@@ -480,7 +480,7 @@
             <span class="subText">
                 <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Metadata"], ENT_QUOTES); ?></a><br>
                 by <a href="/profile/<?php echo $row["CreatorID"]; ?>"><?php echo safe_htmlspecialchars($artist, ENT_QUOTES); ?></a> <br>
-                <?php echo GetHumanTime($row["Timestamp"]); ?>
+                <?php RenderHumanTime($row["Timestamp"]); ?>
             </span>
         </div>
         <?php
