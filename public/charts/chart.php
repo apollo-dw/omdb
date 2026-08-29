@@ -172,7 +172,7 @@
             $counter++;
         ?>
         <div class="flex-container chart-container alternating-bg" style="padding:0.5em 0;">
-            <div class="flex-child" style="text-align:right;flex:0 0 6%">
+            <div class="flex-child" style="text-align:right;flex:0 0 3%">
                 <b><?php echo "#" . $counter; ?></b>
             </div>
             <div class="flex-child" style="flex:0 0 80px;">
@@ -182,7 +182,7 @@
                          onerror="this.onerror=null; this.src='../assets/img/missing-map-thumbnail.png';" />
                 </a>
             </div>
-            <div class="flex-child" style="flex:1 0 40%;">
+            <div class="flex-child" style="flex:1 0 60%;">
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
                     <?php echo safe_htmlspecialchars($row['Artist'], ENT_QUOTES); ?>
                     - <?php echo safe_htmlspecialchars($row['Title'], ENT_QUOTES); ?><br>
@@ -197,13 +197,13 @@
                     <?php echo BuildDescriptorLinks($conn, $descriptorResult); ?>
                 </span>
             </div>
-            <div class="flex-child" style="flex:1;">
+            <div class="flex-child" style="flex: 1 1 15%;">
                 <b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b>
                 <span class="subText">/ 5.00 from
                     <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes
                 </span><br>
             </div>
-            <div class="flex-child" style="flex:0 0 10%">
+            <div class="flex-child" style="flex:0 1 8%;">
                 <?php
                     if (isset($row["Score"])) {
                         echo RenderRating($row["Score"]);
