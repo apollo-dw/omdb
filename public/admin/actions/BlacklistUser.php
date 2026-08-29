@@ -1,5 +1,4 @@
 <?php
-require_once('../../base.php');
 require('../base.php');
 
 requireCSRF();

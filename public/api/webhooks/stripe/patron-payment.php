@@ -1,5 +1,5 @@
 <?php
-    require("../../../base.php");
+    require_once __DIR__ . '/../../../../app/base.php';
     $payload = file_get_contents('php://input');
     $signatureHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
     $endpointSecret = $env['STRIPE_PAYMENT_WEBHOOK_SECRET'];
