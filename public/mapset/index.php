@@ -93,10 +93,23 @@ GROUP BY
         $credits[] = $row;
     }
 
+    $stmt->close();
+
     // This will be set to true if during the display of difficulties,
     // a blocked one appears. This is so we can display a message near
     // the comment box.
     $hasBlacklistedDifficulties = false;
+
+    // blacklisted users should not be able to rate
+    $isUserBlacklisted = false;
+    $stmt = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $blacklistResult = $stmt->get_result()->fetch_assoc();
+    if ($blacklistResult) {
+        $isUserBlacklisted = true;
+    }
+
 ?>
 
 <style>
@@ -512,7 +525,7 @@ while ($row = $result->fetch_assoc()) {
 		<div class="flex-child diffBox" style="width:5%;text-align:left;">
 			<?php
             $allTags = "";
-            if ($loggedIn) {
+            if ($loggedIn && !$isUserBlacklisted) {
                 $selectStmt = $conn->prepare("SELECT GROUP_CONCAT(Tag SEPARATOR ', ') AS AllTags FROM rating_tags WHERE UserID = ? AND BeatmapID = ?");
                 $selectStmt->bind_param("ii", $userId, $beatmapID);
                 $selectStmt->execute();
@@ -560,8 +573,6 @@ while ($row = $result->fetch_assoc()) {
 					<span class="subText tags" beatmapid="<?php echo $row["BeatmapID"]; ?>"><?php echo $allTags; ?></span>
 				</div>
 				<?php
-            } else {
-                echo 'Log in to rate maps!';
             }
             ?>
 		</div>
