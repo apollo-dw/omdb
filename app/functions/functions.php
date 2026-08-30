@@ -228,9 +228,9 @@
         return json_decode($response, true)[0];
     }
 
-    function GetHumanTime(string $datetime, $full = false) {
-        $now = new DateTime;
-        $ago = new DateTime($datetime);
+    function GetHumanTime(DateTimeInterface $ago, bool $full = false): string {
+        $timezone = new DateTimeZone('UTC');
+        $now = new DateTimeImmutable('now', $timezone);
         $diff = $now->diff($ago);
 
         $diff->w = floor($diff->d / 7);
@@ -257,6 +257,18 @@
             $string = array_slice($string, 0, 1);
         }
         return $string ? implode(', ', $string) . ' ago' : 'now';
+    }
+
+    function RenderHumanTime(string $datetime, bool $full = false): void {
+        $time = new DateTimeImmutable($datetime, new DateTimeZone('UTC'));
+        $exactTime = safe_htmlspecialchars($time->format(DateTimeInterface::ATOM), ENT_QUOTES);
+        $relativeTime = safe_htmlspecialchars(GetHumanTime($time, $full), ENT_QUOTES);
+
+        printf(
+            '<time class="relative-time" datetime="%s">%s</time>',
+            $exactTime,
+            $relativeTime,
+        );
     }
 
     function GetUserNameFromId(int $id, mysqli $conn) {

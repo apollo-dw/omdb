@@ -895,7 +895,7 @@ while ($row = $result->fetch_assoc()) {
                             if ($row["UserID"] == $userId || $isModerator) { ?>
                                 <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i>
                             <?php }
-                            echo GetHumanTime($row["date"]); ?>
+                            RenderHumanTime($row["date"]); ?>
                         </div>
                     </div>
                     <div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">
@@ -1081,7 +1081,7 @@ while ($row = $result->fetch_assoc()) {
                             if ($row["UserID"] == $userId || $isModerator) { ?>
                                 <i class="icon-remove removeReview" style="color:#f94141;" value="<?php echo $row["ReviewID"]; ?>"></i>
                             <?php }
-                            echo GetHumanTime($row["date"]); ?>
+                            RenderHumanTime($row["date"]); ?>
                         </div>
                     </div>
 					<div class="comment" style="min-width:0;overflow: hidden; background-color: DarkSlateGrey;">

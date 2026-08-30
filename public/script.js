@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const rect = tooltip.getBoundingClientRect();
     const parentX = getClippingParent(tooltip, "x");
     const parentY = getClippingParent(tooltip, "y");
-  
+
     if (rect.top < Math.max(parentY.getBoundingClientRect().top, 10))
       tooltip.classList.add("flip");
 
@@ -113,6 +113,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const isTouch = window.matchMedia("(hover: none)").matches;
+
+  const exactDateFormatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "long",
+    hourCycle: "h23",
+  });
+
+  function addExactDateTitle(target) {
+    if (!(target instanceof Element)) return;
+
+    const time = target.closest("time.relative-time");
+    if (!time || time.title) return;
+
+    const date = new Date(time.dateTime);
+    if (!Number.isNaN(date.getTime()))
+      time.title = exactDateFormatter.format(date);
+  }
+
+  // initialize timestamps already loaded
+  document
+    .querySelectorAll("time.relative-time")
+    .forEach((time) => addExactDateTitle(time));
+
+  // support AJAX-inserted timestamps.
+  // capture clicks so the title is available to the touch tooltip handler later.
+  document.addEventListener("pointerover", (event) =>
+    addExactDateTitle(event.target)
+  );
+  document.addEventListener(
+    "click",
+    (event) => addExactDateTitle(event.target),
+    true
+  );
 
   function closeOpenTooltips(except) {
     document.querySelectorAll(".tooltip-wrapper.tooltip-open").forEach((w) => {
@@ -280,4 +313,3 @@ function setupHeaderMenus() {
     closeMenus(null);
   });
 }
-

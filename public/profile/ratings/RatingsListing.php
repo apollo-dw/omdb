@@ -173,7 +173,9 @@
                         <?php if ($row["Blacklisted"] && $isSelf): ?>
                             <span class="subText">(only you can see this rating)</span>
                         <?php endif; ?>
-                        <?php echo isset($row["date"]) ? GetHumanTime($row["date"]) : ""; ?>
+                        <?php if (isset($row["date"])) {
+                            RenderHumanTime($row["date"]);
+                        } ?>
                     </div>
                 </div>
             <?php endwhile; ?>

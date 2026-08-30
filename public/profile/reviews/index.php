@@ -101,7 +101,7 @@
 						<a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a>  on <a href="../../mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars("${beatmap["Artist"]} - ${beatmap["Title"]}", ENT_QUOTES); ?></a>
 					</div>
 					<div class="flex-child" style="margin-left:auto;">
-						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } echo GetHumanTime($row["date"]); ?>
+						<?php if ($row["UserID"] == -1) { ?> <i class="icon-remove removeComment" style="color:#f94141;" value="<?php echo $row["CommentID"]; ?>"></i> <?php } RenderHumanTime($row["date"]); ?>
 					</div>
 				</div>
 				<div class="flex-child comment" style="min-width:0;overflow: hidden;width: 100%;">
