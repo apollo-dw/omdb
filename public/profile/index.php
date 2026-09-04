@@ -48,7 +48,6 @@
     }
 
     $ratingCounts = [];
-    $isBlacklisted = false;
     if ($isValidUser) {
         $stmt = $conn->prepare("SELECT r.`Score`, COUNT(*) AS count
                         FROM `ratings` r
@@ -77,13 +76,13 @@
         $mutuals = $stmt->get_result();
         $mutualCount = $mutuals->num_rows;
         $stmt->close();
-
-        $stmt = $conn->prepare("SELECT 1 FROM blacklist WHERE UserID = ?");
-        $stmt->bind_param("i", $profileId);
-        $stmt->execute();
-        $isBlacklisted = $stmt->get_result()->num_rows > 0;
-        $stmt->close();
     }
+
+    $stmt = $conn->prepare("SELECT 1 FROM blacklist WHERE UserID = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $isBlacklisted = $stmt->get_result()->num_rows > 0;
+    $stmt->close();
 
     $is_friend = $is_blocked = $is_friended = 0;
     $correlation = null;
