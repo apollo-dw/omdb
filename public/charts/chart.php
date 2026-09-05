@@ -199,7 +199,7 @@
             </div>
             <div class="flex-child" style="flex: 1 1 15%;">
                 <b><?php echo number_format((float)$row["WeightedAvg"], 2); ?></b>
-                <span class="subText">/ 5.00 from
+                <span class="subText">from
                     <span style="color:white"><?php echo $row["RatingCount"]; ?></span> votes
                 </span><br>
             </div>

@@ -233,7 +233,7 @@
                 <span class="profile-top-map-weighted">
                     <?php if (isset($topMap["WeightedAvg"])): ?>
                         <b><?php echo number_format((float)$topMap["WeightedAvg"], 2); ?></b>
-                        <span class="subText">/ 5.00 from
+                        <span class="subText">from
                             <span style="color: var(--main-theme-text-color);"><?php echo $topMap["RatingCount"]; ?></span> votes
                         </span>
                     <?php endif; ?>
@@ -273,7 +273,7 @@
                         <span class="profile-lesser-map-weighted">
                             <?php if (isset($map["ChartRank"])): ?>
                                 <b><?php echo number_format((float)$map["WeightedAvg"], 2); ?></b>
-                                <span class="subText">/ 5.00 from
+                                <span class="subText">from
                                     <span style="color: var(--main-theme-text-color);"><?php echo $map["RatingCount"]; ?></span> votes
                                 </span>
                             <?php endif; ?>
