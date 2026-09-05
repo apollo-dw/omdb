@@ -50,7 +50,7 @@
                 'sortOptions' => [],
                 'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'user', 'tag'],
             ];
-            require "../functions/filter/index.php";
+            require __DIR__ . "/../../app/functions/filter/index.php";
         ?>
 
         <hr class="mobile-filters-after">

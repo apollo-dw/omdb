@@ -860,7 +860,7 @@
 
             if (!asyncPending[key]) {
                 asyncPending[key] = true;
-                $.getJSON('/functions/filter/lookup.php', { type: type, q: query })
+                $.getJSON('/filter/lookup.php', { type: type, q: query })
                     .done(function(data) {
                         asyncCache[key] = (data && data.results) || [];
                         const current = parseScopedQuery($input.val().trim());
