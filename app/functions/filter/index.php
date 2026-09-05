@@ -262,6 +262,7 @@
             <label><input type="checkbox" id="list_likes" value="list_likes" <?php echo isActivityChecked('list_likes') ? 'checked' : ''; ?>> List likes</label>
             <label><input type="checkbox" id="ranked_maps" value="ranked_maps" <?php echo isActivityChecked('ranked_maps') ? 'checked' : ''; ?>> Ranked maps</label>
             <label><input type="checkbox" id="comments" value="comments" <?php echo isActivityChecked('comments') ? 'checked' : ''; ?>> Comments</label>
+            <label><input type="checkbox" id="nominations" value="nominations" <?php echo isActivityChecked('nominations') ? 'checked' : ''; ?>> Nominations</label>
         </div>
     <?php endif; ?>
 

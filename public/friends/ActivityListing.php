@@ -22,6 +22,7 @@
     $list_likes = getActivityFilterState('list_likes');
     $ranked_maps = getActivityFilterState('ranked_maps');
     $comments = getActivityFilterState('comments');
+    $nominations = getActivityFilterState('nominations');
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
     if (!is_array($tokensRaw)) {
@@ -262,6 +263,33 @@
         ];
     }
 
+    if ($nominations) {
+        $queries[] = "(
+            SELECT
+                'nomination' AS ActivityType,
+                s.DateRanked AS ActivityDate,
+                u.UserID AS FriendUserID,
+                u.Username AS FriendUsername,
+                s.SetID AS ObjectID,
+                s.SetID AS ObjectType,
+                CONCAT(s.Artist, ' - ', s.Title, ' (by ', s.CreatorName, ')') AS Title,
+                JSON_OBJECT('SetID', s.SetID) AS ExtraData
+            FROM user_relations fr
+            JOIN users u ON u.UserID = fr.UserIDTo
+            JOIN beatmapset_nominators bn ON bn.NominatorID = u.UserID
+            JOIN beatmapsets s ON s.SetID = bn.SetID
+            WHERE fr.UserIDFrom = ? AND fr.type = 1
+                AND s.DateRanked >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+                {$beatmapFilterSQL}
+                {$yearCond('s.DateRanked')}
+        )";
+        $paramSets[] = [
+            'types' => "i" . $beatmapFilterTypes . ($year !== 'all-time' ? "i" : ""),
+            'values' => array_merge([$userId], $beatmapFilterValues, $year !== 'all-time' ? [$year] : []),
+        ];
+    }
+
+
     if (empty($queries)) {
         $result = false;
     } else {
@@ -295,6 +323,7 @@
                 case 'comment':
                 case 'review_like':
                 case 'ranked_map':
+                case 'nomination':
                     if (!empty($extra["SetID"])) {
                         echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                         echo '<img src="https://b.ppy.sh/thumb/' . intval($extra["SetID"]) . 'l.jpg"
@@ -378,6 +407,13 @@
 
                 case 'ranked_map':
                     echo 'had a difficulty ranked: ';
+                    echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
+                    echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
+                    echo '</a>';
+                    break;
+
+                case 'nomination':
+                    echo 'nominated ';
                     echo '<a href="/mapset/' . intval($extra["SetID"]) . '">';
                     echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                     echo '</a>';
