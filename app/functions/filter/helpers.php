@@ -25,6 +25,7 @@
             'sliders' => 'y',
             'spinners' => 'z',
             'desc' => 'n',
+            'credits' => 'e',
         ];
     }
 
@@ -48,6 +49,7 @@
             'sliders' => 'and',
             'spinners' => 'and',
             'desc' => 'and',
+            'credits' => 'and',
         ];
     }
 
@@ -115,6 +117,7 @@
                 case 'spinners':
                 case 'sr':
                 case 'desc':
+                case 'credits':
                 case 'cs': {
                     if (!empty($t['ops'])) {
                         $typeMap = [
@@ -129,6 +132,7 @@
                             'sliders' => 'y',
                             'spinners' => 'z',
                             'desc' => 'n',
+                            'credits' => 'e',
                         ];
 
                         $prefix = $typeMap[$type];
@@ -250,6 +254,7 @@
                     break;
 
                 case 'n':
+                case 'e':
                 case 'a':
                 case 'o':
                 case 'h':
@@ -272,6 +277,7 @@
                         'y' => ['key' => 'sliders', 'label' => 'Slider count: '],
                         'z' => ['key' => 'spinners', 'label' => 'Spinner count: '],
                         'n' => ['key' => 'desc', 'label' => 'Descriptor Count: '],
+                        'e' => ['key' => 'credits', 'label' => 'Credit count: '],
                     ];
 
                     $cfg = $typeMap[$prefix];
@@ -364,12 +370,28 @@
             'sliders' => 'b.SliderCount',
             'spinners' => 'b.SpinnerCount',
             'desc' => '',
+            'credits' => '',
         ];
     }
 
     function filterDescriptorCountCondition(string $op, float $val): string {
         $exists = "EXISTS (SELECT 1 FROM beatmap_descriptors bd_c WHERE bd_c.BeatmapID = b.BeatmapID)";
         $count = "(SELECT COUNT(*) FROM beatmap_descriptors bd_c WHERE bd_c.BeatmapID = b.BeatmapID)";
+
+        if (($op === '=' && $val == 0) || ($op === '<=' && $val == 0) || ($op === '<' && $val > 0 && $val <= 1)) {
+            return "NOT {$exists}";
+        }
+
+        if (($op === '>' && $val == 0) || ($op === '>=' && $val > 0 && $val <= 1)) {
+            return $exists;
+        }
+
+        return "{$count} {$op} {$val}";
+    }
+
+    function filterCreditCountCondition(string $op, float $val): string {
+        $exists = "EXISTS (SELECT 1 FROM beatmapset_credits bsc_c WHERE bsc_c.SetID = b.SetID)";
+        $count = "(SELECT COUNT(DISTINCT bsc_c.UserID) FROM beatmapset_credits bsc_c WHERE bsc_c.SetID = b.SetID)";
 
         if (($op === '=' && $val == 0) || ($op === '<=' && $val == 0) || ($op === '<' && $val > 0 && $val <= 1)) {
             return "NOT {$exists}";
@@ -482,9 +504,13 @@
                     $val = (float)($opData['val'] ?? 0);
 
                     if (in_array($op, ['<', '<=', '>', '>=', '='])) {
-                        $conds[] = ($type === 'desc')
-                            ? filterDescriptorCountCondition($op, $val)
-                            : "{$dbCol} {$op} {$val}";
+                        if ($type === 'desc') {
+                            $conds[] = filterDescriptorCountCondition($op, $val);
+                        } elseif ($type === 'credits') {
+                            $conds[] = filterCreditCountCondition($op, $val);
+                        } else {
+                            $conds[] = "{$dbCol} {$op} {$val}";
+                        }
                     }
                 }
 
