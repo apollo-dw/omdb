@@ -414,7 +414,7 @@ while ($row = $result->fetch_assoc()) {
             <a href="https://osu.ppy.sh/b/<?php echo $row['BeatmapID']; ?>" target="_blank" rel="noopener noreferrer" <?php if ($row["ChartRank"] <= $BOLDED_MAP_CHART_RANK_BOUNDARY && !is_null($row["ChartRank"])) {
                 echo "class='bolded-map'";
             }?>>
-                <?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?>
+                <span style="word-break: break-word;"><?php echo safe_htmlspecialchars($row['DifficultyName'], ENT_QUOTES); ?></span>
             </a>
             <a href="osu://b/<?php echo $row['BeatmapID']; ?>"><i class="icon-download-alt"></i></a>
             <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span>

@@ -188,7 +188,7 @@
                     - <?php echo safe_htmlspecialchars($row['Title'], ENT_QUOTES); ?><br>
                 </a>
                 <a href="/mapset/<?php echo $row['SetID']; ?>">
-                    <b><?php echo safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 35, "..."), ENT_QUOTES); ?></b>
+                    <b style="word-break: break-word;"><?php echo safe_htmlspecialchars($row['DifficultyName'], ENT_QUOTES); ?></b>
                 </a>
                 <span class="subText"><?php echo number_format((float)$row['SR'], 2, '.', ''); ?>*</span><br>
                 <?php echo date("M jS, Y", strtotime($row['DateRanked'])); ?><br>
