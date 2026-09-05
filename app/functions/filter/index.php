@@ -294,7 +294,7 @@
                 <?php
                     $statExamples = [
                         'sr>5', '4<ar<=9', 'cs=4', 'od>8', 'hp<6', 'bpm>=180',
-                        'length>300', 'circles>500', 'sliders<100', 'spinners=0', 'desc=0'
+                        'length>300', 'circles>500', 'sliders<100', 'spinners=0', 'desc=0', 'credits>0'
                     ];
 
                     $renderedExamples = [];
@@ -364,7 +364,8 @@
         circles: 'x',
         sliders: 'y',
         spinners: 'z',
-        desc: 'n'
+        desc: 'n',
+        credits: 'e'
     };
 
     const OMDB_DEFAULT_JOIN_MODES = {
@@ -385,7 +386,8 @@
         circles: 'and',
         sliders: 'and',
         spinners: 'and',
-        desc: 'and'
+        desc: 'and',
+        credits: 'and'
     };
 
     function encodeFilterTagValue(tag) {
@@ -437,6 +439,7 @@
                 case 'spinners':
                 case 'sr':
                 case 'desc':
+                case 'credits':
                 case 'cs': {
                     if (t.ops && t.ops.length > 0) {
                         const prefix = OMDB_JOIN_TYPE_CHARS[t.type];
@@ -547,6 +550,7 @@
                     break;
 
                 case 'n':
+                case 'e':
                 case 'a':
                 case 'o':
                 case 'h':
@@ -557,8 +561,8 @@
                 case 'z':
                 case 'r':
                 case 'p': {
-                    const typeKey = { r: 'sr', p: 'cs', a: 'ar', o: 'od', h: 'hp', t: 'length', b: 'bpm', x: 'circles', y: 'sliders', z: 'spinners', n: 'desc' }[prefix];
-                    const namePrefix = { r: 'SR: ', p: 'CS: ', a: 'AR: ', o: 'OD: ', h: 'HP: ', t: 'Length: ', b: 'BPM: ', x: 'Circle count: ', y: 'Slider count: ', z: 'Spinner count: ', n: 'Descriptor count: ' }[prefix];
+                    const typeKey = { r: 'sr', p: 'cs', a: 'ar', o: 'od', h: 'hp', t: 'length', b: 'bpm', x: 'circles', y: 'sliders', z: 'spinners', n: 'desc', e: 'credits' }[prefix];
+                    const namePrefix = { r: 'SR: ', p: 'CS: ', a: 'AR: ', o: 'OD: ', h: 'HP: ', t: 'Length: ', b: 'BPM: ', x: 'Circle count: ', y: 'Slider count: ', z: 'Spinner count: ', n: 'Descriptor count: ', e: 'Credit count: ' }[prefix];
 
                     const ops = [];
                     let rem = rest;
@@ -664,7 +668,8 @@
             circles: 'Circles',
             sliders: 'Sliders',
             spinners: 'Spinners',
-            desc: 'Descriptor count'
+            desc: 'Descriptor count',
+            credits: 'Credit count'
         };
 
         const phrases = [];
@@ -1032,7 +1037,8 @@
             { key: 'circles', label: 'Circle count: ' },
             { key: 'sliders', label: 'Slider count: ' },
             { key: 'spinners', label: 'Spinner count: ' },
-            { key: 'desc', label: 'Descriptor count: ' }
+            { key: 'desc', label: 'Descriptor count: ' },
+            { key: 'credits', label: 'Credit count: ' }
         ];
 
         function applyStatQuery(rawValue, exclude) {
