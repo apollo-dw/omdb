@@ -122,6 +122,14 @@
 
     $allFiltersJSON = json_encode($allFilters);
     $asyncCategoriesJSON = json_encode(array_values(array_intersect(['user', 'tag'], $filterConfig['categories'])));
+
+    function isActivityChecked($key) {
+        $cookieName = 'pref_activity_' . $key;
+        if (isset($_COOKIE[$cookieName])) {
+            return filter_var($_COOKIE[$cookieName], FILTER_VALIDATE_BOOLEAN);
+        }
+        return true; 
+    }
 ?>
 
 <style>
@@ -247,13 +255,13 @@
     <?php if ($filterConfig['showActivityToggles']): ?>
         <div class="filter-section flex-row-container" style="flex-wrap:wrap; margin-bottom:1em; flex-direction:column;">
             <b>Activity:</b>
-            <label><input type="checkbox" id="ratings" value="ratings" checked> Ratings</label>
-            <label><input type="checkbox" id="reviews" value="reviews" checked> Reviews</label>
-            <label><input type="checkbox" id="review_likes" value="review_likes" checked> Review likes</label>
-            <label><input type="checkbox" id="lists" value="lists" checked> Lists</label>
-            <label><input type="checkbox" id="list_likes" value="list_likes" checked> List likes</label>
-            <label><input type="checkbox" id="ranked_maps" value="ranked_maps" checked> Ranked maps</label>
-            <label><input type="checkbox" id="comments" value="comments" checked> Comments</label>
+            <label><input type="checkbox" id="ratings" value="ratings" <?php echo isActivityChecked('ratings') ? 'checked' : ''; ?>> Ratings</label>
+            <label><input type="checkbox" id="reviews" value="reviews" <?php echo isActivityChecked('reviews') ? 'checked' : ''; ?>> Reviews</label>
+            <label><input type="checkbox" id="review_likes" value="review_likes" <?php echo isActivityChecked('review_likes') ? 'checked' : ''; ?>> Review likes</label>
+            <label><input type="checkbox" id="lists" value="lists" <?php echo isActivityChecked('lists') ? 'checked' : ''; ?>> Lists</label>
+            <label><input type="checkbox" id="list_likes" value="list_likes" <?php echo isActivityChecked('list_likes') ? 'checked' : ''; ?>> List likes</label>
+            <label><input type="checkbox" id="ranked_maps" value="ranked_maps" <?php echo isActivityChecked('ranked_maps') ? 'checked' : ''; ?>> Ranked maps</label>
+            <label><input type="checkbox" id="comments" value="comments" <?php echo isActivityChecked('comments') ? 'checked' : ''; ?>> Comments</label>
         </div>
     <?php endif; ?>
 

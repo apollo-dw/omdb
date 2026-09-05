@@ -1,13 +1,27 @@
 <?php
     require_once __DIR__ . '/../../app/base.php';
 
-    $ratings = filter_var($_POST['ratings'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $reviews = filter_var($_POST['reviews'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $review_likes = filter_var($_POST['review_likes'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $lists = filter_var($_POST['lists'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $list_likes = filter_var($_POST['list_likes'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $ranked_maps = filter_var($_POST['ranked_maps'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $comments = filter_var($_POST['comments'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    function getActivityFilterState($key, $default = true) {
+        $cookieName = 'pref_activity_' . $key;
+        
+        if (isset($_POST[$key])) {
+            $val = filter_var($_POST[$key], FILTER_VALIDATE_BOOLEAN);
+            setcookie($cookieName, $val ? '1' : '0', time() + (86400 * 30), "/");
+            return $val;
+        } elseif (isset($_COOKIE[$cookieName])) {
+            return filter_var($_COOKIE[$cookieName], FILTER_VALIDATE_BOOLEAN);
+        }
+        
+        return $default;
+    }
+
+    $ratings = getActivityFilterState('ratings');
+    $reviews = getActivityFilterState('reviews');
+    $review_likes = getActivityFilterState('review_likes');
+    $lists = getActivityFilterState('lists');
+    $list_likes = getActivityFilterState('list_likes');
+    $ranked_maps = getActivityFilterState('ranked_maps');
+    $comments = getActivityFilterState('comments');
 
     $tokensRaw = decodeTokens(postOrGet('tokens', '[]'));
     if (!is_array($tokensRaw)) {
