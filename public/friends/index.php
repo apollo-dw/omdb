@@ -48,7 +48,7 @@
                 'showTag' => false,
                 'showActivityToggles' => true,
                 'sortOptions' => [],
-                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'user', 'tag'],
+                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'user', 'tag', 'slot'],
             ];
             require __DIR__ . "/../../app/functions/filter/index.php";
         ?>

@@ -3,7 +3,7 @@
 
     header('Content-Type: application/json');
 
-    $type = postOrGet('type', ''); // Currently 'user' or 'tag'
+    $type = postOrGet('type', ''); // Currently 'user', 'tag' or 'slot'
     $query = trim((string)postOrGet('q', ''));
     $ids = postOrGet('ids', '');
 
@@ -84,6 +84,39 @@
                 'name' => $row['Tag'],
                 'label' => "Tag: " . $row['Tag'],
                 'count' => (int)$row['TagCount'],
+            ];
+        }
+        $stmt->close();
+    } elseif ($type === 'slot') {
+        if ($query !== '') {
+            $like = "%" . addcslashes($query, '%_\\') . "%";
+
+            $stmt = $conn->prepare("SELECT Slot, COUNT(DISTINCT BeatmapID) AS SlotCount
+                FROM tournament_maps
+                WHERE Slot IS NOT NULL AND Slot != '' AND Slot LIKE ?
+                GROUP BY Slot
+                ORDER BY (Slot = ?) DESC, SlotCount DESC
+                LIMIT 8");
+            $stmt->bind_param("ss", $like, $query);
+        } else {
+            $stmt = $conn->prepare("SELECT Slot, COUNT(DISTINCT BeatmapID) AS SlotCount
+                FROM tournament_maps
+                WHERE Slot IS NOT NULL AND Slot != ''
+                GROUP BY Slot
+                ORDER BY SlotCount DESC
+                LIMIT 8");
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $results[] = [
+                'type' => 'slot',
+                'id' => $row['Slot'],
+                'name' => $row['Slot'],
+                'label' => "Slot: " . $row['Slot'],
+                'count' => (int)$row['SlotCount'],
             ];
         }
         $stmt->close();

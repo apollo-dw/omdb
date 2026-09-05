@@ -40,7 +40,7 @@
         ],
         'showRating' => true,
         'showTag' => true,
-        'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user']
+        'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user', 'slot']
     ];
     require __DIR__ . "/../../../app/functions/filter/index.php";
 ?><br>

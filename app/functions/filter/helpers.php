@@ -14,6 +14,7 @@
             'country' => 'c',
             'user' => 'u',
             'tag' => 'k',
+            'slot' => 'v',
             'sr' => 'r',
             'cs' => 'p',
             'ar' => 'a',
@@ -35,6 +36,7 @@
             'country' => 'or',
             'user' => 'or',
             'tag' => 'or',
+            'slot' => 'or',
             'genre' => 'or',
             'language' => 'or',
             'status' => 'or',
@@ -78,6 +80,10 @@
 
                 case 'tag':
                     $parts[] = "k{$ex}" . encodeFilterTagValue((string)$id);
+                    break;
+
+                case 'slot':
+                    $parts[] = "v{$ex}" . encodeFilterTagValue((string)$id);
                     break;
 
                 case 'genre':
@@ -248,6 +254,14 @@
                 case 'k':
                     $tokens[] = [
                         'type' => 'tag',
+                        'id' => decodeFilterTagValue($rest),
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'v':
+                    $tokens[] = [
+                        'type' => 'slot',
                         'id' => decodeFilterTagValue($rest),
                         'exclude' => $exclude,
                     ];
@@ -424,6 +438,8 @@
             'exUsers' => [],
             'tags' => [],
             'exTags' => [],
+            'slots' => [],
+            'exSlots' => [],
             'rangeFilters' => [],
             'joinModes' => [],
         ];
@@ -494,6 +510,15 @@
                 $parsed['exTags'][] = (string)$id;
                 } else {
                 $parsed['tags'][] = (string)$id;
+                }
+            } elseif ($type === 'slot') {
+                if ($id === '') {
+                continue;
+                }
+                if ($exclude) {
+                $parsed['exSlots'][] = (string)$id;
+                } else {
+                $parsed['slots'][] = (string)$id;
                 }
             } elseif (isset($rangeColumns[$type]) && !empty($t['ops'])) {
                 $dbCol = $rangeColumns[$type];
@@ -693,6 +718,30 @@
             $sql .= " AND NOT EXISTS (SELECT 1 FROM rating_tags rt_f WHERE rt_f.BeatmapID = b.BeatmapID AND rt_f.Tag = ?)";
             $types .= 's';
             $values[] = $tag;
+        }
+
+        if (!empty($parsed['slots'])) {
+            if ($joinMode('slot') === 'or') {
+                $ph = implode(',', array_fill(0, count($parsed['slots']), '?'));
+                $sql .= " AND EXISTS (SELECT 1 FROM tournament_maps tm_f WHERE tm_f.BeatmapID = b.BeatmapID AND tm_f.Slot IN ($ph))";
+                $types .= str_repeat('s', count($parsed['slots']));
+                $values = array_merge($values, $parsed['slots']);
+            } else {
+                $fragments = [];
+                foreach ($parsed['slots'] as $slot) {
+                    $fragments[] = [
+                        'sql' => "EXISTS (SELECT 1 FROM tournament_maps tm_f WHERE tm_f.BeatmapID = b.BeatmapID AND tm_f.Slot = ?)",
+                        'types' => 's',
+                        'values' => [$slot],
+                    ];
+                }
+                $addGroup($fragments);
+            }
+        }
+        foreach ($parsed['exSlots'] as $slot) {
+            $sql .= " AND NOT EXISTS (SELECT 1 FROM tournament_maps tm_f WHERE tm_f.BeatmapID = b.BeatmapID AND tm_f.Slot = ?)";
+            $types .= 's';
+            $values[] = $slot;
         }
 
         if (!empty($parsed['descriptors'])) {

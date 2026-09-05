@@ -15,7 +15,7 @@
         'showRelevanceToggle' => false,
         'showActivityToggles' => false,
         'showFilterHelp' => true,
-        'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
+        'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag', 'slot'],
         'customTokens' => []
     ];
 
@@ -92,6 +92,9 @@
             elseif ($preloadedToken['type'] === 'tag') {
                 $allFilters[] = ['type' => 'tag', 'id' => $preloadedToken['id'], 'name' => $preloadedToken['id'], 'label' => "Tag: " . $preloadedToken['id']];
             }
+            elseif ($preloadedToken['type'] === 'slot') {
+                $allFilters[] = ['type' => 'slot', 'id' => $preloadedToken['id'], 'name' => $preloadedToken['id'], 'label' => "Slot: " . $preloadedToken['id']];
+            }
         }
 
         if (!empty($preloadedUserIds)) {
@@ -121,14 +124,14 @@
     });
 
     $allFiltersJSON = json_encode($allFilters);
-    $asyncCategoriesJSON = json_encode(array_values(array_intersect(['user', 'tag'], $filterConfig['categories'])));
+    $asyncCategoriesJSON = json_encode(array_values(array_intersect(['user', 'tag', 'slot'], $filterConfig['categories'])));
 
     function isActivityChecked($key) {
         $cookieName = 'pref_activity_' . $key;
         if (isset($_COOKIE[$cookieName])) {
             return filter_var($_COOKIE[$cookieName], FILTER_VALIDATE_BOOLEAN);
         }
-        return true; 
+        return true;
     }
 ?>
 
@@ -289,7 +292,7 @@
     <div class="filter-section">
         <div class="filter-search-box" id="filter-search-wrapper">
             <div id="filter-chips-container" style="display: contents;"></div>
-            <input type="text" id="filter-input" placeholder="Search descriptors, mappers, tags... or type sr&gt;4" autocomplete="off">
+            <input type="text" id="filter-input" placeholder="Search descriptors, mappers, tags, slots... or type sr&gt;4" autocomplete="off">
             <div class="filter-popover" id="filter-popover" style="display: none;"></div>
         </div>
         <?php if ($filterConfig['showFilterHelp']): ?>
@@ -315,12 +318,24 @@
                     echo implode(', ', $renderedExamples);
                 ?>
                 <br>
-                <?php if (in_array('user', $filterConfig['categories']) || in_array('tag', $filterConfig['categories'])): ?>
-                    Prefix a search with
-                    <?php if (in_array('user', $filterConfig['categories'])): ?><code class="filter-example">user:</code> to search only mappers<?php endif; ?>
-                    <?php if (in_array('user', $filterConfig['categories']) && in_array('tag', $filterConfig['categories'])): ?>or<?php endif; ?>
-                    <?php if (in_array('tag', $filterConfig['categories'])): ?><code class="filter-example">tag:</code> to search only tags<?php endif; ?>
-                <?php endif; ?>
+                <?php
+                    $scopeHints = [];
+                    if (in_array('user', $filterConfig['categories'])) {
+                        $scopeHints[] = "<code class='filter-example'>user:</code> to search only mappers";
+                    }
+                    if (in_array('tag', $filterConfig['categories'])) {
+                        $scopeHints[] = "<code class='filter-example'>tag:</code> to search only tags";
+                    }
+                    if (in_array('slot', $filterConfig['categories'])) {
+                        $scopeHints[] = "<code class='filter-example'>slot:</code> to search only tournament slots";
+                    }
+
+                    if (!empty($scopeHints)) {
+                        $lastHint = array_pop($scopeHints);
+                        echo 'Prefix a search with '
+                            . (empty($scopeHints) ? $lastHint : implode(', ', $scopeHints) . ' or ' . $lastHint);
+                    }
+                ?>
             </details>
         <?php endif; ?>
     </div>
@@ -363,6 +378,7 @@
         country: 'c',
         user: 'u',
         tag: 'k',
+        slot: 'v',
         sr: 'r',
         cs: 'p',
         ar: 'a',
@@ -382,6 +398,7 @@
         country: 'or',
         user: 'or',
         tag: 'or',
+        slot: 'or',
         genre: 'or',
         language: 'or',
         status: 'or',
@@ -419,6 +436,9 @@
                     break;
                 case 'tag':
                     parts.push(`k${ex}${encodeFilterTagValue(t.id)}`);
+                    break;
+                case 'slot':
+                    parts.push(`v${ex}${encodeFilterTagValue(t.id)}`);
                     break;
                 case 'genre':
                     parts.push(`g${ex}${t.id}`);
@@ -558,6 +578,14 @@
                     });
                     break;
 
+                case 'v':
+                    tokens.push({
+                        type: 'slot',
+                        id: decodeURIComponent(rest),
+                        exclude
+                    });
+                    break;
+
                 case 'n':
                 case 'e':
                 case 'a':
@@ -664,6 +692,7 @@
             descriptor: 'Descriptors',
             user: 'Mapped by',
             tag: 'Tagged',
+            slot: 'Tournament slot',
             genre: 'Genre',
             language: 'Language',
             country: 'Mapper country',
@@ -762,6 +791,10 @@
         const asyncCategories = <?php echo $asyncCategoriesJSON; ?>;
         const asyncCache = {};
         const asyncPending = {};
+
+        // Slots are short ("TB", "FM1"), so they reach lookup.php a character earlier than mappers and tags
+        const asyncMinQueryLength = { user: 3, tag: 3, slot: 2 };
+        const asyncQueryFloor = asyncCategories.reduce((min, cat) => Math.min(min, asyncMinQueryLength[cat] || 3), 3);
         let debounceTimer = null;
 
         const $input = $('#filter-input');
@@ -854,14 +887,15 @@
             });
         }
 
-        // "user:foo" / "tag:foo" narrows the search down to one of the categories in lookup.php
+        // "user:foo" / "tag:foo" / "slot:foo" narrows the search down to one of the categories in lookup.php
         function parseScopedQuery(raw) {
-            const match = raw.match(/^(user|mapper|tag)\s*:\s*(.*)$/i);
+            const match = raw.match(/^(user|mapper|tag|slot)\s*:\s*(.*)$/i);
             if (!match)
                 return { scope: null, query: raw };
 
+            const scopeWord = match[1].toLowerCase();
             return {
-                scope: match[1].toLowerCase() === 'tag' ? 'tag' : 'user',
+                scope: scopeWord === 'mapper' ? 'user' : scopeWord,
                 query: match[2].trim()
             };
         }
@@ -898,14 +932,14 @@
                 // If actively typing, we ONLY want to search for 'usable' descriptors
                 // otherwise the tree is drawn later instead
                 if (f.type === 'descriptor' && !f.usable) return false;
-                if (f.type === 'user' || f.type === 'tag') return false;
+                if (f.type === 'user' || f.type === 'tag' || f.type === 'slot') return false;
 
                 return (!query || f.label.toLowerCase().includes(query)) &&
                        !activeTokens.some(t => t.id == f.id && t.type === f.type);
             });
 
-            // Mappers and tags live server-side, so a query that matches nothing locally from the other cats still has to reach the user/tag lookup before we give up on it
-            const mayLookUp = asyncCategories.length > 0 && (scoped.scope || query.length >= 3);
+            // Mappers, tags and slots live server-side, so a query that matches nothing locally from the other cats still has to reach lookup before we give up on it
+            const mayLookUp = asyncCategories.length > 0 && (scoped.scope || query.length >= asyncQueryFloor);
 
             if (matches.length > 0 || !query || scoped.scope || mayLookUp) {
                 const groups = { status: [], meta: [], genre: [], language: [], descriptor: [], country: [] };
@@ -930,23 +964,24 @@
                     language: 'Languages',
                     country: 'Countries',
                     user: 'Mappers',
-                    tag: 'Tags'
+                    tag: 'Tags',
+                    slot: 'Tournament Slots'
                 };
 
-                const displayOrder = ['status', 'meta', 'descriptor', 'user', 'tag', 'genre', 'language', 'country'];
+                const displayOrder = ['status', 'meta', 'descriptor', 'user', 'tag', 'slot', 'genre', 'language', 'country'];
                 let addedSomething = false;
 
                 displayOrder.forEach(cat => {
                     // Below is basically:
-                    // If it's user or tag cat then render the lookup.php results
+                    // If it's a lookup cat (user/tag/slot) then render its results
                     // Else if there's no search query and current cat is descriptor, render desc tree
                     // else render them normally
-                    if ((cat === 'user' || cat === 'tag')) {
+                    if (cat === 'user' || cat === 'tag' || cat === 'slot') {
                         if (asyncCategories.indexOf(cat) === -1)
                             return;
                         if (scoped.scope && scoped.scope !== cat)
                             return;
-                        if (!scoped.scope && query.length <= 2)
+                        if (!scoped.scope && query.length < asyncMinQueryLength[cat])
                             return;
                         if (scoped.scope === cat && cat === 'user' && query.length === 0)
                             return;
@@ -1123,14 +1158,15 @@
                     }
                 }
 
-                // A "tag:" search that matched nothing is still a valid filter since tags are free text
+                // A "tag:"/"slot:" search that matched nothing is still a valid filter since both are free text
                 const scoped = parseScopedQuery($(this).val().trim());
-                if (scoped.scope === 'tag' && scoped.query !== '') {
+                if ((scoped.scope === 'tag' || scoped.scope === 'slot') && scoped.query !== '') {
+                    const scopeLabel = scoped.scope === 'tag' ? 'Tag: ' : 'Slot: ';
                     pushToken({
-                        type: 'tag',
+                        type: scoped.scope,
                         id: scoped.query,
                         name: scoped.query,
-                        label: 'Tag: ' + scoped.query
+                        label: scopeLabel + scoped.query
                     }, exclude);
 
                     $(this).val('');
@@ -1213,6 +1249,8 @@
                     prefix = tok.exclude ? '<b>Exclude</b> maps by ' : '<b>Only</b> maps by ';
                 } else if (tok.type === 'tag') {
                     prefix = tok.exclude ? '<b>Exclude</b> maps tagged ' : '<b>Only</b> maps tagged ';
+                } else if (tok.type === 'slot') {
+                    prefix = tok.exclude ? '<b>Exclude</b> maps in slot ' : '<b>Only</b> maps in slot ';
                 }
 
                 const $chip = $(`<span class="filter-chip" style="background-color: ${bg}; border-color: ${border};">
