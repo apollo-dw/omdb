@@ -15,11 +15,29 @@
         'showRelevanceToggle' => false,
         'showActivityToggles' => false,
         'showFilterHelp' => true,
+        'showTournamentFilters' => true,
         'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
         'customTokens' => []
     ];
 
     $filterConfig = array_merge($defaultFilterConfig, $filterConfig ?? []);
+
+    $showTournamentFilters = !empty($filterConfig['showTournamentFilters']);
+
+    // which "prefix:"es are free + their categories
+    $scopeAliases = [];
+    if (in_array('user', $filterConfig['categories'])) {
+        $scopeAliases['user'] = 'user';
+        $scopeAliases['mapper'] = 'user';
+    }
+    if (in_array('tag', $filterConfig['categories'])) {
+        $scopeAliases['tag'] = 'tag';
+    }
+    if ($showTournamentFilters) {
+        $scopeAliases['slot'] = 'slot';
+        $scopeAliases['tournament'] = 'tournament';
+        $scopeAliases['series'] = 'series';
+    }
 
     $allFilters = [];
 
@@ -47,6 +65,49 @@
             $code = $cRow['Country'];
             $fullName = getFullCountryName($code) ?? $code;
             $allFilters[] = ['type' => 'country', 'id' => $code, 'name' => $fullName, 'label' => "Country: $fullName"];
+        }
+    }
+
+    if ($showTournamentFilters) {
+        $acronymQuery = $conn->query("SELECT REGEXP_REPLACE(Slot, '[0-9]+$', '') AS Acronym,
+                COUNT(DISTINCT tournament_maps.BeatmapID) AS MapCount,
+                COUNT(DISTINCT Slot) AS Variants
+            FROM tournament_maps
+            JOIN beatmaps ON beatmaps.BeatmapID = tournament_maps.BeatmapID
+            WHERE Slot REGEXP '^[A-Za-z]+[0-9]*$'
+            GROUP BY Acronym
+            HAVING Variants > 1
+            ORDER BY MapCount DESC");
+        $slotAcryonyms = [];
+        while ($mRow = $acronymQuery->fetch_assoc()) {
+            $value = $mRow['Acronym'] . '*';
+            $slotAcryonyms[$mRow['Acronym']] = $value;
+            $allFilters[] = [
+                'type' => 'slot',
+                'id' => $value,
+                'name' => formatFilterSlotName($value),
+                'label' => "Slot: " . $value . " (any)",
+                'count' => (int)$mRow['MapCount'],
+                'parentID' => null,
+            ];
+        }
+
+        $slotQuery = $conn->query("SELECT Slot, COUNT(DISTINCT tournament_maps.BeatmapID) AS MapCount
+            FROM tournament_maps
+            JOIN beatmaps ON beatmaps.BeatmapID = tournament_maps.BeatmapID
+            WHERE Slot IS NOT NULL AND Slot != ''
+            GROUP BY Slot
+            ORDER BY MapCount DESC");
+        while ($sRow = $slotQuery->fetch_assoc()) {
+            $acronym = preg_replace('/[0-9]+$/', '', $sRow['Slot']);
+            $allFilters[] = [
+                'type' => 'slot',
+                'id' => $sRow['Slot'],
+                'name' => $sRow['Slot'],
+                'label' => "Slot: " . $sRow['Slot'],
+                'count' => (int)$sRow['MapCount'],
+                'parentID' => $slotAcronym[$acronym] ?? null,
+            ];
         }
     }
 
@@ -84,6 +145,8 @@
     $preloadedTokens = decodeTokens(postOrGet('tokens', ''));
     if (is_array($preloadedTokens)) {
         $preloadedUserIds = [];
+        $preloadedTournamentIds = [];
+        $preloadedSeriesIds = [];
 
         foreach ($preloadedTokens as $preloadedToken) {
             if ($preloadedToken['type'] === 'user') {
@@ -91,6 +154,27 @@
             }
             elseif ($preloadedToken['type'] === 'tag') {
                 $allFilters[] = ['type' => 'tag', 'id' => $preloadedToken['id'], 'name' => $preloadedToken['id'], 'label' => "Tag: " . $preloadedToken['id']];
+            }
+            elseif ($preloadedToken['type'] === 'slot') {
+                $slotValue = (string)$preloadedToken['id'];
+                $known = false;
+                foreach ($allFilters as $existing) {
+                    if ($existing['type'] === 'slot' && (string)$existing['id'] === $slotValue) {
+                        $known = true;
+                        break;
+                    }
+                }
+
+                if (!$known) {
+                    $slotName = formatFilterSlotName($slotValue);
+                    $allFilters[] = ['type' => 'slot', 'id' => $slotValue, 'name' => $slotName, 'label' => "Slot: " . $slotName];
+                }
+            }
+            elseif ($preloadedToken['type'] === 'tournament') {
+                $preloadedTournamentIds[] = (int)$preloadedToken['id'];
+            }
+            elseif ($preloadedToken['type'] === 'series') {
+                $preloadedSeriesIds[] = (int)$preloadedToken['id'];
             }
         }
 
@@ -111,6 +195,44 @@
             }
             $stmt->close();
         }
+
+        if (!empty($preloadedTournamentIds)) {
+            $ph = implode(',', array_fill(0, count($preloadedTournamentIds), '?'));
+            $stmt = $conn->prepare("SELECT TournamentID, Name, Acronym FROM tournaments WHERE TournamentID IN ($ph)");
+            $stmt->bind_param(str_repeat('i', count($preloadedTournamentIds)), ...$preloadedTournamentIds);
+            $stmt->execute();
+            $preloadedTournaments = $stmt->get_result();
+
+            while ($preloadedTournament = $preloadedTournaments->fetch_assoc()) {
+                $acronym = (string)($preloadedTournament['Acronym'] ?? '');
+                $allFilters[] = [
+                    'type' => 'tournament',
+                    'id' => (int)$preloadedTournament['TournamentID'],
+                    'name' => $preloadedTournament['Name'],
+                    'label' => "Tournament: " . $preloadedTournament['Name'] . ($acronym !== '' ? " ($acronym)" : ""),
+                ];
+            }
+            $stmt->close();
+        }
+
+        if (!empty($preloadedSeriesIds)) {
+            $ph = implode(',', array_fill(0, count($preloadedSeriesIds), '?'));
+            $stmt = $conn->prepare("SELECT SeriesID, Name, Acronym FROM tournament_series WHERE SeriesID IN ($ph)");
+            $stmt->bind_param(str_repeat('i', count($preloadedSeriesIds)), ...$preloadedSeriesIds);
+            $stmt->execute();
+            $preloadedSeries = $stmt->get_result();
+
+            while ($preloadedSeriesRow = $preloadedSeries->fetch_assoc()) {
+                $acronym = (string)($preloadedSeriesRow['Acronym'] ?? '');
+                $allFilters[] = [
+                    'type' => 'series',
+                    'id' => (int)$preloadedSeriesRow['SeriesID'],
+                    'name' => $preloadedSeriesRow['Name'],
+                    'label' => "Series: " . $preloadedSeriesRow['Name'] . ($acronym !== '' ? " ($acronym)" : ""),
+                ];
+            }
+            $stmt->close();
+        }
     }
 
     usort($allFilters, function ($a, $b) {
@@ -121,14 +243,21 @@
     });
 
     $allFiltersJSON = json_encode($allFilters);
-    $asyncCategoriesJSON = json_encode(array_values(array_intersect(['user', 'tag'], $filterConfig['categories'])));
+    $asyncCategories = array_values(array_intersect(['user', 'tag'], $filterConfig['categories']));
+    if ($showTournamentFilters) {
+        $asyncCategories[] = 'tournament';
+        $asyncCategories[] = 'series';
+    }
+
+    $asyncCategoriesJSON = json_encode($asyncCategories);
+    $scopeAliasesJSON = json_encode((object)$scopeAliases);
 
     function isActivityChecked($key) {
         $cookieName = 'pref_activity_' . $key;
         if (isset($_COOKIE[$cookieName])) {
             return filter_var($_COOKIE[$cookieName], FILTER_VALIDATE_BOOLEAN);
         }
-        return true; 
+        return true;
     }
 ?>
 
@@ -315,12 +444,23 @@
                     echo implode(', ', $renderedExamples);
                 ?>
                 <br>
-                <?php if (in_array('user', $filterConfig['categories']) || in_array('tag', $filterConfig['categories'])): ?>
-                    Prefix a search with
-                    <?php if (in_array('user', $filterConfig['categories'])): ?><code class="filter-example">user:</code> to search only mappers<?php endif; ?>
-                    <?php if (in_array('user', $filterConfig['categories']) && in_array('tag', $filterConfig['categories'])): ?>or<?php endif; ?>
-                    <?php if (in_array('tag', $filterConfig['categories'])): ?><code class="filter-example">tag:</code> to search only tags<?php endif; ?>
-                <?php endif; ?>
+                <?php
+                    $scopeHints = [];
+                    foreach (array_values(array_unique(array_values($scopeAliases))) as $scopeCategory) {
+                        $scopeHints[] = "<code class='filter-example'>{$scopeCategory}:</code>";
+                    }
+
+                    if (!empty($scopeHints)) {
+                        $lastHint = array_pop($scopeHints);
+                        echo 'Prefix a search with '
+                            . (empty($scopeHints) ? $lastHint : implode(', ', $scopeHints) . ' or ' . $lastHint)
+                            . ' to search only that category';
+
+                        if ($showTournamentFilters) {
+                            echo " (<code class='filter-example'>slot:nm*</code> covers every NM slot)";
+                        }
+                    }
+                ?>
             </details>
         <?php endif; ?>
     </div>
@@ -363,6 +503,9 @@
         country: 'c',
         user: 'u',
         tag: 'k',
+        slot: 'v',
+        tournament: 'w',
+        series: 'q',
         sr: 'r',
         cs: 'p',
         ar: 'a',
@@ -382,6 +525,9 @@
         country: 'or',
         user: 'or',
         tag: 'or',
+        slot: 'or',
+        tournament: 'or',
+        series: 'or',
         genre: 'or',
         language: 'or',
         status: 'or',
@@ -419,6 +565,15 @@
                     break;
                 case 'tag':
                     parts.push(`k${ex}${encodeFilterTagValue(t.id)}`);
+                    break;
+                case 'slot':
+                    parts.push(`v${ex}${encodeFilterTagValue(t.id)}`);
+                    break;
+                case 'tournament':
+                    parts.push(`w${ex}${t.id}`);
+                    break;
+                case 'series':
+                    parts.push(`q${ex}${t.id}`);
                     break;
                 case 'genre':
                     parts.push(`g${ex}${t.id}`);
@@ -499,6 +654,20 @@
             }
 
             switch (prefix) {
+                case 'w':
+                    tokens.push({
+                        type: 'tournament',
+                        id: parseInt(rest, 10),
+                        exclude
+                    });
+                    break;
+                case 'q':
+                    tokens.push({
+                        type: 'series',
+                        id: parseInt(rest, 10),
+                        exclude
+                    });
+                    break;
                 case 'g':
                     tokens.push({
                         type: 'genre',
@@ -553,6 +722,14 @@
                 case 'k':
                     tokens.push({
                         type: 'tag',
+                        id: decodeURIComponent(rest),
+                        exclude
+                    });
+                    break;
+
+                case 'v':
+                    tokens.push({
+                        type: 'slot',
                         id: decodeURIComponent(rest),
                         exclude
                     });
@@ -644,8 +821,19 @@
         return tokens;
     }
 
+    // same as formatFilterSlotName() in helpers.php
+    function omdbSlotDisplayName(value) {
+        const match = /^([A-Za-z]+)\*$/.exec(value);
+
+        return match ? match[1] + ' (any)' : value;
+    }
+
     function omdbEscapeHtml(value) {
         return $('<div>').text(value === null || value === undefined ? '' : value).html();
+    }
+
+    function omdbEscapeAttr(value) {
+        return omdbEscapeHtml(value).replace(/"/g, '&quot;');
     }
 
     // Turns filter payload into readable phrases (e.g. "Descriptors: Tech or Alt")
@@ -664,6 +852,9 @@
             descriptor: 'Descriptors',
             user: 'Mapped by',
             tag: 'Tagged',
+            slot: 'Tournament slot',
+            tournament: 'Tournament',
+            series: 'Tournament series',
             genre: 'Genre',
             language: 'Language',
             country: 'Mapper country',
@@ -762,6 +953,9 @@
         const asyncCategories = <?php echo $asyncCategoriesJSON; ?>;
         const asyncCache = {};
         const asyncPending = {};
+
+        // Acronyms like "CO" are worth looking up
+        const ASYNC_MIN_QUERY_LENGTH = 2;
         let debounceTimer = null;
 
         const $input = $('#filter-input');
@@ -854,35 +1048,93 @@
             });
         }
 
-        // "user:foo" / "tag:foo" narrows the search down to one of the categories in lookup.php
-        function parseScopedQuery(raw) {
-            const match = raw.match(/^(user|mapper|tag)\s*:\s*(.*)$/i);
-            if (!match)
-                return { scope: null, query: raw };
+        function appendTreeItems(catName, items, options) {
+            const numeric = !!(options && options.numeric);
+            const compare = (a, b) => a.name.localeCompare(b.name, undefined, numeric ? { numeric: true } : undefined);
 
-            return {
-                scope: match[1].toLowerCase() === 'tag' ? 'tag' : 'user',
-                query: match[2].trim()
-            };
+            $popover.append(`<div class="popover-category-header">${omdbEscapeHtml(catName)}</div>`);
+
+            function buildTree(parentID, depth) {
+                let html = '';
+                const children = items
+                    .filter(d => d.parentID == parentID || (!d.parentID && !parentID))
+                    .sort(compare);
+
+                children.forEach(child => {
+                    const isSelected = activeTokens.some(t => t.type === child.type && t.id == child.id);
+
+                    let style = `padding: 0.4em 1em 0.4em ${1 + depth * 1.5}em;`;
+                    let classes = 'desc-tree-node';
+
+                    if (child.usable === false) {
+                        style += ' color: #888; font-style: italic; cursor: default;';
+                    } else if (isSelected) {
+                        style += ' color: #555; background-color: #112222; text-decoration: line-through; cursor: default;';
+                    } else {
+                        classes += ' popover-item';
+                    }
+
+                    const count = child.count ? ` <span class="popover-item-count">(${child.count})</span>` : '';
+
+                    html += `<div class="${classes}" style="${style}" data-id="${omdbEscapeAttr(child.id)}">${omdbEscapeHtml(child.name)}${count}</div>`;
+                    html += buildTree(child.id, depth + 1);
+                });
+
+                return html;
+            }
+
+            const $treeContainer = $(`<div>${buildTree(null, 0)}</div>`);
+
+            $treeContainer.find('.popover-item').attr('title', 'Left-click to include, Right-click (or shift-click) to exclude');
+            $treeContainer.find('.popover-item').on('click contextmenu', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const id = $(this).data('id');
+                const item = items.find(d => d.id == id);
+
+                if (item && item.usable !== false) {
+                    pushToken(item, e.type === 'contextmenu' || e.shiftKey);
+                    $input.val('');
+                    $popover.hide();
+                    renderChips();
+                    fireUpdate();
+                    $input.focus();
+                }
+            });
+
+            $popover.append($treeContainer);
         }
 
-        function asyncResults(type, query) {
-            const key = type + '|' + query;
+        // "user:foo" / "tag:foo" / "slot:foo" narrows the search down to one of the categories in lookup.php
+        const SCOPE_ALIASES = <?php echo $scopeAliasesJSON; ?>;
 
-            if (asyncCache[key])
-                return asyncCache[key];
+        function parseScopedQuery(raw) {
+            const match = raw.match(/^([a-z]+)\s*:\s*(.*)$/i);
+            const scope = match ? SCOPE_ALIASES[match[1].toLowerCase()] : null;
 
-            if (!asyncPending[key]) {
-                asyncPending[key] = true;
-                $.getJSON('/filter/lookup.php', { type: type, q: query })
+            if (!scope)
+                return { scope: null, query: raw };
+
+            return { scope: scope, query: match[2].trim() };
+        }
+
+        // Every async cat comes back in 1 response
+        function asyncResults(query) {
+            if (asyncCache[query])
+                return asyncCache[query];
+
+            if (!asyncPending[query]) {
+                asyncPending[query] = true;
+                $.getJSON('/filter/lookup.php', { type: asyncCategories.join(','), q: query })
                     .done(function(data) {
-                        asyncCache[key] = (data && data.results) || [];
+                        asyncCache[query] = (data && data.results) || [];
                         const current = parseScopedQuery($input.val().trim());
                         if (current.query.toLowerCase() === query)
                             renderPopover();
                     })
                     .always(function() {
-                        delete asyncPending[key];
+                        delete asyncPending[query];
                     });
             }
 
@@ -894,21 +1146,22 @@
             const query = scoped.query.toLowerCase();
             $popover.empty().hide();
 
-            let matches = scoped.scope ? [] : lookupMatrix.filter(f => {
+            let matches = lookupMatrix.filter(f => {
                 // If actively typing, we ONLY want to search for 'usable' descriptors
                 // otherwise the tree is drawn later instead
                 if (f.type === 'descriptor' && !f.usable) return false;
-                if (f.type === 'user' || f.type === 'tag') return false;
+                if (asyncCategories.indexOf(f.type) !== -1) return false;
+                if (scoped.scope && f.type !== scoped.scope) return false;
 
                 return (!query || f.label.toLowerCase().includes(query)) &&
                        !activeTokens.some(t => t.id == f.id && t.type === f.type);
             });
 
-            // Mappers and tags live server-side, so a query that matches nothing locally from the other cats still has to reach the user/tag lookup before we give up on it
-            const mayLookUp = asyncCategories.length > 0 && (scoped.scope || query.length >= 3);
+            // Mappers, tags and slots live server-side, so a query that matches nothing locally from the other cats still has to reach lookup before we give up on it
+            const mayLookUp = asyncCategories.length > 0 && (scoped.scope || query.length >= ASYNC_MIN_QUERY_LENGTH);
 
             if (matches.length > 0 || !query || scoped.scope || mayLookUp) {
-                const groups = { status: [], meta: [], genre: [], language: [], descriptor: [], country: [] };
+                const groups = { status: [], meta: [], genre: [], language: [], descriptor: [], country: [], slot: [] };
 
                 matches.forEach(m => {
                     if (groups[m.type]) groups[m.type].push(m);
@@ -916,6 +1169,7 @@
 
                 if (!query) {
                     groups.descriptor = [];
+                    groups.slot = [];
                 } else {
                     Object.keys(groups).forEach(k => {
                         groups[k] = groups[k].slice(0, 15);
@@ -930,93 +1184,52 @@
                     language: 'Languages',
                     country: 'Countries',
                     user: 'Mappers',
-                    tag: 'Tags'
+                    tag: 'Tags',
+                    slot: 'Tournament Slots',
+                    tournament: 'Tournaments',
+                    series: 'Tournament Series'
                 };
 
-                const displayOrder = ['status', 'meta', 'descriptor', 'user', 'tag', 'genre', 'language', 'country'];
+                const displayOrder = ['status', 'meta', 'descriptor', 'user', 'tag', 'slot', 'tournament', 'series', 'genre', 'language', 'country'];
                 let addedSomething = false;
 
                 displayOrder.forEach(cat => {
                     // Below is basically:
-                    // If it's user or tag cat then render the lookup.php results
+                    // If it's a lookup cat then render its part of the response
                     // Else if there's no search query and current cat is descriptor, render desc tree
                     // else render them normally
-                    if ((cat === 'user' || cat === 'tag')) {
-                        if (asyncCategories.indexOf(cat) === -1)
-                            return;
+                    if (asyncCategories.indexOf(cat) !== -1) {
                         if (scoped.scope && scoped.scope !== cat)
                             return;
-                        if (!scoped.scope && query.length <= 2)
+                        if (!scoped.scope && query.length < ASYNC_MIN_QUERY_LENGTH)
                             return;
                         if (scoped.scope === cat && cat === 'user' && query.length === 0)
                             return;
 
-                        const results = asyncResults(cat, query);
+                        const results = asyncResults(query);
                         if (!results)
                             return;
 
-                        const items = results.filter(r => !activeTokens.some(t => t.type === r.type && t.id == r.id));
+                        const items = results.filter(r => r.type === cat && !activeTokens.some(t => t.type === r.type && t.id == r.id));
                         if (items.length === 0)
                             return;
 
                         addedSomething = true;
                         appendPopoverItems(catNames[cat], items);
                     } else if (cat === 'descriptor' && !query && !scoped.scope) {
+                        const descriptorItems = lookupMatrix.filter(f => f.type === 'descriptor');
+                        if (descriptorItems.length === 0)
+                            return;
+
                         addedSomething = true;
-                        $popover.append(`<div class="popover-category-header">Descriptors Tree</div>`);
+                        appendTreeItems('Descriptors Tree', descriptorItems);
+                    } else if (cat === 'slot' && !query && (!scoped.scope || scoped.scope === 'slot')) {
+                        const slotItems = lookupMatrix.filter(f => f.type === 'slot');
+                        if (slotItems.length === 0)
+                            return;
 
-                        const allDescriptors = lookupMatrix.filter(f => f.type === 'descriptor');
-
-                        function buildTree(parentID, depth) {
-                            let html = '';
-                            const children = allDescriptors
-                                .filter(d => d.parentID == parentID || (!d.parentID && !parentID))
-                                .sort((a, b) => a.name.localeCompare(b.name));
-
-                            children.forEach(child => {
-                                const isSelected = activeTokens.some(t => t.type === 'descriptor' && t.id == child.id);
-
-                                let style = `padding: 0.4em 1em 0.4em ${1 + depth * 1.5}em;`;
-                                let classes = 'desc-tree-node';
-
-                                if (!child.usable) {
-                                    style += ' color: #888; font-style: italic; cursor: default;';
-                                } else if (isSelected) {
-                                    style += ' color: #555; background-color: #112222; text-decoration: line-through; cursor: default;';
-                                } else {
-                                    classes += ' popover-item';
-                                }
-
-                                html += `<div class="${classes}" style="${style}" data-id="${child.id}">${child.name}</div>`;
-
-                                html += buildTree(child.id, depth + 1);
-                            });
-                            return html;
-                        }
-
-                        const treeHTML = buildTree(null, 0);
-                        const $treeContainer = $(`<div>${treeHTML}</div>`);
-
-                        $treeContainer.find('.popover-item').attr('title', 'Left-click to include, Right-click (or shift-click) to exclude');
-                        $treeContainer.find('.popover-item').on('click contextmenu', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            const isExclude = e.type === 'contextmenu' || e.shiftKey;
-                            const id = $(this).data('id');
-                            const item = allDescriptors.find(d => d.id == id);
-
-                            if (item && item.usable) {
-                                pushToken(item, isExclude);
-                                $input.val('');
-                                $popover.hide();
-                                renderChips();
-                                fireUpdate();
-                                $input.focus();
-                            }
-                        });
-
-                        $popover.append($treeContainer);
+                        addedSomething = true;
+                        appendTreeItems(catNames.slot, slotItems, { numeric: true });
                     } else if (groups[cat] && groups[cat].length > 0) {
                         addedSomething = true;
                         appendPopoverItems(catNames[cat], groups[cat]);
@@ -1088,7 +1301,7 @@
         $(document).on('click', '.filter-help code.filter-example', function(e) {
             const example = $(this).text().trim();
 
-            if (example.slice(-1) === ':') {
+            if (example.slice(-1) === ':' || /^(user|mapper|tag|slot)\s*:/i.test(example)) {
                 $input.val(example).trigger('focus').trigger('input');
                 return;
             }
@@ -1123,14 +1336,16 @@
                     }
                 }
 
-                // A "tag:" search that matched nothing is still a valid filter since tags are free text
+                // A "tag:"/"slot:" search that matched nothing is still a valid filter since both are free text
                 const scoped = parseScopedQuery($(this).val().trim());
-                if (scoped.scope === 'tag' && scoped.query !== '') {
+                if ((scoped.scope === 'tag' || scoped.scope === 'slot') && scoped.query !== '') {
+                    const scopeLabel = scoped.scope === 'tag' ? 'Tag: ' : 'Slot: ';
+                    const scopeName = scoped.scope === 'slot' ? omdbSlotDisplayName(scoped.query) : scoped.query;
                     pushToken({
-                        type: 'tag',
+                        type: scoped.scope,
                         id: scoped.query,
-                        name: scoped.query,
-                        label: 'Tag: ' + scoped.query
+                        name: scopeName,
+                        label: scopeLabel + scopeName
                     }, exclude);
 
                     $(this).val('');
@@ -1213,6 +1428,12 @@
                     prefix = tok.exclude ? '<b>Exclude</b> maps by ' : '<b>Only</b> maps by ';
                 } else if (tok.type === 'tag') {
                     prefix = tok.exclude ? '<b>Exclude</b> maps tagged ' : '<b>Only</b> maps tagged ';
+                } else if (tok.type === 'slot') {
+                    prefix = tok.exclude ? '<b>Exclude</b> maps in slot ' : '<b>Only</b> maps in slot ';
+                } else if (tok.type === 'tournament') {
+                    prefix = tok.exclude ? '<b>Exclude</b> maps from ' : '<b>Only</b> maps from ';
+                } else if (tok.type === 'series') {
+                    prefix = tok.exclude ? '<b>Exclude</b> maps from series ' : '<b>Only</b> maps from series ';
                 }
 
                 const $chip = $(`<span class="filter-chip" style="background-color: ${bg}; border-color: ${border};">

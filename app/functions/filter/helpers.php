@@ -8,12 +8,31 @@
         return rawurldecode($value);
     }
 
+    function filterSlotAcronym(string $value): ?string {
+        if (substr($value, -1) !== '*') {
+            return null;
+        }
+
+        $base = substr($value, 0, -1);
+
+        return preg_match('/^[A-Za-z]+$/', $base) ? $base : null;
+    }
+
+    function formatFilterSlotName(string $value): string {
+        $acronym = filterSlotAcronym($value);
+
+        return ($acronym === null) ? $value : $acronym . ' (any)';
+    }
+
     function filterJoinTypeChars(): array {
         return [
             'descriptor' => 'd',
             'country' => 'c',
             'user' => 'u',
             'tag' => 'k',
+            'slot' => 'v',
+            'tournament' => 'w',
+            'series' => 'q',
             'sr' => 'r',
             'cs' => 'p',
             'ar' => 'a',
@@ -35,6 +54,9 @@
             'country' => 'or',
             'user' => 'or',
             'tag' => 'or',
+            'slot' => 'or',
+            'tournament' => 'or',
+            'series' => 'or',
             'genre' => 'or',
             'language' => 'or',
             'status' => 'or',
@@ -78,6 +100,18 @@
 
                 case 'tag':
                     $parts[] = "k{$ex}" . encodeFilterTagValue((string)$id);
+                    break;
+
+                case 'slot':
+                    $parts[] = "v{$ex}" . encodeFilterTagValue((string)$id);
+                    break;
+
+                case 'tournament':
+                    $parts[] = "w{$ex}" . (int)$id;
+                    break;
+
+                case 'series':
+                    $parts[] = "q{$ex}" . (int)$id;
                     break;
 
                 case 'genre':
@@ -187,6 +221,22 @@
             }
 
             switch ($prefix) {
+                case 'w':
+                    $tokens[] = [
+                        'type' => 'tournament',
+                        'id' => (int)$rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'q':
+                    $tokens[] = [
+                        'type' => 'series',
+                        'id' => (int)$rest,
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
                 case 'g':
                     $tokens[] = [
                         'type' => 'genre',
@@ -248,6 +298,14 @@
                 case 'k':
                     $tokens[] = [
                         'type' => 'tag',
+                        'id' => decodeFilterTagValue($rest),
+                        'exclude' => $exclude,
+                    ];
+                    break;
+
+                case 'v':
+                    $tokens[] = [
+                        'type' => 'slot',
                         'id' => decodeFilterTagValue($rest),
                         'exclude' => $exclude,
                     ];
@@ -424,6 +482,12 @@
             'exUsers' => [],
             'tags' => [],
             'exTags' => [],
+            'slots' => [],
+            'exSlots' => [],
+            'tournaments' => [],
+            'exTournaments' => [],
+            'series' => [],
+            'exSeries' => [],
             'rangeFilters' => [],
             'joinModes' => [],
         ];
@@ -494,6 +558,27 @@
                 $parsed['exTags'][] = (string)$id;
                 } else {
                 $parsed['tags'][] = (string)$id;
+                }
+            } elseif ($type === 'tournament') {
+                if ($exclude) {
+                $parsed['exTournaments'][] = (int)$id;
+                } else {
+                $parsed['tournaments'][] = (int)$id;
+                }
+            } elseif ($type === 'series') {
+                if ($exclude) {
+                $parsed['exSeries'][] = (int)$id;
+                } else {
+                $parsed['series'][] = (int)$id;
+                }
+            } elseif ($type === 'slot') {
+                if ($id === '') {
+                continue;
+                }
+                if ($exclude) {
+                $parsed['exSlots'][] = (string)$id;
+                } else {
+                $parsed['slots'][] = (string)$id;
                 }
             } elseif (isset($rangeColumns[$type]) && !empty($t['ops'])) {
                 $dbCol = $rangeColumns[$type];
@@ -693,6 +778,99 @@
             $sql .= " AND NOT EXISTS (SELECT 1 FROM rating_tags rt_f WHERE rt_f.BeatmapID = b.BeatmapID AND rt_f.Tag = ?)";
             $types .= 's';
             $values[] = $tag;
+        }
+
+        // LIKE narrows via idx_tm_slot
+        // REGEXP keeps "DT*" off DTHR1 and friends
+        $slotCondition = function (string $slot): array {
+            $acronym = filterSlotAcronym($slot);
+
+            if ($acronym !== null) {
+                return [
+                    'sql' => "EXISTS (SELECT 1 FROM tournament_maps tm_f WHERE tm_f.BeatmapID = b.BeatmapID AND tm_f.Slot LIKE ? AND tm_f.Slot REGEXP ?)",
+                    'types' => 'ss',
+                    'values' => [$acronym . '%', '^' . $acronym . '[0-9]*$'],
+                ];
+            }
+
+            return [
+                'sql' => "EXISTS (SELECT 1 FROM tournament_maps tm_f WHERE tm_f.BeatmapID = b.BeatmapID AND tm_f.Slot = ?)",
+                'types' => 's',
+                'values' => [$slot],
+            ];
+        };
+
+        if (!empty($parsed['slots'])) {
+            $fragments = array_map($slotCondition, $parsed['slots']);
+
+            if ($joinMode('slot') === 'or') {
+                $parts = [];
+                foreach ($fragments as $fragment) {
+                    $parts[] = $fragment['sql'];
+                    $types .= $fragment['types'];
+                    $values = array_merge($values, $fragment['values']);
+                }
+
+                $sql .= " AND (" . implode(" OR ", $parts) . ")";
+            } else {
+                $addGroup($fragments);
+            }
+        }
+        foreach ($parsed['exSlots'] as $slot) {
+            $fragment = $slotCondition($slot);
+            $sql .= " AND NOT " . $fragment['sql'];
+            $types .= $fragment['types'];
+            $values = array_merge($values, $fragment['values']);
+        }
+
+        if (!empty($parsed['tournaments'])) {
+            if ($joinMode('tournament') === 'or') {
+                $ph = implode(',', array_fill(0, count($parsed['tournaments']), '?'));
+                $sql .= " AND EXISTS (SELECT 1 FROM tournament_maps tm_t WHERE tm_t.BeatmapID = b.BeatmapID AND tm_t.TournamentID IN ($ph))";
+                $types .= str_repeat('i', count($parsed['tournaments']));
+                $values = array_merge($values, $parsed['tournaments']);
+            } else {
+                $fragments = [];
+                foreach ($parsed['tournaments'] as $tournamentId) {
+                    $fragments[] = [
+                        'sql' => "EXISTS (SELECT 1 FROM tournament_maps tm_t WHERE tm_t.BeatmapID = b.BeatmapID AND tm_t.TournamentID = ?)",
+                        'types' => 'i',
+                        'values' => [$tournamentId],
+                    ];
+                }
+                $addGroup($fragments);
+            }
+        }
+        foreach ($parsed['exTournaments'] as $tournamentId) {
+            $sql .= " AND NOT EXISTS (SELECT 1 FROM tournament_maps tm_t WHERE tm_t.BeatmapID = b.BeatmapID AND tm_t.TournamentID = ?)";
+            $types .= 'i';
+            $values[] = $tournamentId;
+        }
+
+        $seriesExists = "EXISTS (SELECT 1 FROM tournament_maps tm_s JOIN tournaments tn_s ON tn_s.TournamentID = tm_s.TournamentID WHERE tm_s.BeatmapID = b.BeatmapID AND tn_s.SeriesID";
+
+        if (!empty($parsed['series'])) {
+            if ($joinMode('series') === 'or') {
+                $ph = implode(',', array_fill(0, count($parsed['series']), '?'));
+                $sql .= " AND {$seriesExists} IN ($ph))";
+                $types .= str_repeat('i', count($parsed['series']));
+                $values = array_merge($values, $parsed['series']);
+            } else {
+                $fragments = [];
+                foreach ($parsed['series'] as $seriesId) {
+                    $fragments[] = [
+                        'sql' => "{$seriesExists} = ?)",
+                        'types' => 'i',
+                        'values' => [$seriesId],
+                    ];
+                }
+                $addGroup($fragments);
+            }
+        }
+        foreach ($parsed['exSeries'] as $seriesId) {
+            $sql .= " AND NOT {$seriesExists} = ?)";
+            $types .= 'i';
+            $values[] = $seriesId;
         }
 
         if (!empty($parsed['descriptors'])) {
