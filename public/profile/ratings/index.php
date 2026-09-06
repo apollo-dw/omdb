@@ -40,7 +40,8 @@
         ],
         'showRating' => true,
         'showTag' => true,
-        'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user', 'slot']
+        'showTournamentFilters' => true,
+        'categories' => ['status', 'descriptor', 'genre', 'language', 'country', 'user']
     ];
     require __DIR__ . "/../../../app/functions/filter/index.php";
 ?><br>

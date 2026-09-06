@@ -48,7 +48,8 @@
                 'showTag' => false,
                 'showActivityToggles' => true,
                 'sortOptions' => [],
-                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'user', 'tag', 'slot'],
+                'showTournamentFilters' => true,
+                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'user', 'tag'],
             ];
             require __DIR__ . "/../../app/functions/filter/index.php";
         ?>

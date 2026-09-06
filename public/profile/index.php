@@ -784,7 +784,8 @@ if ($hasMaps) {
                     '5' => 'Most rated',
                     '6' => 'Least rated',
                 ],
-                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag', 'slot'],
+                'showTournamentFilters' => true,
+                'categories' => ['genre', 'language', 'country', 'descriptor', 'status', 'meta', 'user', 'tag'],
             ];
             require __DIR__ . '/../../app/functions/filter/index.php';
         ?>
