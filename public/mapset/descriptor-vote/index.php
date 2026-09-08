@@ -104,7 +104,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
 
         .descriptor-box {
             border:1px solid white;
-            margin: 0.5em;
+            margin-top: 0.5em;
             padding: 1em;
         }
 
@@ -136,13 +136,14 @@ while ($voteRow = $voteResult->fetch_assoc()) {
         }
     </style>
 
-    <h1>Descriptor vote for <?php echo "{$title} [{$difficultyName}]"; ?></h1>
-    <a href="../<?php echo $beatmap["SetID"]; ?>">Return to mapset</a><br><br><br><br>
+    <h1 style="margin-bottom: 0;">Descriptor vote for <?php echo "{$title} [{$difficultyName}]"; ?></h1>
+    <a href="../<?php echo $beatmap["SetID"]; ?>">Return to mapset</a><br>
+
+    <hr><br>
 
     <div style="background-color:DarkSlateGrey; padding: 0.5em;">
         <p>
-            You can propose and vote on descriptors for <b><?php echo "{$title} [{$difficultyName}]"; ?></b> on this page.<br>
-            Click <i>Propose Descriptor</i> to select a new descriptor.
+            You can propose and vote on descriptors for <b><?php echo "{$title} [{$difficultyName}]"; ?></b> on this page.
         </p>
         <p>
             Misuse of the descriptor feature will result in you being banned. Do not abuse this feature by assigning obviously incorrect descriptors.
@@ -290,9 +291,18 @@ while ($voteRow = $voteResult->fetch_assoc()) {
             } else if (e.key === 'Enter') {
                 e.preventDefault();
 
+                const rawSearchValue = searchInput.value.trim().toLowerCase();
                 let targetItem = null;
 
-                if (currentFocusIndex > -1 && validItems[currentFocusIndex]) {
+                const exactMatch = validItems.find(item => {
+                    const span = item.querySelector('span');
+                    const name = span ? span.textContent.trim().toLowerCase() : '';
+                    return name === rawSearchValue;
+                });
+
+                if (exactMatch) {
+                    targetItem = exactMatch;
+                } else if (currentFocusIndex > -1 && validItems[currentFocusIndex]) {
                     targetItem = validItems[currentFocusIndex];
                 } else if (validItems.length === 1) {
                     targetItem = validItems[0];
