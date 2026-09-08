@@ -138,7 +138,7 @@
 <br><br>
 
 <h2 style="margin-bottom: 0px;">Highest ranked <?php echo safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES); ?> maps</h2><br>
-<div class="flex-container map-card-strip alternating-bg" style="width:100%;padding:0;margin-bottom:2em;justify-content: flex-start;">
+<div class="flex-container map-card-strip alternating-bg" style="width:100%;padding:0;justify-content: flex-start;">
     <?php
     $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
             SELECT DescriptorID
@@ -274,6 +274,8 @@
             }
         }
 
+        $stmt->close();
+
         $logMax = $maxPercentage > 0 ? log10($maxPercentage + 1) : 1;
         foreach ($yearlyData as $year => $data) {
             $pct = $data['percentage'];
@@ -282,8 +284,8 @@
             $barHeight = ($logCurrent / $logMax) * 100;
             $formattedPercent = number_format($pct, 2) . '%';
 
-            echo '<div class="tooltip-wrapper" style="width:100%;height:100%;">';
-            echo "<div class='bar' style='height: {$barHeight}%;'><span>{$year}</span></div>";
+            echo "<div class='tooltip-wrapper' style='width:100%;height: {$barHeight}%;'>";
+            echo "<div class='bar' style='height: 100%;'><span>{$year}</span></div>";
             echo "<div class='tooltip-box'>{$data['count']} maps ({$formattedPercent})</div>";
             echo '</div>';
         }
@@ -292,6 +294,59 @@
 </div>
 
 <br><br><br>
+
+<h2 style="margin-bottom: 0px;">List of maps</h2><br>
+<div style="max-width: 50%;">
+    <?php
+        $stmt = $conn->prepare("
+        WITH RECURSIVE DescendantDescriptors AS (
+            SELECT DescriptorID
+            FROM descriptors
+            WHERE DescriptorID = ?
+
+            UNION ALL
+
+            SELECT d.DescriptorID
+            FROM descriptors d
+            JOIN DescendantDescriptors dd
+                ON d.ParentID = dd.DescriptorID
+        )
+        SELECT *
+        FROM beatmaps b
+        JOIN beatmapsets s
+            ON b.SetID = s.SetID
+        JOIN beatmap_descriptors bd
+            ON b.BeatmapID = bd.BeatmapID
+        JOIN DescendantDescriptors dd
+            ON bd.DescriptorID = dd.DescriptorID
+        WHERE b.Mode = ?
+        ORDER BY s.DateRanked ASC
+        LIMIT 10;
+    ");
+
+    $stmt->bind_param("ii", $descriptor_id, $mode);
+    $stmt->execute();
+    $result = $stmt->get_result();
+        
+        foreach ($result as $row) {
+            ?>
+            <div class="flex-container ratingContainer alternating-bg">
+               <div class="flex-child" style="margin-left:0.5em;">
+				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
+			    </div>
+                <div class="flex-child">
+                    <a style="display:flex;" href="/mapset/<?php echo $row["SetID"]; ?>">
+                        <?php echo safe_htmlspecialchars($row["Artist"], ENT_QUOTES) . " - " . safe_htmlspecialchars($row["Title"], ENT_QUOTES) . " [" . safe_htmlspecialchars($row["DifficultyName"], ENT_QUOTES) . "]"; ?> <br>
+                    </a>
+                    <span class="subText">by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?> <br> <?php echo date('d-m-Y', strtotime($row["DateRanked"])); ?></span>
+                </div>
+            </div>
+            <?php
+        }
+    ?>
+</div>
+
+<br><br>
 <hr>
 
 <?php if ($loggedIn) { ?>
