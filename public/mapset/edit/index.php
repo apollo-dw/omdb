@@ -52,8 +52,10 @@ $rolesJson = json_encode($roles);
 
 ?>
 
-    <h1>Edit request for <?php echo safe_htmlspecialchars($sampleRow['Title'], ENT_QUOTES) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
-    <a href="../<?php echo $mapset_id; ?>">Return to mapset</a><br><br><br><br>
+    <h1 style="margin-bottom: 0;">Edit request for <?php echo safe_htmlspecialchars($sampleRow['Title'], ENT_QUOTES) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
+    <a href="../<?php echo $mapset_id; ?>">Return to mapset</a>
+
+    <hr><br>
 
     <style>
         .tab {
@@ -208,29 +210,15 @@ $rolesJson = json_encode($roles);
         } else { ?>
             You are submitting an edit request for <b>the whole set.</b><br>
             Misuse of the edit request feature will result in you being banned. This is not recommended.
-            <br><br>
-            <hr>
-            <u><b>Determining who the nominators of a moddingv1 set are is tricky.</b></u><br>
-            You'll need to look at the mapset's forum post and guesstimate, since icons have been removed. <br>
-            You can find the forum post through <a href="https://osu.ppy.sh/beatmapsets/<?php echo $mapset_id; ?>/discussion" target='_blank'>the modding discussions</a>. <br>
-            Wayback machine may prove useful aswell: <b>https://web.archive.org/web/20171125185124/http://osu.ppy.sh/forum/t/[insert forum id here]/</b><br> <br>
-
-            As some sort of "criteria":
-            <ul>
-                <li><b>Treat the set of bubbles before an unrank as the final nominations.</b> It was common for maps to get ranked again without any re-bubbles.</li>
-                <li><b>Treat the most recent set of bubbles as the final nominations.</b> It was extremely common for maps to get bubbled by one set of nominators, and then re-bubbled by a different set of nominators.</li>
-                <li>Approved and multi-mode maps will likely have 3 nominators associated with them. </li>
-                <li>Leaving links to the relevant forum posts in the proposal meta is good practice :)</li>
-            </ul>
+            <br>
             <hr>
             <form action="SubmitEditRequest.php" method="post" id="form-set" setID="<?php echo $mapset_id; ?>">
                 <b>Nominators</b><br>
-                <span class="subText">Add users that have nominated this beatmap.</span><br><br>
                 <div class="flex-container">
                     <div style="margin-right: 1em;">
                         <label>
-                            Add nominator ID:
-                            <input id="add-mapper-input-set" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" > <br>
+                            Add nominator:
+                            <input id="add-mapper-input-set" type="text" onkeypress="return event.keyCode != 13;" > <br>
                             <button type="button" id="add-mapper-btn-set" onclick="addMapperItem(this)" style="float:right;">Add</button>
                         </label>
                     </div>
@@ -254,12 +242,11 @@ $rolesJson = json_encode($roles);
                     </div>
                 </div><br>
 				<b>Credits</b><br>
-				<span class="subText">Add credits for users who participated in the beatmapset.</span><br><br>
 				<div class="flex-container">
 					<div style="margin-right: 1em;">
 						<label>
-							Add user ID:
-							<input id="add-credit-input-set" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;"> <br>
+							Add user:
+							<input id="add-credit-input-set" type="text" onkeypress="return event.keyCode != 13;"> <br>
 							<button type="button" id="add-credit-btn-set" onclick="addCreditItem(this)" style="float:right;">Add</button>
 						</label>
 					</div>
@@ -410,12 +397,11 @@ foreach ($difficulties as $beatmapID => $difficulty) {
         <hr>
         <form action="SubmitEditRequest.php" method="post" id="form-<?php echo $beatmapID; ?>" difficultyID="<?php echo $beatmapID; ?>">
             <b>Mappers</b><br>
-            <span class="subText">Add mappers that have contributed to this difficulty.</span><br><br>
             <div class="flex-container">
                 <div style="margin-right: 1em;">
                     <label>
                         Add mapper ID:
-                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" pattern="[0-9]+" placeholder="Add ID here" onkeypress="return event.keyCode != 13;" /> <br> <br>
+                        <input id="add-mapper-input-<?php echo $beatmapID; ?>" type="text" onkeypress="return event.keyCode != 13;" /> <br> <br>
                         <button type="button" id="backfill-btn-<?php echo $beatmapID; ?>" onclick="fetchCreatorsFromOsu(this)" >Fetch from osu!</button> <button type="button" id="add-mapper-btn-<?php echo $beatmapID; ?>" onclick="addMapperItem(this)" style="float:right;">Add</button>
                     </label>
                 </div>
@@ -552,9 +538,11 @@ foreach ($difficulties as $beatmapID => $difficulty) {
                     type: "GET",
                     url: "GetUsernameFromID.php",
                     data: { id: value },
-                    success: function(username) {
-                        if (username !== '') {
-                            const listItem = `<li data-creatorid='${value}'><i class='icon-remove remove-button'></i>  ${username} <span class='subText mapperid'>${value}</span></li>`;
+                    success: function(data) {
+                        var { success, username, id } = data;
+
+                        if (success) {
+                            const listItem = `<li data-creatorid='${id}'><i class='icon-remove remove-button'></i>  ${username} <span class='subText mapperid'>${id}</span></li>`;
                             list.append(listItem);
                             input.val('');
                         }
@@ -596,18 +584,20 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 					type: "GET",
 					url: "GetUsernameFromID.php",
 					data: { id: value },
-					success: function(username) {
-						if (username !== '') {
+					success: function(data) {
+						var { success, username, id } = data;
+
+						if (success) {
 							let options = '';
 							roles.forEach(function(role) {
 								options += `<option value="${role}">${role}</option>`;
 							});
 
 							const listItem = `
-								<li data-creatorid='${value}'>
+								<li data-creatorid='${id}'>
 									<i class='icon-remove remove-button'></i>
 									${username}
-									<span class='subText mapperid'>${value}</span>
+									<span class='subText mapperid'>${id}</span>
 									<select class='roles-select'>
 									<option value="" selected disabled>Select role</option>
                                     ${options}
