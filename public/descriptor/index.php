@@ -166,9 +166,12 @@
         FROM beatmaps b
         JOIN beatmapsets s
             ON b.SetID = s.SetID
-        JOIN beatmap_descriptors bd
-            ON b.BeatmapID = bd.BeatmapID
-        WHERE bd.DescriptorId IN ($descriptorPlaceholders)
+        WHERE EXISTS (
+            SELECT 1
+            FROM beatmap_descriptors bd
+            WHERE bd.BeatmapID = b.BeatmapID
+            AND bd.DescriptorId IN ($descriptorPlaceholders)
+        )
         AND b.Mode = ?
         AND b.Rating IS NOT NULL
         AND b.RatingCount >= 5
