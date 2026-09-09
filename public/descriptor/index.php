@@ -16,6 +16,35 @@
         exit();
     }
 
+    $stmt = $conn->prepare("
+        WITH RECURSIVE DescendantDescriptors AS (
+            SELECT DescriptorID
+            FROM descriptors
+            WHERE DescriptorID = ?
+            UNION ALL
+            SELECT d.DescriptorID
+            FROM descriptors d
+            JOIN DescendantDescriptors dd
+                ON d.ParentID = dd.DescriptorID
+        )
+        SELECT DescriptorID
+        FROM DescendantDescriptors
+    ");
+
+    $stmt->bind_param("i", $descriptor_id);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    $descendantDescriptors = [];
+    while ($row = $result->fetch_assoc()) {
+        $descendantDescriptors[] = (int)$row["DescriptorID"];
+    }
+
+    $descriptorPlaceholders = implode(",", array_fill(0, count($descendantDescriptors), "?"));
+
+    $stmt->close();
+
     function getParentTree($descriptor, $conn) {
         if ($descriptor['ParentID'] === null) {
             return '<a href="./?id=' . $descriptor['DescriptorID'] . '">' . safe_htmlspecialchars($descriptor['Name'], ENT_QUOTES) . '</a>';
@@ -31,36 +60,27 @@
         }
     }
 
+    $types = str_repeat("i", count($descendantDescriptors)) . "i";
     $stmt = $conn->prepare("
-        WITH RECURSIVE DescendantDescriptors AS (
-            SELECT DescriptorID
-            FROM descriptors
-            WHERE DescriptorID = ?
-
-            UNION ALL
-
-            SELECT d.DescriptorID
-            FROM descriptors d
-            JOIN DescendantDescriptors dd
-                ON d.ParentID = dd.DescriptorID
-        )
         SELECT
             COUNT(DISTINCT bd.BeatmapID) AS count,
             AVG(r.Score) AS average_rating
         FROM beatmap_descriptors bd
         JOIN beatmaps b
             ON b.BeatmapID = bd.BeatmapID
-        JOIN DescendantDescriptors dd
-            ON bd.DescriptorID = dd.DescriptorID
         LEFT JOIN ratings r
             ON r.BeatmapID = bd.BeatmapID
-        WHERE b.Mode = ?
+        WHERE bd.DescriptorID IN ($descriptorPlaceholders)
+        AND b.Mode = ?
     ");
-    $stmt->bind_param("ii", $descriptor_id, $mode);
+    $params = [...$descendantDescriptors, $mode];
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
     $beatmapCount = $result["count"] ?? 0;
-    $averageRating = $result["average_rating"] !== null ? round((float)$result["average_rating"], 2) : null;
+    $averageRating = $result["average_rating"] !== null
+        ? round((float)$result["average_rating"], 2)
+        : null;
     $stmt->close();
 
     $parentTree = getParentTree($descriptor, $conn);
@@ -140,36 +160,22 @@
 <h2 style="margin-bottom: 0px;">Highest ranked <?php echo safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES); ?> maps</h2><br>
 <div class="flex-container map-card-strip alternating-bg" style="width:100%;padding:0;justify-content: flex-start;">
     <?php
-    $stmt = $conn->prepare("WITH RECURSIVE DescendantDescriptors AS (
-            SELECT DescriptorID
-            FROM descriptors
-            WHERE DescriptorID = ?
-
-            UNION ALL
-
-            SELECT d.DescriptorID
-            FROM descriptors d
-            JOIN DescendantDescriptors dd
-                ON d.ParentID = dd.DescriptorID
-        ),
-        MatchingBeatmaps AS (
-            SELECT DISTINCT bd.BeatmapID
-            FROM beatmap_descriptors bd
-            JOIN DescendantDescriptors dd
-                ON bd.DescriptorID = dd.DescriptorID
-        )
+    $types = str_repeat("i", count($descendantDescriptors)) . "i";
+    $stmt = $conn->prepare("
         SELECT b.*, s.Title
-        FROM MatchingBeatmaps mb
-        JOIN beatmaps b
-            ON b.BeatmapID = mb.BeatmapID
+        FROM beatmaps b
         JOIN beatmapsets s
             ON b.SetID = s.SetID
-        WHERE b.Mode = ?
+        JOIN beatmap_descriptors bd
+            ON b.BeatmapID = bd.BeatmapID
+        WHERE bd.DescriptorId IN ($descriptorPlaceholders)
+        AND b.Mode = ?
         AND b.Rating IS NOT NULL
         AND b.RatingCount >= 5
         ORDER BY b.Rating DESC
         LIMIT 10;");
-    $stmt->bind_param("ii", $descriptor_id, $mode);
+    $params = [...$descendantDescriptors, $mode];
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
     $chartingMapCount = $result->num_rows;
@@ -210,20 +216,15 @@
 <div class="alternating-bg ratingDistributionChart" style="width:100%;padding:0px;">
     <div class="ratingDistributionContainer">
         <?php
+        $types = "i" . str_repeat("i", count($descendantDescriptors)) . "i";
         $stmt = $conn->prepare("
-            WITH RECURSIVE DescendantDescriptors AS (
-                SELECT DescriptorID FROM descriptors
-                WHERE DescriptorID = ?
-                UNION ALL
-                SELECT d.DescriptorID FROM descriptors d
-                JOIN DescendantDescriptors dd ON d.ParentID = dd.DescriptorID
-            ),
-            TotalMapsPerYear AS (
+            WITH TotalMapsPerYear AS (
                 SELECT
                     YEAR(s.DateRanked) AS Year,
                     COUNT(DISTINCT b.BeatmapID) AS TotalCount
                 FROM beatmaps b
-                JOIN beatmapsets s ON b.SetID = s.SetID
+                JOIN beatmapsets s
+                    ON b.SetID = s.SetID
                 WHERE b.Mode = ?
                 GROUP BY Year
             ),
@@ -232,10 +233,12 @@
                     YEAR(s.DateRanked) AS Year,
                     COUNT(DISTINCT b.BeatmapID) AS DescriptorCount
                 FROM beatmaps b
-                JOIN beatmapsets s ON b.SetID = s.SetID
-                JOIN beatmap_descriptors bd ON b.BeatmapID = bd.BeatmapID
-                JOIN DescendantDescriptors dd ON bd.DescriptorID = dd.DescriptorID
-                WHERE b.Mode = ?
+                JOIN beatmapsets s
+                    ON b.SetID = s.SetID
+                JOIN beatmap_descriptors bd
+                    ON b.BeatmapID = bd.BeatmapID
+                WHERE bd.DescriptorID IN ($descriptorPlaceholders)
+                AND b.Mode = ?
                 GROUP BY Year
             )
             SELECT
@@ -244,11 +247,13 @@
                 t.TotalCount,
                 (COALESCE(d.DescriptorCount, 0) / t.TotalCount) * 100 AS Percentage
             FROM TotalMapsPerYear t
-            LEFT JOIN DescriptorMapsPerYear d ON t.Year = d.Year
+            LEFT JOIN DescriptorMapsPerYear d
+                ON t.Year = d.Year
             ORDER BY t.Year;
         ");
 
-        $stmt->bind_param("iii", $descriptor_id, $mode, $mode);
+        $params = [$mode, ...$descendantDescriptors, $mode];
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $result = $stmt->get_result();
 
