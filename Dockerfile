@@ -1,5 +1,10 @@
 FROM php:8.1.2-apache
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+RUN printf 'deb http://archive.debian.org/debian bullseye main\n' > /etc/apt/sources.list \
+    && rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+    
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 RUN echo '<Directory /var/www/html/public>\n\
@@ -8,6 +13,7 @@ RUN echo '<Directory /var/www/html/public>\n\
 </Directory>' >> /etc/apache2/apache2.conf
 RUN docker-php-ext-install mysqli
 RUN a2enmod rewrite
+
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
