@@ -23,15 +23,18 @@
         JOIN DescendantDescriptors dd
             ON d.ParentID = dd.DescriptorID
     )
-    SELECT *
+    SELECT b.*, s.*
     FROM beatmaps b
     JOIN beatmapsets s
         ON b.SetID = s.SetID
-    JOIN beatmap_descriptors bd
-        ON b.BeatmapID = bd.BeatmapID
-    JOIN DescendantDescriptors dd
-        ON bd.DescriptorID = dd.DescriptorID
     WHERE b.Mode = ?
+      AND EXISTS (
+          SELECT 1
+          FROM beatmap_descriptors bd
+          JOIN DescendantDescriptors dd
+              ON bd.DescriptorID = dd.DescriptorID
+          WHERE bd.BeatmapID = b.BeatmapID
+      )
     ORDER BY s.DateRanked $dateOrder, b.SR DESC
     $pageString;");
 
@@ -54,7 +57,7 @@
       JOIN DescendantDescriptors dd
           ON d.ParentID = dd.DescriptorID
   )
-  SELECT COUNT(*) AS total
+  SELECT COUNT(DISTINCT b.BeatmapID) AS total
   FROM beatmaps b
   JOIN beatmapsets s
       ON b.SetID = s.SetID
