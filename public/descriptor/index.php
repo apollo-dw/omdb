@@ -301,53 +301,9 @@
 <br><br><br>
 
 <h2 style="margin-bottom: 0px;">List of maps</h2><br>
-<div style="max-width: 50%;">
+<div id="descriptor-map-list" style="max-width: 50%;">
     <?php
-        $stmt = $conn->prepare("
-        WITH RECURSIVE DescendantDescriptors AS (
-            SELECT DescriptorID
-            FROM descriptors
-            WHERE DescriptorID = ?
-
-            UNION ALL
-
-            SELECT d.DescriptorID
-            FROM descriptors d
-            JOIN DescendantDescriptors dd
-                ON d.ParentID = dd.DescriptorID
-        )
-        SELECT *
-        FROM beatmaps b
-        JOIN beatmapsets s
-            ON b.SetID = s.SetID
-        JOIN beatmap_descriptors bd
-            ON b.BeatmapID = bd.BeatmapID
-        JOIN DescendantDescriptors dd
-            ON bd.DescriptorID = dd.DescriptorID
-        WHERE b.Mode = ?
-        ORDER BY s.DateRanked ASC
-        LIMIT 10;
-    ");
-
-    $stmt->bind_param("ii", $descriptor_id, $mode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-        
-        foreach ($result as $row) {
-            ?>
-            <div class="flex-container ratingContainer alternating-bg">
-               <div class="flex-child" style="margin-left:0.5em;">
-				    <a href="/mapset/<?php echo $row["SetID"]; ?>"><img src="https://b.ppy.sh/thumb/<?php echo $row["SetID"]; ?>l.jpg" class="diffThumb"/ onerror="this.onerror=null; this.src='/assets/img/missing-map-thumbnail.png';"></a>
-			    </div>
-                <div class="flex-child">
-                    <a style="display:flex;" href="/mapset/<?php echo $row["SetID"]; ?>">
-                        <?php echo safe_htmlspecialchars($row["Artist"], ENT_QUOTES) . " - " . safe_htmlspecialchars($row["Title"], ENT_QUOTES) . " [" . safe_htmlspecialchars($row["DifficultyName"], ENT_QUOTES) . "]"; ?> <br>
-                    </a>
-                    <span class="subText">by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?> <br> <?php echo date('d-m-Y', strtotime($row["DateRanked"])); ?></span>
-                </div>
-            </div>
-            <?php
-        }
+    include 'descriptor-map-list.php';
     ?>
 </div>
 
