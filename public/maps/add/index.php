@@ -1,5 +1,5 @@
 <?php
-    $PageTitle = "Add graved set";
+    $PageTitle = "Add graveyard set";
     require '../../header.php';
 ?>
 
@@ -13,14 +13,14 @@
     }
 </style>
 
-<h1>Add graved set</h1>
+<h1>Add graveyard set</h1>
+<hr>
 
 <div class="container">
-#
-    Add a new graved set to OMDB through this page! Some things to note:
+    Add a new graveyard set to OMDB through this page! Some things to note:
     <ul>
         <li><b>The set you're trying to add has to be at least a month old.</b></li>
-        <li><b>Ratings and comments are removed if difficulties gets removed.</b></li>
+        <li><b>Ratings and comments are removed if difficulties get removed from osu!.</b></li>
     </ul>
     <hr>
 	<?php if ($loggedIn) { ?>

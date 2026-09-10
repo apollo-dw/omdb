@@ -34,7 +34,8 @@
     $stmt->close();
 ?>
 
-<center><h1>Descriptor proposals</h1></center>
+<h1>Descriptor proposals</h1>
+<hr>
 
 <div class="flex-row-container" style="justify-content: center;">
     <?php

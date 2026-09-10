@@ -14,7 +14,6 @@
     }
 </style>
 <h1>Lists</h1>
-<br>
 <a href="../list/edit/">Create new list</a>
 <hr>
 
