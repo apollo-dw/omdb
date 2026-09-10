@@ -36,7 +36,7 @@
 				<div class="topBarLink topBarDropDownButton">maps</div>
 				<div class="dropdown-content">
 					<a href="/tournament/series/list.php">tournaments</a>
-					<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
+					<a href=" <?php echo '/maps/latest.php?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
 					<a href="/random/">random</a>
 				</div>
 			</div>

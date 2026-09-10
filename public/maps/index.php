@@ -23,7 +23,7 @@
   }
 </style>
 
-<h1 style="margin: 0;">Map search</h1>
+<h1>Map search</h1>
 <hr>
 
 <input class="map-search-bar" type="text" placeholder="Type in to search" ></form>

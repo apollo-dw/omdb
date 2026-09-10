@@ -5,10 +5,6 @@
     ?>
 
 <style>
-    h1 {
-        margin: 0;
-    }
-
     .list-container {
         box-sizing: border-box;
         min-height: 12em;

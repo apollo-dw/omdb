@@ -8,12 +8,6 @@
     $stmt->close();
 ?>
 
-<style>
-    h1 {
-        margin: 0;
-    }
-</style>
-
 <h1>Tournament series edit queue</h1>
 <hr>
 

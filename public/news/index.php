@@ -3,7 +3,7 @@
     require "../header.php";
 ?>
 
-<h1 style="margin-bottom:0.25em;">News</h1>
+<h1>News</h1>
 <hr>
 
 <?php

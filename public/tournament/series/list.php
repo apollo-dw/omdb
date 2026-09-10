@@ -25,12 +25,6 @@
     require "../../header.php";
 ?>
 
-<style>
-    h1 {
-        margin: 0;
-    }
-</style>
-
 <h1>Tournament series listing</h1>
 <span class="subText">All tournaments series that are added to OMDB.</span>
 <hr>

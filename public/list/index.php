@@ -58,10 +58,6 @@
         padding: 1em;
     }
 
-    .container h1 {
-        margin: 0;
-    }
-
     .list-container {
         display: flex;
         flex-direction: column;

@@ -186,7 +186,7 @@
     }
 </style>
 
-<h1 style="margin:0;">Create new tournament for <?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?></h1>
+<h1>Create new tournament for <?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?></h1>
 <hr>
 
 <form id="tournamentForm" action="SubmitEdit.php" method="POST">

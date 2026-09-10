@@ -113,10 +113,6 @@
 ?>
 
 <style>
-    h1 {
-        margin-bottom: 0;
-    }
-
     h3, h2 {
         margin-top: 0;
     }

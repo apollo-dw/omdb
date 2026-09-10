@@ -37,6 +37,10 @@ body {
   overflow-y: scroll;
 }
 
+h1 {
+  margin: 0;
+}
+
 .centered {
   margin-left: auto;
   margin-right: auto;

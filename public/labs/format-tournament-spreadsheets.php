@@ -3,7 +3,7 @@
     require '../header.php';
 ?>
 
-<h1 style="margin:0;">Tournament spreadsheet formatter</h1>
+<h1>Tournament spreadsheet formatter</h1>
 <span class="subText">Format copied spreadsheet cells into a copy-pastable format</span>
 <hr>
 

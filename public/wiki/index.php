@@ -38,7 +38,7 @@
 
 ?>
 
-<h1 style="margin: 0;">
+<h1>
   <?php echo $metadata['Title']; ?>
 </h1>
 <hr>

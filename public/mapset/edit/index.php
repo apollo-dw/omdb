@@ -52,7 +52,7 @@ $rolesJson = json_encode($roles);
 
 ?>
 
-    <h1 style="margin-bottom: 0;">Edit request for <?php echo safe_htmlspecialchars($sampleRow['Title'], ENT_QUOTES) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
+    <h1>Edit request for <?php echo safe_htmlspecialchars($sampleRow['Title'], ENT_QUOTES) . " by " . GetUserNameFromId($sampleRow['CreatorID'], $conn) ?></h1>
     <a href="../<?php echo $mapset_id; ?>">Return to mapset</a>
 
     <hr><br>

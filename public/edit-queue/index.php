@@ -11,14 +11,7 @@
     $result = $stmt->get_result();
     $stats = $result->fetch_assoc();
     $stmt->close();
-
 ?>
-
-<style>
-    h1 {
-        margin: 0;
-    }
-</style>
 
 <h1>Edit queues</h1>
 <hr>

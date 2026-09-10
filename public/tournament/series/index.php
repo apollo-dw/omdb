@@ -17,12 +17,6 @@
     require "../../header.php";
 ?>
 
-<style>
-    h1 {
-        margin: 0;
-    }
-</style>
-
 <h1><?php echo safe_htmlspecialchars($series["Name"]); ?></h1>
 <span class="subText"><?php echo safe_htmlspecialchars($series["Acronym"]); ?></span>
 <hr>

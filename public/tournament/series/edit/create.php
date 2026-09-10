@@ -75,10 +75,6 @@
         border: 1px solid white;
         background-color: #203838;
     }
-
-    h1 {
-        margin: 0;
-    }
 </style>
 
 <h1><?php echo $isNew ? "Create new tournament series" : "Edit " . safe_htmlspecialchars($series["Name"]); ?></h1>

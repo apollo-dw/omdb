@@ -22,7 +22,7 @@
     $stmt_check->close();
 ?>
 
-<h1 style="margin: 0;">Friends</h1>
+<h1>Friends</h1>
 <span class="subText">Latest activity from your friends in the past month</span> <br>
 <hr>
 

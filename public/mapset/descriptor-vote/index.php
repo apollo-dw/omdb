@@ -136,7 +136,7 @@ while ($voteRow = $voteResult->fetch_assoc()) {
         }
     </style>
 
-    <h1 style="margin-bottom: 0;">Descriptor vote for <?php echo "{$title} [{$difficultyName}]"; ?></h1>
+    <h1>Descriptor vote for <?php echo "{$title} [{$difficultyName}]"; ?></h1>
     <a href="../<?php echo $beatmap["SetID"]; ?>">Return to mapset</a><br>
 
     <hr><br>

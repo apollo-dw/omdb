@@ -99,7 +99,7 @@
 </style>
 
 <div class="header">
-    <h1 style="margin:0;"><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h1>
+    <h1><?php echo safe_htmlspecialchars($proposal["Name"], ENT_QUOTES); ?></h1>
     <span class="subText"><?php echo $proposal["Status"]; ?></span>
 </div>
 

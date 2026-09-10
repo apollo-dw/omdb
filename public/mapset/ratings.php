@@ -214,5 +214,4 @@
         xmlhttp.open("GET","ratings.php?p=" + ratingPage + "&id=" + <?php echo $mapset_id; ?> + "&bID=" + difficulty + "&o=" + order, true);
         xmlhttp.send();
     }
-
 </script>
