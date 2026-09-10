@@ -165,7 +165,7 @@
 			</div>
 		</div>
 
-		<div class="content" style="margin-top:5em;">
+		<div class="content">
 
 		<!--
             <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
