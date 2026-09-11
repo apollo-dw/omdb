@@ -23,7 +23,7 @@
         JOIN DescendantDescriptors dd
             ON d.ParentID = dd.DescriptorID
     )
-    SELECT b.*, s.*
+    SELECT b.BeatmapID, b.DifficultyName, s.Artist, s.Title, s.DateRanked, b.SetID
     FROM beatmaps b
     JOIN beatmapsets s
         ON b.SetID = s.SetID
@@ -82,7 +82,7 @@
   </div>
 
   <?php
-    
+
   foreach ($result as $row) {
       ?>
       <div class="flex-container ratingContainer alternating-bg">
@@ -120,7 +120,7 @@
     function toggleSortOrder() {
         sortOrder = (sortOrder === 'asc') ? 'desc' : 'asc';
         document.getElementById('sort-arrow').textContent = (sortOrder === 'asc') ? '▲' : '▼';
-        
+
         mapsPage = 1;
         updateMaps();
     }

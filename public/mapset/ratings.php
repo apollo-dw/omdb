@@ -31,7 +31,7 @@
     }
 
     $mainQuery = "SELECT
-                    r.*,
+                    r.Score, r.UserID, r.date,
                     mn.Username,
                     beatmaps.DifficultyName,
                     IF(r.UserID IN (SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1), 2, 1) AS order_weight,

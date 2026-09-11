@@ -670,7 +670,7 @@
             <?php
                 if ($loggedIn) {
                     $stmt = $conn->prepare("
-                        SELECT r.*, b.DifficultyName, b.SetID
+                        SELECT r.Score, r.UserID, b.DifficultyName, b.SetID
                         FROM `ratings` r
                         INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID
@@ -715,7 +715,7 @@
                     $stmt->bind_param("iiiiiiii", $profileId, $mode, $userId, $userId, $userId, $userId, $userId, $userId);
                 } else {
                     $stmt = $conn->prepare("
-                        SELECT r.*, b.DifficultyName, b.SetID
+                        SELECT r.Score, r.UserID, b.DifficultyName, b.SetID
                         FROM `ratings` r
                         INNER JOIN `beatmaps` b ON r.BeatmapID = b.BeatmapID
                         INNER JOIN `beatmap_creators` bc ON b.BeatmapID = bc.BeatmapID

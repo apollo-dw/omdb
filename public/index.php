@@ -454,7 +454,7 @@
         <br>
         <?php
             $usedSets = array();
-            $stmt = $conn->prepare("SELECT *, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
+            $stmt = $conn->prepare("SELECT SetID, Metadata, CreatorID, Timestamp, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
             $stmt->bind_param("i", $mode);
             $stmt->execute();
             $result = $stmt->get_result();

@@ -2,7 +2,7 @@
     require_once __DIR__ . '/../../app/base.php';
     $descriptor_id = GetIntParam('id', -1, "Y U POST CRINGE");
 
-    $stmt = $conn->prepare("SELECT * FROM `descriptors` WHERE `DescriptorID` = ?;");
+    $stmt = $conn->prepare("SELECT DescriptorID, Name, ParentID, ShortDescription, LongDescription FROM `descriptors` WHERE `DescriptorID` = ?;");
     $stmt->bind_param("i", $descriptor_id);
     $stmt->execute();
     $descriptor = $stmt->get_result()->fetch_assoc();
@@ -158,7 +158,7 @@
     <?php
     $types = str_repeat("i", count($descendantDescriptors)) . "i";
     $stmt = $conn->prepare("
-        SELECT b.*, s.Title
+        SELECT b.SetID, b.DifficultyName, s.Title
         FROM beatmaps b
         JOIN beatmapsets s
             ON b.SetID = s.SetID

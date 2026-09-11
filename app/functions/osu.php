@@ -38,7 +38,7 @@
             return false;
         }
 
-        $query3 = $conn->prepare("SELECT * FROM beatmapsets WHERE SetID = ?");
+        $query3 = $conn->prepare("SELECT 1 FROM beatmapsets WHERE SetID = ? LIMIT 1;");
         $query3->bind_param("i", $setID);
         $query3->execute();
         $query3->store_result();
@@ -54,7 +54,7 @@
                 continue;
             }
 
-            $query1 = $conn->prepare("SELECT * FROM `beatmaps` WHERE `BeatmapID` = ?");
+            $query1 = $conn->prepare("SELECT 1 FROM `beatmaps` WHERE `BeatmapID` = ? LIMIT 1;");
             $query1->bind_param("i", $diff["id"]);
             $query1->execute();
             $query1->store_result();

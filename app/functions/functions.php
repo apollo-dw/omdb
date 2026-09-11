@@ -648,7 +648,14 @@
     function RenderUserRating(mysqli $conn, mixed $ratingRow) {
         $score = $ratingRow["Score"];
 
-        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+        $stmt = $conn->prepare("SELECT
+                                    Custom00Rating, Custom05Rating,
+                                    Custom10Rating, Custom15Rating,
+                                    Custom20Rating, Custom25Rating,
+                                    Custom30Rating, Custom35Rating,
+                                    Custom40Rating, Custom45Rating,
+                                    Custom50Rating
+                                FROM `users` WHERE `UserID` = ? LIMIT 1;");
         $stmt->bind_param("i", $ratingRow["UserID"]);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -725,28 +732,28 @@
             return false;
         }
 
-        $stmt = $conn->prepare("SELECT * FROM `beatmaps` WHERE `beatmapID` = ?;");
+        $stmt = $conn->prepare("SELECT 1 FROM `beatmaps` WHERE `beatmapID` = ? LIMIT 1;");
         $stmt->bind_param("i", $beatmapID);
         $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows != 1) {
+        if ($stmt->get_result()->num_rows !== 1) {
             return false;
         }
+        $stmt->close();
 
-        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?;");
+        $stmt = $conn->prepare("SELECT 1 FROM `users` WHERE `UserID` = ? LIMIT 1;");
         $stmt->bind_param("i", $userID);
         $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows != 1) {
+        if ($stmt->get_result()->num_rows !== 1) {
             return false;
         }
+        $stmt->close();
 
         if ($score == -2) {
             $stmt = $conn->prepare("DELETE FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
         } else {
-            $stmt = $conn->prepare("SELECT * FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ?;");
+            $stmt = $conn->prepare("SELECT 1 FROM `ratings` WHERE `beatmapID` = ? AND `UserID` = ? LIMIT 1;");
             $stmt->bind_param("ii", $beatmapID, $userID);
             $stmt->execute();
             $result = $stmt->get_result();

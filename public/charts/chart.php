@@ -119,8 +119,8 @@
 
         $sql = "
         SELECT
-            b.*,
-            s.*,
+            b.DifficultyName, b.SR, b.BeatmapID,
+            s.Artist, s.Title, s.DateRanked, s.SetID,
             {$ratingField} AS WeightedAvg,
             {$countField} AS RatingCount,
             {$bayesField} AS BayesianAverage,
