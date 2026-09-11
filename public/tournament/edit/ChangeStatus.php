@@ -144,5 +144,8 @@ try {
     $conn->rollback();
     error_log("Approval transaction error in ChangeStatus.php: " . $e->getMessage());
     http_response_code(500);
+    echo json_encode([
+        "error" => $e->getMessage()
+    ]);
     exit();
 }
