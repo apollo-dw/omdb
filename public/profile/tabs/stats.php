@@ -17,7 +17,7 @@
     }
 ?>
 
-<div id="tabbed-stats" class="tab" style="padding: 2em;">
+<div id="tabbed-stats" class="tab">
     <div class="flex-container">
         <div class="flex-child" style="width:50%;">
             <?php

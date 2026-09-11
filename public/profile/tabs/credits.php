@@ -4,7 +4,7 @@
     $profileId = GetIntParam("id", null, "What are you trying to do man.");
 ?>
 
-<div id="tabbed-credits" class="tab" style="padding-top:0.5em;">
+<div id="tabbed-credits" class="tab">
     <?php
     $stmt = $conn->prepare("
       SELECT
