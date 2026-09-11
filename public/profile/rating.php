@@ -39,11 +39,44 @@
 
     $stmt->close();
 
+    $desc = trim($profile["CustomDescription"] ?? "");
+
     $tagCount = $counts["tagCount"];
     $nominationCount = $counts["nominationCount"];
     $listCount = $counts["listCount"];
     $heartedListCount = $counts["heartedListCount"];
     $creditCount = $counts["creditCount"];
+
+    $tabs = [];
+
+    if (strlen($desc) > 0 || $userId == $profileId || !$isValidUser || $shouldHideProfile) {
+        $tabs[] = ["about-me", "About Me"];
+    }
+
+    if (!$shouldHideProfile && $isValidUser) {
+        $tabs[] = ["latest", "Latest"];
+        $tabs[] = ["ratings", "Ratings"];
+
+        if ($tagCount > 0) {
+            $tabs[] = ["tags", "Tags (" . $tagCount . ")"];
+        }
+
+        $tabs[] = ["stats", "Stats"];
+
+        if (($listCount + $heartedListCount) > 0) {
+            $tabs[] = ["lists", "Lists (" . $listCount . ")"];
+        }
+    }
+
+    if ($nominationCount > 0) {
+        $tabs[] = ["nominations", "Nominations (" . $nominationCount . ")"];
+    }
+
+    if ($creditCount > 0) {
+        $tabs[] = ["credits", "Credits (" . $creditCount . ")"];
+    }
+
+    $initialTab = $tabs[0][0] ?? null;
 ?>
 
 <style>
@@ -64,33 +97,23 @@
 </style>
 
 <div class="tabbed-container-nav">
-    <button data-tab="about-me" class="active">About Me</button>
-    <?php if (!$shouldHideProfile && $isValidUser) { ?>
-        <button data-tab="latest">Latest</button>
-        <button data-tab="ratings">Ratings</button>
-        <?php if ($tagCount > 0) { ?>
-            <button data-tab="tags">Tags (<?php echo $tagCount; ?>)</button>
-        <?php } ?>
-        <button data-tab="stats">Stats</button>
-        <?php if (($listCount + $heartedListCount) > 0) { ?>
-            <button data-tab="lists">Lists (<?php echo $listCount; ?>)</button>
-        <?php } ?>
-    <?php } ?>
-    <?php if ($nominationCount > 0) { ?>
-    <button data-tab="nominations">Nominations (<?php echo $nominationCount; ?>)</button>
-    <?php } ?>
-    <?php if ($creditCount > 0) { ?>
-        <button data-tab="credits">Credits (<?php echo $creditCount; ?>)</button>
+    <?php foreach ($tabs as $tab) { ?>
+        <button data-tab="<?php echo $tab[0]; ?>" class="<?php echo $tab[0] === $initialTab ? "active" : ""; ?>"><?php echo $tab[1]; ?></button>
     <?php } ?>
 </div>
 
 <div id="current-tab">
-    <?php include 'tabs/about-me.php'; ?>
+    <?php if ($initialTab) { ?>
+        <?php include 'tabs/' . $initialTab . '.php'; ?>
+    <?php } ?>
 </div>
 
 <script>
     const tabContent = {};
-    tabContent["about-me"] = $("#current-tab").html();
+
+    <?php if ($initialTab) { ?>
+    tabContent["<?php echo $initialTab; ?>"] = $("#current-tab").html();
+    <?php } ?>
 
     $(".tabbed-container-nav button").on("click", function () {
         const tabName = $(this).data("tab");
@@ -99,7 +122,7 @@
         showTab(tabName);
     });
 
-    function showTab(tabName, onlyCache = false) {
+    function showTab(tabName) {
         if (tabContent[tabName]) {
             $("#current-tab").html(tabContent[tabName]);
         } else {
@@ -117,19 +140,12 @@
                 data: dataToSend,
                 success: function (data) {
                     tabContent[tabName] = data;
-                    if (!onlyCache) {
-                        $("#current-tab").html(data);
-                    }
+                    $("#current-tab").html(data);
                 },
                 error: function () {
                     console.log(this.error);
                 }
             });
         }
-    }
-
-    const initialTab = $(".tabbed-container-nav button.active").data("tab");
-    if (initialTab) {
-        showTab(initialTab, true);
     }
 </script>
