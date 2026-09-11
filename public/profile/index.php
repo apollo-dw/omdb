@@ -1,6 +1,7 @@
 <?php
     require_once __DIR__ . '/../../app/base.php';
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
     $profileId = $_GET['id'];
 
     $idStmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
@@ -221,11 +222,70 @@
     }
 
     RenderCustomThemeCss($profile);
+
+    $stmt = $conn->prepare("
+        SELECT
+            (SELECT COUNT(*)
+            FROM user_relations
+            WHERE UserIDTo = ?
+            AND type = '1') AS friendCount,
+
+            (SELECT COUNT(*)
+            FROM ratings
+            WHERE UserID = ?) AS ratingCount,
+
+            (SELECT COUNT(*)
+            FROM comments
+            WHERE UserID = ?) AS commentCount,
+
+            (SELECT COUNT(*)
+            FROM reviews
+            WHERE UserID = ?) AS reviewCount,
+
+            (SELECT COUNT(*)
+            FROM beatmapsets s
+            WHERE CreatorID = ?
+            AND EXISTS (
+                SELECT 1
+                FROM beatmaps bm
+                WHERE bm.SetID = s.SetID
+                AND bm.Status IN (1, 2)
+            )) AS mapsetCount,
+
+            (SELECT COUNT(*)
+            FROM beatmap_edit_requests
+            WHERE UserID = ?
+            AND Status = 'Approved') AS approvedEditCount,
+
+            (SELECT COUNT(*)
+            FROM descriptor_votes
+            WHERE UserID = ?) AS descriptorVoteCount
+    ");
+    $stmt->bind_param(
+        "iiiiiii",
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId,
+        $profileId
+    );
+    $stmt->execute();
+    $stats = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $friendCount = $stats["friendCount"];
+    $ratingCount = $stats["ratingCount"];
+    $commentCount = $stats["commentCount"];
+    $reviewCount = $stats["reviewCount"];
+    $mapsetCount = $stats["mapsetCount"];
+    $approvedEditCount = $stats["approvedEditCount"];
+    $descriptorVoteCount = $stats["descriptorVoteCount"];
 ?>
 
-<?php if ($shouldHideProfile) { ?>
-
-    <center>
+<div class="profileContainer column-when-mobile-container">
+    <?php if ($shouldHideProfile) { ?>
         <div class="profileCard">
             <div class="profileTitle">
                 <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></a>
@@ -269,16 +329,8 @@
                 ?>
             </div>
             <?php } ?>
-
-            <div class="profileStats">
-                This user has a hidden OMDB presence.
-            </div>
         </div>
-    </center>
-
-<?php } else { ?>
-
-<div class="profileContainer column-when-mobile-container">
+    <?php } else { ?>
 	<div class="profileCard">
 		<div class="profileTitle">
             <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></i></a>
@@ -322,72 +374,6 @@
             ?>
         </div>
 		<?php } ?>
-
-        <?php
-            $stmt = $conn->prepare("
-                SELECT
-                    (SELECT COUNT(*)
-                    FROM user_relations
-                    WHERE UserIDTo = ?
-                    AND type = '1') AS friendCount,
-
-                    (SELECT COUNT(*)
-                    FROM ratings
-                    WHERE UserID = ?) AS ratingCount,
-
-                    (SELECT COUNT(*)
-                    FROM comments
-                    WHERE UserID = ?) AS commentCount,
-
-                    (SELECT COUNT(*)
-                    FROM reviews
-                    WHERE UserID = ?) AS reviewCount,
-
-                    (SELECT COUNT(*)
-                    FROM beatmapsets s
-                    WHERE CreatorID = ?
-                    AND EXISTS (
-                        SELECT 1
-                        FROM beatmaps bm
-                        WHERE bm.SetID = s.SetID
-                        AND bm.Status IN (1, 2)
-                    )) AS mapsetCount,
-
-                    (SELECT COUNT(*)
-                    FROM beatmap_edit_requests
-                    WHERE UserID = ?
-                    AND Status = 'Approved') AS approvedEditCount,
-
-                    (SELECT COUNT(*)
-                    FROM descriptor_votes
-                    WHERE UserID = ?) AS descriptorVoteCount
-            ");
-
-            $stmt->bind_param(
-                "iiiiiii",
-                $profileId,
-                $profileId,
-                $profileId,
-                $profileId,
-                $profileId,
-                $profileId,
-                $profileId
-            );
-
-            $stmt->execute();
-
-            $stats = $stmt->get_result()->fetch_assoc();
-
-            $stmt->close();
-
-            $friendCount = $stats["friendCount"];
-            $ratingCount = $stats["ratingCount"];
-            $commentCount = $stats["commentCount"];
-            $reviewCount = $stats["reviewCount"];
-            $mapsetCount = $stats["mapsetCount"];
-            $approvedEditCount = $stats["approvedEditCount"];
-            $descriptorVoteCount = $stats["descriptorVoteCount"];
-        ?>
 
         <div class="profileStats">
             <?php if ($isValidUser) { ?>
@@ -495,7 +481,8 @@
                 }
             ?>
 	</div>
-	<div class="ratingsCard">
+	<?php } ?>
+    <div class="ratingsCard">
 		<div id="ratingDisplay">
 			<?php
                 include 'rating.php';
@@ -505,30 +492,7 @@
 </div>
 
 <?php
-    if ($isValidUser) {
-        $desc = trim($profile["CustomDescription"] ?? "");
-
-        if (!empty($desc)) {
-?>
-			<hr>
-			<h2>About me</h2>
-			<div style="background-color:var(--main-theme-color-darker);padding:2em;box-sizing:border-box;max-height:30em;overflow-y:scroll;">
-				<?php
-                    echo ParseCommentLinks($conn, $desc);
-                ?>
-			</div>
-
-			<?php
-             if ($profileId == $userId) {
-                 echo "<br><a href='../settings'><div style='float:right;'>edit your description</div></a>";
-             }
-             echo "<br />";
-        }
-    }
-?>
-
-<?php
-    if ($isValidUser && isset($mutualCount) && $mutualCount > 0) {
+    if (!$shouldHideProfile && $isValidUser && isset($mutualCount) && $mutualCount > 0) {
 ?>
         <hr>
         <h2>Mutuals</h2>
@@ -558,8 +522,6 @@
          echo "<br />";
     }
 ?>
-
-<?php } ?>
 
 <?php
     if ($hasRatedMaps) {

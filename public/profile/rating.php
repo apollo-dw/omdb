@@ -64,8 +64,9 @@
 </style>
 
 <div class="tabbed-container-nav">
-    <?php if ($isValidUser) { ?>
-        <button data-tab="latest" class="active">Latest</button>
+    <button data-tab="about-me" class="active">About Me</button>
+    <?php if (!$shouldHideProfile && $isValidUser) { ?>
+        <button data-tab="latest">Latest</button>
         <button data-tab="ratings">Ratings</button>
         <?php if ($tagCount > 0) { ?>
             <button data-tab="tags">Tags (<?php echo $tagCount; ?>)</button>
@@ -76,9 +77,7 @@
         <?php } ?>
     <?php } ?>
     <?php if ($nominationCount > 0) { ?>
-    <button data-tab="nominations" <?php if (!$isValidUser) {
-        echo "class='active'";
-    } ?>>Nominations (<?php echo $nominationCount; ?>)</button>
+    <button data-tab="nominations">Nominations (<?php echo $nominationCount; ?>)</button>
     <?php } ?>
     <?php if ($creditCount > 0) { ?>
         <button data-tab="credits">Credits (<?php echo $creditCount; ?>)</button>
@@ -86,15 +85,12 @@
 </div>
 
 <div id="current-tab">
-    <?php if ($isValidUser) {
-        include 'tabs/latest.php';
-    } elseif ($nominationCount > 0) {
-        include 'tabs/nominations.php';
-    } ?>
+    <?php include 'tabs/about-me.php'; ?>
 </div>
 
 <script>
     const tabContent = {};
+    tabContent["about-me"] = $("#current-tab").html();
 
     $(".tabbed-container-nav button").on("click", function () {
         const tabName = $(this).data("tab");

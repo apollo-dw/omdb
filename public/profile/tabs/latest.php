@@ -70,6 +70,5 @@
         <?php
     }
     ?>
-    <a href="ratings/?id=<?php echo $profileId; ?>&p=1"><span style="float:right;margin:1em;">... see more!</span></a>
     <br>
 </div>
