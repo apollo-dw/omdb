@@ -368,7 +368,7 @@
 
     function RenderSimilarMapCards($conn, $similarMaps) {
         if (empty($similarMaps)) {
-            echo '<span class="subText" style="padding:0.5em;">no similar maps found for this difficulty; map needs at least 10 ratings</span>';
+            echo '<span class="subText recommendation-empty-state">no similar maps found, the difficulty needs at least 10 ratings</span>';
             return;
         }
 

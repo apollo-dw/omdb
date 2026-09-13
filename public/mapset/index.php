@@ -69,9 +69,14 @@
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_row()[0];
 
+    $stmt = $conn->prepare("SELECT Count(*) FROM reviews WHERE SetID = ?;");
+    $stmt->bind_param("s", $mapset_id);
+    $stmt->execute();
+    $reviewCount = $stmt->get_result()->fetch_row()[0];
+
     $stmt = $conn->prepare("SELECT
     mn.Username,
-	mn.UserID,
+	bc.UserID,
     GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
 FROM
     beatmapset_credits bc
@@ -82,7 +87,9 @@ LEFT JOIN
 WHERE
     bc.SetID = ?
 GROUP BY
-    mn.Username, mn.UserID;
+    mn.Username, bc.UserID
+ORDER BY
+    mn.Username, bc.UserID;
 ");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
@@ -154,8 +161,8 @@ GROUP BY
     <div class="flex-child column-when-mobile" style="text-align: center;">
         <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" class="mapset-cover" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
     </div>
-    <div class="flex-container flex-child light-bg column-when-mobile" style="flex-grow: 1;min-height:8.5em;">
-        <div class="flex-child" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
+    <div class="flex-container flex-child light-bg column-when-mobile column-when-mobile-container mapset-details" style="flex-grow: 1;min-height:8.5em;">
+        <div class="flex-child column-when-mobile" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset info</div>
             <div style="padding:0.25em;">
                 <?php
@@ -192,7 +199,7 @@ GROUP BY
                 ?>
             </div>
         </div>
-        <div class="flex-child" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+        <div class="flex-child column-when-mobile" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
             <?php
             $stmt = $conn->prepare("SELECT bn.NominatorID, bn.Mode, mn.Username FROM beatmapset_nominators bn LEFT JOIN mappernames mn ON mn.UserID = bn.NominatorID WHERE bn.SetID = ?");
@@ -233,6 +240,44 @@ GROUP BY
             }
             ?>
         </div>
+            <?php if ($credits) {
+                $initialCreditCount = 2;
+                $remainingCreditCount = max(0, count($credits) - $initialCreditCount);
+                ?>
+                <div class="flex-child column-when-mobile mapset-credits-panel" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+                    <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Credits</div>
+                    <div class="mapset-credit-list">
+                        <?php foreach ($credits as $creditIndex => $credit) {
+                            if ($creditIndex === $initialCreditCount) { ?>
+                                <details class="mapset-credit-overflow">
+                                    <summary><?php echo $remainingCreditCount; ?> more credit<?php echo $remainingCreditCount === 1 ? '' : 's'; ?></summary>
+                                    <div class="mapset-credit-list">
+                            <?php }
+
+                            $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
+                            $escapedRoles = safe_htmlspecialchars($credit['Roles'], ENT_QUOTES);
+                            ?>
+                            <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
+                                <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
+                                <span><?php echo $escapedCreditName; ?><span class="subText"><?php echo $escapedRoles; ?></span></span>
+                            </a>
+                        <?php } ?>
+                        <?php if ($remainingCreditCount > 0) { ?>
+                                    </div>
+                                </details>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } elseif ($sampleRow["CreatorID"] == $userId) { ?>
+                <div class="flex-child column-when-mobile mapset-credits-panel" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+                    <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Credits</div>
+                    <div class="credits-list" style="background-color:DarkSlateGrey; padding: 0.25em; margin-bottom:0.5em;text-align: center;">
+                        <div style="padding-top:2em; padding-bottom: 2em; font-style: italic;">
+                        Your mapset currently has no credits. <b><a href="edit/?id=<?php echo $mapset_id; ?>">Add them?</a></b>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
     </div>
 </div>
 <br>
@@ -667,42 +712,109 @@ while ($row = $result->fetch_assoc()) {
 
 <?php
     $similarMaps = GetSimilarBeatmaps($conn, $mapset_id, 8, $similarMapsSeed);
-    if (!empty($similarMaps)) {
-?>
-<h4 style="margin-bottom: 0;">
-    Related beatmaps to
-    <?php
-        $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
-        $stmt->bind_param("i", $mapset_id);
-        $stmt->execute();
-        $diffResult = $stmt->get_result();
-        $diffs = $diffResult->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
 
-        if (count($diffs) === 1) {
-            echo "<b>[" . safe_htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
-        } else {
-            echo '<select id="similarMapsDiffSelect">';
-            foreach ($diffs as $diffRow) {
-                $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
-                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . safe_htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
-            }
-            echo '</select>';
-        }
-    ?>:
-    <span class="badge">BETA</span>
-    <span class="tooltip-wrapper">
-        <span style="width:1em;height:1em;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid gray;color:gray;font-size:0.7em;">?</span>
-        <span class="tooltip-box">
-            This is WIP if u wanna help or just play with the weights and settings, check out
-            <a href="/labs/">Labs</a>.
-        </span>
-    </span>
-</h4>
-<div id="similarMapsContainer" class="flex-container map-card-strip" style="width:100%;background-color:DarkSlateGrey;padding:0px;">
-    <br>
-    <?php RenderSimilarMapCards($conn, $similarMaps); ?>
-</div>
+    $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private, mn.Username
+        FROM lists l
+        LEFT JOIN list_items li ON l.ListID = li.ListID
+        LEFT JOIN mappernames mn ON l.UserID = mn.UserID
+        LEFT JOIN (
+            SELECT ListID, COUNT(*) AS HeartCount
+            FROM list_hearts
+            GROUP BY ListID
+        ) lh ON l.ListID = lh.ListID
+        WHERE ((li.SubjectID = ? AND li.Type = 'beatmapset')
+            OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap'))
+            AND (l.Private = 0 OR l.UserID = ?)
+        GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
+        ORDER BY COALESCE(lh.HeartCount, 0) DESC, COALESCE(l.UpdatedAt, l.CreatedAt) DESC, l.ListID DESC;");
+
+    $stmt->bind_param("iii", $mapset_id, $mapset_id, $userId);
+    $stmt->execute();
+    $featuredLists = $stmt->get_result();
+    $stmt->close();
+?>
+
+<section class="mapset-section" aria-label="Discover">
+    <div class="feature-strip mapset-feature-strip column-when-mobile-container<?php echo empty($similarMaps) ? '' : ' has-recommendations'; ?>">
+        <aside class="feature-strip-sidebar column-when-mobile">
+            <div>
+                <h3 class="feature-strip-sidebar-title">Featured on lists</h3>
+                <hr class="feature-strip-divider">
+                <div class="mapset-list-grid">
+                    <?php while ($row = $featuredLists->fetch_assoc()) {
+                        $stmt = $conn->prepare("SELECT li.* FROM list_items li WHERE `ListID` = ? AND `order` = 1;");
+                        $stmt->bind_param("i", $row["ListID"]);
+                        $stmt->execute();
+                        $item = $stmt->get_result()->fetch_assoc();
+                        list($imageUrl) = getListItemDisplayInformation($item, $conn);
+                        ?>
+                        <div class="mapset-list-card alternating-bg">
+                            <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                                <img src="<?php echo $imageUrl; ?>" class="square-thumb" alt="" />
+                            </a>
+                            <div>
+                                <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
+                                <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a><?php if (!empty($row["Private"])) {
+                                    echo " | private";
+                                } ?></span>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    <?php if ($featuredLists->num_rows === 0) { ?>
+                        <div class="mapset-empty-state">
+                            No lists feature this mapset yet.<br>
+                            <?php if ($loggedIn) { ?>
+                                <a href="/list/edit/"><i class="icon-plus"></i> Create a list</a>
+                            <?php } else { ?>
+                                <a href="<?php echo safe_htmlspecialchars(FetchOsuOauthLink($env['OSU_CLIENT_ID'], $_SERVER['REQUEST_URI']), ENT_QUOTES); ?>">Log in to create one</a>
+                            <?php } ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+        </aside>
+
+        <div class="feature-strip-main column-when-mobile mapset-discovery-panel">
+            <h3 class="mapset-subsection-title">
+                Related beatmaps
+                <?php if (!empty($similarMaps)) { ?>
+                    to
+                    <?php
+                        $stmt = $conn->prepare("SELECT BeatmapID, DifficultyName FROM beatmaps WHERE SetID = ? AND Blacklisted = 0 ORDER BY Mode, SR DESC");
+                        $stmt->bind_param("i", $mapset_id);
+                        $stmt->execute();
+                        $diffResult = $stmt->get_result();
+                        $diffs = $diffResult->fetch_all(MYSQLI_ASSOC);
+                        $stmt->close();
+
+                        if (count($diffs) === 1) {
+                            echo "<b>[" . safe_htmlspecialchars(mb_strimwidth($diffs[0]["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</b>";
+                        } else {
+                            echo '<select id="similarMapsDiffSelect" aria-label="Difficulty used for related beatmaps">';
+                            foreach ($diffs as $diffRow) {
+                                $selected = $diffRow["BeatmapID"] == $similarMapsSeed["BeatmapID"] ? " selected" : "";
+                                echo "<option value=\"{$diffRow["BeatmapID"]}\"{$selected}>[" . safe_htmlspecialchars(mb_strimwidth($diffRow["DifficultyName"], 0, 35, "..."), ENT_QUOTES) . "]</option>";
+                            }
+                            echo '</select>';
+                        }
+                    ?>
+                <?php } ?>
+                <span class="badge">BETA</span>
+                <span class="tooltip-wrapper">
+                    <span class="mapset-help-icon">?</span>
+                    <span class="tooltip-box">
+                        This is WIP if u wanna help or just play with the weights and settings, check out
+                        <a href="/labs/">Labs</a>.
+                    </span>
+                </span>
+            </h3>
+            <div id="similarMapsContainer" class="flex-container map-card-strip feature-strip-map-cards mapset-related-maps">
+                <?php RenderSimilarMapCards($conn, $similarMaps); ?>
+            </div>
+        </div>
+    </div>
+</section>
+
 <script>
     const similarMapsDiffSelect = document.getElementById('similarMapsDiffSelect');
     if (similarMapsDiffSelect) {
@@ -715,6 +827,7 @@ while ($row = $result->fetch_assoc()) {
                 if (xhttp.readyState === XMLHttpRequest.DONE) {
                     if (xhttp.status === 200)
                         container.innerHTML = "<br>" + xhttp.responseText;
+                    container.closest('.mapset-feature-strip').classList.toggle('has-recommendations', Boolean(container.querySelector('.map-card')));
                     container.style.opacity = 1;
                 }
             };
@@ -723,85 +836,28 @@ while ($row = $result->fetch_assoc()) {
         });
     }
 </script>
+
+<br>
 <hr>
-<?php } ?>
 
-<div class="flex-container column-when-mobile-container">
-    <div class="flex-child column-when-mobile" style="width:40%;">
-        <?php if ($credits) { ?>
-        <h4 style="margin-bottom: 0;">Credits</h4>
-		<div class="credits-list" style="background-color:DarkSlateGrey;padding: 0.25em;margin-bottom:0.5em;">
-            <ul>
-			<?php
-                foreach ($credits as $credit) {
-                    $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['CreatorID'], $conn), ENT_QUOTES);
-                    echo "<li>
-					<a href='/profile/{$credit['UserID']}'><img class='square-thumb' src='https://s.ppy.sh/a/{$credit['UserID']}' style='height:24px;width:24px;' title='{$escapedCreditName}'></a>
-                    <a href='/profile/{$credit['UserID']}'>{$escapedCreditName}</a>
-					<br>
-					<span class='subText'>{$credit['Roles']}</span>
-					</li>";
-                }
-            ?>
-			</ul>
-        </div>
-        <hr />
-		<?php } elseif ($sampleRow["CreatorID"] == $userId) { ?>
-        <h4 style="margin-bottom: 0;">Credits</h4>
-		<div class="credits-list" style="background-color:DarkSlateGrey; padding: 0.25em; margin-bottom:0.5em;text-align: center;">
-            <div style="padding-top:2em; padding-bottom: 2em; font-style: italic;">
-                Your mapset currently has no credits. <b><a href="edit/?id=<?php echo $mapset_id; ?>">Add them?</a></b>
-            </div>
-        </div>
-        <hr />
-        <?php } ?>
+<div class="flex-container column-when-mobile-container mapset-discussion-layout">
+<div class="flex-child column-when-mobile" style="width:40%;">
+    <h4 style="margin-bottom: 0;">Latest Ratings</h4>
+    <div id="setRatingsDisplay">
         <?php
-                $stmt = $conn->prepare("SELECT l.ListID, l.Title, l.UserID, l.Private, mn.Username
-                FROM lists l
-                LEFT JOIN list_items li ON l.ListID = li.ListID
-                LEFT JOIN mappernames mn ON l.UserID = mn.UserID
-                WHERE ((li.SubjectID = ? AND li.Type = 'beatmapset')
-                    OR (li.SubjectID IN (SELECT BeatmapID FROM beatmaps WHERE SetID = ?) AND li.Type = 'beatmap'))
-                    AND (l.Private = 0 OR l.UserID = ?)
-                GROUP BY l.ListID HAVING COUNT(l.ListID) >= 1
-                LIMIT 10;");
-
-                $stmt->bind_param("iii", $mapset_id, $mapset_id, $userId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $stmt->close();
-
-            if ($result->num_rows > 0) {
-                ?>
-                <h4 style="margin-bottom: 0;">Featured on lists</h4>
-                <?php
-                while ($row = $result->fetch_assoc()) {
-                    $stmt = $conn->prepare("SELECT li.* FROM list_items li WHERE `ListID` = ? AND `order` = 1;");
-                    $stmt->bind_param("i", $row["ListID"]);
-                    $stmt->execute();
-                    $item = $stmt->get_result()->fetch_assoc();
-
-                    list($imageUrl, $title, $linkUrl) = getListItemDisplayInformation($item, $conn);
-                    ?>
-                    <div class="flex-container ratingContainer alternating-bg">
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><img src="<?php echo $imageUrl; ?>" class="square-thumb" style="height:24px;width:24px;object-fit:cover;object-position:center;"</a>
-                        </div>
-                        <div class="flex-child">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
-                            <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a> <?php if (!empty($row["Private"])) {
-                                echo " | private";
-                            } ?></span>
-                        </div>
-                    </div>
-                    <?php
-                }
-                echo "<hr />";
-            }
+        require 'ratings.php';
         ?>
-        <?php if ($sampleRow['CreatorID'] !== 7960151) { ?>
-        <h4 style="margin-bottom: 0;">Comments (<?php echo $commentCount; ?>)</h4>
-		<div style="max-height:50em; overflow-y:scroll;" id="commentContainer">
+    </div>
+</div>
+
+<div class="flex-child column-when-mobile mapset-discussion" style="width:60%;">
+    <?php if ($sampleRow['CreatorID'] !== 7960151) { ?>
+    <div class="tabbed-container-nav mapset-discussion-tabs" role="tablist" aria-label="Mapset discussion">
+        <button type="button" id="comments-tab" class="active" role="tab" aria-selected="true" aria-controls="comments-panel">Comments (<?php echo $commentCount; ?>)</button>
+        <button type="button" id="reviews-tab" role="tab" aria-selected="false" aria-controls="reviews-panel" tabindex="-1">Reviews (<?php echo $reviewCount; ?>)</button>
+    </div>
+    <div id="comments-panel" class="mapset-discussion-panel" role="tabpanel" aria-labelledby="comments-tab">
+        <div id="commentContainer">
 			<?php
             $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username, u.IsPrivate FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date ASC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
@@ -924,22 +980,8 @@ while ($row = $result->fetch_assoc()) {
             <?php } ?>
 
         </div>
-		<hr />
-        <?php } ?>
-        <h4 style="margin-bottom: 0;">Latest Ratings</h4>
-        <div id="setRatingsDisplay">
-            <?php
-            require 'ratings.php';
-            ?>
-        </div>
     </div>
-
-	<div class="flex-child column-when-mobile" style="width:60%;">
-        <?php if ($sampleRow['CreatorID'] !== 7960151) { ?>
-
-		<h4 style="margin-bottom: 0;">Reviews</h4>
-
-
+    <div id="reviews-panel" class="mapset-discussion-panel" role="tabpanel" aria-labelledby="reviews-tab" hidden>
 		<?php if ($loggedIn) {
             $buttonText = strlen($review_comment) > 0 ? "Edit Review" : "Post Review";
             ?>
@@ -1116,8 +1158,9 @@ while ($row = $result->fetch_assoc()) {
             }
         ?>
 
-        <?php } ?>
-	</div>
+    </div>
+    <?php } ?>
+</div>
 </div>
 
 <script>
@@ -1126,6 +1169,39 @@ while ($row = $result->fetch_assoc()) {
 		container.scrollTop = container.scrollHeight;
 	});
 
+    const discussionTabs = document.querySelectorAll('.mapset-discussion-tabs [role="tab"]');
+    const discussionPanels = document.querySelectorAll('.mapset-discussion-panel');
+
+    discussionTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            discussionTabs.forEach(otherTab => {
+                const isActive = otherTab === tab;
+                otherTab.classList.toggle('active', isActive);
+                otherTab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                otherTab.tabIndex = isActive ? 0 : -1;
+            });
+
+            discussionPanels.forEach(panel => {
+                panel.hidden = panel.id !== tab.getAttribute('aria-controls');
+            });
+        });
+
+        tab.addEventListener('keydown', event => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+                return;
+            }
+
+            event.preventDefault();
+            const currentIndex = Array.from(discussionTabs).indexOf(tab);
+            const direction = event.key === 'ArrowRight' ? 1 : -1;
+            const nextIndex = (currentIndex + direction + discussionTabs.length) % discussionTabs.length;
+            discussionTabs[nextIndex].click();
+            discussionTabs[nextIndex].focus();
+        });
+    });
+</script>
+
+<script>
     function submitComment(){
         var text = $('#commentForm').val();
         var xhttp = new XMLHttpRequest();

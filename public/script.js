@@ -241,6 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   setupHeaderMenus();
+  setupResponsiveCredits();
 
   const modal = document.getElementById("modal");
   const modalTitle = modal.querySelector(".modal-title");
@@ -312,4 +313,44 @@ function setupHeaderMenus() {
 
     closeMenus(null);
   });
+}
+
+function setupResponsiveCredits() {
+  const overflow = document.querySelector(".mapset-credit-overflow");
+  if (!overflow) return;
+
+  const creditList = overflow.parentElement;
+  const overflowList = overflow.querySelector(".mapset-credit-list");
+  const summary = overflow.querySelector("summary");
+  const credits = Array.from(creditList.querySelectorAll(".mapset-credit"));
+
+  function updateCredits() {
+    const visibleLimit = Number(
+      getComputedStyle(creditList).getPropertyValue(
+        "--mapset-visible-credit-count"
+      )
+    );
+    const needsUpdate = credits.some(
+      (credit, index) =>
+        credit.parentElement !==
+        (index < visibleLimit ? creditList : overflowList)
+    );
+
+    if (needsUpdate) {
+      credits.forEach((credit, index) => {
+        if (index < visibleLimit) creditList.insertBefore(credit, overflow);
+        else overflowList.append(credit);
+      });
+    }
+
+    const remaining = overflowList.childElementCount;
+    overflow.hidden = remaining === 0;
+    if (overflow.hidden) overflow.open = false;
+    summary.textContent = `${remaining} more credit${
+      remaining === 1 ? "" : "s"
+    }`;
+  }
+
+  new ResizeObserver(updateCredits).observe(creditList);
+  updateCredits();
 }

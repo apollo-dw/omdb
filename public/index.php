@@ -397,11 +397,11 @@
     </div>
 </div>
 <br>
-<div class="flex-container column-when-mobile-container" style="width:100%;background-color:DarkSlateGrey;justify-content:space-between;padding:0;align-items:stretch;">
-    <div class="flex-child column-when-mobile" style="flex:1;min-width:14em;background-color:#0c1515;padding:0.75em;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;margin:0;">
+<div class="feature-strip column-when-mobile-container">
+    <aside class="feature-strip-sidebar column-when-mobile">
         <div>
-            <b>Latest News</b>
-            <hr style="border-color:#2a4a4a;">
+            <h3 class="feature-strip-sidebar-title">Latest News</h3>
+            <hr class="feature-strip-divider">
             <?php
                 $newsStmt = $conn->prepare("SELECT
                         n.NewsID,
@@ -449,9 +449,10 @@
         <div style="text-align:right;">
             <a href="/news/" style="font-size:0.85em;">View all news →</a>
         </div>
-    </div>
-    <div class="flex-container map-card-strip" style="flex:4;background-color:DarkSlateGrey;justify-content: space-around;padding:0px;">
-        <br>
+    </aside>
+    <div class="feature-strip-main column-when-mobile">
+        <div class="flex-container map-card-strip feature-strip-map-cards">
+            <br>
         <?php
             $usedSets = array();
             $stmt = $conn->prepare("SELECT SetID, Metadata, CreatorID, Timestamp, m.Username FROM cache_home_recent_maps c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE Mode = ? ORDER BY Timestamp DESC;");
@@ -489,6 +490,7 @@
 
             $stmt->close();
         ?>
+        </div>
     </div>
 </div>
 <br>

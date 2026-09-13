@@ -467,6 +467,46 @@ input[type="checkbox"].hamburgerToggle {
     height: 40em;
 }
 
+.feature-strip {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  background-color: var(--main-theme-color);
+}
+
+.feature-strip-sidebar {
+  display: flex;
+  flex: 1;
+  min-width: 14em;
+  padding: 0.75em;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--main-theme-color-even-darker);
+}
+
+.feature-strip-sidebar-title,
+.mapset-subsection-title {
+  margin: 0;
+  font-size: 1em;
+}
+
+.feature-strip-divider {
+  border-color: var(--main-theme-color-darker);
+}
+
+.feature-strip-main {
+  display: flex;
+  flex: 4;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.feature-strip-map-cards {
+  flex: 1;
+  justify-content: space-around;
+}
+
 .map-card-strip {
     flex-wrap: nowrap;
 }
@@ -487,6 +527,193 @@ input[type="checkbox"].hamburgerToggle {
 .mapset-cover {
     width: 25rem;
     height: 8.5em;
+}
+
+.mapset-credit-list {
+  --mapset-visible-credit-count: 2;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5em;
+  padding: 0.25em;
+}
+
+.mapset-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  min-width: 0;
+  line-height: 1;
+}
+
+.mapset-credit img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.mapset-credit .subText {
+  display: block;
+}
+
+.mapset-credit > span,
+.mapset-credit .subText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapset-credit-overflow {
+  grid-column: 1 / -1;
+}
+
+.mapset-credit-overflow > summary {
+  color: var(--main-theme-link-color);
+  font-size: 11px;
+}
+
+.mapset-section {
+  margin-top: 2em;
+}
+
+.mapset-discovery-panel > .mapset-subsection-title {
+  padding: 0.25em;
+  background: var(--main-theme-color-darker);
+}
+
+.mapset-help-icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--main-theme-subtext-color);
+  border-radius: 50%;
+  color: var(--main-theme-subtext-color);
+  font-size: 0.7em;
+}
+
+.mapset-related-maps {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+.mapset-related-maps .recommendation-empty-state {
+  display: flex;
+  width: 100%;
+  padding: 0.5em;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.mapset-related-maps .map-card {
+  scroll-snap-align: start;
+}
+
+@media only screen and (min-width: 1051px) {
+  .mapset-feature-strip.has-recommendations .feature-strip-sidebar {
+    contain: size;
+    overflow: hidden;
+  }
+
+  .mapset-feature-strip.has-recommendations .feature-strip-sidebar > div {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.mapset-list-grid {
+  display: grid;
+  background: var(--main-theme-color-darker);
+}
+
+.mapset-list-card {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  min-width: 0;
+  padding: 0.25em;
+}
+
+.mapset-list-card img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.mapset-list-card > div {
+  min-width: 0;
+}
+
+.mapset-list-card > div > a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapset-empty-state {
+  padding: 1rem;
+  background: var(--main-theme-color);
+  color: var(--main-theme-subtext-color);
+  text-align: center;
+  font-style: italic;
+}
+
+@media only screen and (min-width: 1400px) {
+  .mapset-credit-list {
+    --mapset-visible-credit-count: 4;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media only screen and (max-width: 1399px) {
+  .mapset-details {
+    flex-direction: column;
+  }
+
+  .mapset-details > .flex-child {
+    width: 100% !important;
+    border-left: 0 !important;
+  }
+
+  .mapset-details > .flex-child + .flex-child {
+    border-top: 2px solid var(--main-theme-color-darker);
+  }
+}
+
+.mapset-discussion-layout {
+  min-width: 0;
+}
+
+.tabbed-container-nav.mapset-discussion-tabs {
+  display: flex;
+  border-bottom: 0;
+}
+
+.mapset-discussion-panel {
+  min-width: 0;
+}
+
+@media only screen and (min-width: 1051px) {
+  .mapset-discussion {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #comments-panel {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  #commentContainer {
+    height: 100%;
+    overflow-y: auto;
+  }
 }
 
 .identifier:hover ~ .starRemoveButton:not(.disabled),

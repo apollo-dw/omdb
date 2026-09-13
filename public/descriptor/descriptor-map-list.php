@@ -72,7 +72,7 @@
   $totalCount = $countStmt->get_result()->fetch_assoc()['total'] ?? 0;
   $countStmt->close();
 
-  $amountOfMapsPages = max(1, (int) ceil($totalCount / $lim));
+  $amountOfMapsPages = max(1, (int)ceil($totalCount / $lim));
   ?>
 
   <div style="height: 2em;">

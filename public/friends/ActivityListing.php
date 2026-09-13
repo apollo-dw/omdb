@@ -3,7 +3,7 @@
 
     function getActivityFilterState($key, $default = true) {
         $cookieName = 'pref_activity_' . $key;
-        
+
         if (isset($_POST[$key])) {
             $val = filter_var($_POST[$key], FILTER_VALIDATE_BOOLEAN);
             setcookie($cookieName, $val ? '1' : '0', time() + (86400 * 30), "/");
@@ -11,7 +11,7 @@
         } elseif (isset($_COOKIE[$cookieName])) {
             return filter_var($_COOKIE[$cookieName], FILTER_VALIDATE_BOOLEAN);
         }
-        
+
         return $default;
     }
 
