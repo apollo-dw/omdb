@@ -102,7 +102,7 @@
     <?php } ?>
 </div>
 
-<div id="current-tab">
+<div id="current-tab" style="overflow-y:auto;">
     <?php if ($initialTab) { ?>
         <?php include 'tabs/' . $initialTab . '.php'; ?>
     <?php } ?>

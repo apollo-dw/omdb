@@ -1155,8 +1155,13 @@ ol.star-rating-list > li {
     background-color: var(--main-theme-color);
     padding: 0;
     width: 100%;
-    overflow-y: scroll;
     position: relative;
+}
+
+#ratingDisplay {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .profileStats {
@@ -1437,6 +1442,8 @@ input[type="checkbox"]:disabled {
 
     .column-when-mobile-container {
         flex-direction: column;
+        height: unset;
+        max-height: unset;
     }
 
     .column-when-mobile {
@@ -1573,10 +1580,13 @@ input[type="checkbox"]:disabled {
         height: auto;
     }
 
-    .scroll-panel,
-    .ratingsCard {
+    .scroll-panel {
         height: auto;
         max-height: 60vh;
+    }
+
+    .ratingsCard {
+        height: 60vh;
     }
 
     .map-card-strip {
