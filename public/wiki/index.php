@@ -42,14 +42,13 @@
   <?php echo $metadata['Title']; ?>
 </h1>
 <hr>
-<br><br>
 
 <div class="flex-container">
   <div style="flex-basis: 10%; padding: 0.5em; box-sizing: border-box;">
     <b>OMDB Wiki</b>
     <hr>
-    - <a href=".">Index</a> <br>
-    - <a href="https://github.com/apollo-dw/omdb/tree/master/wiki/pages" target="_blank">Edit article</a>
+    - <a href="/wiki/">Index</a> <br>
+    - <a href="https://github.com/apollo-dw/omdb/tree/master/public/wiki/pages/<?php echo safe_htmlspecialchars($page); ?>.md" target="_blank">Edit article</a>
   </div>
   <div class="container" style="background-color: var(--main-theme-color); flex-basis: 90%; width: 100%; box-sizing: border-box; padding: 1em;">
     <?php echo ParseShortLinks($conn, $htmlContent); ?>
