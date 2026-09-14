@@ -6,4 +6,6 @@ Welcome to the OMDB Wiki!
 
 ## Articles
 
+- [[Rating Weight]]
+- [[Rules]]
 - [[Tournaments]]
