@@ -163,7 +163,7 @@ ORDER BY
     </div>
     <div class="flex-container flex-child light-bg column-when-mobile column-when-mobile-container mapset-details" style="flex-grow: 1;min-height:8.5em;">
         <div class="flex-child column-when-mobile" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
-            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset info</div>
+            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset Information</div>
             <div style="padding:0.25em;">
                 <?php
                 if ($isLoved) {
