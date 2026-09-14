@@ -221,19 +221,28 @@ ORDER BY
 
             if (!empty($nominators)) {
                 echo "<table>";
+
                 foreach ($nominators as $mode => $modeNominators) {
                     $modeString = getModeIcon((int)$mode);
 
                     echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
-                    $nominatorLinks = array();
+                    echo "<div style='display:flex;flex-wrap:wrap;gap:0.5rem;'>";
+
                     foreach ($modeNominators as $nominatorID => $nominatorName) {
                         $escapedNominatorName = safe_htmlspecialchars($nominatorName, ENT_QUOTES);
-                        $nominatorLinks[] = "<a href='/profile/$nominatorID'><img class='square-thumb' src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'></a>
-                                     <a href='/profile/$nominatorID'>$escapedNominatorName</a>";
+
+                        echo "<span style='white-space:nowrap;display:flex;align-items:center;gap:0.25rem;'>
+                                <a href='/profile/$nominatorID'>
+                                    <img class='square-thumb' src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'>
+                                </a>
+                                <a href='/profile/$nominatorID'>$escapedNominatorName</a>
+                            </span>";
                     }
-                    echo implode(" ", $nominatorLinks);
+
+                    echo "</div>";
                     echo "</td></tr>";
                 }
+
                 echo "</table>";
             } elseif (!$isLoved && !$isGraveyarded) {
                 echo "No nominators found! This is likely because this is a old set, ranked during moddingv1.<br><a href='edit/?id={$mapset_id}'><span class='subText'><i class='icon-edit'></i> Feel free to help by deducing nominators.</span></a> ";
