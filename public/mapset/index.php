@@ -857,9 +857,23 @@ while ($row = $result->fetch_assoc()) {
         <button type="button" id="reviews-tab" role="tab" aria-selected="false" aria-controls="reviews-panel" tabindex="-1">Reviews (<?php echo $reviewCount; ?>)</button>
     </div>
     <div id="comments-panel" class="mapset-discussion-panel" role="tabpanel" aria-labelledby="comments-tab">
+        <?php if ($loggedIn) { ?>
+            <div class="commentComposer">
+                <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+                    <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
+                    <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
+                    <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
+                </form>
+                <?php if ($hasBlacklistedDifficulties) { ?>
+                    <p>
+                        This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
+                    </p>
+                <?php } ?>
+            </div>
+        <?php } ?>
         <div id="commentContainer">
 			<?php
-            $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username, u.IsPrivate FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date ASC");
+            $stmt = $conn->prepare("SELECT *, u.IsPatron, mn.Username, u.IsPrivate FROM `comments` c LEFT JOIN mappernames mn ON c.UserID = mn.UserID LEFT JOIN users u ON u.UserID = c.UserID WHERE SetID = ? ORDER BY date DESC");
             $stmt->bind_param("s", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -963,22 +977,6 @@ while ($row = $result->fetch_assoc()) {
                 }
             }
             ?>
-
-			<?php if ($loggedIn) { ?>
-                <div class="commentComposer">
-                    <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
-                        <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-                        <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
-						<a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
-                    </form>
-                    <?php if ($hasBlacklistedDifficulties) { ?>
-                        <p>
-                            This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
-                        </p>
-                    <?php } ?>
-                </div>
-            <?php } ?>
-
         </div>
     </div>
     <div id="reviews-panel" class="mapset-discussion-panel" role="tabpanel" aria-labelledby="reviews-tab" hidden>
@@ -1164,11 +1162,6 @@ while ($row = $result->fetch_assoc()) {
 </div>
 
 <script>
-	window.addEventListener('DOMContentLoaded', function() {
-		const container = document.getElementById('commentContainer');
-		container.scrollTop = container.scrollHeight;
-	});
-
     const discussionTabs = document.querySelectorAll('.mapset-discussion-tabs [role="tab"]');
     const discussionPanels = document.querySelectorAll('.mapset-discussion-panel');
 
