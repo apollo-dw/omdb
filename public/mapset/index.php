@@ -842,7 +842,7 @@ while ($row = $result->fetch_assoc()) {
 
 <div class="flex-container column-when-mobile-container mapset-discussion-layout">
 <div class="flex-child column-when-mobile" style="width:40%;">
-    <h4 style="margin-bottom: 0;">Latest Ratings</h4>
+    <div style="margin-bottom: 0; padding: 0.25em; background: var(--main-theme-color-darker);">Latest Ratings</div>
     <div id="setRatingsDisplay">
         <?php
         require 'ratings.php';
@@ -859,10 +859,9 @@ while ($row = $result->fetch_assoc()) {
     <div id="comments-panel" class="mapset-discussion-panel" role="tabpanel" aria-labelledby="comments-tab">
         <?php if ($loggedIn) { ?>
             <div class="commentComposer">
-                <form style="margin-top: 0.25em; display: flex; flex-direction: column; gap: 0.25em;">
+                <form style="display: flex; flex-direction: column; gap: 0.25em; margin-bottom: 0.25em;">
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-                    <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
-                    <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
+                    <input type='button' name="commentSubmit" id="commentSubmit" value="Post Comment" onclick="submitComment()" />
                 </form>
                 <?php if ($hasBlacklistedDifficulties) { ?>
                     <p>
@@ -983,8 +982,8 @@ while ($row = $result->fetch_assoc()) {
 		<?php if ($loggedIn) {
             $buttonText = strlen($review_comment) > 0 ? "Edit Review" : "Post Review";
             ?>
-            <form style="margin-top: 0.25em; margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.25em;">
-                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea> <br>
+            <form style="display: flex; flex-direction: column; gap: 0.25em; margin-bottom: 0.25em;">
+                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea>
                 <input type='button' name="reviewSubmit" id="reviewSubmit" value="<?php echo $buttonText; ?>" onclick="submitReview()" />
             </form>
         <?php } ?>

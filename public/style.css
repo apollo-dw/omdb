@@ -693,6 +693,7 @@ input[type="checkbox"].hamburgerToggle {
 .tabbed-container-nav.mapset-discussion-tabs {
     display: flex;
     border-bottom: 0;
+    background-color: var(--main-theme-color);
 }
 
 .mapset-discussion-panel {
