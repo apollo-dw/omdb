@@ -1,7 +1,6 @@
 <?php
     require_once __DIR__ . '/../../app/base.php';
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
     $profileId = $_GET['id'];
 
     $idStmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
@@ -38,7 +37,32 @@ ini_set('display_errors', 1);
     }
 
     $idStmt->close();
-    $isValidUser = $profile !== null;
+    $isValidUser = $profile !== null && $profile["UserID"] != 0;
+
+    if (isset($_GET['file']) && $_GET['file'] === 'ratings.csv') {
+        if (!$isValidUser || $profileId != $userId) {
+            http_response_code(404);
+            exit();
+        }
+
+        $stmt = $conn->prepare("SELECT BeatmapID, Score, date FROM ratings WHERE UserID = ?");
+        $stmt->bind_param("i", $profileId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="ratings.csv"');
+
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['BeatmapID', 'Score', 'Timestamp']);
+
+        while ($row = $result->fetch_assoc()) {
+            fputcsv($output, [$row['BeatmapID'], $row['Score'], $row['date']]);
+        }
+
+        fclose($output);
+        exit();
+    }
 
     $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
     require '../header.php';
