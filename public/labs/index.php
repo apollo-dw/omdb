@@ -23,6 +23,11 @@
             'url' => '/labs/format-tournament-spreadsheets.php',
             'description' => 'Format spreadsheet cells into a pastable format for tournament editing on OMDB',
         ],
+        [
+            'title' => 'Mapset Chart',
+            'url' => '/labs/mapset-chart.php',
+            'description' => 'See the top 50 mapsets',
+        ]
     ];
 ?>
 
