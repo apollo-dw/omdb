@@ -95,6 +95,7 @@ while True:
 
         fullSet = api.beatmapset(set)
         is_featured_artist = hasattr(set, 'track_id') and set.track_id is not None
+        has_storyboard = hasattr(fullSet, 'storyboard') and fullSet.storyboard is True
 
         for nomination in fullSet.current_nominations:
             userID = nomination.user_id
@@ -225,7 +226,11 @@ while True:
             if hasattr(fullSet, 'track_id') and fullSet.track_id is not None:
                 votes_to_insert.append(78)
 
-            # Apply Collab Tiers
+            # storyboard
+            if hasattr(fullSet, 'storyboard') and fullSet.storyboard is True:
+                votes_to_insert.append(56)
+
+            # collabs
             if is_megacollab:
                 votes_to_insert.append(68)
             elif is_collab:

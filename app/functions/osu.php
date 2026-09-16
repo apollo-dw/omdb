@@ -122,6 +122,11 @@
             if ($isFeaturedArtist) {
                 $votesToInsert[] = 78;
             }
+
+            if ($hasStoryboard) {
+                $votesToInsert[] = 56;
+            }
+
             if ($isMegacollab) {
                 $votesToInsert[] = 68;
             } elseif ($isCollab) {
