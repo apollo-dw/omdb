@@ -155,14 +155,14 @@ ORDER BY
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" . safe_htmlspecialchars($sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
+<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" . safe_htmlspecialchars($sampleRow['CreatorName'] ?? $sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
         <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" class="mapset-cover" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
     </div>
     <div class="flex-container flex-child light-bg column-when-mobile column-when-mobile-container mapset-details" style="flex-grow: 1;min-height:8.5em;">
-        <div class="flex-child column-when-mobile" style="width:50%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
+        <div class="flex-child column-when-mobile" style="width:100%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
             <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset Information</div>
             <div style="padding:0.25em;">
                 <?php
@@ -199,9 +199,7 @@ ORDER BY
                 ?>
             </div>
         </div>
-        <div class="flex-child column-when-mobile" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
-            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
-            <?php
+        <?php
             $stmt = $conn->prepare("SELECT bn.NominatorID, bn.Mode, mn.Username FROM beatmapset_nominators bn LEFT JOIN mappernames mn ON mn.UserID = bn.NominatorID WHERE bn.SetID = ?");
             $stmt->bind_param("i", $mapset_id);
             $stmt->execute();
@@ -220,35 +218,37 @@ ORDER BY
             }
 
             if (!empty($nominators)) {
-                echo "<table>";
+        ?>
+            <div class="flex-child column-when-mobile" style="width:100%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+                <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
+                <?php
+                    echo "<table>";
 
-                foreach ($nominators as $mode => $modeNominators) {
-                    $modeString = getModeIcon((int)$mode);
+                    foreach ($nominators as $mode => $modeNominators) {
+                        $modeString = getModeIcon((int)$mode);
 
-                    echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
-                    echo "<div style='display:flex;flex-wrap:wrap;gap:0.5rem;'>";
+                        echo "<tr><td class='text-center' style='vertical-align: middle;'>$modeString</td><td style='width:100%;vertical-align: middle;'>";
+                        echo "<div style='display:flex;flex-wrap:wrap;gap:0.5rem;'>";
 
-                    foreach ($modeNominators as $nominatorID => $nominatorName) {
-                        $escapedNominatorName = safe_htmlspecialchars($nominatorName, ENT_QUOTES);
+                        foreach ($modeNominators as $nominatorID => $nominatorName) {
+                            $escapedNominatorName = safe_htmlspecialchars($nominatorName, ENT_QUOTES);
 
-                        echo "<span style='white-space:nowrap;display:flex;align-items:center;gap:0.25rem;'>
-                                <a href='/profile/$nominatorID'>
-                                    <img class='square-thumb' src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'>
-                                </a>
-                                <a href='/profile/$nominatorID'>$escapedNominatorName</a>
-                            </span>";
+                            echo "<span style='white-space:nowrap;display:flex;align-items:center;gap:0.25rem;'>
+                                    <a href='/profile/$nominatorID'>
+                                        <img class='square-thumb' src='https://s.ppy.sh/a/$nominatorID' style='height:24px;width:24px;' title='$escapedNominatorName'>
+                                    </a>
+                                    <a href='/profile/$nominatorID'>$escapedNominatorName</a>
+                                </span>";
+                        }
+
+                        echo "</div>";
+                        echo "</td></tr>";
                     }
 
-                    echo "</div>";
-                    echo "</td></tr>";
-                }
-
-                echo "</table>";
-            } elseif (!$isLoved && !$isGraveyarded) {
-                echo "No nominators found! This is likely because this is a old set, ranked during moddingv1.<br><a href='edit/?id={$mapset_id}'><span class='subText'><i class='icon-edit'></i> Feel free to help by deducing nominators.</span></a> ";
-            }
-            ?>
-        </div>
+                    echo "</table>";
+                ?>
+            </div>
+        <?php } ?>
             <?php if ($credits) {
                 $initialCreditCount = 2;
                 $remainingCreditCount = max(0, count($credits) - $initialCreditCount);
