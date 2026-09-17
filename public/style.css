@@ -530,10 +530,8 @@ input[type="checkbox"].hamburgerToggle {
 }
 
 .mapset-credit-list {
-    --mapset-visible-credit-count: 2;
-
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5em;
     padding: 0.25em;
 }
@@ -544,6 +542,10 @@ input[type="checkbox"].hamburgerToggle {
     gap: 0.25em;
     min-width: 0;
     line-height: 1;
+}
+
+.mapset-credit-list > .mapset-credit:only-child {
+    grid-column: 1 / -1;
 }
 
 .mapset-credit img {

@@ -76,21 +76,21 @@
 
     $stmt = $conn->prepare("SELECT
     mn.Username,
-	bc.UserID,
-    GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
-FROM
-    beatmapset_credits bc
-LEFT JOIN
-    beatmap_roles br ON br.RoleID = bc.RoleID
-LEFT JOIN
-    mappernames mn ON mn.UserID = bc.UserID
-WHERE
-    bc.SetID = ?
-GROUP BY
-    mn.Username, bc.UserID
-ORDER BY
-    mn.Username, bc.UserID;
-");
+    bc.UserID,
+        GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
+    FROM
+        beatmapset_credits bc
+    LEFT JOIN
+        beatmap_roles br ON br.RoleID = bc.RoleID
+    LEFT JOIN
+        mappernames mn ON mn.UserID = bc.UserID
+    WHERE
+        bc.SetID = ?
+    GROUP BY
+        mn.Username, bc.UserID
+    ORDER BY
+        COUNT(bc.RoleID) DESC, mn.Username, bc.UserID;
+    ");
     $stmt->bind_param("s", $mapset_id);
     $stmt->execute();
     $roleResult = $stmt->get_result();
@@ -162,8 +162,8 @@ ORDER BY
         <img src="https://assets.ppy.sh/beatmaps/<?php echo $sampleRow['SetID']; ?>/covers/cover.jpg" class="mapset-cover" onerror="this.onerror=null; this.src='../assets/img/missing-map-banner.png';" />
     </div>
     <div class="flex-container flex-child light-bg column-when-mobile column-when-mobile-container mapset-details" style="flex-grow: 1;min-height:8.5em;">
-        <div class="flex-child column-when-mobile" style="width:100%;margin:0;box-sizing:border-box;flex-wrap:wrap;">
-            <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Mapset Information</div>
+        <div class="flex-child column-when-mobile" style="flex-grow:1;flex-basis:25%;margin:0;box-sizing:border-box;">
+            <div style="background-color:#203838;padding:0.25em;box-sizing: border-box;">Mapset Information</div>
             <div style="padding:0.25em;">
                 <?php
                 if ($isLoved) {
@@ -219,8 +219,8 @@ ORDER BY
 
             if (!empty($nominators)) {
         ?>
-            <div class="flex-child column-when-mobile" style="width:100%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
-                <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Nominators</div>
+            <div class="flex-child column-when-mobile" style="flex-grow:1;flex-basis:20%;margin:0;border-left:2px solid #203838;box-sizing:border-box;">
+                <div style="background-color:#203838;padding:0.25em;box-sizing: border-box;">Nominators</div>
                 <?php
                     echo "<table>";
 
@@ -253,7 +253,7 @@ ORDER BY
                 $initialCreditCount = 2;
                 $remainingCreditCount = max(0, count($credits) - $initialCreditCount);
                 ?>
-                <div class="flex-child column-when-mobile mapset-credits-panel" style="width:50%;margin:0;border-left:2px solid #203838;box-sizing:border-box;flex-wrap:wrap;">
+                <div class="flex-child column-when-mobile mapset-credits-panel" style="flex-grow:1;flex-basis:33%;margin:0;border-left:2px solid #203838;box-sizing:border-box;">
                     <div style="background-color:#203838;flex-basis: 100%;width:100%;padding:0.25em;box-sizing: border-box;">Credits</div>
                     <div class="mapset-credit-list">
                         <?php foreach ($credits as $creditIndex => $credit) {
