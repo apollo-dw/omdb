@@ -130,15 +130,15 @@
     if (in_array('meta', $filterConfig['categories'])) {
         $metaFilters = [
             'rankedmappers' => 'Ranked Mapper Ratings',
-            'comments' => 'Maps With Comments',
+            // 'comments' => 'Maps With Comments',
         ];
         if ($loggedIn) {
             $metaFilters += [
                 'friends' => 'Friend Ratings',
-                'mutuals' => 'Mutual Friend Ratings',
-                'ratedlikeme' => 'Similar User Ratings',
+                // 'mutuals' => 'Mutual Friend Ratings',
+                // 'ratedlikeme' => 'Similar User Ratings',
                 'alreadyRated' => 'Already Rated Maps',
-                'disagree' => 'Maps I Disagree On',
+                // 'disagree' => 'Maps I Disagree On',
             ];
         }
         foreach ($metaFilters as $metaId => $metaName) {
