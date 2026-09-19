@@ -163,6 +163,7 @@
         {$priorJoin}
         WHERE
             b.Mode = ?
+            AND b.Blacklisted = 0
             {$nullRatingClause}
             {$whereClause}
         ORDER BY
