@@ -2,7 +2,7 @@
     $PageTitle = "Tournament edit";
     require "../../header.php";
 
-    function generateChangelog(array $EditData, array $tournament, array $tournamentStages, array $tournamentMaps): array {
+    function generateChangelog(array $EditData, array$tournament, array $tournamentStages, array$tournamentMaps, array $dbCredits, array $rolesById, array $usersById): array {
         $diffs = [];
 
         $newTournament = $EditData['Tournament'] ?? [];
@@ -33,12 +33,45 @@
             );
         }
 
-        if (isset($newTournament['EndDate']) && $newTournament['EndDate'] !== $tournament['EndDate']) {
+        if (isset($newTournament['EndDate']) &&$newTournament['EndDate'] !== $tournament['EndDate']) {
             $diffs[] = sprintf(
                 'End date changed from <b>%s</b> to <b>%s</b>',
                 htmlspecialchars($tournament['EndDate'] ?? "None"),
                 htmlspecialchars($newTournament['EndDate'])
             );
+        }
+
+        $payloadCredits = $newTournament['Credits'] ?? [];
+        $dbCreditMap = [];
+        foreach ($dbCredits as $c) {
+            $dbCreditMap[(int)$c['UserID']] = (int)$c['RoleID'];
+        }
+
+        $payloadCreditMap = [];
+        foreach ($payloadCredits as$c) {
+            if (!empty($c['userID']) && !empty($c['role'])) {
+                $payloadCreditMap[(int)$c['userID']] = (int)$c['role'];
+            }
+        }
+
+        foreach ($payloadCreditMap as $uId => $rId) {
+            $uName = $usersById[$uId] ?? "User #{$uId}";
+            $rName = $rolesById[$rId] ?? "Role #{$rId}";
+
+            if (!isset($dbCreditMap[$uId])) {
+                $diffs[] = sprintf('Credit added: <b>%s</b> as <i>%s</i>', htmlspecialchars($uName), htmlspecialchars($rName));
+            } else if ($dbCreditMap[$uId] !== $rId) {
+                $oldRoleName = $rolesById[$dbCreditMap[$uId]] ?? "Role #{$dbCreditMap[$uId]}";
+                $diffs[] = sprintf('Credit role for <b>\%s</b> changed from <i>\%s</i> to <i>\%s</i>', htmlspecialchars($uName), htmlspecialchars($oldRoleName), htmlspecialchars($rName));
+            }
+        }
+
+        foreach ($dbCreditMap as $uId => $rId) {
+            if (!isset($payloadCreditMap[$uId])) {
+                $uName = $usersById[$uId] ?? "User #{$uId}";
+                $rName = $rolesById[$rId] ?? "Role #{$rId}";
+                $diffs[] = sprintf('Credit removed: <b>%s</b> (<i>%s</i>)', htmlspecialchars($uName), htmlspecialchars($rName));
+            }
         }
 
         $dbStagesById = [];
@@ -179,6 +212,7 @@
     $tournamentAcronym = $editData['Tournament']['Acronym'] ?? '';
     $tournamentStartDate = $editData['Tournament']['StartDate'] ?? 'None';
     $tournamentEndDate = $editData['Tournament']['EndDate'] ?? 'None';
+    $payloadCredits = $editData['Tournament']['Credits'] ?? [];
 
     $tournamentSeriesId = $editData['Tournament']['SeriesID'] ?? '';
     $requestType = empty($edit['TournamentID']) ? 'New' : 'Edit';
@@ -187,6 +221,48 @@
 
     $originalTournament = null;
     $changelog = null;
+
+    $rolesById = [];
+    $res = $conn->query("SELECT RoleID, Name FROM tournament_roles");
+    while ($row = $res->fetch_assoc()) {
+        $rolesById[$row['RoleID']] = $row['Name'];
+    }
+
+    $creditUserIds = [];
+    foreach ($payloadCredits as $c) {
+        if (!empty($c['userID'])) {
+            $creditUserIds[] = (int)$c['userID'];
+        }
+    }
+
+    $dbCredits = [];
+    if (!is_null($edit["TournamentID"])) {
+        $stmt = $conn->prepare("SELECT * FROM tournament_credits WHERE TournamentID = ?");
+        $stmt->bind_param("i", $edit["TournamentID"]);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $dbCredits[] = $row;
+            $creditUserIds[] = (int)$row['UserID'];
+        }
+        $stmt->close();
+    }
+
+    $creditUserIds = array_unique(array_filter($creditUserIds));
+    $usersById = [];
+    if (!empty($creditUserIds)) {
+        $placeholders = implode(',', array_fill(0, count($creditUserIds), '?'));
+        $types = str_repeat('i', count($creditUserIds));
+
+        $stmt = $conn->prepare("SELECT UserID, Username FROM users WHERE UserID IN ($placeholders)");
+        $stmt->bind_param($types, ...$creditUserIds);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $usersById[$row['UserID']] = $row['Username'];
+        }
+        $stmt->close();
+    }
 
     $stmt = $conn->prepare("SELECT * FROM `tournament_series` WHERE `SeriesID` = ?;");
     $stmt->bind_param("i", $tournamentSeriesId);
@@ -225,7 +301,7 @@
 
         $stmt->close();
 
-        $changelog = generateChangelog($editData, $originalTournament, $tournamentStages, $tournamentMaps);
+        $changelog = generateChangelog($editData, $originalTournament, $tournamentStages, $tournamentMaps, $dbCredits, $rolesById, $usersById);
     }
 
     $allBeatmapIds = [];
@@ -299,6 +375,21 @@
         color: #ff9090;
         font-size: 0.85em;
     }
+
+    .credits-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75em;
+        margin-top: 0.5em;
+    }
+
+    .credit-card {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        background-color: DarkSlateGrey;
+        padding: 0.5em 0.75em;
+    }
 </style>
 
 <div class="header">
@@ -318,7 +409,7 @@
             }
         ?>
         </ul>
-    </div class="bordered-container">
+    </div>
     <br>
 <?php } ?>
 
@@ -327,11 +418,34 @@
         <h2 style="margin: 0;">
             <?php echo safe_htmlspecialchars($tournamentName) ?>
             <?php if ($tournamentAcronym !== '') { ?>
-                <span class="subText"; ><?php echo safe_htmlspecialchars($tournamentAcronym) ?></span>
+                <span class="subText"><?php echo safe_htmlspecialchars($tournamentAcronym) ?></span>
             <?php } ?>
         </h2>
-        <?php echo nl2br(safe_htmlspecialchars($series["Name"])); ?> <br>
+        <?php echo nl2br(safe_htmlspecialchars($series["Name"] ?? '')); ?> <br>
         <span class="subText"><?php echo safe_htmlspecialchars($tournamentStartDate); ?> - <?php echo safe_htmlspecialchars($tournamentEndDate); ?></span> <br>
+
+        <?php if (!empty($payloadCredits)) { ?>
+            <br>
+            <b>Credits:</b>
+            <div class="credits-grid">
+                <?php foreach ($payloadCredits as$credit) { ?>
+                    <?php
+                    $uId = (int)($credit['userID'] ?? 0);
+                    $rId = (int)($credit['role'] ?? 0);
+                    $uName = $usersById[$uId] ?? "User #{$uId}";
+                    $rName = $rolesById[$rId] ?? "Role #{$rId}";
+                    ?>
+                    <div class="credit-card">
+                        <div>
+                            <a href="/profile/<?php echo $uId; ?>" target="_blank" style="font-weight: bold; text-decoration: none;">
+                                <?php echo safe_htmlspecialchars($uName); ?>
+                            </a><br>
+                            <span class="subText" style="font-size: 0.85em;"><?php echo safe_htmlspecialchars($rName); ?></span>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+        <?php } ?>
 
         <?php if ($meta !== '') { ?>
             <br>

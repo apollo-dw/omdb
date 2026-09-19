@@ -113,6 +113,12 @@
             exit();
         }
     }
+
+    $tournamentRoles = $conn->query("SELECT Name FROM tournament_roles ORDER BY RoleID ASC;");
+    while ($row = $tournamentRoles->fetch_assoc()) {
+        $roles[] = $row['Name'];
+    }
+    $rolesJson = json_encode($roles);
 ?>
 
 <style>
@@ -184,6 +190,20 @@
     #DeleteListButton:hover {
         background-color: #722020;
     }
+
+    .mapperList {
+            background-color: #182828;
+            min-height: 4em;
+            margin-left: 0;
+            padding: 0.25rem;
+            min-width: 20em;
+			margin-top: 0;
+        }
+
+    .mapperList li{
+        display: block;
+        padding-bottom: 0.25em;
+    }
 </style>
 
 <h1>Create new tournament for <?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?></h1>
@@ -195,16 +215,62 @@
     <input type="hidden" name="SeriesID" value="<?php echo safe_htmlspecialchars($series['SeriesID'] ?? ''); ?>" />
 
     <div class="container">
-        <label>Tournament Name:</label><br>
-        <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required maxlength="50"/><br><br>
-        <label>Acronym:</label><br>
-        <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required maxlength="10"/><br><br>
-        <label>Start Date:</label><br>
-        <input autocomplete="off" id="TournamentStartDate" value="<?php echo safe_htmlspecialchars($tournament['StartDate'] ?? ''); ?>" required placeholder="YYYY-MM-DD" /><br><br>
-        <label>End Date:</label><br>
-        <input autocomplete="off" id="TournamentEndDate" value="<?php echo safe_htmlspecialchars($tournament['EndDate'] ?? ''); ?>" placeholder="YYYY-MM-DD" /><br><br>
-        <label>Tournament Series:</label> <br>
-        <input disabled value="<?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?>" style="color: var(--main-theme-subtext-color);"/>
+        <h2 style="margin: 0px;">Tournament Info</h2>
+        <div class="flex-container">
+            <div class="flex-item" style="flex-basis: 30%;">
+                <label>Tournament Name:</label><br>
+                <input autocomplete="off" id="TournamentName" value="<?php echo safe_htmlspecialchars($tournament['Name'] ?? ''); ?>" required maxlength="50"/><br><br>
+                <label>Acronym:</label><br>
+                <input autocomplete="off" id="TournamentAcronym" value="<?php echo safe_htmlspecialchars($tournament['Acronym'] ?? ''); ?>" required maxlength="10"/><br><br>
+                <label>Start Date:</label><br>
+                <input autocomplete="off" id="TournamentStartDate" value="<?php echo safe_htmlspecialchars($tournament['StartDate'] ?? ''); ?>" required placeholder="YYYY-MM-DD" /><br><br>
+                <label>End Date:</label><br>
+                <input autocomplete="off" id="TournamentEndDate" value="<?php echo safe_htmlspecialchars($tournament['EndDate'] ?? ''); ?>" placeholder="YYYY-MM-DD" /><br><br>
+                <label>Tournament Series:</label> <br>
+                <input disabled value="<?php echo safe_htmlspecialchars($series["Name"] ?? ''); ?>" style="color: var(--main-theme-subtext-color);"/>
+            </div>
+            <div class="flex-item" style="flex-basis: 70%;">
+                <b>Credits</b><br>
+				<div class="flex-container">
+					<div style="margin-right: 1em;">
+						<label>
+							Add user:
+							<input id="add-credit-input" type="text" onkeypress="return event.keyCode != 13;"> <br>
+							<button type="button" id="add-credit-btn" onclick="addCreditItem(this)" style="float:right;">Add</button>
+						</label>
+					</div>
+					<div style="flex-grow: 1;">
+						<ul class="mapperList creditList">
+							<?php
+                            $stmt = $conn->prepare("SELECT tc.UserID, u.Username, tc.RoleID, tr.Name FROM tournament_credits tc LEFT JOIN mappernames u ON u.UserID = tc.UserID LEFT JOIN tournament_roles tr ON tr.RoleID = tc.RoleID WHERE tc.TournamentID = ?");
+                            $stmt->bind_param('i', $tournamentId);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<li data-creatorid='{$row["UserID"]}'>
+								<i class='icon-remove remove-button'></i>
+								{$row["Username"]}
+								<span class='subText mapperid'>{$row["UserID"]}</span>
+								<select class='roles-select'>";
+
+                                foreach ($roles as $role) {
+                                    $selectedString = "";
+                                    if ($role == $row["Name"]) {
+                                        $selectedString = "selected";
+                                    }
+
+                                    echo "<option value='${role}' ${selectedString}>${role}</option>";
+                                }
+
+                                echo "</select></li>";
+                            }
+                            ?>
+						</ul>
+					</div>
+				</div><br>
+            </div>
+        </div>
     </div>
 
     <br>
@@ -506,6 +572,34 @@
     }
 
     document.getElementById("tournamentForm").addEventListener("submit", function (e) {
+        const creditsListData = [];
+        let isValid = true;
+
+        const creditItems = document.querySelectorAll(".creditList li");
+        creditItems.forEach(function (li) {
+            if (!isValid) return;
+
+            const userID = li.getAttribute("data-creatorid") || li.dataset.creatorid;
+            const roleSelect = li.querySelector(".roles-select");
+            const selectedRole = roleSelect?.options[roleSelect.selectedIndex]?.text ?? null;
+
+            if (!selectedRole) {
+                alert("Please ensure you've selected a role for every credit.");
+                isValid = false;
+                return;
+            }
+
+            creditsListData.push({
+                userID: parseInt(userID, 10),
+                role: selectedRole
+            });
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            return;
+        }
+
         const seriesInput = document.querySelector("input[name='SeriesID']");
 
         const payload = {
@@ -514,7 +608,8 @@
                 Acronym: document.getElementById("TournamentAcronym").value,
                 SeriesID: seriesInput && seriesInput.value !== "" ? parseInt(seriesInput.value, 10) : null,
                 StartDate: document.getElementById("TournamentStartDate").value,
-                EndDate: document.getElementById("TournamentEndDate").value
+                EndDate: document.getElementById("TournamentEndDate").value,
+                Credits: creditsListData
             },
             Stages: stages.map((stage, stageIndex) => ({
                 StageID: stage.StageID || null,
@@ -766,6 +861,49 @@
             alert(`Added ${addedCount} map(s). Failed to fetch ${failedCount} map(s). Check console for details.`);
         }
     }
+
+    const roles = <?php echo $rolesJson; ?>;
+
+    function addCreditItem(button) {
+        const input = $(`#add-credit-input`);
+        const value = input.val().trim();
+        const list = $(button).closest(".flex-container").find(".mapperList");
+
+        if (value !== '') {
+            $.ajax({
+                type: "GET",
+                url: "../../api/public/GetUsernameFromID.php",
+                data: { id: value },
+                success: function(data) {
+                    var { success, username, id } = data;
+
+                    if (success) {
+                        let options = '';
+                        roles.forEach(function(role) {
+                            options += `<option value="${role}">${role}</option>`;
+                        });
+
+                        const listItem = `
+                            <li data-creatorid='${id}'>
+                                <i class='icon-remove remove-button'></i>
+                                ${username}
+                                <span class='subText mapperid'>${id}</span>
+                                <select class='roles-select'>
+                                <option value="" selected disabled>Select role</option>
+                                ${options}
+                                </select>
+                            </li>`;
+                        list.append(listItem);
+                        input.val('');
+                    }
+                }
+            });
+        }
+    }
+
+    $(document).on("click", ".remove-button", function() {
+        $(this).closest("li").remove();
+    });
 
     window.addEventListener('beforeunload', (e) => {
         e.preventDefault();

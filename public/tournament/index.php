@@ -51,6 +51,32 @@
     $stmt->execute();
     $nextTournament = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+
+    $stmt = $conn->prepare("SELECT
+        mn.Username,
+        tc.UserID,
+        GROUP_CONCAT(tr.Name ORDER BY tr.Name ASC SEPARATOR ', ') AS Roles
+    FROM
+        tournament_credits tc
+    LEFT JOIN
+        tournament_roles tr ON tr.RoleID = tc.RoleID
+    LEFT JOIN
+        mappernames mn ON mn.UserID = tc.UserID
+    WHERE
+        tc.TournamentID = ?
+    GROUP BY
+        mn.Username, tc.UserID
+    ORDER BY
+        COUNT(tc.RoleID) DESC, mn.Username, tc.UserID;");
+    $stmt->bind_param("i", $tournamentId);
+    $stmt->execute();
+    $roleResult = $stmt->get_result();
+
+    $credits = [];
+    while ($row = $roleResult->fetch_assoc()) {
+        $credits[] = $row;
+    }
+    $stmt->close();
 ?>
 
 <style>
@@ -98,6 +124,26 @@
         <a href="?id=<?php echo $nextTournament['TournamentID']; ?>" title="Next Tournament">
             <?php echo safe_htmlspecialchars($nextTournament['Acronym']); ?>
         </a>
+    <?php } ?>
+
+    <?php if (!empty($credits)) { ?>
+        <div class="tournament-credits">
+            <strong>Credits</strong>
+            <div class="mapset-credit-list">
+                <?php foreach ($credits as $credit) {
+                    $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
+                    $escapedRoles = safe_htmlspecialchars($credit['Roles'], ENT_QUOTES);
+                    ?>
+                    <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
+                        <span>
+                            <strong><?php echo $escapedCreditName; ?></strong>
+                            <span class="subText"><?php echo $escapedRoles; ?></span>
+                        </span>
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
     <?php } ?>
 </div>
 
