@@ -65,7 +65,6 @@
         }
 
         $statsJoin = "";
-        $priorJoin = "";
 
         if ($useRatingSubset) {
             $raterJoin = "";
@@ -95,27 +94,31 @@
                 INNER JOIN (
                     SELECT
                         r.BeatmapID,
-                        SUM(r.Score) AS TotalScore,
+                        SUM(r.Score * u.Weight) / NULLIF(SUM(u.Weight), 0) AS WeightedAvg,
+                        SUM(u.Weight) AS weight_sum,
                         COUNT(*) AS RatingCount,
-                        AVG(r.Score) AS WeightedAvg,
                         STDDEV_POP(r.Score) * SQRT(COUNT(*)) AS Controversy
                     FROM ratings r
+                    JOIN users u ON r.UserID = u.UserID
                     {$raterJoin}
                     {$raterWhere}
                     GROUP BY r.BeatmapID
                 ) subset_stats ON subset_stats.BeatmapID = b.BeatmapID";
-
-            $priorJoin = "
-                CROSS JOIN (
-                    SELECT AVG(Score) AS prior_rating, COUNT(*) AS prior_count
-                    FROM ratings
-                ) prior";
         }
 
         if ($useRatingSubset) {
             $ratingField = "subset_stats.WeightedAvg";
             $countField = "subset_stats.RatingCount";
-            $bayesField = "((prior.prior_rating * prior.prior_count) + subset_stats.TotalScore) / (prior.prior_count + subset_stats.RatingCount)";
+            
+            $m = 3.00;
+            $confidence = 10;
+
+            $bayesField = "
+                CASE
+                    WHEN subset_stats.weight_sum IS NULL OR subset_stats.weight_sum < 1.5 THEN NULL
+                    ELSE ((subset_stats.weight_sum * subset_stats.WeightedAvg) + ({$m} * {$confidence})) / (subset_stats.weight_sum + {$confidence})
+                END";
+            
         } else {
             $ratingField = "b.WeightedAvg";
             $countField = "b.RatingCount";
@@ -160,7 +163,6 @@
             ON r_user.BeatmapID = b.BeatmapID
            AND r_user.UserID = ?
         {$statsJoin}
-        {$priorJoin}
         WHERE
             b.Mode = ?
             AND b.Blacklisted = 0
