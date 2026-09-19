@@ -536,7 +536,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
             if (value !== '') {
                 $.ajax({
                     type: "GET",
-                    url: "GetUsernameFromID.php",
+                    url: "../../api/public/GetUsernameFromID.php",
                     data: { id: value },
                     success: function(data) {
                         var { success, username, id } = data;
@@ -582,7 +582,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 			if (value !== '') {
 				$.ajax({
 					type: "GET",
-					url: "GetUsernameFromID.php",
+					url: "../../api/public/GetUsernameFromID.php",
 					data: { id: value },
 					success: function(data) {
 						var { success, username, id } = data;
