@@ -127,9 +127,23 @@
         }
     }
 
-    if (in_array('meta', $filterConfig['categories']) && $loggedIn) {
-        $allFilters[] = ['type' => 'meta', 'id' => 'friends', 'name' => 'Friend Ratings', 'label' => 'System: Friend Ratings'];
-        $allFilters[] = ['type' => 'meta', 'id' => 'alreadyRated', 'name' => 'Already Rated Maps', 'label' => 'System: Already Rated Maps'];
+    if (in_array('meta', $filterConfig['categories'])) {
+        $metaFilters = [
+            'rankedmappers' => 'Ranked Mapper Ratings',
+            'comments' => 'Maps With Comments',
+        ];
+        if ($loggedIn) {
+            $metaFilters += [
+                'friends' => 'Friend Ratings',
+                'mutuals' => 'Mutual Friend Ratings',
+                'ratedlikeme' => 'Similar User Ratings',
+                'alreadyRated' => 'Already Rated Maps',
+                'disagree' => 'Maps I Disagree On',
+            ];
+        }
+        foreach ($metaFilters as $metaId => $metaName) {
+            $allFilters[] = ['type' => 'meta', 'id' => $metaId, 'name' => $metaName, 'label' => "System: {$metaName}"];
+        }
     }
 
     if (in_array('status', $filterConfig['categories'])) {
@@ -520,6 +534,17 @@
         credits: 'e'
     };
 
+    // format: [when included, when excluded, phrase when included, phrase when excluded]
+    const OMDB_META_TEXT = {
+        rankedmappers: ['<b>Only</b> Ranked Mapper Ratings', '<b>Exclude</b> Ranked Mapper Ratings', "Ranked mappers' ratings only", "Excluding ranked mappers' ratings"],
+        comments: ['<b>Only</b> Maps With Comments', '<b>Hide</b> Maps With Comments', 'Maps with comments only', 'Hiding maps with comments'],
+        friends: ["<b>Only</b> Friends' Ratings", "<b>Exclude</b> Friends' Ratings", "Friends' ratings only", "Excluding friends' ratings"],
+        mutuals: ["<b>Only</b> Mutual Friends' Ratings", "<b>Exclude</b> Mutual Friends' Ratings", "Mutual friends' ratings only", "Excluding mutual friends' ratings"],
+        ratedlikeme: ["<b>Only</b> Similar Users' Ratings", "<b>Exclude</b> Similar Users' Ratings", "Similar users' ratings only", "Excluding similar users' ratings"],
+        alreadyRated: ['<b>Only</b> Already Rated Maps', '<b>Hide</b> Already Rated Maps', 'Already rated maps only', 'Hiding already rated maps'],
+        disagree: ['<b>Only</b> Maps I Disagree On', '<b>Hide</b> Maps I Disagree On', 'Maps I disagree on only', 'Hiding maps I disagree on']
+    };
+
     const OMDB_DEFAULT_JOIN_MODES = {
         descriptor: 'and',
         country: 'or',
@@ -881,10 +906,9 @@
 
             if (type === 'meta') {
                 ofType.forEach(t => {
-                    if (t.id === 'friends')
-                        phrases.push(t.exclude ? "Excluding friends' ratings" : "Friends' ratings only");
-                    else if (t.id === 'alreadyRated')
-                        phrases.push(t.exclude ? 'Hiding already rated maps' : 'Already rated maps only');
+                    const text = OMDB_META_TEXT[t.id];
+                    if (text)
+                        phrases.push(t.exclude ? text[3] : text[2]);
                 });
                 return;
             }
@@ -1419,10 +1443,9 @@
 
                 if (tok.type === 'meta') {
                     prefix = '';
-                    if (tok.id === 'friends') {
-                        displayText = tok.exclude ? '<b>Exclude</b> Friends\' Ratings' : '<b>Only</b> Friends\' Ratings';
-                    } else if (tok.id === 'alreadyRated') {
-                        displayText = tok.exclude ? '<b>Hide</b> Already Rated Maps' : '<b>Only</b> Already Rated Maps';
+                    const text = OMDB_META_TEXT[tok.id];
+                    if (text) {
+                        displayText = tok.exclude ? text[1] : text[0];
                     }
                 } else if (tok.type === 'user') {
                     prefix = tok.exclude ? '<b>Exclude</b> maps by ' : '<b>Only</b> maps by ';
