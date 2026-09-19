@@ -43,6 +43,20 @@
     $filterTypes .= $filter['types'];
     $filterValues = array_merge($filterValues, $filter['values']);
 
+    if ($parsedTokens['rankedMappersStatus'] !== 'any') {
+        $rankedExists = ($parsedTokens['rankedMappersStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
+        $filterConditions .= " AND {$rankedExists} (
+            SELECT 1 FROM ratings r_ranked
+            WHERE r_ranked.BeatmapID = b.BeatmapID
+            AND " . filterRankedMapperCondition('r_ranked.UserID') . "
+        )";
+    }
+
+    if ($parsedTokens['commentsStatus'] !== 'any') {
+        $commentsExists = filterHasCommentsCondition('b.SetID');
+        $filterConditions .= " AND " . (($parsedTokens['commentsStatus'] === 'only') ? $commentsExists : "NOT {$commentsExists}");
+    }
+
     if ($loggedIn) {
         if ($parsedTokens['ratedStatus'] !== 'any') {
             $ratedExists = ($parsedTokens['ratedStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
@@ -54,15 +68,37 @@
             $filterValues[] = $userId;
         }
 
-        if ($parsedTokens['friendsStatus'] !== 'any') {
-            $friendsExists = ($parsedTokens['friendsStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
-            $filterConditions .= " AND {$friendsExists} (
-                SELECT 1 FROM ratings r_friend
-                JOIN user_relations ur_meta ON ur_meta.UserIDTo = r_friend.UserID AND ur_meta.Type = 1 AND ur_meta.UserIDFrom = ?
-                WHERE r_friend.BeatmapID = b.BeatmapID
+        if ($parsedTokens['disagreeStatus'] !== 'any') {
+            $disagreeExists = ($parsedTokens['disagreeStatus'] === 'only') ? "EXISTS" : "NOT EXISTS";
+            $filterConditions .= " AND {$disagreeExists} (
+                SELECT 1 FROM ratings r_own
+                WHERE r_own.BeatmapID = b.BeatmapID AND r_own.UserID = ?
+                AND " . filterDisagreeCondition('r_own.Score', 'b.WeightedAvg') . "
             )";
             $filterTypes .= "i";
             $filterValues[] = $userId;
+        }
+
+        foreach (array_keys(filterViewerRaterGroups()) as $statusKey) {
+            $groupStatus = $parsedTokens[$statusKey];
+            if ($groupStatus === 'any') {
+                continue;
+            }
+
+            $groupIds = filterViewerRaterIds($conn, (int)$userId, $statusKey);
+            if (empty($groupIds)) {
+                if ($groupStatus === 'only') {
+                    $filterConditions .= " AND FALSE";
+                }
+                continue;
+            }
+
+            $groupExists = ($groupStatus === 'only') ? "EXISTS" : "NOT EXISTS";
+            $filterConditions .= " AND {$groupExists} (
+                SELECT 1 FROM ratings r_group
+                WHERE r_group.BeatmapID = b.BeatmapID
+                AND r_group.UserID IN (" . implode(',', $groupIds) . ")
+            )";
         }
     }
 

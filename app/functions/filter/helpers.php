@@ -462,10 +462,98 @@
         return "{$count} {$op} {$val}";
     }
 
+    function filterRankedMapperCondition(string $userColumn): string {
+        return "EXISTS (
+            SELECT 1 FROM beatmap_creators bc_rm
+            JOIN beatmaps b_rm ON b_rm.BeatmapID = bc_rm.BeatmapID
+            WHERE bc_rm.CreatorID = {$userColumn} AND b_rm.Status IN (1, 2)
+        )";
+    }
+
+    function filterRankedMapperRatersSQL(string $status): string {
+        $condition = filterRankedMapperCondition('ru.UserID');
+        if ($status !== 'only') {
+            $condition = "NOT {$condition}";
+        }
+
+        return "SELECT ru.UserID FROM (SELECT DISTINCT UserID FROM ratings) ru WHERE {$condition}";
+    }
+
+    function filterViewerRaterGroups(): array {
+        return [
+            'friendsStatus' => [
+                'sql' => "SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1",
+                'params' => 1,
+            ],
+            'mutualsStatus' => [
+                'sql' => "SELECT ur.UserIDTo FROM user_relations ur
+                    JOIN user_relations back ON back.UserIDFrom = ur.UserIDTo AND back.UserIDTo = ur.UserIDFrom AND back.Type = 1
+                    WHERE ur.UserIDFrom = ? AND ur.Type = 1",
+                'params' => 1,
+            ],
+            'ratedLikeMeStatus' => [
+                'sql' => "SELECT user2_id FROM user_correlations WHERE user1_id = ? AND correlation >= 0.5
+                    UNION SELECT user1_id FROM user_correlations WHERE user2_id = ? AND correlation >= 0.5",
+                'params' => 2,
+            ],
+        ];
+    }
+
+    function filterViewerRaterIds($conn, int $userId, string $statusKey): array {
+        $group = filterViewerRaterGroups()[$statusKey];
+
+        $stmt = $conn->prepare($group['sql']);
+        $stmt->bind_param(str_repeat('i', $group['params']), ...array_fill(0, $group['params'], $userId));
+        $stmt->execute();
+        $ids = array_map('intval', array_column($stmt->get_result()->fetch_all(MYSQLI_NUM), 0));
+        $stmt->close();
+
+        return $ids;
+    }
+
+    function filterUsesRaterSubset(array $parsed): bool {
+        if ($parsed['rankedMappersStatus'] !== 'any') {
+            return true;
+        }
+
+        foreach (array_keys(filterViewerRaterGroups()) as $key) {
+            if ($parsed[$key] !== 'any') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function filterDisagreeCondition(string $scoreColumn, string $avgColumn): string {
+        return "ABS({$scoreColumn} - {$avgColumn}) >= 1.5";
+    }
+
+    function filterHasCommentsCondition(string $setColumn): string {
+        return "EXISTS (SELECT 1 FROM comments cm_meta WHERE cm_meta.SetID = {$setColumn})";
+    }
+
+    function filterMetaStatusKeys(): array {
+        return [
+            'friends' => 'friendsStatus',
+            'mutuals' => 'mutualsStatus',
+            'ratedlikeme' => 'ratedLikeMeStatus',
+            'rankedmappers' => 'rankedMappersStatus',
+            'alreadyRated' => 'ratedStatus',
+            'disagree' => 'disagreeStatus',
+            'comments' => 'commentsStatus',
+        ];
+    }
+
     function parseFilterTokens($tokensRaw) {
         $parsed = [
             'friendsStatus' => 'any',
+            'mutualsStatus' => 'any',
+            'ratedLikeMeStatus' => 'any',
+            'rankedMappersStatus' => 'any',
             'ratedStatus' => 'any',
+            'disagreeStatus' => 'any',
+            'commentsStatus' => 'any',
             'statusFilters' => [],
             'statuses' => [],
             'exStatuses' => [],
@@ -504,11 +592,9 @@
                     $parsed['joinModes'][$id] = (($t['mode'] ?? 'and') === 'or') ? 'or' : 'and';
                 }
             } elseif ($type === 'meta') {
-                if ($id === 'friends') {
-                $parsed['friendsStatus'] = $exclude ? 'exclude' : 'only';
-                }
-                if ($id === 'alreadyRated') {
-                $parsed['ratedStatus'] = $exclude ? 'exclude' : 'only';
+                $statusKey = filterMetaStatusKeys()[$id] ?? null;
+                if ($statusKey !== null) {
+                    $parsed[$statusKey] = $exclude ? 'exclude' : 'only';
                 }
             } elseif ($type === 'status') {
                 $parsed['statusFilters'][] = ['id' => $id, 'exclude' => $exclude];

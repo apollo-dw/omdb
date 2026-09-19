@@ -14,8 +14,11 @@
 
     $parsedTokens = parseFilterTokens($tokensRaw);
     $filter = buildBeatmapFilterSQL($parsedTokens, $conn);
-    $friendsStatus = $parsedTokens['friendsStatus'];
     $ratedStatus = $parsedTokens['ratedStatus'];
+    $rankedMappersStatus = $parsedTokens['rankedMappersStatus'];
+    $disagreeStatus = $parsedTokens['disagreeStatus'];
+    $commentsStatus = $parsedTokens['commentsStatus'];
+    $useRatingSubset = filterUsesRaterSubset($parsedTokens);
 ?>
 
 <div>
@@ -56,12 +59,37 @@
             $sqlFilters[] = "r_user.Score IS NOT NULL";
         }
 
+        if ($commentsStatus !== 'any') {
+            $commentsExists = filterHasCommentsCondition('b.SetID');
+            $sqlFilters[] = ($commentsStatus === 'only') ? $commentsExists : "NOT {$commentsExists}";
+        }
+
         $statsJoin = "";
         $priorJoin = "";
 
-        if ($friendsStatus !== 'any') {
-            $relationCondition = ($friendsStatus === 'only') ? "IN" : "NOT IN";
-            $selfCondition = ($friendsStatus === 'only') ? "OR r.UserID = ?" : "AND r.UserID != ?";
+        if ($useRatingSubset) {
+            $raterJoin = "";
+            $raterWhere = "";
+            $raterConditions = [];
+
+            if ($rankedMappersStatus !== 'any') {
+                $raterJoin = "JOIN (" . filterRankedMapperRatersSQL($rankedMappersStatus) . ") rm ON rm.UserID = r.UserID";
+            }
+
+            foreach (array_keys(filterViewerRaterGroups()) as $statusKey) {
+                $groupStatus = $parsedTokens[$statusKey];
+                if ($groupStatus === 'any') {
+                    continue;
+                }
+
+                $groupIds = filterViewerRaterIds($conn, (int)$userId, $statusKey);
+                $groupIds[] = (int)$userId;
+                $raterConditions[] = "r.UserID " . (($groupStatus === 'only') ? "IN" : "NOT IN") . " (" . implode(',', $groupIds) . ")";
+            }
+
+            if (!empty($raterConditions)) {
+                $raterWhere = "WHERE " . implode(" AND ", $raterConditions);
+            }
 
             $statsJoin = "
                 INNER JOIN (
@@ -72,31 +100,31 @@
                         AVG(r.Score) AS WeightedAvg,
                         STDDEV_POP(r.Score) * SQRT(COUNT(*)) AS Controversy
                     FROM ratings r
-                    WHERE (r.UserID {$relationCondition} (
-                        SELECT UserIDTo FROM user_relations WHERE UserIDFrom = ? AND Type = 1
-                    ) {$selfCondition})
+                    {$raterJoin}
+                    {$raterWhere}
                     GROUP BY r.BeatmapID
-                ) friend_stats ON friend_stats.BeatmapID = b.BeatmapID";
+                ) subset_stats ON subset_stats.BeatmapID = b.BeatmapID";
 
             $priorJoin = "
                 CROSS JOIN (
                     SELECT AVG(Score) AS prior_rating, COUNT(*) AS prior_count
                     FROM ratings
                 ) prior";
-
-            $statsTypes = "ii";
-            $statsParams[] = $userId;
-            $statsParams[] = $userId;
         }
 
-        if ($friendsStatus !== 'any') {
-            $ratingField = "friend_stats.WeightedAvg";
-            $countField = "friend_stats.RatingCount";
-            $bayesField = "((prior.prior_rating * prior.prior_count) + friend_stats.TotalScore) / (prior.prior_count + friend_stats.RatingCount)";
+        if ($useRatingSubset) {
+            $ratingField = "subset_stats.WeightedAvg";
+            $countField = "subset_stats.RatingCount";
+            $bayesField = "((prior.prior_rating * prior.prior_count) + subset_stats.TotalScore) / (prior.prior_count + subset_stats.RatingCount)";
         } else {
             $ratingField = "b.WeightedAvg";
             $countField = "b.RatingCount";
             $bayesField = "b.Rating";
+        }
+
+        if ($disagreeStatus !== 'any') {
+            $disagrees = "(r_user.Score IS NOT NULL AND " . filterDisagreeCondition('r_user.Score', $ratingField) . ")";
+            $sqlFilters[] = ($disagreeStatus === 'only') ? $disagrees : "NOT {$disagrees}";
         }
 
         switch ($order) {
@@ -104,10 +132,10 @@
                 $columnString = $countField;
                 break;
             case 4:
-                $columnString = ($friendsStatus !== 'any') ? "friend_stats.Controversy" : "b.controversy";
+                $columnString = $useRatingSubset ? "subset_stats.Controversy" : "b.controversy";
                 break;
             case 5:
-                $columnString = ($friendsStatus !== 'any') ? "(friend_stats.WeightedAvg - b.Rating) * SQRT(friend_stats.RatingCount)" : "(b.WeightedAvg - b.Rating) * SQRT(b.RatingCount)";
+                $columnString = $useRatingSubset ? "(subset_stats.WeightedAvg - b.Rating) * SQRT(subset_stats.RatingCount)" : "(b.WeightedAvg - b.Rating) * SQRT(b.RatingCount)";
                 break;
             default:
                 $columnString = "BayesianAverage";
@@ -115,7 +143,7 @@
         }
 
         $whereClause = !empty($sqlFilters) ? "AND " . implode("\nAND ", $sqlFilters) : "";
-        $nullRatingClause = ($friendsStatus === 'any') ? "AND b.Rating IS NOT NULL" : "";
+        $nullRatingClause = $useRatingSubset ? "" : "AND b.Rating IS NOT NULL";
 
         $sql = "
         SELECT
