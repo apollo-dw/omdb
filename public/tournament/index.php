@@ -123,7 +123,7 @@
         </a> <
     <?php } ?>
 
-    <strong><?php echo safe_htmlspecialchars($tournament["Acronym"]); ?></strong>
+    <b><?php echo safe_htmlspecialchars($tournament["Acronym"]); ?></b>
 
     <?php if ($nextTournament) { ?>
         >
@@ -139,7 +139,7 @@
             <?php foreach ($groupedCredits as $roleName => $users) { ?>
                 <div class="credit-role-group">
                     <div class="credit-role-title">
-                        <strong><?php echo safe_htmlspecialchars($roleName); ?></strong>
+                        <b><?php echo safe_htmlspecialchars($roleName); ?></b>
                     </div>
                     <div style="display: flex; gap: 1em;">
                         <?php foreach ($users as $credit) {
@@ -148,7 +148,7 @@
                             <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
                                 <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
                                 <span>
-                                    <strong><?php echo $escapedCreditName; ?></strong>
+                                    <?php echo $escapedCreditName; ?>
                                 </span>
                             </a>
                         <?php } ?>
