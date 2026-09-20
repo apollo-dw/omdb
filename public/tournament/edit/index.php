@@ -429,7 +429,7 @@
             <br>
         <?php } ?>
 
-        <?php if ($loggedIn && $userName === "apollodw") { ?>
+        <?php if ($loggedIn && $userName === "moonpoint") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
                 <option value="Pending" <?php if ($edit["Status"] === "Pending") {
