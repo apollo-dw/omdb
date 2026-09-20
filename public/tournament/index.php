@@ -74,7 +74,11 @@
     $groupedCredits = [];
     while ($row = $roleResult->fetch_assoc()) {
         $roleName = $row['RoleName'];
-        $groupedCredits[$roleName][] = $row;
+        $userId = $row['UserID'];
+
+        if (!isset($groupedCredits[$roleName][$userId])) {
+            $groupedCredits[$roleName][$userId] = $row;
+        }
     }
 
     $stmt->close();
@@ -141,7 +145,7 @@
                     <div class="credit-role-title">
                         <b><?php echo safe_htmlspecialchars($roleName); ?></b>
                     </div>
-                    <div style="display: flex; gap: 1em;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5em;">
                         <?php foreach ($users as $credit) {
                             $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
                             ?>
