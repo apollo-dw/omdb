@@ -77,6 +77,36 @@ try {
         $stmt->close();
     }
 
+    $stmt = $conn->prepare("DELETE FROM tournament_credits WHERE TournamentID = ?");
+    $stmt->bind_param("i", $tournamentID);
+    $stmt->execute();
+    $stmt->close();
+
+    if (!empty($tData['Credits']) && is_array($tData['Credits'])) {
+        $roleIDStmt = $conn->prepare("SELECT RoleID FROM tournament_roles WHERE Name = ?");
+        $roleIDStmt->bind_param('s', $roleName);
+
+        $stmt = $conn->prepare("INSERT INTO tournament_credits (TournamentID, RoleID, UserID) VALUES (?, ?, ?)");
+        $stmt->bind_param('iii', $tournamentID, $roleID, $userID);
+
+        foreach ($tData['Credits'] as $credit) {
+            $roleName = $credit['role'];
+            $userID = (int)$credit['userID'];
+            $roleIDStmt->execute();
+            $result = $roleIDStmt->get_result();
+            $row = $result->fetch_assoc();
+            if (!$row || $userID <= 0) {
+                continue;
+            }
+
+            $roleID = (int)$row['RoleID'];
+            $stmt->execute();
+        }
+
+        $roleIDStmt->close();
+        $stmt->close();
+    }
+
     $stmt = $conn->prepare("
         DELETE tm FROM tournament_maps tm
         INNER JOIN tournament_stages ts ON tm.StageID = ts.StageID
@@ -114,7 +144,6 @@ try {
                     $beatmapID = (int)$map['BeatmapID'];
                     $slot = $map['Slot'];
                     $isCustom = isset($map['IsCustom']) ? (int)$map['IsCustom'] : 0;
-
 
                     $mapStmt->bind_param("iiissi", $tournamentID, $newStageID, $beatmapID, $slot, $mapOrder, $isCustom);
                     $mapStmt->execute();

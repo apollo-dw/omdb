@@ -8,14 +8,25 @@
 <hr>
 
 <b>Most credited mappers</b>
-    <div id="credit-ranking" style="width:32em;max-width:100%;">
+<div id="credit-ranking" style="width:32em;max-width:100%;">
     <?php
-        $stmt = $conn->prepare("SELECT mn.UserID, mn.Username, COUNT(*) AS CreditCount
-                                FROM beatmapset_credits AS bc
-                                JOIN mappernames AS mn ON bc.UserID = mn.UserID
-                                GROUP BY mn.UserID, mn.Username
-                                ORDER BY CreditCount DESC, mn.Username ASC
-                                LIMIT 20;");
+        $stmt = $conn->prepare("
+            SELECT
+                mn.UserID,
+                mn.Username,
+                COUNT(DISTINCT bc.SetID) + COUNT(DISTINCT tc.TournamentID) AS CreditCount
+            FROM mappernames AS mn
+            LEFT JOIN beatmapset_credits AS bc
+                ON bc.UserID = mn.UserID
+            LEFT JOIN tournament_credits AS tc
+                ON tc.UserID = mn.UserID
+            WHERE bc.UserID IS NOT NULL
+               OR tc.UserID IS NOT NULL
+            GROUP BY mn.UserID, mn.Username
+            ORDER BY CreditCount DESC, mn.Username ASC
+            LIMIT 40;
+        ");
+
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -38,6 +49,7 @@
 
     <?php
         }
+        $stmt->close();
     ?>
 </div>
 <br>

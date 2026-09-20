@@ -51,6 +51,33 @@
     $stmt->execute();
     $nextTournament = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+
+    $stmt = $conn->prepare("SELECT
+        tr.RoleID,
+        tr.Name AS RoleName,
+        tc.UserID,
+        mn.Username
+    FROM
+        tournament_credits tc
+    INNER JOIN
+        tournament_roles tr ON tr.RoleID = tc.RoleID
+    LEFT JOIN
+        mappernames mn ON mn.UserID = tc.UserID
+    WHERE
+        tc.TournamentID = ?
+    ORDER BY
+        tr.RoleID ASC, tr.Name ASC, mn.Username ASC, tc.UserID ASC;");
+    $stmt->bind_param("i", $tournamentId);
+    $stmt->execute();
+    $roleResult = $stmt->get_result();
+
+    $groupedCredits = [];
+    while ($row = $roleResult->fetch_assoc()) {
+        $roleName = $row['RoleName'];
+        $groupedCredits[$roleName][] = $row;
+    }
+
+    $stmt->close();
 ?>
 
 <style>
@@ -71,6 +98,11 @@
         box-sizing: border-box;
         padding: 1.5em;
     }
+
+    .credit-role-group {
+        margin-top: 1em;
+    }
+
 </style>
 
 <div class="container">
@@ -91,13 +123,39 @@
         </a> <
     <?php } ?>
 
-    <strong><?php echo safe_htmlspecialchars($tournament["Acronym"]); ?></strong>
+    <b><?php echo safe_htmlspecialchars($tournament["Acronym"]); ?></b>
 
     <?php if ($nextTournament) { ?>
         >
         <a href="?id=<?php echo $nextTournament['TournamentID']; ?>" title="Next Tournament">
             <?php echo safe_htmlspecialchars($nextTournament['Acronym']); ?>
         </a>
+    <?php } ?>
+
+    <?php if (!empty($groupedCredits)) { ?>
+        <div class="tournament-credits">
+            <h2 style="margin-bottom: 0;">Credits</h2>
+            <hr>
+            <?php foreach ($groupedCredits as $roleName => $users) { ?>
+                <div class="credit-role-group">
+                    <div class="credit-role-title">
+                        <b><?php echo safe_htmlspecialchars($roleName); ?></b>
+                    </div>
+                    <div style="display: flex; gap: 1em;">
+                        <?php foreach ($users as $credit) {
+                            $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
+                            ?>
+                            <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
+                                <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
+                                <span>
+                                    <?php echo $escapedCreditName; ?>
+                                </span>
+                            </a>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
     <?php } ?>
 </div>
 
