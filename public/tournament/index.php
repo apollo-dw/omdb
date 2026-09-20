@@ -53,28 +53,28 @@
     $stmt->close();
 
     $stmt = $conn->prepare("SELECT
-        mn.Username,
+        tr.RoleID,
+        tr.Name AS RoleName,
         tc.UserID,
-        GROUP_CONCAT(tr.Name ORDER BY tr.Name ASC SEPARATOR ', ') AS Roles
+        mn.Username
     FROM
         tournament_credits tc
-    LEFT JOIN
+    INNER JOIN
         tournament_roles tr ON tr.RoleID = tc.RoleID
     LEFT JOIN
         mappernames mn ON mn.UserID = tc.UserID
     WHERE
         tc.TournamentID = ?
-    GROUP BY
-        mn.Username, tc.UserID
     ORDER BY
-        COUNT(tc.RoleID) DESC, mn.Username, tc.UserID;");
+        tr.RoleID ASC, tr.Name ASC, mn.Username ASC, tc.UserID ASC;");
     $stmt->bind_param("i", $tournamentId);
     $stmt->execute();
     $roleResult = $stmt->get_result();
 
-    $credits = [];
+    $groupedCredits = [];
     while ($row = $roleResult->fetch_assoc()) {
-        $credits[] = $row;
+        $roleName = $row['RoleName'];
+        $groupedCredits[$roleName][] = $row;
     }
 
     $stmt->close();
@@ -98,6 +98,11 @@
         box-sizing: border-box;
         padding: 1.5em;
     }
+
+    .credit-role-group {
+        margin-top: 1em;
+    }
+
 </style>
 
 <div class="container">
@@ -127,23 +132,29 @@
         </a>
     <?php } ?>
 
-    <?php if (!empty($credits)) { ?>
+    <?php if (!empty($groupedCredits)) { ?>
         <div class="tournament-credits">
-            <strong>Credits</strong>
-            <div class="mapset-credit-list">
-                <?php foreach ($credits as $credit) {
-                    $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
-                    $escapedRoles = safe_htmlspecialchars($credit['Roles'], ENT_QUOTES);
-                    ?>
-                    <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
-                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
-                        <span>
-                            <strong><?php echo $escapedCreditName; ?></strong>
-                            <span class="subText"><?php echo $escapedRoles; ?></span>
-                        </span>
-                    </a>
-                <?php } ?>
-            </div>
+            <h2 style="margin-bottom: 0;">Credits</h2>
+            <hr>
+            <?php foreach ($groupedCredits as $roleName => $users) { ?>
+                <div class="credit-role-group">
+                    <div class="credit-role-title">
+                        <strong><?php echo safe_htmlspecialchars($roleName); ?></strong>
+                    </div>
+                    <div style="display: flex; gap: 1em;">
+                        <?php foreach ($users as $credit) {
+                            $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
+                            ?>
+                            <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
+                                <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
+                                <span>
+                                    <strong><?php echo $escapedCreditName; ?></strong>
+                                </span>
+                            </a>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
         </div>
     <?php } ?>
 </div>
