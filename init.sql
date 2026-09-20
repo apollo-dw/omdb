@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: omdb
 -- ------------------------------------------------------
--- Server version	8.0.46-0ubuntu0.22.04.3
+-- Server version	8.0.46-0ubuntu0.22.04.4
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -19,6 +19,7 @@
 -- Table structure for table `apikeys`
 --
 
+DROP TABLE IF EXISTS `apikeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `apikeys` (
@@ -28,13 +29,14 @@ CREATE TABLE `apikeys` (
   `UserID` int DEFAULT NULL,
   PRIMARY KEY (`ApiID`),
   UNIQUE KEY `ApiKey` (`ApiKey`(255))
-) ENGINE=InnoDB AUTO_INCREMENT=997 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1116 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmap_creators`
 --
 
+DROP TABLE IF EXISTS `beatmap_creators`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmap_creators` (
@@ -49,6 +51,7 @@ CREATE TABLE `beatmap_creators` (
 -- Table structure for table `beatmap_descriptors`
 --
 
+DROP TABLE IF EXISTS `beatmap_descriptors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmap_descriptors` (
@@ -60,13 +63,14 @@ CREATE TABLE `beatmap_descriptors` (
   UNIQUE KEY `uq_beatmap_descriptor` (`BeatmapID`,`DescriptorID`),
   KEY `idx_bd_beatmap_weight` (`BeatmapID`,`Weight` DESC),
   KEY `idx_bd_descriptor_beatmap` (`DescriptorID`,`BeatmapID`)
-) ENGINE=InnoDB AUTO_INCREMENT=131074 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=131071 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmap_edit_requests`
 --
 
+DROP TABLE IF EXISTS `beatmap_edit_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmap_edit_requests` (
@@ -79,13 +83,14 @@ CREATE TABLE `beatmap_edit_requests` (
   `Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
   `EditorID` int DEFAULT NULL,
   PRIMARY KEY (`EditID`)
-) ENGINE=InnoDB AUTO_INCREMENT=28443 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmap_recommendations`
 --
 
+DROP TABLE IF EXISTS `beatmap_recommendations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmap_recommendations` (
@@ -96,13 +101,14 @@ CREATE TABLE `beatmap_recommendations` (
   `ProcessDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`RecommendationID`),
   KEY `idx_mapid_processdate` (`MapID`,`ProcessDate`)
-) ENGINE=InnoDB AUTO_INCREMENT=218689 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=523249 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmap_roles`
 --
 
+DROP TABLE IF EXISTS `beatmap_roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmap_roles` (
@@ -110,13 +116,14 @@ CREATE TABLE `beatmap_roles` (
   `Name` varchar(50) NOT NULL,
   `ShortDescription` text,
   PRIMARY KEY (`RoleID`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmaps`
 --
 
+DROP TABLE IF EXISTS `beatmaps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmaps` (
@@ -146,12 +153,12 @@ CREATE TABLE `beatmaps` (
   `LazerOnly` tinyint(1) DEFAULT NULL,
   `Bpm` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`BeatmapID`),
-  KEY `beatmapset_id` (`SetID`),
-  KEY `idx_Mode` (`Mode`),
   KEY `blacklisted_index` (`Blacklisted`),
   KEY `idx_beatmaps_set_mode` (`SetID`,`Mode`),
   KEY `idx_mode_blacklisted` (`Mode`,`Blacklisted`,`BeatmapID`),
-  KEY `idx_mode_rating` (`Mode`,`Rating` DESC,`BeatmapID`)
+  KEY `idx_mode_rating` (`Mode`,`Rating` DESC,`BeatmapID`),
+  KEY `beatmapset_id` (`SetID`),
+  KEY `idx_Mode` (`Mode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -159,6 +166,7 @@ CREATE TABLE `beatmaps` (
 -- Table structure for table `beatmapset_credits`
 --
 
+DROP TABLE IF EXISTS `beatmapset_credits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmapset_credits` (
@@ -168,14 +176,16 @@ CREATE TABLE `beatmapset_credits` (
   `RoleID` int NOT NULL,
   `UserID` int NOT NULL,
   PRIMARY KEY (`AssignmentID`),
-  KEY `idx_beatmapsetid` (`MapID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2312 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `idx_beatmapsetid` (`MapID`),
+  KEY `idx_bsc_set_user` (`SetID`,`UserID`)
+) ENGINE=InnoDB AUTO_INCREMENT=4026 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `beatmapset_nominators`
 --
 
+DROP TABLE IF EXISTS `beatmapset_nominators`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmapset_nominators` (
@@ -183,7 +193,6 @@ CREATE TABLE `beatmapset_nominators` (
   `NominatorID` int DEFAULT NULL,
   `Mode` tinyint unsigned DEFAULT NULL,
   UNIQUE KEY `beatmapset_nominators_pk` (`SetID`,`NominatorID`,`Mode`),
-  KEY `beatmapset_nominators_SetID_index` (`SetID`),
   KEY `idx_nominatorid` (`NominatorID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -192,6 +201,7 @@ CREATE TABLE `beatmapset_nominators` (
 -- Table structure for table `beatmapsets`
 --
 
+DROP TABLE IF EXISTS `beatmapsets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `beatmapsets` (
@@ -213,7 +223,6 @@ CREATE TABLE `beatmapsets` (
   `MaxRating` smallint unsigned NOT NULL DEFAULT '0',
   `ModeMask` tinyint unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`SetID`),
-  KEY `idx_status` (`Status`),
   KEY `idx_creatorID` (`CreatorID`),
   KEY `idx_maxrating` (`MaxRating` DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -223,6 +232,7 @@ CREATE TABLE `beatmapsets` (
 -- Table structure for table `blacklist`
 --
 
+DROP TABLE IF EXISTS `blacklist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `blacklist` (
@@ -235,6 +245,7 @@ CREATE TABLE `blacklist` (
 -- Table structure for table `cache`
 --
 
+DROP TABLE IF EXISTS `cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache` (
@@ -248,6 +259,7 @@ CREATE TABLE `cache` (
 -- Table structure for table `cache_home_best_map`
 --
 
+DROP TABLE IF EXISTS `cache_home_best_map`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache_home_best_map` (
@@ -260,6 +272,7 @@ CREATE TABLE `cache_home_best_map` (
 -- Table structure for table `cache_home_recent_maps`
 --
 
+DROP TABLE IF EXISTS `cache_home_recent_maps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache_home_recent_maps` (
@@ -275,6 +288,7 @@ CREATE TABLE `cache_home_recent_maps` (
 -- Table structure for table `comments`
 --
 
+DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `comments` (
@@ -287,13 +301,14 @@ CREATE TABLE `comments` (
   KEY `idx_comments_set_date` (`SetID`,`date`),
   KEY `idx_comments_user` (`UserID`),
   KEY `idx_date_user_set` (`date`,`UserID`,`SetID`)
-) ENGINE=InnoDB AUTO_INCREMENT=69428 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=71292 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `descriptor_proposal_comments`
 --
 
+DROP TABLE IF EXISTS `descriptor_proposal_comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `descriptor_proposal_comments` (
@@ -304,13 +319,14 @@ CREATE TABLE `descriptor_proposal_comments` (
   `Timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`CommentID`),
   KEY `idx_time_user_proposal` (`Timestamp`,`UserID`,`ProposalID`)
-) ENGINE=InnoDB AUTO_INCREMENT=802 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=840 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `descriptor_proposal_votes`
 --
 
+DROP TABLE IF EXISTS `descriptor_proposal_votes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `descriptor_proposal_votes` (
@@ -320,13 +336,14 @@ CREATE TABLE `descriptor_proposal_votes` (
   `Timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ProposalID` int DEFAULT NULL,
   PRIMARY KEY (`VoteID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `descriptor_proposals`
 --
 
+DROP TABLE IF EXISTS `descriptor_proposals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `descriptor_proposals` (
@@ -344,13 +361,14 @@ CREATE TABLE `descriptor_proposals` (
   `UpdatedTimestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `LongDescription` text,
   PRIMARY KEY (`ProposalID`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `descriptor_votes`
 --
 
+DROP TABLE IF EXISTS `descriptor_votes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `descriptor_votes` (
@@ -360,15 +378,15 @@ CREATE TABLE `descriptor_votes` (
   `Vote` tinyint(1) NOT NULL,
   `DescriptorID` int NOT NULL,
   PRIMARY KEY (`VoteID`),
-  UNIQUE KEY `descriptor_votes_pk2` (`BeatmapID`,`UserID`,`DescriptorID`),
-  KEY `descriptor_votes_BeatmapID_index` (`BeatmapID`)
-) ENGINE=InnoDB AUTO_INCREMENT=91448 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `descriptor_votes_pk2` (`BeatmapID`,`UserID`,`DescriptorID`)
+) ENGINE=InnoDB AUTO_INCREMENT=148943 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `descriptors`
 --
 
+DROP TABLE IF EXISTS `descriptors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `descriptors` (
@@ -380,13 +398,14 @@ CREATE TABLE `descriptors` (
   `LongDescription` text,
   PRIMARY KEY (`DescriptorID`),
   UNIQUE KEY `descriptors_pk2` (`Name`)
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `forum_posts`
 --
 
+DROP TABLE IF EXISTS `forum_posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `forum_posts` (
@@ -404,6 +423,7 @@ CREATE TABLE `forum_posts` (
 -- Table structure for table `forum_threads`
 --
 
+DROP TABLE IF EXISTS `forum_threads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `forum_threads` (
@@ -421,6 +441,7 @@ CREATE TABLE `forum_threads` (
 -- Table structure for table `forum_topics`
 --
 
+DROP TABLE IF EXISTS `forum_topics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `forum_topics` (
@@ -436,6 +457,7 @@ CREATE TABLE `forum_topics` (
 -- Table structure for table `list_hearts`
 --
 
+DROP TABLE IF EXISTS `list_hearts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `list_hearts` (
@@ -445,13 +467,14 @@ CREATE TABLE `list_hearts` (
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`HeartID`),
   UNIQUE KEY `list_hearts_pk2` (`ListID`,`UserID`)
-) ENGINE=InnoDB AUTO_INCREMENT=455 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=482 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `list_items`
 --
 
+DROP TABLE IF EXISTS `list_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `list_items` (
@@ -462,13 +485,14 @@ CREATE TABLE `list_items` (
   `Description` text,
   `order` int NOT NULL,
   PRIMARY KEY (`ItemID`)
-) ENGINE=InnoDB AUTO_INCREMENT=729664 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=733007 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `lists`
 --
 
+DROP TABLE IF EXISTS `lists`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lists` (
@@ -481,13 +505,14 @@ CREATE TABLE `lists` (
   `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ListID`),
   FULLTEXT KEY `Title` (`Title`)
-) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=236 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `logs`
 --
 
+DROP TABLE IF EXISTS `logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `logs` (
@@ -495,13 +520,14 @@ CREATE TABLE `logs` (
   `UserID` int NOT NULL,
   `LogData` json DEFAULT NULL,
   PRIMARY KEY (`LogID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7221 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7572 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `mappernames`
 --
 
+DROP TABLE IF EXISTS `mappernames`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mappernames` (
@@ -516,6 +542,7 @@ CREATE TABLE `mappernames` (
 -- Table structure for table `news_comments`
 --
 
+DROP TABLE IF EXISTS `news_comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `news_comments` (
@@ -527,13 +554,14 @@ CREATE TABLE `news_comments` (
   PRIMARY KEY (`CommentID`),
   KEY `idx_news_comments_newsid` (`NewsID`),
   KEY `idx_time_user_news` (`Timestamp`,`UserID`,`NewsID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `news_hearts`
 --
 
+DROP TABLE IF EXISTS `news_hearts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `news_hearts` (
@@ -543,13 +571,14 @@ CREATE TABLE `news_hearts` (
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`HeartID`),
   UNIQUE KEY `news_hearts_pk2` (`NewsID`,`UserID`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `news_posts`
 --
 
+DROP TABLE IF EXISTS `news_posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `news_posts` (
@@ -561,13 +590,14 @@ CREATE TABLE `news_posts` (
   `DateEdited` datetime DEFAULT NULL,
   PRIMARY KEY (`NewsID`),
   KEY `idx_news_date_created` (`DateCreated`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `rating_tags`
 --
 
+DROP TABLE IF EXISTS `rating_tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rating_tags` (
@@ -577,13 +607,14 @@ CREATE TABLE `rating_tags` (
   `TagID` int NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`TagID`),
   UNIQUE KEY `rating_tags_pk` (`BeatmapID`,`UserID`,`Tag`)
-) ENGINE=InnoDB AUTO_INCREMENT=7807 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8121 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `ratings`
 --
 
+DROP TABLE IF EXISTS `ratings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ratings` (
@@ -595,14 +626,17 @@ CREATE TABLE `ratings` (
   PRIMARY KEY (`RatingID`),
   UNIQUE KEY `idx_user_beatmap` (`UserID`,`BeatmapID`),
   KEY `idx_beatmapID` (`BeatmapID`),
-  KEY `idx_date_beatmap` (`date`,`BeatmapID`)
-) ENGINE=InnoDB AUTO_INCREMENT=458813 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `idx_date_beatmap` (`date`,`BeatmapID`),
+  KEY `idx_user_score` (`UserID`,`Score`),
+  KEY `idx_beatmap_score` (`BeatmapID`,`Score`)
+) ENGINE=InnoDB AUTO_INCREMENT=472583 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `review_hearts`
 --
 
+DROP TABLE IF EXISTS `review_hearts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `review_hearts` (
@@ -612,13 +646,14 @@ CREATE TABLE `review_hearts` (
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`HeartID`),
   UNIQUE KEY `review_hearts_pk2` (`ReviewID`,`UserID`)
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `reviews`
 --
 
+DROP TABLE IF EXISTS `reviews`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reviews` (
@@ -630,13 +665,14 @@ CREATE TABLE `reviews` (
   PRIMARY KEY (`ReviewID`),
   UNIQUE KEY `unique_review` (`UserID`,`SetID`),
   KEY `idx_date_user_set` (`date`,`UserID`,`SetID`)
-) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `sessions`
 --
 
+DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sessions` (
@@ -655,6 +691,7 @@ CREATE TABLE `sessions` (
 -- Table structure for table `setretrieveinfo`
 --
 
+DROP TABLE IF EXISTS `setretrieveinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `setretrieveinfo` (
@@ -667,6 +704,7 @@ CREATE TABLE `setretrieveinfo` (
 -- Table structure for table `stripe_payments`
 --
 
+DROP TABLE IF EXISTS `stripe_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stripe_payments` (
@@ -689,13 +727,159 @@ CREATE TABLE `stripe_payments` (
   KEY `IX_StripePaymentIntentID` (`StripePaymentIntentID`),
   KEY `IX_StripeCustomerID` (`StripeCustomerID`),
   KEY `IX_UserID` (`UserID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_credits`
+--
+
+DROP TABLE IF EXISTS `tournament_credits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_credits` (
+  `AssignmentID` int NOT NULL AUTO_INCREMENT,
+  `TournamentID` int DEFAULT NULL,
+  `RoleID` int NOT NULL,
+  `UserID` int NOT NULL,
+  PRIMARY KEY (`AssignmentID`),
+  KEY `idx_tournament_id` (`TournamentID`),
+  KEY `idx_role_id` (`RoleID`),
+  KEY `idx_user_id` (`UserID`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_edit_requests`
+--
+
+DROP TABLE IF EXISTS `tournament_edit_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_edit_requests` (
+  `EditID` int NOT NULL AUTO_INCREMENT,
+  `TournamentID` int DEFAULT NULL,
+  `EditData` json NOT NULL,
+  `Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
+  `EditorID` int DEFAULT NULL,
+  `AdminID` int DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`EditID`)
+) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_maps`
+--
+
+DROP TABLE IF EXISTS `tournament_maps`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_maps` (
+  `BeatmapID` int unsigned NOT NULL,
+  `TournamentID` smallint unsigned NOT NULL,
+  `StageID` int unsigned NOT NULL,
+  `Slot` varchar(10) DEFAULT NULL,
+  `SortOrder` smallint unsigned NOT NULL,
+  `IsCustom` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_roles`
+--
+
+DROP TABLE IF EXISTS `tournament_roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_roles` (
+  `RoleID` int NOT NULL AUTO_INCREMENT,
+  `Name` varchar(50) NOT NULL,
+  `ShortDescription` text,
+  PRIMARY KEY (`RoleID`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_series`
+--
+
+DROP TABLE IF EXISTS `tournament_series`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_series` (
+  `SeriesID` smallint unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(50) NOT NULL,
+  `Acronym` varchar(10) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`SeriesID`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_series_edit_requests`
+--
+
+DROP TABLE IF EXISTS `tournament_series_edit_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_series_edit_requests` (
+  `EditID` int NOT NULL AUTO_INCREMENT,
+  `SeriesID` int DEFAULT NULL,
+  `EditData` json NOT NULL,
+  `Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
+  `EditorID` int DEFAULT NULL,
+  `AdminID` int DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`EditID`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournament_stages`
+--
+
+DROP TABLE IF EXISTS `tournament_stages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournament_stages` (
+  `StageID` int unsigned NOT NULL AUTO_INCREMENT,
+  `TournamentID` smallint unsigned NOT NULL,
+  `Name` varchar(50) NOT NULL,
+  `Acronym` varchar(10) DEFAULT NULL,
+  `SortOrder` smallint unsigned NOT NULL,
+  PRIMARY KEY (`StageID`)
+) ENGINE=InnoDB AUTO_INCREMENT=534 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tournaments`
+--
+
+DROP TABLE IF EXISTS `tournaments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tournaments` (
+  `TournamentID` smallint unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(50) NOT NULL,
+  `Acronym` varchar(10) DEFAULT NULL,
+  `StartDate` date DEFAULT NULL,
+  `EndDate` date DEFAULT NULL,
+  `SeriesID` smallint unsigned DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`TournamentID`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user_correlations`
 --
 
+DROP TABLE IF EXISTS `user_correlations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_correlations` (
@@ -712,6 +896,7 @@ CREATE TABLE `user_correlations` (
 -- Table structure for table `user_relations`
 --
 
+DROP TABLE IF EXISTS `user_relations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_relations` (
@@ -727,6 +912,7 @@ CREATE TABLE `user_relations` (
 -- Table structure for table `users`
 --
 
+DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
@@ -777,64 +963,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-28 10:03:07
-
-CREATE TABLE tournaments (
-TournamentID smallint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-Name varchar(50) NOT NULL,
-Acronym varchar(10),
-StartDate DATE,
-EndDate DATE,
-SeriesID smallint UNSIGNED,
-CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE tournament_series (
-SeriesID smallint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-Name varchar(50) NOT NULL,
-Acronym varchar(10),
-CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE tournament_stages (
-StageID tinyint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-TournamentID smallint UNSIGNED NOT NULL,
-Name varchar(30) NOT NULL,
-Acronym varchar(10),
-SortOrder smallint UNSIGNED NOT NULL
-);
-
-CREATE TABLE tournament_maps (
-BeatmapID int UNSIGNED NOT NULL,
-TournamentID smallint UNSIGNED NOT NULL,
-StageID tinyint UNSIGNED NOT NULL,
-Slot varchar(10),
-SortOrder smallint UNSIGNED NOT NULL,
-IsCustom TINYINT(1) NOT NULL DEFAULT 0
-);
-
-CREATE TABLE `tournament_series_edit_requests` (
-`EditID` int NOT NULL AUTO_INCREMENT,
-`SeriesID` int DEFAULT NULL,
-`EditData` json NOT NULL,
-`Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
-`EditorID` int DEFAULT NULL,
-`AdminID` int DEFAULT NULL,
-CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (`EditID`)
-);
-
-CREATE TABLE `tournament_edit_requests` (
-`EditID` int NOT NULL AUTO_INCREMENT,
-`TournamentID` int DEFAULT NULL,
-`EditData` json NOT NULL,
-`Status` enum('Pending','Denied','Approved') DEFAULT 'Pending',
-`EditorID` int DEFAULT NULL,
-`AdminID` int DEFAULT NULL,
-CreatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-UpdatedAt timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (`EditID`)
-);
+-- Dump completed on 2026-09-20 18:27:16
