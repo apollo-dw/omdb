@@ -19,13 +19,20 @@
             FROM list_hearts
             WHERE UserID = ?) AS heartedListCount,
 
-            (SELECT COUNT(DISTINCT SetID)
-            FROM beatmapset_credits
-            WHERE UserID = ?) AS creditCount
+            (
+                (SELECT COUNT(DISTINCT SetID)
+                FROM beatmapset_credits
+                WHERE UserID = ?)
+                +
+                (SELECT COUNT(DISTINCT TournamentID)
+                FROM tournament_credits
+                WHERE UserID = ?)
+            ) AS creditCount
     ");
 
     $stmt->bind_param(
-        "iiiii",
+        "iiiiii",
+        $profileId,
         $profileId,
         $profileId,
         $profileId,
