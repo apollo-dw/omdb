@@ -83,22 +83,28 @@ try {
     $stmt->close();
 
     if (!empty($tData['Credits']) && is_array($tData['Credits'])) {
-        $creditStmt = $conn->prepare("
-            INSERT INTO tournament_credits (TournamentID, RoleID, UserID)
-            VALUES (?, ?, ?)
-        ");
+        $roleIDStmt = $conn->prepare("SELECT RoleID FROM tournament_roles WHERE Name = ?");
+        $roleIDStmt->bind_param('s', $roleName);
+
+        $stmt = $conn->prepare("INSERT INTO tournament_credits (TournamentID, RoleID, UserID) VALUES (?, ?, ?)");
+        $stmt->bind_param('iii', $tournamentID, $roleID, $userID);
 
         foreach ($tData['Credits'] as $credit) {
-            $roleID = (int)$credit['role'];
-            $creditUserID = (int)$credit['userID'];
-
-            if ($roleID > 0 && $creditUserID > 0) {
-                $creditStmt->bind_param("iii", $tournamentID, $roleID, $creditUserID);
-                $creditStmt->execute();
+            $roleName = $credit['role'];
+            $userID = (int)$credit['userID'];
+            $roleIDStmt->execute();
+            $result = $roleIDStmt->get_result();
+            $row = $result->fetch_assoc();
+            if (!$row || $userID <= 0) {
+                continue;
             }
+
+            $roleID = (int)$row['RoleID'];
+            $stmt->execute();
         }
 
-        $creditStmt->close();
+        $roleIDStmt->close();
+        $stmt->close();
     }
 
     $stmt = $conn->prepare("

@@ -2,7 +2,7 @@
     $PageTitle = "Tournament edit";
     require "../../header.php";
 
-    function generateChangelog(array $EditData, array$tournament, array $tournamentStages, array$tournamentMaps, array $dbCredits, array $rolesById, array $usersById): array {
+    function generateChangelog(array $EditData, array$tournament, array $tournamentStages, array$tournamentMaps, array $dbCredits, array $usersById): array {
         $diffs = [];
 
         $newTournament = $EditData['Tournament'] ?? [];
@@ -48,29 +48,9 @@
         }
 
         $payloadCreditMap = [];
-        foreach ($payloadCredits as$c) {
+        foreach ($payloadCredits as $c) {
             if (!empty($c['userID']) && !empty($c['role'])) {
                 $payloadCreditMap[(int)$c['userID']] = (int)$c['role'];
-            }
-        }
-
-        foreach ($payloadCreditMap as $uId => $rId) {
-            $uName = $usersById[$uId] ?? "User #{$uId}";
-            $rName = $rolesById[$rId] ?? "Role #{$rId}";
-
-            if (!isset($dbCreditMap[$uId])) {
-                $diffs[] = sprintf('Credit added: <b>%s</b> as <i>%s</i>', htmlspecialchars($uName), htmlspecialchars($rName));
-            } else if ($dbCreditMap[$uId] !== $rId) {
-                $oldRoleName = $rolesById[$dbCreditMap[$uId]] ?? "Role #{$dbCreditMap[$uId]}";
-                $diffs[] = sprintf('Credit role for <b>\%s</b> changed from <i>\%s</i> to <i>\%s</i>', htmlspecialchars($uName), htmlspecialchars($oldRoleName), htmlspecialchars($rName));
-            }
-        }
-
-        foreach ($dbCreditMap as $uId => $rId) {
-            if (!isset($payloadCreditMap[$uId])) {
-                $uName = $usersById[$uId] ?? "User #{$uId}";
-                $rName = $rolesById[$rId] ?? "Role #{$rId}";
-                $diffs[] = sprintf('Credit removed: <b>%s</b> (<i>%s</i>)', htmlspecialchars($uName), htmlspecialchars($rName));
             }
         }
 
@@ -222,12 +202,6 @@
     $originalTournament = null;
     $changelog = null;
 
-    $rolesById = [];
-    $res = $conn->query("SELECT RoleID, Name FROM tournament_roles");
-    while ($row = $res->fetch_assoc()) {
-        $rolesById[$row['RoleID']] = $row['Name'];
-    }
-
     $creditUserIds = [];
     foreach ($payloadCredits as $c) {
         if (!empty($c['userID'])) {
@@ -301,7 +275,7 @@
 
         $stmt->close();
 
-        $changelog = generateChangelog($editData, $originalTournament, $tournamentStages, $tournamentMaps, $dbCredits, $rolesById, $usersById);
+        $changelog = generateChangelog($editData, $originalTournament, $tournamentStages, $tournamentMaps, $dbCredits, $usersById);
     }
 
     $allBeatmapIds = [];
@@ -428,12 +402,11 @@
             <br>
             <b>Credits:</b>
             <div class="credits-grid">
-                <?php foreach ($payloadCredits as$credit) { ?>
+                <?php foreach ($payloadCredits as $credit) { ?>
                     <?php
                     $uId = (int)($credit['userID'] ?? 0);
-                    $rId = (int)($credit['role'] ?? 0);
+                    $rName = $credit['role'];
                     $uName = $usersById[$uId] ?? "User #{$uId}";
-                    $rName = $rolesById[$rId] ?? "Role #{$rId}";
                     ?>
                     <div class="credit-card">
                         <div>
@@ -456,7 +429,7 @@
             <br>
         <?php } ?>
 
-        <?php if ($loggedIn && $userName === "moonpoint") { ?>
+        <?php if ($loggedIn && $userName === "apollodw") { ?>
             <label for="changeStatus">Status:</label>
             <select id="changeStatus">
                 <option value="Pending" <?php if ($edit["Status"] === "Pending") {

@@ -76,6 +76,7 @@
     while ($row = $roleResult->fetch_assoc()) {
         $credits[] = $row;
     }
+
     $stmt->close();
 ?>
 
