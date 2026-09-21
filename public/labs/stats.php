@@ -14,13 +14,18 @@
             SELECT
                 mn.UserID,
                 mn.Username,
-                (
-                    (SELECT COUNT(*) FROM beatmapset_credits WHERE UserID = mn.UserID) +
-                    (SELECT COUNT(*) FROM tournament_credits WHERE UserID = mn.UserID)
-                ) AS CreditCount
-            FROM mappernames AS mn
-            HAVING CreditCount > 0
-            ORDER BY CreditCount DESC, mn.Username ASC
+                c.CreditCount
+            FROM (
+                SELECT UserID, COUNT(*) AS CreditCount
+                FROM (
+                    SELECT UserID FROM beatmapset_credits
+                    UNION ALL
+                    SELECT UserID FROM tournament_credits
+                ) AS combined
+                GROUP BY UserID
+            ) AS c
+            INNER JOIN mappernames AS mn ON mn.UserID = c.UserID
+            ORDER BY c.CreditCount DESC, mn.Username ASC
             LIMIT 40;
         ");
 
