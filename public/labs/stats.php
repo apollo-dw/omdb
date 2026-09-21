@@ -14,15 +14,12 @@
             SELECT
                 mn.UserID,
                 mn.Username,
-                COUNT(DISTINCT bc.SetID) + COUNT(DISTINCT tc.TournamentID) AS CreditCount
+                (
+                    (SELECT COUNT(*) FROM beatmapset_credits WHERE UserID = mn.UserID) +
+                    (SELECT COUNT(*) FROM tournament_credits WHERE UserID = mn.UserID)
+                ) AS CreditCount
             FROM mappernames AS mn
-            LEFT JOIN beatmapset_credits AS bc
-                ON bc.UserID = mn.UserID
-            LEFT JOIN tournament_credits AS tc
-                ON tc.UserID = mn.UserID
-            WHERE bc.UserID IS NOT NULL
-               OR tc.UserID IS NOT NULL
-            GROUP BY mn.UserID, mn.Username
+            HAVING CreditCount > 0
             ORDER BY CreditCount DESC, mn.Username ASC
             LIMIT 40;
         ");
