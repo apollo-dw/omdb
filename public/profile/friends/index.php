@@ -1,0 +1,73 @@
+<?php
+    $PageTitle = "Friends";
+    require '../../header.php';
+
+    $profileId = GetIntParam('id', null, "Invalid page bro");
+
+    $stmt = $conn->prepare("SELECT * FROM `users` WHERE `UserID` = ?");
+    $stmt->bind_param("i", $profileId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $profile = $result->fetch_assoc();
+    $stmt->close();
+    $isUser = true;
+
+    if ($profile == null) {
+        http_response_code(404);
+        exit();
+    }
+
+    $stmt = $conn->prepare("
+        SELECT u.UserID AS ID, u.Username AS username,
+        CASE
+            WHEN ur1.UserIDTo IS NOT NULL AND ur2.UserIDFrom IS NOT NULL THEN 1
+            WHEN ur1.UserIDTo IS NOT NULL AND ur2.UserIDFrom IS NULL THEN 0
+            ELSE 0
+        END AS isMutualFriend
+        FROM users u
+        LEFT JOIN user_relations ur1 ON u.UserID = ur1.UserIDFrom AND ur1.UserIDTo = ?
+        LEFT JOIN user_relations ur2 ON u.UserID = ur2.UserIDTo AND ur2.UserIDFrom = ?
+        WHERE (ur1.UserIDTo IS NOT NULL OR ur2.UserIDFrom IS NOT NULL)
+            AND ur1.type = 1
+        ORDER BY LastAccessedSite DESC, ID;
+    ");
+    $stmt->bind_param("ii", $profileId, $profileId);
+    $stmt->execute();
+    $friends = $stmt->get_result();
+    $stmt->close();
+
+    RenderCustomThemeCss($profile);
+
+    if ($profile["IsPrivate"]) {
+        $shouldHide = GetProfilePageHiddenStatus($conn, $profileId, $userId);
+        if ($shouldHide) {
+            http_response_code(401);
+            exit();
+        }
+    }
+    ?>
+
+<center><h1><a href="/profile/<?php echo safe_htmlspecialchars($profileId, ENT_QUOTES, 'UTF-8'); ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a>'s friends</h1></center>
+
+    <div class="flex-row-container">
+        <?php
+        while ($row = $friends->fetch_assoc()) {
+            $friendClass = $row["isMutualFriend"] ? "pink-background" : "";
+            ?>
+            <div class="friend-box <?php echo $friendClass; ?>">
+                <a href="/profile/<?php echo $row["ID"]; ?>">
+                    <div class="profileImage">
+                        <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $row["ID"]; ?>" style="width:5em;height:5em;"/><br>
+                        <?php echo safe_htmlspecialchars($row["username"], ENT_QUOTES); ?>
+                    </div>
+                </a>
+            </div>
+            <?php
+        }
+        ?>
+    </div>
+
+
+<?php
+require '../../footer.php';
+?>

@@ -1,0 +1,7 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^([A-Za-z0-9@._-]+)$ index.php?id=$1 [L,QSA]
+RewriteRule ^([A-Za-z0-9@._-]+)/ratings\.csv$ index.php?id=$1&file=ratings.csv [L,QSA]

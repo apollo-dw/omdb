@@ -2,15 +2,17 @@ services:
   omdb:
     build: .
     ports:
-      - "8400:80"
+      - "127.0.0.1:8400:80"
+    env_file:
+      - .env
     environment:
-      DATABASE_HOST: db
-      DATABASE_USER: root
-      DATABASE_PASSWORD: root
+      DATABASE_HOST: ${DATABASE_HOST:-db}
+      DATABASE_USER: ${DATABASE_USER:-root}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-root}
     volumes:
       - .:/var/www/html
-    depends_on:
-      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: mysql:8
