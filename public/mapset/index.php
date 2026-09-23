@@ -22,12 +22,15 @@
             mn.Username,
             t.TournamentID,
             t.Acronym AS TournamentAcronym,
-            tm.Slot as TournamentSlot
+            tm.Slot as TournamentSlot,
+            ts.Name as TournamentStageName,
+            ts.Acronym as TournamentStageAcronym
         FROM `beatmaps` b
         JOIN beatmapsets s ON b.SetID = s.SetID
         LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
         LEFT JOIN tournament_maps tm ON tm.BeatmapID = b.BeatmapID AND tm.IsCustom = 1
         LEFT JOIN tournaments t ON t.TournamentID = tm.TournamentID
+        LEFT JOIN tournament_stages ts ON ts.StageID = tm.StageID
         WHERE b.SetID = ?
         ORDER BY b.Mode, b.SR DESC;
     ");
@@ -493,7 +496,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
                 if ($row["TournamentID"]) {
                 ?>
-                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>&stage=<?php echo $row["TournamentStageAcronym"] ?>"><?php echo $row["TournamentAcronym"] . " " . $row["TournamentStageName"]; ?></a></span>
                 <?php
                 }
             ?>
