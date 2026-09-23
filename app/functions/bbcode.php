@@ -1,7 +1,6 @@
 <?php
 
-class BBCode
-{
+class BBCode {
     private const ALIAS = [
         'quote' => 'blockquote',
         'code' => 'pre',
@@ -28,18 +27,15 @@ class BBCode
     private int $ptr;
     private int $idx;
 
-    public static function bbcode_to_html(string $input): string
-    {
+    public static function bbcode_to_html(string $input): string {
         return (new self($input))->parse();
     }
 
-    private function __construct(string $input)
-    {
+    private function __construct(string $input) {
         $this->input = $input;
     }
 
-    private function parse(): string
-    {
+    private function parse(): string {
         if (preg_match_all(self::TAG_PATTERN, $this->input, $matches, PREG_OFFSET_CAPTURE) === false) {
             throw new RuntimeException('Fatal error in preg_match_all for BBCode tags');
         }
@@ -74,8 +70,7 @@ class BBCode
         return $this->output;
     }
 
-    private function openTag(array $tag, string $match): void
-    {
+    private function openTag(array $tag, string $match): void {
         $name = $tag['name'];
 
         $handled = match (true) {
@@ -95,8 +90,7 @@ class BBCode
         }
     }
 
-    private function closeTag(string $name, string $match): void
-    {
+    private function closeTag(string $name, string $match): void {
         if (!in_array($name, $this->stack, true)) {
             $this->output .= $this->encode($match);
 
@@ -109,16 +103,14 @@ class BBCode
         } while ($popped !== $name);
     }
 
-    private function openElement(string $name): bool
-    {
+    private function openElement(string $name): bool {
         $this->stack[] = $name;
         $this->output .= '<' . $name . '>';
 
         return true;
     }
 
-    private function openListItem(): bool
-    {
+    private function openListItem(): bool {
         if (!in_array('ol', $this->stack, true) && !in_array('ul', $this->stack, true)) {
             return false;
         }
@@ -134,8 +126,7 @@ class BBCode
         return true;
     }
 
-    private function openTableRow(): bool
-    {
+    private function openTableRow(): bool {
         if (!in_array('table', $this->stack, true)) {
             return false;
         }
@@ -146,8 +137,7 @@ class BBCode
         return true;
     }
 
-    private function openTableCell(string $name): bool
-    {
+    private function openTableCell(string $name): bool {
         $tr = array_search('tr', $this->stack, true);
         $table = array_search('table', $this->stack, true);
         if ($tr === false || $table === false || $table > $tr) {
@@ -160,8 +150,7 @@ class BBCode
         return true;
     }
 
-    private function openFont(?array $args): bool
-    {
+    private function openFont(?array $args): bool {
         $color = $args['color'] ?? null;
         if ($color === null || !preg_match('/^(#[0-9a-f]{3}|#[0-9a-f]{6}|[a-z]+)$/i', $color)) {
             return false;
@@ -173,8 +162,7 @@ class BBCode
         return true;
     }
 
-    private function parseCode(): bool
-    {
+    private function parseCode(): bool {
         $end = $this->findClose('pre');
         if ($end === null) {
             return false;
@@ -187,8 +175,7 @@ class BBCode
         return true;
     }
 
-    private function parseUrl(?array $args): bool
-    {
+    private function parseUrl(?array $args): bool {
         $target = $args['default'] ?? null;
 
         if ($target !== null) {
@@ -208,8 +195,7 @@ class BBCode
         return true;
     }
 
-    private function parseImage(?array $args): bool
-    {
+    private function parseImage(?array $args): bool {
         $body = $this->enclosedText('img');
         if ($body === null) {
             return false;
@@ -233,12 +219,11 @@ class BBCode
         return true;
     }
 
-    private function decodeTag(string $token): array
-    {
+    private function decodeTag(string $token): array {
         $open = $token[1] !== '/';
         $inner = substr($token, $open ? 1 : 2, -1);
 
-        $params = array_map(fn($p) => explode('=', $p, 2), explode(' ', $inner));
+        $params = array_map(fn ($p) => explode('=', $p, 2), explode(' ', $inner));
         $first = array_shift($params);
 
         $name = strtolower($first[0]);
@@ -251,8 +236,7 @@ class BBCode
         return ['name' => $name, 'open' => $open, 'args' => $args];
     }
 
-    private function enclosedText(string $element): ?string
-    {
+    private function enclosedText(string $element): ?string {
         $next = $this->idx + 1;
         if ($next >= $this->count) {
             return null;
@@ -270,8 +254,7 @@ class BBCode
         return $text;
     }
 
-    private function findClose(string $element): ?int
-    {
+    private function findClose(string $element): ?int {
         for ($i = $this->idx + 1; $i < $this->count; $i++) {
             $tag = $this->decodeTag($this->matches[$i][0]);
             if (!$tag['open'] && $tag['name'] === $element) {
@@ -282,15 +265,13 @@ class BBCode
         return null;
     }
 
-    private function consumeUntil(int $to): void
-    {
+    private function consumeUntil(int $to): void {
         [$match, $offset] = $this->matches[$to];
         $this->ptr = $offset + strlen($match);
         $this->idx = $to;
     }
 
-    private function sanitizeUrl(string $url): string
-    {
+    private function sanitizeUrl(string $url): string {
         $stripped = preg_replace('/[\x00-\x20]+/', '', $url);
         if (
             preg_match('#^([a-z][a-z0-9+.\-]*):#i', $stripped, $m)
@@ -302,13 +283,11 @@ class BBCode
         return $url;
     }
 
-    private function tag(string $element, array $attributes = [], ?string $content = null): string
-    {
+    private function tag(string $element, array $attributes = [], ?string $content = null): string {
         return '<' . $element . $this->attributes($attributes) . '>' . ($content ?? '') . '</' . $element . '>';
     }
 
-    private function attributes(array $attributes): string
-    {
+    private function attributes(array $attributes): string {
         $out = '';
         foreach ($attributes as $key => $value) {
             $out .= ' ' . $key . '="' . $this->encodeAttr($value) . '"';
@@ -317,13 +296,11 @@ class BBCode
         return $out;
     }
 
-    private function encodeAttr(string $value): string
-    {
+    private function encodeAttr(string $value): string {
         return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
-    private function encode(string $input): string
-    {
+    private function encode(string $input): string {
         $output = '';
         $lf = 0;
 
@@ -363,7 +340,6 @@ class BBCode
     }
 }
 
-function bbcode_to_html(string $input): string
-{
+function bbcode_to_html(string $input): string {
     return BBCode::bbcode_to_html($input);
 }
