@@ -179,8 +179,13 @@ class BBCode {
         $target = $args['default'] ?? null;
 
         if ($target !== null) {
+            $url = $this->sanitizeUrl($target);
             $this->stack[] = 'a';
-            $this->output .= '<a' . $this->attributes(['href' => $this->sanitizeUrl($target), 'rel' => 'nofollow']) . '>';
+            $this->output .= '<a' . $this->attributes([
+                'href' => $url,
+                'rel' => 'nofollow',
+                'class' => 'external-link',
+            ]) . '>';
 
             return true;
         }
@@ -190,7 +195,12 @@ class BBCode {
             return false;
         }
 
-        $this->output .= $this->tag('a', ['href' => $this->sanitizeUrl($body), 'rel' => 'nofollow'], $this->encode($body));
+        $url = $this->sanitizeUrl($body);
+        $this->output .= $this->tag('a', [
+            'href' => $url,
+            'rel' => 'nofollow',
+            'class' => 'external-link',
+        ], $this->encode($body));
 
         return true;
     }
