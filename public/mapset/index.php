@@ -105,11 +105,6 @@
 
     $stmt->close();
 
-    // This will be set to true if during the display of difficulties,
-    // a blocked one appears. This is so we can display a message near
-    // the comment box.
-    $hasBlacklistedDifficulties = false;
-
     // blacklisted users should not be able to rate
     $isUserBlacklisted = false;
     $stmt = $conn->prepare("SELECT * FROM blacklist WHERE UserID = ?");
@@ -560,7 +555,6 @@ while ($row = $result->fetch_assoc()) {
 			<?php } else { ?>
 				<b>This difficulty has been blacklisted from OMDB charts.</b> <br>
 				Ratings on this difficulty are private.
-				<?php $hasBlacklistedDifficulties = true; ?>
 			<?php } ?>
 			<span class="map-descriptors">
 				<table style="margin-left: auto;">
@@ -875,11 +869,6 @@ while ($row = $result->fetch_assoc()) {
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
                     <input type='button' name="commentSubmit" id="commentSubmit" value="Post Comment" onclick="submitComment()" />
                 </form>
-                <?php if ($hasBlacklistedDifficulties) { ?>
-                    <p>
-                        This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
-                    </p>
-                <?php } ?>
             </div>
         <?php } ?>
         <div id="commentContainer">
