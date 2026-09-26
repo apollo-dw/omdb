@@ -256,7 +256,7 @@
 				COUNT(DISTINCT bn.NominatorID) * ? +
 				(COUNT(DISTINCT bc.CreatorID) / GREATEST(1, ? + (SELECT COUNT(DISTINCT CreatorID) FROM beatmap_creators WHERE BeatmapID = b.BeatmapID) - COUNT(DISTINCT bc.CreatorID))) * ? +
 				COALESCE(corr.Correlation, 0) * (COALESCE(corr.CoRaters, 0) / (COALESCE(corr.CoRaters, 0) + ?)) * ? +
-				GREATEST(0, 1 - ABS(b.SR - ?) / (? * ?)) * ?
+				COALESCE(GREATEST(0, 1 - ABS(b.SR - ?) / (GREATEST(0.01, ?) * ?)), 0) * ?
 			) AS RecScore
 			FROM beatmaps b
 			INNER JOIN beatmapsets s ON s.SetID = b.SetID
@@ -302,6 +302,8 @@
 
         $coverageWeight = $weights["cohortCoverage"] * max(0, 1 - count($userIDs) / $settings["coverageFade"]);
 
+        $seedSR = max(0.01, (float)$seed["SR"]);
+
         $selectParams = [
             $weights["avgScore"],
             $settings["liftShrink"], $weights["cohortLift"],
@@ -311,7 +313,7 @@
             $weights["sharedNominator"],
             count($creatorIDs), $weights["sharedMapper"],
             $settings["corrShrink"], $weights["correlation"],
-            $seed["SR"], $seed["SR"], $settings["srWindow"], $weights["srProximity"]
+            $seedSR, $seedSR, $settings["srWindow"], $weights["srProximity"]
         ];
 
         $types = "dididddsiddididdddd"
