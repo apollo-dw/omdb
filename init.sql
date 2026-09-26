@@ -660,6 +660,7 @@ CREATE TABLE `reviews` (
   `ReviewID` int NOT NULL AUTO_INCREMENT,
   `UserID` int NOT NULL,
   `SetID` mediumint unsigned NOT NULL,
+  `BeatmapID` mediumint unsigned NOT NULL,
   `Comment` text,
   `date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ReviewID`),

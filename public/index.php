@@ -154,8 +154,19 @@
         }
 
         $stmt = $conn->prepare("
-            (
-                SELECT c.*, 'beatmap' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
+        (
+                SELECT 
+                    c.CommentID AS ItemID,
+                    c.UserID,
+                    c.SetID,
+                    c.Comment,
+                    c.date AS date,
+                    'beatmap' AS comment_type,
+                    NULL AS Name,
+                    NULL AS ProposalID,
+                    bs.Artist,
+                    bs.Title,
+                    m.Username
                 FROM comments c
                 JOIN beatmapsets bs ON bs.SetID = c.SetID
                 JOIN users u ON u.UserID = c.UserID
@@ -196,11 +207,22 @@
                     )
                     OR c.UserID = ?
                 )
-                ORDER BY date DESC LIMIT 40
+                ORDER BY c.date DESC LIMIT 40
             )
             UNION ALL
             (
-                SELECT dpc.*, 'descriptor_proposal' AS comment_type, p.Name, dpc.ProposalID, NULL as Artist, NULL as Title, m.Username
+                SELECT 
+                    dpc.CommentID AS ItemID,
+                    dpc.UserID,
+                    NULL AS SetID,
+                    dpc.Comment,
+                    dpc.Timestamp AS date,
+                    'descriptor_proposal' AS comment_type,
+                    p.Name,
+                    dpc.ProposalID,
+                    NULL AS Artist,
+                    NULL AS Title,
+                    m.Username
                 FROM descriptor_proposal_comments dpc
                 LEFT JOIN descriptor_proposals p ON p.ProposalID = dpc.ProposalID
                 JOIN users u ON u.UserID = dpc.UserID
@@ -231,11 +253,22 @@
                         )
                     )
                 )
-                ORDER BY Timestamp DESC LIMIT 40
+                ORDER BY dpc.Timestamp DESC LIMIT 40
             )
             UNION ALL
             (
-                SELECT nc.*, 'news' AS comment_type, np.Title as Name, nc.NewsID as ProposalID, NULL as Artist, NULL as Title, m.Username
+                SELECT 
+                    nc.CommentID AS ItemID,
+                    nc.UserID,
+                    NULL AS SetID,
+                    nc.Comment,
+                    nc.Timestamp AS date,
+                    'news' AS comment_type,
+                    np.Title AS Name,
+                    nc.NewsID AS ProposalID,
+                    NULL AS Artist,
+                    NULL AS Title,
+                    m.Username
                 FROM news_comments nc
                 JOIN news_posts np ON np.NewsID = nc.NewsID
                 JOIN users u ON u.UserID = nc.UserID
@@ -266,11 +299,22 @@
                         )
                     )
                 )
-                ORDER BY Timestamp DESC LIMIT 40
+                ORDER BY nc.Timestamp DESC LIMIT 40
             )
             UNION ALL
             (
-                SELECT r.*, 'review' AS comment_type, NULL as Name, NULL as ProposalID, bs.Artist, bs.Title, m.Username
+                SELECT 
+                    r.ReviewID AS ItemID,
+                    r.UserID,
+                    r.SetID,
+                    r.Comment,
+                    r.date AS date,
+                    'review' AS comment_type,
+                    NULL AS Name,
+                    NULL AS ProposalID,
+                    bs.Artist,
+                    bs.Title,
+                    m.Username
                 FROM reviews r
                 JOIN beatmapsets bs ON bs.SetID = r.SetID
                 JOIN users u ON u.UserID = r.UserID
@@ -311,7 +355,7 @@
                     )
                     OR r.UserID = ?
                 )
-                ORDER BY date DESC LIMIT 40
+                ORDER BY r.date DESC LIMIT 40
             )
             ORDER BY date DESC
             LIMIT 40;

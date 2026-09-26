@@ -22,12 +22,15 @@
             mn.Username,
             t.TournamentID,
             t.Acronym AS TournamentAcronym,
-            tm.Slot as TournamentSlot
+            tm.Slot as TournamentSlot,
+            ts.Name as TournamentStageName,
+            ts.Acronym as TournamentStageAcronym
         FROM `beatmaps` b
         JOIN beatmapsets s ON b.SetID = s.SetID
         LEFT JOIN mappernames mn ON mn.UserID = s.CreatorID
         LEFT JOIN tournament_maps tm ON tm.BeatmapID = b.BeatmapID AND tm.IsCustom = 1
         LEFT JOIN tournaments t ON t.TournamentID = tm.TournamentID
+        LEFT JOIN tournament_stages ts ON ts.StageID = tm.StageID
         WHERE b.SetID = ?
         ORDER BY b.Mode, b.SR DESC;
     ");
@@ -48,14 +51,15 @@
     $isGraveyarded = $sampleRow["Status"] == -2;
     require '../header.php';
 
-    $stmt = $conn->prepare("SELECT comment FROM reviews WHERE UserID = ? AND SetID = ?");
+    $stmt = $conn->prepare("SELECT comment, BeatmapID FROM reviews WHERE UserID = ? AND SetID = ?");
     $stmt->bind_param("ii", $userId, $mapset_id);
     $stmt->execute();
     $stmt->store_result();
 
     $review_comment = "";
+    $review_beatmapid = null;
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($review_comment);
+        $stmt->bind_result($review_comment, $review_beatmapid);
         $stmt->fetch();
     }
 
@@ -101,11 +105,6 @@
     }
 
     $stmt->close();
-
-    // This will be set to true if during the display of difficulties,
-    // a blocked one appears. This is so we can display a message near
-    // the comment box.
-    $hasBlacklistedDifficulties = false;
 
     // blacklisted users should not be able to rate
     $isUserBlacklisted = false;
@@ -493,7 +492,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
                 if ($row["TournamentID"]) {
                 ?>
-                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>"><?php echo $row["TournamentAcronym"]; ?></a></span>
+                    <span class="subText">Custom <?php echo $row["TournamentSlot"]; ?> for <a href="/tournament/?id=<?php echo $row["TournamentID"]; ?>&stage=<?php echo $row["TournamentStageAcronym"] ?>"><?php echo $row["TournamentAcronym"] . " " . $row["TournamentStageName"]; ?></a></span>
                 <?php
                 }
             ?>
@@ -557,7 +556,6 @@ while ($row = $result->fetch_assoc()) {
 			<?php } else { ?>
 				<b>This difficulty has been blacklisted from OMDB charts.</b> <br>
 				Ratings on this difficulty are private.
-				<?php $hasBlacklistedDifficulties = true; ?>
 			<?php } ?>
 			<span class="map-descriptors">
 				<table style="margin-left: auto;">
@@ -872,11 +870,6 @@ while ($row = $result->fetch_assoc()) {
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
                     <input type='button' name="commentSubmit" id="commentSubmit" value="Post Comment" onclick="submitComment()" />
                 </form>
-                <?php if ($hasBlacklistedDifficulties) { ?>
-                    <p>
-                        This mapset contains blacklisted difficulties. Do not comment what you'd rate it, please respect the mapper's wishes!
-                    </p>
-                <?php } ?>
             </div>
         <?php } ?>
         <div id="commentContainer">
@@ -992,13 +985,53 @@ while ($row = $result->fetch_assoc()) {
             $buttonText = strlen($review_comment) > 0 ? "Edit Review" : "Post Review";
             ?>
             <form style="display: flex; flex-direction: column; gap: 0.25em; margin-bottom: 0.25em;">
-                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." value="" autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                <div style="display: flex; align-items: center;">
+                    Show rating for: 
+                    <select name="review-difficulties" id="review-difficulties" style="flex-grow: 1;">
+                        <option value="" 
+                        <?php if (is_null($review_beatmapid)) {
+                        echo "selected"; } ?>
+                        >
+                            All
+                        </option>
+                        <?php
+                            $stmt = $conn->prepare("SELECT DifficultyName, BeatmapID FROM beatmaps WHERE `SetID` = ? AND Blacklisted = 0 ORDER BY SR DESC, Mode ASC;");
+                            $stmt->bind_param("i", $mapset_id);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            while ($row = $result->fetch_assoc()) {
+                                $selectedString = $review_beatmapid == $row['BeatmapID'] ? "selected" : "";
+                                $difficultyName = safe_htmlspecialchars(mb_strimwidth($row['DifficultyName'], 0, 80, "..."), ENT_QUOTES);
+                                echo "<option value='{$row['BeatmapID']}' {$selectedString}>{$difficultyName}</option>";
+                            }
+                        ?>
+                    </select>
+                </div>
                 <input type='button' name="reviewSubmit" id="reviewSubmit" value="<?php echo $buttonText; ?>" onclick="submitReview()" />
             </form>
         <?php } ?>
 
 		<?php
-            $stmt = $conn->prepare("SELECT r.*, u.IsPatron, u.IsPrivate FROM `reviews` r LEFT JOIN users u ON r.UserID = u.UserID WHERE r.SetID = ? ORDER BY date DESC");
+            $stmt =$conn->prepare("
+                SELECT 
+                    r.*, 
+                    u.IsPatron, 
+                    u.IsPrivate,
+                    rat.Score,
+                    b.DifficultyName
+                FROM `reviews` r
+                LEFT JOIN `users` u 
+                    ON r.UserID = u.UserID
+                LEFT JOIN `ratings` rat 
+                    ON r.BeatmapID = rat.BeatmapID
+                    AND r.UserID = rat.UserID
+                LEFT JOIN `beatmaps` b 
+                    ON r.BeatmapID = b.BeatmapID
+                WHERE r.SetID = ?
+                ORDER BY r.date DESC
+            ");
             $stmt->bind_param("i", $sampleRow["SetID"]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1119,6 +1152,11 @@ while ($row = $result->fetch_assoc()) {
                                     </span>
                                     <?php
                                 }
+
+                                if ($row["Score"]) {
+                                    echo RenderRating($row["Score"]);
+                                    echo " on " . safe_htmlspecialchars($row["DifficultyName"]);
+                                }
                             ?>
                         </div>
                         <div class="flex-child" style="margin-left:auto;">
@@ -1222,6 +1260,9 @@ while ($row = $result->fetch_assoc()) {
 
 	function submitReview() {
 		var text = document.getElementById('reviewForm').value;
+        var beatmapSelect = document.getElementById('review-difficulties');
+        var bID = beatmapSelect ? beatmapSelect.value : "";
+
 		if (text.length > 3) {
 			document.getElementById('reviewSubmit').disabled = true;
 
@@ -1235,7 +1276,9 @@ while ($row = $result->fetch_assoc()) {
 			var sID = "<?php echo $mapset_id; ?>";
 			xhttp.open("POST", "SubmitReview.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send("sID=" + sID + "&comment=" + encodeURIComponent(text));
+			xhttp.send("sID=" + encodeURIComponent(sID) + 
+                   "&comment=" + encodeURIComponent(text) + 
+                   "&bID=" + encodeURIComponent(bID));
 		}
 	}
 

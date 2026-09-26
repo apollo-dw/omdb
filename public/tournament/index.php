@@ -2,6 +2,8 @@
     require_once __DIR__ . '/../../app/base.php';
 
     $tournamentId = GetIntParam('id', -1);
+    $stageQuery = strtoupper(trim($_GET['stage'] ?? ''));
+
     $stmt = $conn->prepare("SELECT t.*, s.Name as SeriesName, s.Acronym as SeriesAcronym from tournaments t INNER JOIN tournament_series s ON s.SeriesID = t.SeriesID WHERE t.TournamentID = ?;");
     $stmt->bind_param("i", $tournamentId);
     $stmt->execute();
@@ -27,6 +29,20 @@
     }
 
     $stmt->close();
+
+    $activeStageId = null;
+    if ($stageQuery !== '') {
+        foreach ($stages as $stageId => $stage) {
+            if (strtoupper($stage['Acronym']) === $stageQuery) {
+                $activeStageId = $stageId;
+                break;
+            }
+        }
+    }
+
+    if ($activeStageId === null && !empty($stages)) {
+        $activeStageId = array_key_first($stages);
+    }
 
     $stmt = $conn->prepare("
         SELECT TournamentID, Acronym
@@ -172,21 +188,17 @@
 
 <div class="tabbed-container-nav">
     <?php
-        $first = true;
-
         foreach ($stages as $stageId => $stage) {
-            $activeClass = $first ? 'active' : '';
-            echo "<button class='{$activeClass}' onclick=\"openTab('{$stageId}', this)\">{$stage['Acronym']}</button>";
-            $first = false;
+            $activeClass = ($stageId == $activeStageId) ? 'active' : '';
+            $acronym = safe_htmlspecialchars($stage['Acronym'], ENT_QUOTES);
+            echo "<button class='{$activeClass}' onclick=\"switchStage('{$stageId}', '{$acronym}', this)\">{$stage['Acronym']}</button>";
         }
     ?>
 </div>
 
 <?php
-    $first = true;
-
     foreach ($stages as $stageId => $stage) {
-        $display = $first ? 'block' : 'none';
+        $display = ($stageId == $activeStageId) ? 'block' : 'none';
 
         echo "<div id='{$stageId}' class='tab' style='display: {$display};'>";
         ?>
@@ -258,9 +270,22 @@
 
         <?php
         echo "</div>";
-        $first = false;
     }
 ?>
+
+<script>
+    function switchStage(stageId, acronym, element) {
+        if (typeof openTab === 'function') {
+            openTab(stageId, element);
+        }
+
+        if (window.history && window.history.replaceState) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('stage', acronym);
+            window.history.replaceState(null, '', url.toString());
+        }
+    }
+</script>
 
 <?php
     require "../footer.php";
