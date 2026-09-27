@@ -30,47 +30,120 @@ function setGameMode(mode) {
     location.reload();
 }
 
-let searchDebounceTimer;
-let searchController;
-let lastSearchQuery = null;
+/**
+ * Sets up event listeners for the top bar search input and results navigation.
+ */
+function setupTopBarSearch() {
+    const form = document.querySelector(".topBarSearch");
+    if (!form) return;
 
-function showResult(str) {
-    const query = str.trim();
-    if (query === lastSearchQuery) return;
-    lastSearchQuery = query;
+    const input = form.querySelector(".topBarSearchBar");
+    const results = form.querySelector("#topBarSearchResults");
+    let debounceTimer;
+    let controller;
+    let lastQuery = null;
+    let activeIndex = -1;
+    let dismissed = false; // prevent a late search response from reopening closed results
 
-    clearTimeout(searchDebounceTimer);
-    if (searchController) searchController.abort();
-
-    const results = document.getElementById("topBarSearchResults");
-
-    if (query.length === 0) {
-        results.innerHTML = "";
-        results.style.display = "none";
-        return;
+    function clearSelection() {
+        results.querySelector(".keyboard-active")?.classList.remove("keyboard-active");
+        activeIndex = -1;
     }
 
-    searchDebounceTimer = setTimeout(function () {
-        searchController = new AbortController();
+    function setOpen(open) {
+        results.style.display = open ? "block" : "none";
+        if (!open) clearSelection();
+    }
 
-        fetch("/beatmapSearch.php?q=" + encodeURIComponent(query), {
-            signal: searchController.signal,
-        })
-            .then(function (response) {
-                return response.ok
-                    ? response.text()
-                    : Promise.reject(response.status);
-            })
-            .then(function (html) {
-                results.innerHTML = html;
-                results.style.display = "block";
-            })
-            .catch(function () {});
-    }, 150);
-}
+    function closeResults() {
+        dismissed = true;
+        setOpen(false);
+    }
 
-function searchFocus() {
-    document.getElementById("topBarSearchResults").style.display = "block";
+    function showResult() {
+        const query = input.value.trim();
+        if (query === lastQuery) return;
+        lastQuery = query;
+        dismissed = false;
+
+        clearTimeout(debounceTimer);
+        if (controller) controller.abort();
+        setOpen(false);
+        results.innerHTML = "";
+
+        if (!query) return;
+
+        debounceTimer = setTimeout(() => {
+            const request = new AbortController();
+            controller = request;
+
+            fetch("/beatmapSearch.php?q=" + encodeURIComponent(query), {
+                signal: request.signal,
+            })
+                .then((response) =>
+                    response.ok ? response.text() : Promise.reject(response.status),
+                )
+                .then((html) => {
+                    if (request.signal.aborted || query !== input.value.trim())
+                        return;
+
+                    results.innerHTML = html;
+                    if (!dismissed && form.contains(document.activeElement))
+                        setOpen(html.trim() !== "");
+                })
+                .catch(() => {});
+        }, 150);
+    }
+
+    function reopenResults() {
+        dismissed = false;
+        if (input.value.trim() && results.innerHTML.trim()) setOpen(true);
+        else if (input.value.trim() !== lastQuery) showResult();
+    }
+
+    input.addEventListener("input", showResult);
+    input.addEventListener("focus", reopenResults);
+    input.addEventListener("click", reopenResults);
+
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            if (input.value.trim()) {
+                event.preventDefault();
+                closeResults();
+                clearTimeout(debounceTimer);
+                if (controller) controller.abort();
+                if (!results.innerHTML.trim()) lastQuery = null;
+            }
+            return;
+        }
+
+        const items = Array.from(results.querySelectorAll("a[href]"));
+        if (!items.length || !input.value.trim()) return;
+
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            if (dismissed) setOpen(true);
+            dismissed = false;
+            results.querySelector(".keyboard-active")?.classList.remove("keyboard-active");
+            activeIndex = event.key === "ArrowDown"
+                ? (activeIndex + 1) % items.length
+                : (activeIndex - 1 + items.length) % items.length;
+            const active = items[activeIndex];
+            active.classList.add("keyboard-active");
+            active.scrollIntoView({ block: "nearest" });
+        } else if (event.key === "Enter" && results.style.display === "block" && activeIndex >= 0) {
+            event.preventDefault();
+            items[activeIndex].click();
+        }
+    });
+
+    form.addEventListener("focusout", (event) => {
+        if (!form.contains(event.relatedTarget)) closeResults();
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!form.contains(event.target)) closeResults();
+    });
 }
 
 function openTab(name) {
@@ -252,6 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("resize", () => tipTarget && hideTapTooltip());
     }
 
+    setupTopBarSearch();
     setupHeaderMenus();
     setupResponsiveCredits();
 

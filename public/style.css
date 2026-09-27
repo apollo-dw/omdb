@@ -189,7 +189,9 @@ a:hover {
         brightness(var(--top-bar-icon-brightness));
 }
 
-#topBarSearchResults a:hover {
+#topBarSearchResults a:hover,
+#topBarSearchResults a.keyboard-active {
+    background-color: var(--main-theme-color-even-darker);
     text-decoration: underline;
 }
 
