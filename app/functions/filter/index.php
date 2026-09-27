@@ -322,7 +322,8 @@
         padding: 0.4em 1em;
         cursor: pointer;
     }
-    .popover-item:hover {
+    .popover-item:hover,
+    .popover-item.keyboard-active {
         background-color: var(--main-theme-color-darker);
     }
     .filter-chip {
@@ -440,6 +441,8 @@
                 <summary>Filter tips</summary>
                 <b>Enter</b> includes<br>
                 <b>Shift+Enter</b> excludes<br>
+                <b>Up/Down</b> navigate suggestions<br>
+                <b>Escape</b> closes suggestions<br>
                 (left/right click in the list include/exclude)<br>
                 Click the <b>and</b>/<b>or</b> between two chips of the same kind to change how they combine<br>
                 Type a comparison to filter by stats (click one to apply it):
@@ -986,6 +989,29 @@
         const $popover = $('#filter-popover');
         const $chipsContainer = $('#filter-chips-container');
         const $wrapper = $('#filter-search-wrapper');
+        let activePopoverIndex = -1;
+        let popoverDismissed = false;
+
+        function clearPopoverSelection() {
+            $popover.find('.popover-item.keyboard-active').removeClass('keyboard-active');
+            activePopoverIndex = -1;
+        }
+
+        function hidePopover(dismiss = false) {
+            clearPopoverSelection();
+            $popover.hide();
+            if (dismiss) popoverDismissed = true;
+        }
+
+        function selectPopoverItem(index) {
+            const $items = $popover.find('.popover-item');
+            if (!$items.length) return;
+
+            clearPopoverSelection();
+            activePopoverIndex = (index + $items.length) % $items.length;
+            const $active = $items.eq(activePopoverIndex).addClass('keyboard-active');
+            $active[0].scrollIntoView({ block: 'nearest' });
+        }
 
         $wrapper.on('click', function(e) {
             if (e.target === this || e.target === $chipsContainer[0]) $input.focus();
@@ -1062,10 +1088,10 @@
 
                     pushToken(item, e.type === 'contextmenu' || e.shiftKey);
                     $input.val('');
-                    $popover.hide();
                     renderChips();
                     fireUpdate();
                     $input.focus();
+                    hidePopover(true);
                 });
 
                 $popover.append($el);
@@ -1120,10 +1146,10 @@
                 if (item && item.usable !== false) {
                     pushToken(item, e.type === 'contextmenu' || e.shiftKey);
                     $input.val('');
-                    $popover.hide();
                     renderChips();
                     fireUpdate();
                     $input.focus();
+                    hidePopover(true);
                 }
             });
 
@@ -1154,7 +1180,7 @@
                     .done(function(data) {
                         asyncCache[query] = (data && data.results) || [];
                         const current = parseScopedQuery($input.val().trim());
-                        if (current.query.toLowerCase() === query)
+                        if (!popoverDismissed && current.query.toLowerCase() === query)
                             renderPopover();
                     })
                     .always(function() {
@@ -1168,7 +1194,8 @@
         function renderPopover() {
             const scoped = parseScopedQuery($input.val().trim());
             const query = scoped.query.toLowerCase();
-            $popover.empty().hide();
+            hidePopover();
+            $popover.empty();
 
             let matches = lookupMatrix.filter(f => {
                 // If actively typing, we ONLY want to search for 'usable' descriptors
@@ -1266,10 +1293,13 @@
             }
         }
 
-        $input.on('input focus click', renderPopover);
+        $input.on('input focus click', function() {
+            popoverDismissed = false;
+            renderPopover();
+        });
 
         $(document).on('click', function(e) {
-            if (!$(e.target).closest('#filter-search-wrapper').length) $popover.hide();
+            if (!$(e.target).closest('#filter-search-wrapper').length) hidePopover(true);
         });
 
         const statTokenConfigs = [
@@ -1332,13 +1362,25 @@
 
             if (applyStatQuery(example, e.shiftKey)) {
                 $input.val('');
-                $popover.hide();
+                hidePopover(true);
             }
         });
 
         $input.on('keydown', function(e) {
             if (e.key === 'Escape') {
-                $popover.hide();
+                if ($popover.is(':visible')) e.preventDefault();
+                hidePopover(true);
+                return;
+            }
+
+            if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && $popover.is(':visible')) {
+                const count = $popover.find('.popover-item').length;
+                if (count) {
+                    e.preventDefault();
+                    selectPopoverItem(e.key === 'ArrowDown'
+                        ? activePopoverIndex + 1
+                        : (activePopoverIndex === -1 ? count - 1 : activePopoverIndex - 1));
+                }
                 return;
             }
 
@@ -1348,14 +1390,15 @@
 
                 if (applyStatQuery($(this).val(), exclude)) {
                     $(this).val('');
-                    $popover.hide();
+                    hidePopover(true);
                     return;
                 }
 
                 if ($popover.is(':visible')) {
-                    const firstItem = $popover.find('.popover-item').first();
-                    if (firstItem.length) {
-                        firstItem.trigger($.Event('click', { shiftKey: exclude }));
+                    const $items = $popover.find('.popover-item');
+                    const $chosen = $items.eq(activePopoverIndex === -1 ? 0 : activePopoverIndex);
+                    if ($chosen.length) {
+                        $chosen.trigger($.Event('click', { shiftKey: exclude }));
                         return;
                     }
                 }
@@ -1373,7 +1416,7 @@
                     }, exclude);
 
                     $(this).val('');
-                    $popover.hide();
+                    hidePopover(true);
                     renderChips();
                     fireUpdate();
                 }
