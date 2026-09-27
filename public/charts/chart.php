@@ -109,7 +109,7 @@
         if ($useRatingSubset) {
             $ratingField = "subset_stats.WeightedAvg";
             $countField = "subset_stats.RatingCount";
-            
+
             $m = 3.00;
             $confidence = 10;
 
@@ -118,7 +118,7 @@
                     WHEN subset_stats.weight_sum IS NULL OR subset_stats.weight_sum < 1.5 THEN NULL
                     ELSE ((subset_stats.weight_sum * subset_stats.WeightedAvg) + ({$m} * {$confidence})) / (subset_stats.weight_sum + {$confidence})
                 END";
-            
+
         } else {
             $ratingField = "b.WeightedAvg";
             $countField = "b.RatingCount";

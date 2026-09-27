@@ -33,7 +33,7 @@
             );
         }
 
-        if (isset($newTournament['EndDate']) &&$newTournament['EndDate'] !== $tournament['EndDate']) {
+        if (isset($newTournament['EndDate']) && $newTournament['EndDate'] !== $tournament['EndDate']) {
             $diffs[] = sprintf(
                 'End date changed from <b>%s</b> to <b>%s</b>',
                 htmlspecialchars($tournament['EndDate'] ?? "None"),

@@ -991,7 +991,8 @@ while ($row = $result->fetch_assoc()) {
                     <select name="review-difficulties" id="review-difficulties" style="flex-grow: 1;">
                         <option value="" 
                         <?php if (is_null($review_beatmapid)) {
-                        echo "selected"; } ?>
+                        echo "selected";
+                        } ?>
                         >
                             All
                         </option>
@@ -1014,7 +1015,7 @@ while ($row = $result->fetch_assoc()) {
         <?php } ?>
 
 		<?php
-            $stmt =$conn->prepare("
+            $stmt = $conn->prepare("
                 SELECT 
                     r.*, 
                     u.IsPatron, 
