@@ -155,13 +155,12 @@
     <?php if (!empty($groupedCredits)) { ?>
         <div class="tournament-credits">
             <h2 style="margin-bottom: 0;">Credits</h2>
-            <hr>
             <?php foreach ($groupedCredits as $roleName => $users) { ?>
                 <div class="credit-role-group">
-                    <div class="credit-role-title">
-                        <b><?php echo safe_htmlspecialchars($roleName); ?></b>
+                    <div class="credit-role-title" style="background-color:var(--main-theme-color-darker); padding: 0.25em;">
+                        <?php echo safe_htmlspecialchars($roleName); ?>
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5em;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5em; padding: 0.5em;">
                         <?php foreach ($users as $credit) {
                             $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
                             ?>
