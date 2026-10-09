@@ -167,6 +167,15 @@
 
 		<div class="content">
 
+        <?php
+            if ($env['DEBUG'] == true) {
+        ?>
+        <div style="width:100%; font-weight:900; padding: 1em; box-sizing: border-box; background: repeating-linear-gradient( 45deg, #000000, #000000 10px, #ffeb04 10px, #ffeb04 20px ); color: white; font-size: larger; text-align:center;">
+        </div>
+        <?php
+            }
+        ?>
+
 		<!--
             <div class="warningBar" style="margin-top:1em; margin-bottom: 1em;min-height:auto;padding: 0.5em;width:50%;">
                 <i class="icon-warning-sign" style="color:FireBrick;"></i><br><span class="subText">welcome back!<br><a href="/update.php">read more</a></span>

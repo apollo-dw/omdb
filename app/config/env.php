@@ -18,3 +18,4 @@ if (!is_array($envFromFile)) {
 $env = array_merge($envFromFile, $_ENV);
 $env['DATABASE_HOST'] ??= 'localhost';
 $env['PUBLIC_URL'] ??= 'https://omdb.nyahh.net';
+$env['DEBUG'] ??= false;
