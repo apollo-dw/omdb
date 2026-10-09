@@ -49,16 +49,20 @@ if ($isEditingSet) {
         $stmt->bind_param('i', $setID);
         $stmt->execute();
 
-        $stmt = $conn->prepare("INSERT INTO beatmapset_credits (`SetID`, `MapID`, `RoleID`, `UserID`) VALUES (?, NULL, ?, ?);");
-        $stmt->bind_param('iii', $setID, $roleID, $userID);
+        $stmt = $conn->prepare("INSERT INTO beatmapset_credits (`SetID`, `MapID`, `RoleID`, `UserID`) VALUES (?, ?, ?, ?);");
+        $stmt->bind_param('iiii', $setID, $mapID, $roleID, $userID);
+
+        $roleIDStmt = $conn->prepare("SELECT RoleID FROM beatmap_roles WHERE Name = ?");
 
         foreach ($newCredits as $credit) {
-            $roleIDStmt = $conn->prepare("SELECT RoleID FROM beatmap_roles WHERE Name = ?");
             $roleIDStmt->bind_param('s', $credit['role']);
             $roleIDStmt->execute();
             $roleIDResult = $roleIDStmt->get_result();
             $roleIDRow = $roleIDResult->fetch_assoc();
             $roleID = $roleIDRow['RoleID'];
+
+            $rawMapID = $credit['mapID'] ?? 0;
+            $mapID = ($rawMapID == 0 || $rawMapID === '0') ? null : (int)$rawMapID;
 
             $userID = $credit['userID'];
             $stmt->execute();

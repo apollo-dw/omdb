@@ -48,7 +48,9 @@ $beatmapRoles = $conn->query("SELECT Name FROM beatmap_roles");
 while ($row = $beatmapRoles->fetch_assoc()) {
     $roles[] = $row['Name'];
 }
+
 $rolesJson = json_encode($roles);
+$mapsJson = json_encode($difficulties);
 
 ?>
 
@@ -145,7 +147,7 @@ $rolesJson = json_encode($roles);
             }
             echo "</div><br>";
 
-            $stmt = $conn->prepare("SELECT UserID, br.RoleID, Name FROM `beatmapset_credits` bc LEFT JOIN `beatmap_roles` br ON bc.RoleID = br.RoleID WHERE SetID = ?;");
+            $stmt = $conn->prepare("SELECT UserID, br.RoleID, Name, bc.MapID FROM `beatmapset_credits` bc LEFT JOIN `beatmap_roles` br ON bc.RoleID = br.RoleID WHERE SetID = ?;");
             $stmt->bind_param('i', $mapset_id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -156,35 +158,49 @@ $rolesJson = json_encode($roles);
             }
 
             $data = json_decode($setRequest['EditData'], true);
-            $newCredits = $data['Credits'];
+            $newCredits = array_map(function($c) {
+                return [
+                    "userID" => (string)$c['userID'],
+                    "role"   => (string)$c['role'],
+                    "mapID"  => (string)($c['mapID'] ?? "0")
+                ];
+            }, $data['Credits']);
 
-            $deletedCredits = array_udiff($currentCredits, $newCredits, function ($a, $b) {
+            $creditComparator = function ($a, $b) {
+                ksort($a);
+                ksort($b);
                 return strcmp(json_encode($a), json_encode($b));
-            });
+            };
 
-            $newlyAddedCredits = array_udiff($newCredits, $currentCredits, function ($a, $b) {
-                return strcmp(json_encode($a), json_encode($b));
-            });
+            $deletedCredits = array_udiff($currentCredits, $newCredits, $creditComparator);
+            $newlyAddedCredits = array_udiff($newCredits, $currentCredits, $creditComparator);
+            $unchangedCredits = array_uintersect($currentCredits, $newCredits, $creditComparator);
 
-            $unchangedCredits = array_uintersect($currentCredits, $newCredits, function ($a, $b) {
-                return strcmp(json_encode($a), json_encode($b));
-            });
+            $getMapLabel = function($mapID) use ($difficulties) {
+                if ($mapID == "0" || empty($mapID)) {
+                    return "All";
+                }
+                return safe_htmlspecialchars($difficulties[$mapID]['DifficultyName'] ?? "Difficulty #{$mapID}", ENT_QUOTES);
+            };
 
             echo "Changes to Credits:<div style='background-color:#182828;font-family: monospace;border: 1px solid white;padding: 0.5em;width: 33%;min-height:10em;'>";
 
             foreach ($deletedCredits as $deletedCredit) {
                 $name = GetUserNameFromId($deletedCredit['userID'], $conn);
-                echo "<span style='color: red;'>- {$name} <span class='subText'>{$deletedCredit['userID']}</span></span> ({$deletedCredit['role']})<br>";
+                $mapLabel = isset($deletedCredit['mapID']) ? $getMapLabel($deletedCredit['mapID']) : "All";
+                echo "<span style='color: red;'>- {$name} <span class='subText'>{$deletedCredit['userID']}</span></span> ({$deletedCredit['role']} - <i>{$mapLabel}</i>)<br>";
             }
 
             foreach ($unchangedCredits as $unchangedCredit) {
                 $name = GetUserNameFromId($unchangedCredit['userID'], $conn);
-                echo "* {$name} <span class='subText'>{$unchangedCredit['userID']}</span> ({$unchangedCredit['role']})<br>";
+                $mapLabel = isset($unchangedCredit['mapID']) ? $getMapLabel($unchangedCredit['mapID']) : "All";
+                echo "* {$name} <span class='subText'>{$unchangedCredit['userID']}</span> ({$unchangedCredit['role']} - <i>{$mapLabel}</i>)<br>";
             }
 
             foreach ($newlyAddedCredits as $newlyAddedCredit) {
                 $name = GetUserNameFromId($newlyAddedCredit['userID'], $conn);
-                echo "<span style='color: green;'>+ {$name} <span class='subText'>{$newlyAddedCredit['userID']}</span></span> ({$newlyAddedCredit['role']})<br>";
+                $mapLabel = isset($newlyAddedCredit['mapID']) ? $getMapLabel($newlyAddedCredit['mapID']) : "All";
+                echo "<span style='color: green;'>+ {$name} <span class='subText'>{$newlyAddedCredit['userID']}</span></span> ({$newlyAddedCredit['role']} - <i>{$mapLabel}</i>)<br>";
             }
 
             echo "</div>";
@@ -253,7 +269,7 @@ $rolesJson = json_encode($roles);
 					<div style="flex-grow: 1;">
 						<ul class="mapperList creditList" difficultyID="set">
 							<?php
-                            $stmt = $conn->prepare("SELECT bc.UserID, u.Username, bc.RoleID, br.Name FROM beatmapset_credits bc LEFT JOIN mappernames u ON u.UserID = bc.UserID LEFT JOIN beatmap_roles br ON br.RoleID = bc.RoleID WHERE bc.SetID = ?");
+                            $stmt = $conn->prepare("SELECT bc.UserID, u.Username, bc.RoleID, br.Name, bc.MapID FROM beatmapset_credits bc LEFT JOIN mappernames u ON u.UserID = bc.UserID LEFT JOIN beatmap_roles br ON br.RoleID = bc.RoleID WHERE bc.SetID = ?");
                             $stmt->bind_param('i', $mapset_id);
                             $stmt->execute();
                             $result = $stmt->get_result();
@@ -274,7 +290,22 @@ $rolesJson = json_encode($roles);
                                     echo "<option value='${role}' ${selectedString}>${role}</option>";
                                 }
 
-                                echo "</select></li>";
+                                echo "</select>";
+
+                                echo "<select class='map-select'>";
+                                echo "<option value='0'>All</option>";
+                                echo "<optgroup label='Difficulties'>";
+                                foreach ($difficulties as $beatmapID => $difficulty) {
+                                    $selectedString = "";
+                                    if ($row["MapID"] == $beatmapID) {
+                                        $selectedString = "selected";
+                                    }
+
+                                    echo "<option value='{$beatmapID}' ${selectedString}>{$difficulty['DifficultyName']}</option>";
+                                }
+                                echo "</optgroup>";
+                                echo "</select>";
+                                echo "</li>";
                             }
                             ?>
 						</ul>
@@ -463,6 +494,7 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 
     <script>
 		const roles = <?php echo $rolesJson; ?>;
+        const maps = <?php echo $mapsJson; ?>;
 
         $(document).on("submit", "form", function(event) {
             event.preventDefault();
@@ -479,12 +511,19 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 			form.find(".creditList li").each(function() {
 				const userID = $(this).attr('data-creatorid');
 				const selectedRole = $(this).find(".roles-select").val();
+                const selectedMap = $(this).find(".map-select").val();
+
 				if (selectedRole == null) {
 					alert("Please ensure you've selected a role for every credit.");
 					isValid = false;
 					return false;
 				}
-				creditsListData.push({ userID: userID, role: selectedRole });
+
+				creditsListData.push({
+                    userID: userID,
+                    role: selectedRole,
+                    mapID: selectedMap
+                });
 			});
 
 			if (!isValid) {
@@ -588,21 +627,32 @@ foreach ($difficulties as $beatmapID => $difficulty) {
 						var { success, username, id } = data;
 
 						if (success) {
-							let options = '';
+							let roleOptions = '';
 							roles.forEach(function(role) {
-								options += `<option value="${role}">${role}</option>`;
+								roleOptions += `<option value="${role}">${role}</option>`;
 							});
 
-							const listItem = `
-								<li data-creatorid='${id}'>
-									<i class='icon-remove remove-button'></i>
-									${username}
-									<span class='subText mapperid'>${id}</span>
-									<select class='roles-select'>
-									<option value="" selected disabled>Select role</option>
-                                    ${options}
-									</select>
-								</li>`;
+                            let mapOptions = Object.entries(maps).map(([beatmapID, diff]) => {
+                                return `<option value="${beatmapID}">${diff.DifficultyName}</option>`;
+                            }).join('');
+
+                            const listItem = `
+                                <li data-creatorid='${id}'>
+                                    <i class='icon-remove remove-button'></i>
+                                    ${username}
+                                    <span class='subText mapperid'>${id}</span>
+                                    <select class='roles-select'>
+                                        <option value="" selected disabled>Select role</option>
+                                        ${roleOptions}
+                                    </select>
+                                    <select class='map-select'>
+                                        <option value='0' selected>All</option>
+                                        <optgroup label='Difficulties'>
+                                            ${mapOptions}
+                                        </optgroup>
+                                    </select>
+                                </li>`;
+
 							list.append(listItem);
 							input.val('');
 						}

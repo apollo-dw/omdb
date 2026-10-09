@@ -556,10 +556,6 @@ input[type="checkbox"].hamburgerToggle {
     flex: 0 0 auto;
 }
 
-.mapset-credit .subText {
-    display: block;
-}
-
 .mapset-credit > span,
 .mapset-credit .subText {
     min-width: 0;

@@ -79,30 +79,55 @@
     $reviewCount = $stmt->get_result()->fetch_row()[0];
 
     $stmt = $conn->prepare("SELECT
-    mn.Username,
-    bc.UserID,
-        GROUP_CONCAT(br.Name ORDER BY br.Name ASC SEPARATOR ', ') AS Roles
+        mn.Username,
+        bc.UserID,
+        br.Name AS RoleName,
+        bc.MapID,
+        b.DifficultyName,
+        UserTotalCredits.TotalCredits
     FROM
         beatmapset_credits bc
     LEFT JOIN
         beatmap_roles br ON br.RoleID = bc.RoleID
     LEFT JOIN
         mappernames mn ON mn.UserID = bc.UserID
+    LEFT JOIN
+        beatmaps b ON b.BeatmapID = bc.MapID
+    LEFT JOIN
+        (SELECT UserID, COUNT(*) AS TotalCredits FROM beatmapset_credits WHERE SetID = ? GROUP BY UserID) UserTotalCredits ON UserTotalCredits.UserID = bc.UserID
     WHERE
         bc.SetID = ?
-    GROUP BY
-        mn.Username, bc.UserID
     ORDER BY
-        COUNT(bc.RoleID) DESC, mn.Username, bc.UserID;
+        UserTotalCredits.TotalCredits DESC,
+        mn.Username ASC,
+        bc.UserID ASC,
+        (CASE WHEN bc.MapID IS NULL OR bc.MapID = 0 THEN 0 ELSE 1 END) ASC,
+        br.Name ASC;
     ");
-    $stmt->bind_param("s", $mapset_id);
+    $stmt->bind_param("ss", $mapset_id, $mapset_id);
     $stmt->execute();
     $roleResult = $stmt->get_result();
 
-    $credits = [];
+    $creditsByUser = [];
     while ($row = $roleResult->fetch_assoc()) {
-        $credits[] = $row;
+        $uid = $row['UserID'];
+        if (!isset($creditsByUser[$uid])) {
+            $creditsByUser[$uid] = [
+                'UserID' => $uid,
+                'Username' => $row['Username'],
+                'TotalCredits' => $row['TotalCredits'],
+                'Roles' => []
+            ];
+        }
+
+        $creditsByUser[$uid]['Roles'][] = [
+            'RoleName' => $row['RoleName'],
+            'MapID' => $row['MapID'],
+            'DifficultyNames' => $row['DifficultyName']
+        ];
     }
+
+    $credits = array_values($creditsByUser);
 
     $stmt->close();
 
@@ -263,12 +288,42 @@
                             <?php }
 
                             $escapedCreditName = safe_htmlspecialchars($credit['Username'] ?? GetUserNameFromId($credit['UserID'], $conn), ENT_QUOTES);
-                            $escapedRoles = safe_htmlspecialchars($credit['Roles'], ENT_QUOTES);
                             ?>
-                            <a class="mapset-credit" href="/profile/<?php echo $credit['UserID']; ?>">
-                                <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
-                                <span><?php echo $escapedCreditName; ?><span class="subText"><?php echo $escapedRoles; ?></span></span>
-                            </a>
+                            <div class="mapset-credit">
+                                <a href="/profile/<?php echo $credit['UserID']; ?>">
+                                    <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $credit['UserID']; ?>" alt="" />
+                                </a>
+                                    <span style="overflow: visible;">
+                                        <a href="/profile/<?php echo $credit['UserID']; ?>">
+                                            <span class="mapset-credit-username"><?php echo $escapedCreditName; ?></span>
+                                        </a>
+                                        <span class="roles-container" style="display: block; font-size: 11px; text-wrap: auto;">
+                                            <?php
+                                            $formattedRoles = [];
+                                            foreach ($credit['Roles'] as $role) {
+                                                $roleName = safe_htmlspecialchars($role['RoleName'], ENT_QUOTES);
+                                                $isPerMap = !empty($role['MapID']) && $role['MapID'] !== '0';
+
+                                                if ($isPerMap) {
+                                                    $diffNames = safe_htmlspecialchars($role['DifficultyNames'] ?? ('Difficulty #' . $role['MapID']), ENT_QUOTES);
+
+                                                    $formattedRoles[] = "
+                                                        <span class='tooltip-wrapper'>
+                                                            <span class='subText'>{$roleName}</span>
+                                                            <span class='tooltip-box'>
+                                                                {$diffNames}
+                                                            </span>
+                                                        </span>";
+                                                } else {
+                                                    $formattedRoles[] = "<span>{$roleName}</span>";
+                                                }
+                                            }
+                                            echo implode(', ', $formattedRoles);
+                                            ?>
+                                        </span>
+                                    </span>
+
+                            </div>
                         <?php } ?>
                         <?php if ($remainingCreditCount > 0) { ?>
                                     </div>
@@ -987,9 +1042,9 @@ while ($row = $result->fetch_assoc()) {
             <form style="display: flex; flex-direction: column; gap: 0.25em; margin-bottom: 0.25em;">
                 <textarea id="reviewForm" name="reviewForm" placeholder="Write your review here! Reviews are meant for non-meme, serious comments about a map: critiques, analysis, genuine sentiments..." autocomplete='off' style="margin: 0;" rows="8"><?php echo safe_htmlspecialchars($review_comment, ENT_QUOTES, 'UTF-8'); ?></textarea>
                 <div style="display: flex; align-items: center;">
-                    Show rating for: 
+                    Show rating for:
                     <select name="review-difficulties" id="review-difficulties" style="flex-grow: 1;">
-                        <option value="" 
+                        <option value=""
                         <?php if (is_null($review_beatmapid)) {
                         echo "selected";
                         } ?>
@@ -1016,19 +1071,19 @@ while ($row = $result->fetch_assoc()) {
 
 		<?php
             $stmt = $conn->prepare("
-                SELECT 
-                    r.*, 
-                    u.IsPatron, 
+                SELECT
+                    r.*,
+                    u.IsPatron,
                     u.IsPrivate,
                     rat.Score,
                     b.DifficultyName
                 FROM `reviews` r
-                LEFT JOIN `users` u 
+                LEFT JOIN `users` u
                     ON r.UserID = u.UserID
-                LEFT JOIN `ratings` rat 
+                LEFT JOIN `ratings` rat
                     ON r.BeatmapID = rat.BeatmapID
                     AND r.UserID = rat.UserID
-                LEFT JOIN `beatmaps` b 
+                LEFT JOIN `beatmaps` b
                     ON r.BeatmapID = b.BeatmapID
                 WHERE r.SetID = ?
                 ORDER BY r.date DESC
@@ -1277,8 +1332,8 @@ while ($row = $result->fetch_assoc()) {
 			var sID = "<?php echo $mapset_id; ?>";
 			xhttp.open("POST", "SubmitReview.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send("sID=" + encodeURIComponent(sID) + 
-                   "&comment=" + encodeURIComponent(text) + 
+			xhttp.send("sID=" + encodeURIComponent(sID) +
+                   "&comment=" + encodeURIComponent(text) +
                    "&bID=" + encodeURIComponent(bID));
 		}
 	}
