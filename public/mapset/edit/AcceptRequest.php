@@ -7,6 +7,7 @@ if (!$loggedIn || !isIdEditRequestAdmin($userId)) {
     exit();
 }
 
+$beatmapID = $_GET["BeatmapID"];
 $setID = $_GET["SetID"] ?? null;
 $isEditingSet = !is_null($setID);
 
