@@ -35,7 +35,20 @@
         $pageString = "LIMIT {$lower}, {$limit}";
     }
 
-    $stmt = $conn->prepare("SELECT * FROM forum_posts WHERE ThreadID = ? ORDER BY CreatedAt {$pageString};");
+    $stmt = $conn->prepare(
+        "SELECT *,
+            u.IsPatron AS UserIsPatron,
+            (
+                SELECT COUNT(*)
+                FROM forum_posts fp
+                WHERE fp.UserID = u.UserID
+            ) AS UserTotalForumPostCount
+        FROM forum_posts
+        LEFT JOIN users u ON forum_posts.UserID = u.UserID
+        WHERE ThreadID = ?
+        ORDER BY CreatedAt {$pageString};"
+    );
+
     $stmt->bind_param("i", $threadId);
     $stmt->execute();
     $posts = $stmt->get_result();
@@ -69,6 +82,8 @@
         align-items: center;
         justify-content: center;
         display: flex;
+        padding-top: 1em;
+        padding-bottom: 1em;
     }
 
     .forum-post-content {
@@ -140,6 +155,14 @@
                         <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">
                     </div>
                     <div style="text-align: center;">
+                        <?php if ($post["UserIsPatron"]) { ?>
+                            <div class="profilePatronBadge">
+                                <a href="/patron/" style="text-decoration:none;">
+                                    <div style="background-color: var(--main-theme-patron-pink); border-radius: 2px; color: contrast-color(var(--main-theme-patron-pink)); font-weight:bolder; padding:0.5em; margin-top: 0.5em;"><i class="icon-heart"></i> Patron</div>
+                                </a>
+                            </div>
+                        <?php } ?>
+                        <span class="subText">Posts: <?php echo $post["UserTotalForumPostCount"]; ?></span>
                     </div>
                 </div>
             </div>
