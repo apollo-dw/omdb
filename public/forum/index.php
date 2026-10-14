@@ -2,36 +2,35 @@
     $PageTitle = "Forums";
     require '../header.php';
 
-$stmt = $conn->query("SELECT
-                        ft.TopicID,
-                        ft.Name AS TopicName,
-                        ft.Description AS TopicDescription,
-                        tt.TotalThreads,
-                        tp.TotalPosts
-                    FROM
-                        forum_topics ft
-                    LEFT JOIN (
-                        SELECT
-                            TopicID,
-                            COUNT(DISTINCT ThreadID) AS TotalThreads
-                        FROM
-                            forum_threads
-                        GROUP BY
-                            TopicID
-                    ) tt ON ft.TopicID = tt.TopicID
-                    LEFT JOIN (
-                        SELECT
+    $stmt = $conn->query("SELECT
                             ft.TopicID,
-                            COUNT(fp.PostID) AS TotalPosts
+                            ft.Name AS TopicName,
+                            ft.Description AS TopicDescription,
+                            tt.TotalThreads,
+                            tp.TotalPosts
                         FROM
-                            forum_threads ft
-                        LEFT JOIN
-                            forum_posts fp ON ft.ThreadID = fp.ThreadID
-                        GROUP BY
-                            ft.TopicID
-                    ) tp ON ft.TopicID = tp.TopicID;");
+                            forum_topics ft
+                        LEFT JOIN (
+                            SELECT
+                                TopicID,
+                                COUNT(DISTINCT ThreadID) AS TotalThreads
+                            FROM
+                                forum_threads
+                            GROUP BY
+                                TopicID
+                        ) tt ON ft.TopicID = tt.TopicID
+                        LEFT JOIN (
+                            SELECT
+                                ft.TopicID,
+                                COUNT(fp.PostID) AS TotalPosts
+                            FROM
+                                forum_threads ft
+                            LEFT JOIN
+                                forum_posts fp ON ft.ThreadID = fp.ThreadID
+                            GROUP BY
+                                ft.TopicID
+                        ) tp ON ft.TopicID = tp.TopicID;");
 ?>
-
 
 <style>
     h1, h2 {

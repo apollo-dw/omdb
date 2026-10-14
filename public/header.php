@@ -42,6 +42,7 @@
 			</div>
             <a href="/lists/" class="hideOnMobile"><div class="topBarLink">lists</div></a>
 			<a href="/news/" class="hideOnMobile"><div class="topBarLink">news</div></a>
+			<a href="/forum/" class="hideOnMobile"><div class="topBarLink">forum</div></a>
 
 			<form class="topBarSearch" onsubmit="return false">
 				<input class="topBarSearchBar" type="text" size="30" value="" autocomplete="off" placeholder="Search... (or paste link)">
@@ -135,11 +136,12 @@
 				<a href="/charts/"><div class="topBarLink">charts</div></a>
 				<a href="/lists/"><div class="topBarLink">lists</div></a>
 				<a href="/news/"><div class="topBarLink">news</div></a>
+				<a href="/forum/"><div class="topBarLink">forum</div></a>
 				<div class="topBarDropDown">
 					<div class="topBarLink topBarDropDownButton">maps</div>
 					<div class="dropdown-content">
                         <a href="/tournament/series/list.php">tournaments</a>
-						<a href=" <?php echo '/maps/?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
+						<a href=" <?php echo '/maps/latest.php?m=' . date('m') . '&y=' . date('Y'); ?>">latest</a>
 						<a href="/random/">random</a>
 					</div>
 				</div>
