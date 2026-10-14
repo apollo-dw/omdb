@@ -73,7 +73,7 @@
         <hr>
 
         <div>
-            Forums are subject to the <a href="/rules/">OMDB rules and code of conduct.</a>
+            Forums are subject to the <a href="/wiki/rules/">OMDB rules and code of conduct.</a>
         </div> <br>
         <input type="submit" id="submitButton" value="Submit" />
     </div>
