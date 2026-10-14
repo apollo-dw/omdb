@@ -16,9 +16,7 @@ Violation of these rules may lead to permanent account suspension.
 
 ## User-Generated Content
 
-User-Generated Content refers to comments, reviews, and lists.
-
-1. Please only use English for user-generated content to ensure everyone can understand and participate.
+1. Please only use English for text to ensure everyone can understand and participate.
 2. Do not post insensitive content. This includes racism, sexism, homophobia and transphobia.
 3. Engage in discussions with respect and courtesy. Disagreements are fine, but avoid personal attacks and insults.
 4. Remember that tastes vary. Be open to different viewpoints and diverse preferences.
