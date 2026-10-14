@@ -153,9 +153,9 @@
             $stmt->close();
         }
 
-        $stmt = $conn->prepare("
+$stmt = $conn->prepare("
         (
-                SELECT 
+                SELECT
                     c.CommentID AS ItemID,
                     c.UserID,
                     c.SetID,
@@ -211,7 +211,7 @@
             )
             UNION ALL
             (
-                SELECT 
+                SELECT
                     dpc.CommentID AS ItemID,
                     dpc.UserID,
                     NULL AS SetID,
@@ -257,7 +257,7 @@
             )
             UNION ALL
             (
-                SELECT 
+                SELECT
                     nc.CommentID AS ItemID,
                     nc.UserID,
                     NULL AS SetID,
@@ -303,7 +303,7 @@
             )
             UNION ALL
             (
-                SELECT 
+                SELECT
                     r.ReviewID AS ItemID,
                     r.UserID,
                     r.SetID,
@@ -357,16 +357,63 @@
                 )
                 ORDER BY r.date DESC LIMIT 40
             )
+            UNION ALL
+            (
+                SELECT
+                    fp.PostID AS ItemID,
+                    fp.UserID,
+                    NULL AS SetID,
+                    fp.Content AS Comment,
+                    fp.CreatedAt AS date,
+                    'forum_post' AS comment_type,
+                    ft.Title AS Name,
+                    fp.ThreadID AS ProposalID,
+                    NULL AS Artist,
+                    NULL AS Title,
+                    m.Username
+                FROM forum_posts fp
+                LEFT JOIN forum_threads ft ON ft.ThreadID = fp.ThreadID
+                JOIN users u ON u.UserID = fp.UserID
+                LEFT JOIN mappernames m ON m.UserID = fp.UserID
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM user_relations r
+                    WHERE fp.UserID = r.UserIDTo
+                    AND r.UserIDFrom = ?
+                    AND r.type = 2
+                )
+                AND (
+                    u.IsPrivate = 0
+                    OR (
+                        EXISTS (
+                            SELECT 1
+                            FROM user_relations ur1
+                            WHERE ur1.UserIDFrom = ?
+                            AND ur1.UserIDTo = fp.UserID
+                            AND ur1.type = 1
+                        )
+                        AND EXISTS (
+                            SELECT 1
+                            FROM user_relations ur2
+                            WHERE ur2.UserIDFrom = fp.UserID
+                            AND ur2.UserIDTo = ?
+                            AND ur2.type = 1
+                        )
+                    )
+                )
+                ORDER BY fp.CreatedAt DESC LIMIT 40
+            )
             ORDER BY date DESC
             LIMIT 40;
         ");
 
         $stmt->bind_param(
-            "iiiiiiiiiiiiiiiiiiii",
+            "iiiiiiiiiiiiiiiiiiiiiii",
             $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId,
             $userId, $userId, $userId,
             $userId, $userId, $userId,
-            $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId
+            $userId, $userId, $userId, $mode, $onlyFriends, $userId, $userId,
+            $userId, $userId, $userId
         );
         $stmt->execute();
         $result = $stmt->get_result();
@@ -376,7 +423,9 @@
                 $linkID = "/mapset/{$row["SetID"]}";
             } elseif ($row['comment_type'] === 'news') {
                 $linkID = "/news/post.php?id={$row["ProposalID"]}";
-            } else {
+            } elseif ($row['comment_type'] === 'forum_post') {
+                $linkID = "/forum/post/?id={$row["ProposalID"]}";
+            } elseif ($row['comment_type'] === 'descriptor_proposal') {
                 $linkID = "/descriptor/proposal/?id={$row["ProposalID"]}";
             }
         ?>
@@ -393,9 +442,13 @@
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
                             <i class="icon-list-alt"></i>
                         </div>
-                    <?php } else { ?>
+                    <?php } elseif ($row["comment_type"] == 'descriptor_proposal') { ?>
                         <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
                             <i class="icon-pencil"></i>
+                        </div>
+                    <?php } elseif ($row["comment_type"] == 'forum_post') { ?>
+                        <div style="height: 32px;width: 32px;font-size: 16px;text-align:center;line-height: 32px;">
+                            <i class="icon-comments-alt"></i>
                         </div>
                     <?php } ?>
                 </div>
@@ -417,6 +470,8 @@
                                 on <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?></a>
                             <?php } elseif ($row["comment_type"] == 'review') { ?>
                                 reviewed <a href="/mapset/<?php echo $row["SetID"]; ?>"><?php echo safe_htmlspecialchars($row["Artist"] . " - " . $row["Title"], ENT_QUOTES); ?></a>
+                            <?php } elseif ($row["comment_type"] == 'forum_post') { ?>
+                                replied to forum thread <a href="<?php echo $linkID; ?>"><?php echo safe_htmlspecialchars($row["Name"], ENT_QUOTES); ?></a>
                             <?php } ?>
                         </span>
                     </div>
