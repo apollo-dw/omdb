@@ -1,5 +1,5 @@
 <?php
-    require_once "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
 
     $threadId = GetIntParam('id', -1, "AHHH");
     $page = GetIntParam('p', 1, "AHHH");
@@ -111,7 +111,7 @@
 </style>
 
 <h2><?php echo safe_htmlspecialchars($thread["Title"], ENT_QUOTES); ?></h2>
-<span class="subText"><?php echo safe_htmlspecialchars($thread["Name"], ENT_QUOTES); ?></span>
+<span class="subText">Forum > <a href="/forum/topic/<?php echo $thread["TopicID"]; ?>"><?php echo safe_htmlspecialchars($thread["Name"], ENT_QUOTES); ?></a></span>
 
 <div style="float:right;">
     <div class="pagination">

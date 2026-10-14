@@ -1,5 +1,5 @@
 <?php
-    require_once "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
 
     $topicId = GetIntParam('id', -1, "AHHH");
     $page = GetIntParam('p', 1);
@@ -77,7 +77,7 @@
 <div>
     <span class="subText"><?php echo safe_htmlspecialchars($topic["Description"], ENT_QUOTES); ?></span>
     <?php if ($loggedIn) { ?>
-        <div style="float:right;"><a href="../new/?id=<?php echo $topicId; ?>">Create new post</a></div>
+        <div style="float:right;"><a href="../new/<?php echo $topicId; ?>">Create new post</a></div>
     <?php } ?>
 </div>
 <hr>
@@ -87,7 +87,7 @@
         ?>
         <div class="flex-container forum-thread alternating-bg">
             <div>
-                <a href="../post/?id=<?php echo $thread["ThreadID"]; ?>"><b><?php echo safe_htmlspecialchars($thread["Title"], ENT_QUOTES); ?></b></a> <br>
+                <a href="../post/<?php echo $thread["ThreadID"]; ?>"><b><?php echo safe_htmlspecialchars($thread["Title"], ENT_QUOTES); ?></b></a> <br>
                 <span class="subText">
                     by <a href="../../profile/<?php echo $thread["ThreadUserID"]; ?>">
                         <?php echo safe_htmlspecialchars(GetUserNameFromId($thread["ThreadUserID"], $conn), ENT_QUOTES); ?></a>

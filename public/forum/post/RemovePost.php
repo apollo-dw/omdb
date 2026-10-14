@@ -1,5 +1,5 @@
 <?php
-    include '../../base.php';
+    require_once __DIR__ . '/../../../app/base.php';
 
     $threadId = $_POST['tID'] ?? -1;
     $postId = $_POST['pID'] ?? -1;

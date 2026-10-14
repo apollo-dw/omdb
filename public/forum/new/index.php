@@ -1,6 +1,6 @@
 <?php
     $PageTitle = "Forums";
-    require "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
     require '../../header.php';
 
     $topicId = GetIntParam('id', -1, "AHHH");
@@ -60,7 +60,7 @@
         <input autocomplete="off" name="PostSubject" id="PostSubject" style="width:50%;" required/><br><br>
 
         <label>Body:</label> <br>
-        <textarea name="PostBody" id="PostBody"><?php echo safe_htmlspecialchars($list["Description"], ENT_QUOTES); ?></textarea> <br><br>
+        <textarea name="PostBody" id="PostBody"></textarea> <br><br>
         <button type="button" onclick="insertTag('img')" class="small-button">img</button>
         <button type="button" onclick="insertTag('a')" class="small-button">link</button>
         <button type="button" onclick="insertTag('code')" class="small-button">code</button>

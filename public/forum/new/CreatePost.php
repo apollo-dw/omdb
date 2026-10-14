@@ -1,5 +1,6 @@
 <?php
-    require "../../base.php";
+    require_once __DIR__ . '/../../../app/base.php';
+
     if (!$loggedIn) {
         http_response_code(401);
         exit();
@@ -20,5 +21,5 @@
     $stmt->execute();
     $stmt->close();
 
-    header("Location: ../post/?id=" . $threadId);
+    header("Location: ../post/" . $threadId);
     exit();

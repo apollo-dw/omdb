@@ -1,6 +1,5 @@
 <?php
     $PageTitle = "Forums";
-    require "../base.php";
     require '../header.php';
 
 $stmt = $conn->query("SELECT
@@ -31,11 +30,6 @@ $stmt = $conn->query("SELECT
                         GROUP BY
                             ft.TopicID
                     ) tp ON ft.TopicID = tp.TopicID;");
-
-    if ($userName !== "moonpoint") {
-        http_response_code(403);
-        exit();
-    }
 ?>
 
 
@@ -70,22 +64,27 @@ $stmt = $conn->query("SELECT
         ?>
         <div class="alternating-bg forum-topic flex-container">
             <div>
-                <a href="topic/?id=<?php echo $row["TopicID"]; ?>"><h2><?php echo $row["TopicName"]; ?></h2></a> <br>
+                <a href="topic/<?php echo $row["TopicID"]; ?>"><h2><?php echo $row["TopicName"]; ?></h2></a> <br>
                 <span class="subText"><?php echo $row["TopicDescription"]; ?></span>
             </div>
             <div style="margin-left:auto;display:flex;align-items:center;">
                 <div style="margin-right: 6em;display:flex;align-items:center;">
                     <div style="margin-left: 0.5em;text-align: right;">
-                        <a style="display:flex;" href="post/?id=<?php echo $latestThread["ThreadID"]; ?>">
-                            <?php echo safe_htmlspecialchars($latestThread["ThreadTitle"], ENT_QUOTES); ?>
-                        </a>
-                        <span class="subText"><?php RenderHumanTime($latestThread["PostCreatedAt"]); ?></span>
+                        <?php
+                        if ($latestThread) {
+                            ?>
+                            <a style="display:flex;" href="post/<?php echo $latestThread["ThreadID"]; ?>">
+                                <?php echo safe_htmlspecialchars($latestThread["ThreadTitle"], ENT_QUOTES); ?>
+                            </a>
+                            <span class="subText"><?php RenderHumanTime($latestThread["PostCreatedAt"]); ?></span>
+                            <?php
+                        }
+                        ?>
                     </div>
-
                 </div>
                 <div style="min-width: 6em;text-align: right;">
-                    <?php echo $row["TotalPosts"]; ?> posts <br>
-                    <?php echo $row["TotalThreads"]; ?> threads
+                    <?php echo $row["TotalPosts"] ?? 0; ?> posts <br>
+                    <?php echo $row["TotalThreads"] ?? 0; ?> threads
                 </div>
             </div>
         </div>
