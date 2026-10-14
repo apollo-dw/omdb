@@ -41,7 +41,6 @@
 				</div>
 			</div>
             <a href="/lists/" class="hideOnMobile"><div class="topBarLink">lists</div></a>
-			<a href="/friends/" class="hideOnMobile"><div class="topBarLink">friends</div></a>
 			<a href="/news/" class="hideOnMobile"><div class="topBarLink">news</div></a>
 
 			<form class="topBarSearch" onsubmit="return false">
@@ -114,6 +113,7 @@
 				<?php
                     if ($loggedIn) {
                 ?>
+                        <a href="/friends/" class="hideOnMobile"><div class="topBarLink">friends</div></a>
                         <a href="/dashboard/" class="hideOnMobile"><div class="topBarLink">dashboard</div></a>
                         <a href="/patron/" class="topBarIconLink" style="margin:0 1em;"><b><i style="color: var(--main-theme-patron-pink)" class="icon-heart<?php if ($user["IsPatron"] !== 1) {
                             echo "-empty";
@@ -134,7 +134,6 @@
 				<a href="/"><div class="topBarLink">home</div></a>
 				<a href="/charts/"><div class="topBarLink">charts</div></a>
 				<a href="/lists/"><div class="topBarLink">lists</div></a>
-				<a href="/friends/"><div class="topBarLink">friends</div></a>
 				<a href="/news/"><div class="topBarLink">news</div></a>
 				<div class="topBarDropDown">
 					<div class="topBarLink topBarDropDownButton">maps</div>
@@ -154,6 +153,7 @@
 					</div>
 				</div>
 				<?php if ($loggedIn) { ?>
+				    <a href="/friends/"><div class="topBarLink">friends</div></a>
 					<a href="/dashboard/"><div class="topBarLink">dashboard</div></a>
 					<hr class="mobileMenuDivider">
 					<a href="/profile/<?php echo $userId; ?>"><div class="topBarLink"><i class="icon-user"></i> <?php echo $userName; ?></div></a>
