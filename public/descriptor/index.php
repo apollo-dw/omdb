@@ -86,7 +86,7 @@
     $parentTree = getParentTree($descriptor, $conn);
 
     echo "<h1>" . safe_htmlspecialchars($descriptor["Name"], ENT_QUOTES) . "</h1>";
-    echo "<span class='subText' style='float: right;'>[Descriptor" . $descriptor["DescriptorID"] . "]</span>";
+    echo "<span class='subText copyable' style='float: right;'>[Descriptor" . $descriptor["DescriptorID"] . "]</span>";
     echo "<h3 style='color:#a8a8a8; margin-bottom: 0;'>{$beatmapCount} beatmaps // {$averageRating} average</h3>";
     echo "<span class='subText'>" . $parentTree . "</span><hr>";
     echo "<div id='descriptorDescription'>";

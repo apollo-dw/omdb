@@ -307,7 +307,6 @@
     $approvedEditCount = $stats["approvedEditCount"];
     $descriptorVoteCount = $stats["descriptorVoteCount"];
 ?>
-
 <div class="profileContainer column-when-mobile-container">
     <?php if ($shouldHideProfile) { ?>
         <div class="profileCard">
@@ -514,6 +513,9 @@
 		</div>
 	</div>
 </div>
+
+<span class="subText copyable" style="float: right;">[Profile<?php echo $profileId; ?>]</span>
+<br>
 
 <?php
     if (!$shouldHideProfile && $isValidUser && isset($mutualCount) && $mutualCount > 0) {

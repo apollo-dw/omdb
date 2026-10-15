@@ -179,7 +179,10 @@
 	}
 </style>
 
-<center><h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) . "</a> by <a href='/profile/{$sampleRow['CreatorID']}'>" . safe_htmlspecialchars($sampleRow['CreatorName'] ?? $sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></h1></center>
+<h1><a target="_blank" rel="noopener noreferrer" href="https://osu.ppy.sh/s/<?php echo $sampleRow['SetID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['Artist'] . " - " . $sampleRow['Title'], ENT_QUOTES) ?></a></h1>
+<span class="subText copyable" style="float: right;">[Mapset<?php echo $sampleRow['SetID']; ?>]</span>
+<span class="subText">by <a href="/profile/<?php echo $sampleRow['CreatorID']; ?>"><?php echo safe_htmlspecialchars($sampleRow['CreatorName'] ?? $sampleRow['Username'] ?? GetUserNameFromId($sampleRow['CreatorID'], $conn), ENT_QUOTES); ?></a></span>
+<hr>
 
 <div class="flex-container column-when-mobile-container">
     <div class="flex-child column-when-mobile" style="text-align: center;">
@@ -692,12 +695,13 @@ while ($row = $result->fetch_assoc()) {
 		</div>
 
 		<div style="position:absolute;right:20%;padding:0;width:0;height: 0;display:none;" beatmapid="<?php echo $row["BeatmapID"]; ?>">
-			<div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
-				<div>
-					<input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
+            <div class="tag-input" style="left:0.5em;bottom:-2.6em;padding:0.5em;position:absolute;background-color:DarkSlateGrey;min-width:16em;min-height:4em;text-align:center;display:flex;flex-direction:column;align-items: center;">
+                <div>
+                    <input class="tag-input-field" style="padding:0;margin: 0 0.5em 0 0;width:10em;" value="<?php echo $allTags;?>">
 					<button class="tag-input-submit" style="min-width:0;">Save</button><br>
 				</div>
 				<span class="subText">separate your tags with commas</span>
+                <span class="subText copyable">[Map<?php echo $row['BeatmapID']; ?>]</span>
 			</div>
 		</div>
     </div>

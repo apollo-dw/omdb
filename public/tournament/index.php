@@ -127,6 +127,7 @@
 
 <div class="container">
     <h1><?php echo safe_htmlspecialchars($tournament["Name"]); ?></h1>
+    <span class="subText copyable" style="float: right;">[Tournament<?php echo $tournamentId; ?>]</span>
     <span class="subText">
         <a href="series/?id=<?php echo $tournament["SeriesID"]; ?>">
             <?php echo safe_htmlspecialchars($tournament["SeriesName"]); ?>

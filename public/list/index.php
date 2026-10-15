@@ -101,6 +101,7 @@
         </div>
     <?php } ?>
     <h1><?php echo $title; ?></h1>
+    <span class="subText copyable" style="float: right;">[List<?php echo $list['ListID']; ?>]</span>
     <span class="subText">
         Made by <a href="../profile/<?php echo $list["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($list["UserID"], $conn), ENT_QUOTES); ?></a><br>
         <?php if (!empty($list["Private"])) { ?><span class="subText">Private list</span><br><?php } ?>

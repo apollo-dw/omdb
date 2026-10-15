@@ -18,6 +18,7 @@
 ?>
 
 <h1><?php echo safe_htmlspecialchars($series["Name"]); ?></h1>
+<span class="subText copyable" style="float: right;">[TournamentSeries<?php echo $seriesId; ?>]</span>
 <span class="subText"><?php echo safe_htmlspecialchars($series["Acronym"]); ?></span>
 <hr>
 
