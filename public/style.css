@@ -1917,3 +1917,11 @@ input[type="checkbox"]:disabled {
 .modal-title {
     margin: 0;
 }
+
+.copyable {
+    cursor: pointer;
+}
+
+.copyable:hover {
+    opacity: 0.8;
+}

@@ -46,7 +46,9 @@ function setupTopBarSearch() {
     let dismissed = false; // prevent a late search response from reopening closed results
 
     function clearSelection() {
-        results.querySelector(".keyboard-active")?.classList.remove("keyboard-active");
+        results
+            .querySelector(".keyboard-active")
+            ?.classList.remove("keyboard-active");
         activeIndex = -1;
     }
 
@@ -81,7 +83,9 @@ function setupTopBarSearch() {
                 signal: request.signal,
             })
                 .then((response) =>
-                    response.ok ? response.text() : Promise.reject(response.status),
+                    response.ok
+                        ? response.text()
+                        : Promise.reject(response.status),
                 )
                 .then((html) => {
                     if (request.signal.aborted || query !== input.value.trim())
@@ -124,14 +128,21 @@ function setupTopBarSearch() {
             event.preventDefault();
             if (dismissed) setOpen(true);
             dismissed = false;
-            results.querySelector(".keyboard-active")?.classList.remove("keyboard-active");
-            activeIndex = event.key === "ArrowDown"
-                ? (activeIndex + 1) % items.length
-                : (activeIndex - 1 + items.length) % items.length;
+            results
+                .querySelector(".keyboard-active")
+                ?.classList.remove("keyboard-active");
+            activeIndex =
+                event.key === "ArrowDown"
+                    ? (activeIndex + 1) % items.length
+                    : (activeIndex - 1 + items.length) % items.length;
             const active = items[activeIndex];
             active.classList.add("keyboard-active");
             active.scrollIntoView({ block: "nearest" });
-        } else if (event.key === "Enter" && results.style.display === "block" && activeIndex >= 0) {
+        } else if (
+            event.key === "Enter" &&
+            results.style.display === "block" &&
+            activeIndex >= 0
+        ) {
             event.preventDefault();
             items[activeIndex].click();
         }
@@ -464,3 +475,14 @@ function setupResponsiveCredits() {
     new ResizeObserver(updateCredits).observe(creditList);
     updateCredits();
 }
+
+$(document).ready(function () {
+    $(document).on("click", ".copyable", function () {
+        const $this = $(this);
+        const textToCopy = $this.text().trim();
+
+        navigator.clipboard.writeText(textToCopy).catch(function (err) {
+            console.error("Failed to copy text: ", err);
+        });
+    });
+});
