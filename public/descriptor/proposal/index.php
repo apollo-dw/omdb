@@ -309,7 +309,7 @@
             <div class="flex-child commentComposer">
                 <form>
                     <textarea id="commentForm" name="commentForm" placeholder="Write your comment here!" value="" autocomplete='off'></textarea>
-                    <a href="/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
+                    <a href="/wiki/rules/" target="_blank" rel="noopener noreferrer"><i class="icon-book"></i> Rules</a>
                     <input type='button' name="commentSubmit" id="commentSubmit" value="Post" onclick="submitComment()" />
                 </form>
             </div>
