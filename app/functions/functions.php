@@ -758,11 +758,21 @@
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->num_rows == 1) {
-                $stmt = $conn->prepare("UPDATE `ratings` SET `Score` = ? WHERE `beatmapID` = ? AND `UserID` = ?;");
+                $stmt = $conn->prepare("
+                    UPDATE `ratings`
+                    SET `Score` = ?,
+                        `FrontFeedTimestamp` = CASE
+                            WHEN `FrontFeedTimestamp` <= (NOW() - INTERVAL 1 WEEK) THEN CURRENT_TIMESTAMP
+                            ELSE `FrontFeedTimestamp`
+                        END
+                    WHERE `beatmapID` = ? AND `UserID` = ?;");
                 $stmt->bind_param("dii", $score, $beatmapID, $userID);
                 $stmt->execute();
-            }else {
-                $stmt = $conn->prepare("INSERT INTO `ratings` (beatmapID, UserID, Score, date) VALUES (?, ?, ?, CURRENT_TIMESTAMP);");
+            } else {
+                $stmt = $conn->prepare("
+                    INSERT INTO `ratings` (beatmapID, UserID, Score, date, FrontFeedTimestamp)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                ");
                 $stmt->bind_param("iid", $beatmapID, $userID, $score);
                 $stmt->execute();
             }

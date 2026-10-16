@@ -84,7 +84,7 @@
                             )
                             OR r.UserID = ?
                         )
-					ORDER BY r.date DESC
+					ORDER BY r.FrontFeedTimestamp DESC
 					LIMIT 100
 				");
                 $stmt->bind_param("iiiiiii", $mode, $userId, $userId, $userId, $userId, $userId, $userId);
@@ -99,7 +99,7 @@
 					  AND b.blacklisted = 0
 					  AND u.HideRatings = 0
                       AND u.IsPrivate = 0
-					ORDER BY r.date DESC
+					ORDER BY r.FrontFeedTimestamp DESC
 					LIMIT 60
 				");
                 $stmt->bind_param("i", $mode);
