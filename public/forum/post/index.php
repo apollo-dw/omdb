@@ -38,6 +38,7 @@
     $stmt = $conn->prepare(
         "SELECT *,
             u.IsPatron AS UserIsPatron,
+            u.UserTitle AS UserTitle,
             (
                 SELECT COUNT(*)
                 FROM forum_posts fp
@@ -154,6 +155,11 @@
                     <div class="profileImage">
                         <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $post["UserID"]; ?>" style="width:100px;height:100px;">
                     </div>
+                    <?php if (!IS_NULL($post['UserTitle'])) { ?>
+                    <div class="profileUserTitle">
+                        <span class="subText" style="font-weight:bolder;"><?php echo $post['UserTitle']; ?></span>
+                    </div>
+                    <?php } ?>
                     <div style="text-align: center;">
                         <?php if ($post["UserIsPatron"]) { ?>
                             <div class="profilePatronBadge">
