@@ -1,6 +1,5 @@
 <?php
-    $PageTitle = "List";
-    require '../header.php';
+    require_once __DIR__ . '/../../app/base.php';
 
     $listId = GetIntParam('id', -1, "How dare you");
 
@@ -16,6 +15,9 @@
     }
 
     $title = safe_htmlspecialchars($list['Title'], ENT_QUOTES);
+
+    $PageTitle = safe_htmlspecialchars($list['Title'], ENT_SUBSTITUTE);
+    require '../header.php';
 
     $stmt = $conn->prepare("
         SELECT

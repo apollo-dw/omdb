@@ -64,7 +64,7 @@
 
         <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child">
-                <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                <a href="/list/<?php echo $row["ListID"]; ?>">
                     <img
                         class="square-thumb"
                         src="<?php echo $imageUrl; ?>"
@@ -74,7 +74,7 @@
             </div>
 
             <div class="flex-child">
-                <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                <a href="/list/<?php echo $row["ListID"]; ?>">
                     <?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 
@@ -140,7 +140,7 @@
 
         <div class="flex-container ratingContainer alternating-bg">
             <div class="flex-child">
-                <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                <a href="/list/<?php echo $row["ListID"]; ?>">
                     <img
                         class="square-thumb"
                         src="<?php echo $imageUrl; ?>"
@@ -150,7 +150,7 @@
             </div>
 
             <div class="flex-child">
-                <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                <a href="/list/<?php echo $row["ListID"]; ?>">
                     <?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?>
                 </a>
 

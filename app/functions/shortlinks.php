@@ -139,7 +139,7 @@
         }
 
         return sprintf(
-            '<a style="font-weight: bold;" href="/list/?id=%d">%s</a>',
+            '<a style="font-weight: bold;" href="/list/%d">%s</a>',
             $id,
             htmlspecialchars("{$list['Title']} ({$list['Username']})")
         );

@@ -172,7 +172,7 @@
             ?>
             <div class="alternating-bg" style="margin:0;">
                 <div>
-                    <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?> <span class="subText">by <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span></a>
+                    <a href="/list/<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?> <span class="subText">by <?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></span></a>
                 </div>
             </div>
             <?php

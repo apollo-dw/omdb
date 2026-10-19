@@ -351,7 +351,7 @@
             .then((response) => response.json())
             .then((response) => {
                 console.log(response);
-                window.location.href = "../?id=" + response.id;
+                window.location.href = "../" + response.id;
             })
             .catch((error) => {
                 console.error("Error:", error);

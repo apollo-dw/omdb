@@ -42,14 +42,14 @@
         ?>
         <div class="flex-container alternating-bg list-container">
             <div class="flex-child">
-                <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                <a href="/list/<?php echo $row["ListID"]; ?>">
                     <img src="<?php echo $imageUrl; ?>" class="square-thumb"
                     style="height:8em;width:8em;object-fit:cover;object-position:center;"
                     loading="lazy" />
                 </a>
             </div>
             <div class="flex-child" style="align-self:baseline;">
-                <b><a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a></b> <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a><?php if (!empty($row["Private"])) {
+                <b><a href="/list/<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a></b> <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars(GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a><?php if (!empty($row["Private"])) {
                     echo " | private";
                 } ?></span>
                 <span class="subText">(<?php echo $row["ItemCount"]; ?> items)</span> <br>

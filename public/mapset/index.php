@@ -815,11 +815,11 @@ while ($row = $result->fetch_assoc()) {
                         list($imageUrl) = getListItemDisplayInformation($item, $conn);
                         ?>
                         <div class="mapset-list-card alternating-bg">
-                            <a href="/list/?id=<?php echo $row["ListID"]; ?>">
+                            <a href="/list/<?php echo $row["ListID"]; ?>">
                                 <img src="<?php echo $imageUrl; ?>" class="square-thumb" alt="" />
                             </a>
                             <div>
-                                <a href="/list/?id=<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
+                                <a href="/list/<?php echo $row["ListID"]; ?>"><?php echo safe_htmlspecialchars($row["Title"], ENT_QUOTES); ?></a>
                                 <span class="subText">by <a href="/profile/<?php echo $row["UserID"]; ?>"><?php echo safe_htmlspecialchars($row["Username"] ?? GetUserNameFromId($row["UserID"], $conn), ENT_QUOTES); ?></a><?php if (!empty($row["Private"])) {
                                     echo " | private";
                                 } ?></span>

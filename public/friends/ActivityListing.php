@@ -386,7 +386,7 @@
 
                 case 'list':
                     echo 'created list ';
-                    echo '<a href="/list/?id=' . intval($row["ObjectID"]) . '">';
+                    echo '<a href="/list/' . intval($row["ObjectID"]) . '">';
                     echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                     echo '</a>';
                     break;
@@ -400,7 +400,7 @@
 
                 case 'list_like':
                     echo 'liked list ';
-                    echo '<a href="/list/?id=' . intval($row["ObjectType"]) . '">';
+                    echo '<a href="/list/' . intval($row["ObjectType"]) . '">';
                     echo safe_htmlspecialchars($row["Title"], ENT_QUOTES);
                     echo '</a>';
                     break;
