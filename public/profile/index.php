@@ -64,7 +64,9 @@
         exit();
     }
 
-    $PageTitle = $isValidUser ? GetUserNameFromId($profileId, $conn) : "Profile";
+    $profileUsername = GetUserNameFromId($profileId, $conn) ?? "Profile";
+
+    $PageTitle = $profileUsername;
     require '../header.php';
 
     if ($profileId == 0) {
@@ -311,7 +313,7 @@
     <?php if ($shouldHideProfile) { ?>
         <div class="profileCard">
             <div class="profileTitle">
-                <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></a>
+                <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo $profileUsername; ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></a>
             </div>
             <div class="profileImage">
                 <img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
@@ -356,7 +358,7 @@
     <?php } else { ?>
 	<div class="profileCard">
 		<div class="profileTitle">
-            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($profileId, $conn), ENT_QUOTES); ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></i></a>
+            <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"><?php echo $profileUsername; ?></a> <a href="https://osu.ppy.sh/u/<?php echo $profileId; ?>" target="_blank" rel="noopener noreferrer"></i></a>
 		</div>
 		<div class="profileImage">
 			<img class="square-thumb" src="https://s.ppy.sh/a/<?php echo $profileId; ?>" style="width:146px;height:146px;"/>
