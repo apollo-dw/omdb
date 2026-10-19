@@ -147,7 +147,7 @@
         ?>
         <div class="flex-container forum-post-body" id="post-<?php echo $post["PostID"]; ?>">
             <div class="forum-post-info">
-                <div>
+                <div style="display: flex; flex-direction:column; align-items:center;">
                     <div class="profileTitle" style="text-align: center;">
                         <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"><?php echo safe_htmlspecialchars(GetUserNameFromId($post["UserID"], $conn), ENT_QUOTES); ?></a>
                         <a href="/profile/<?php echo $post["UserID"]; ?>" rel="noopener noreferrer"></a>
