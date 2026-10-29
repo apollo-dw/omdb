@@ -898,6 +898,10 @@
     }
 
     function RenderBeatmapCreators(int $beatmapID, mysqli $conn) {
+        // easter egg
+        $anonymousBeatmapIDs = [5121233, 5119782, 5120027, 5120833, 5120028];
+        $isAnonymous = in_array($beatmapID, $anonymousBeatmapIDs, true);
+
         $stmt = $conn->prepare("SELECT `CreatorID`, m.Username FROM `beatmap_creators` c LEFT JOIN mappernames m ON m.UserID = c.CreatorID WHERE BeatmapID = ?");
         $stmt->bind_param('i', $beatmapID);
         $stmt->execute();
@@ -907,14 +911,18 @@
         $index = 0;
 
         while ($creator = $creators->fetch_assoc()) {
-            $creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
+            if ($isAnonymous) {
+                $creatorName = '??????????????????';
+            } else {
+                $creatorName = $creator['Username'] ?? GetUserNameFromId($creator['CreatorID'], $conn);
+            }
+
             echo "<a href='/profile/{$creator['CreatorID']}'>" . safe_htmlspecialchars($creatorName, ENT_QUOTES) . "</a>";
 
             $index++;
             if ($index < $creatorCount - 1) {
                 echo ", ";
-            }
-            elseif ($index == $creatorCount - 1) {
+            } elseif ($index == $creatorCount - 1) {
                 echo " and ";
             }
         }

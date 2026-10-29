@@ -541,7 +541,7 @@ while ($row = $result->fetch_assoc()) {
                     $creators[] = $creator['CreatorID'];
                 }
 
-                if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1)) {
+                if (!(in_array($row['CreatorID'], $creators) && count($creators) == 1) || $mapset_id == 2371923) {
                     ?>
                     <span class="subText">mapped by <?php RenderBeatmapCreators($row['BeatmapID'], $conn); ?></span><br>
                     <?php
