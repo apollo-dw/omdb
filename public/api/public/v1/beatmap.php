@@ -32,14 +32,6 @@ if ($result != null) {
         "WeightedAvg" => $result["WeightedAvg"],
     );
 
-    $stmt = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
-    $stmt->bind_param("ii", $beatmapID, $userID);
-    $stmt->execute();
-    $ownRating = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    $response["OwnRating"] = $ownRating["Score"] ?? null;
-
     $stmt = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
     $stmt->bind_param("i", $beatmapID);
     $stmt->execute();

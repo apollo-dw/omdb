@@ -45,15 +45,7 @@
 
     while ($row = $result->fetch_assoc()) {
         $beatmapID = $row["BeatmapID"];
-
-        $stmt2 = $conn->prepare("SELECT Score FROM ratings WHERE BeatmapID = ? AND UserID = ?");
-        $stmt2->bind_param("ii", $beatmapID, $userID);
-        $stmt2->execute();
-        $ratingResult = $stmt2->get_result()->fetch_assoc();
-        $stmt2->close();
-
-        $rating = $ratingResult ? $ratingResult["Score"] : null;
-
+        
         $stmt3 = $conn->prepare("SELECT Score, COUNT(*) as Count FROM ratings WHERE BeatmapID = ? GROUP BY Score ORDER BY Score");
         $stmt3->bind_param("i", $beatmapID);
         $stmt3->execute();
@@ -85,8 +77,6 @@
             "ChartRank" => $row["ChartRank"],
             "ChartYearRank" => $row["ChartYearRank"],
             "RatingCount" => $row["RatingCount"],
-            "WeightedAvg" => $row["WeightedAvg"],
-            "OwnRating" => $rating,
             "Ratings" => $ratingsCounts,
             "Descriptors" => $descriptors
         );
