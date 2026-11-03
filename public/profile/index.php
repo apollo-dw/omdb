@@ -780,7 +780,7 @@ if ($hasMaps) {
             require __DIR__ . '/../../app/functions/filter/index.php';
         ?>
         <label>
-            <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, min. 10 shown)</span>
+            <input type="checkbox" id="hideLessRelevantCheckbox" checked> <span>Hide less-relevant maps (Most rated and/or highest charted, max. 10 shown)</span>
         </label>
     </div>
 
