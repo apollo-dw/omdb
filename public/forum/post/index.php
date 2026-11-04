@@ -2,6 +2,7 @@
     require_once __DIR__ . '/../../../app/base.php';
 
     $threadId = GetIntParam('id', -1, "AHHH");
+    $replyId = GetIntParam('replyId', -1, "");
     $page = GetIntParam('p', 1, "AHHH");
 
     $stmt = $conn->prepare("SELECT * FROM forum_threads LEFT JOIN forum_topics ft on forum_threads.TopicID = ft.TopicID WHERE ThreadID = ?;");
@@ -19,13 +20,28 @@
     require_once '../../header.php';
 
     $limit = 15;
+
+    if ($replyId > 0) {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM forum_posts WHERE ThreadID = ? AND PostID <= ?;");
+        $stmt->bind_param("ii", $threadId, $replyId);
+        $stmt->execute();
+        $stmt->bind_result($targetPosition);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($targetPosition > 0) {
+            $page = ceil($targetPosition / $limit);
+        }
+    }
+
     $stmt = $conn->prepare("SELECT COUNT(*) FROM forum_posts WHERE ThreadID = ?;");
     $stmt->bind_param("i", $threadId);
     $stmt->execute();
     $stmt->bind_result($count);
     $stmt->fetch();
     $stmt->close();
-    $pageCount = floor($count / $limit) + 1;
+
+    $pageCount = max(1, ceil($count / $limit));
     $prevPage = max($page - 1, 1);
     $nextPage = min($page + 1, $pageCount);
     $pageString = "LIMIT {$limit}";

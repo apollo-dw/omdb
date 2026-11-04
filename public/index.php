@@ -424,7 +424,7 @@ $stmt = $conn->prepare("
             } elseif ($row['comment_type'] === 'news') {
                 $linkID = "/news/post.php?id={$row["ProposalID"]}";
             } elseif ($row['comment_type'] === 'forum_post') {
-                $linkID = "/forum/post/?id={$row["ProposalID"]}";
+                $linkID = "/forum/post/{$row["ProposalID"]}?replyId={$row["ItemID"]}#post-{$row["ItemID"]}";
             } elseif ($row['comment_type'] === 'descriptor_proposal') {
                 $linkID = "/descriptor/proposal/?id={$row["ProposalID"]}";
             }
