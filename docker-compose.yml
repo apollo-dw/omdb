@@ -1,6 +1,7 @@
 services:
   omdb:
     build: .
+    container_name: omdb_app
     ports:
       - "127.0.0.1:8400:80"
     env_file:
