@@ -1,0 +1,4 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([a-zA-Z0-9_-]+)/([0-9]+)/?$ $1.php?id=$2 [L,QSA]
