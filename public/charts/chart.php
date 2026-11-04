@@ -148,6 +148,41 @@
         $whereClause = !empty($sqlFilters) ? "AND " . implode("\nAND ", $sqlFilters) : "";
         $nullRatingClause = $useRatingSubset ? "" : "AND b.Rating IS NOT NULL";
 
+        $countSql = "
+            SELECT COUNT(*) AS total
+            FROM beatmaps b
+            LEFT JOIN beatmapsets s ON s.SetID = b.SetID
+            LEFT JOIN ratings r_user ON r_user.BeatmapID = b.BeatmapID AND r_user.UserID = ?
+            {$statsJoin}
+            WHERE b.Mode = ? AND b.Blacklisted = 0 {$nullRatingClause} {$whereClause}";
+
+        $countStmt = $conn->prepare($countSql);
+        $countStmt->bind_param($baseTypes . $statsTypes . $whereTypes, ...array_merge($baseParams, $statsParams, $whereParams));
+        $countStmt->execute();
+        $totalRows = $countStmt->get_result()->fetch_assoc()['total'] ?? 0;
+        $countStmt->close();
+
+        $maxPages = 40;
+        $calculatedPages = max(1, ceil($totalRows / $lim));
+        $finalMaxPages = min($maxPages, $calculatedPages);
+
+        echo '<span id="dynamic-max-pages" style="display:none;" data-max-pages="' . $finalMaxPages . '"></span>';
+
+        switch ($order) {
+            case 3:
+                $columnString = $countField;
+                break;
+            case 4:
+                $columnString = $useRatingSubset ? "subset_stats.Controversy" : "b.controversy";
+                break;
+            case 5:
+                $columnString = $useRatingSubset ? "(subset_stats.WeightedAvg - b.Rating) * SQRT(subset_stats.RatingCount)" : "(b.WeightedAvg - b.Rating) * SQRT(b.RatingCount)";
+                break;
+            default:
+                $columnString = "BayesianAverage";
+                break;
+        }
+
         $sql = "
         SELECT
             b.DifficultyName, b.SR, b.BeatmapID,

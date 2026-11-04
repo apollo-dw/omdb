@@ -5,8 +5,8 @@
     $year = ($_GET["y"] ?? "") === "all-time" ? "all-time" : GetIntParam("y", 2026, "NOO");
     $page = GetIntParam("p", 1, "NOO");
     $yearString = $year == "all-time" ? "All Time" : $year;
+    $maxPages = 40;
 
-    // Notice we removed descriptor preprocessing here. chart.php parses it cleaner.
     function generateTreeHTML($tree) {
         $html = '<ul>';
         foreach ($tree as $node) {
@@ -36,29 +36,44 @@
         }
         return $branch;
     }
+
+    function renderPagination($page, $maxPages) {
+        $window = 2;
+        echo '<div class="pagination">';
+        echo '<span onClick="changePage(page-1)'
+        ?>
+        <span onClick="changePage(page - 1)">&laquo;</span>
+        <?php
+
+        for ($i = 1; $i <= $maxPages; $i++) {
+            if ($i == 1 || $i == $maxPages || ($i >= $page - $window && $i <= $page + $window)) {
+                $activeClass = ($page == $i) ? ' active' : '';
+                echo '<span class="pageLink page' . $i . $activeClass . '" data-page="' . $i . '" onClick="changePage(' . $i . ')">' . $i . '</span>';
+            } elseif ($i == 2 && $page - $window > 2) {
+                echo '<span class="pageLink ellipsis">...</span>';
+            } elseif ($i == $maxPages - 1 && $page + $window < $maxPages - 1) {
+                echo '<span class="pageLink ellipsis">...</span>';
+            }
+        }
+
+        echo '<span onClick="changePage(page + 1)">&raquo;</span>';
+        echo '</div>';
+    }
 ?>
 
 <h1 id="heading" style="margin-bottom:0;"><?php echo "Highest Rated Maps of " . safe_htmlspecialchars($yearString, ENT_QUOTES, "UTF-8"); ?></h1>
 <div id="chart-subheading" class="subText" style="display:none;margin-bottom:0.5em;"></div>
 
-<div style="text-align:left;">
-    <div class="pagination">
-        <span onClick="changePage(page-1)">&laquo;</span>
-        <?php for ($i = 1; $i <= 9; $i++) { ?>
-            <span class="pageLink page<?php echo $i ?><?php if ($page == $i) {
-                echo ' active';
-            } ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
-        <?php } ?>
-        <span onClick="changePage(page+1)">&raquo;</span>
-    </div>
+<div id="pagination-top" style="text-align:left;">
+    <?php renderPagination($page, $maxPages); ?>
 </div>
 
 <div class="flex-container column-when-mobile-container">
-	<div id="chart-container" class="flex-item" style="flex: 0 0 75%;">
-		<?php include 'chart.php'; ?>
-	</div>
+    <div id="chart-container" class="flex-item" style="flex: 0 0 75%;">
+        <?php include 'chart.php'; ?>
+    </div>
 
-	<div style="padding-left:0.5em;" class="flex-item column-when-mobile mobile-filters">
+    <div style="padding-left:0.5em;" class="flex-item column-when-mobile mobile-filters">
         <?php
             $filterConfig = [
                 'defaultYear' => $year
@@ -71,30 +86,23 @@
                 Update chart
             </button>
         </div>
-		<div class="chart-info">
-			<span>Info</span>
-			<hr>
-			The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
-			The next update will happen in <span id="updateText">---</span><br><br>
-			Ratings are weighed based on user rating quality. <a href="/wiki/rating_weight">Click here to read more!</a>
-		</div>
-	</div>
-</div>
-
-    <div style="text-align:left;">
-        <div class="pagination">
-            <span onClick="changePage(page-1)">&laquo;</span>
-            <?php for ($i = 1; $i <= 9; $i++) { ?>
-                <span class="pageLink page<?php echo $i ?><?php if ($page == $i) {
-                    echo ' active';
-                } ?>" onClick="changePage(<?php echo $i ?>)"><?php echo $i ?></span>
-            <?php } ?>
-            <span onClick="changePage(page+1)">&raquo;</span>
+        <div class="chart-info">
+            <span>Info</span>
+            <hr>
+            The chart is based on an implementation of the Bayesian average method. It updates <b>once every day.</b><br><br>
+            The next update will happen in <span id="updateText">---</span><br><br>
+            Ratings are weighed based on user rating quality. <a href="/wiki/rating_weight">Click here to read more!</a>
         </div>
     </div>
+</div>
+
+<div id="pagination-bottom" style="text-align:left;">
+    <?php renderPagination($page, $maxPages); ?>
+</div>
 
 <script>
     var page = parseInt("<?php echo (int)$page; ?>", 10) || 1;
+    var maxPages = <?php echo (int)$maxPages; ?>;
 
     var orderLabels = {
         "1": "Highest Rated ",
@@ -106,17 +114,63 @@
 
     var currentPayload = null;
 
+    function updatePaginationHTML(currentPage, totalPages) {
+        maxPages = Math.max(1, totalPages);
+        if (currentPage > maxPages) {
+            page = maxPages;
+            currentPage = maxPages;
+        }
+
+        var windowSize = 2;
+        var html = '<div class="pagination">';
+        html += '<span onClick="changePage(page - 1)">&laquo;</span>';
+
+        for (var i = 1; i <= maxPages; i++) {
+            if (i == 1 || i == maxPages || (i >= currentPage - windowSize && i <= currentPage + windowSize)) {
+                var activeClass = (currentPage == i) ? ' active' : '';
+                html += '<span class="pageLink page' + i + activeClass + '" data-page="' + i + '" onClick="changePage(' + i + ')">' + i + '</span>';
+            } else if (i == 2 && currentPage - windowSize > 2) {
+                html += '<span class="pageLink ellipsis">...</span>';
+            } else if (i == maxPages - 1 && currentPage + windowSize < maxPages - 1) {
+                html += '<span class="pageLink ellipsis">...</span>';
+            }
+        }
+
+        html += '<span onClick="changePage(page + 1)">&raquo;</span>';
+        html += '</div>';
+
+        document.getElementById('pagination-top').innerHTML = html;
+        document.getElementById('pagination-bottom').innerHTML = html;
+    }
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        var dynamicTag = document.getElementById('dynamic-max-pages');
+        if (dynamicTag) {
+            var fetchedMax = parseInt(dynamicTag.getAttribute('data-max-pages'), 10);
+            if (!isNaN(fetchedMax) && fetchedMax > 0) {
+                updatePaginationHTML(page, fetchedMax);
+            }
+        }
+    });
+
     function changePage(newPage) {
         var nextPage = parseInt(newPage, 10);
-        page = Math.max(Math.min(nextPage, 9), 1);
+        page = Math.max(Math.min(nextPage, maxPages), 1);
         var payload = currentPayload || window.getOmdbFilterPayload();
         updateChart(payload, page);
     }
 
     function resetPaginationDisplay(payload) {
         $("#chart-container").removeClass("faded");
+
+        var fetchedMax = $('#chart-container').find('#dynamic-max-pages').attr('data-max-pages');
+        if (fetchedMax) {
+            maxPages = parseInt(fetchedMax, 10) || 50;
+        }
+        updatePaginationHTML(page, maxPages);
+
         $(".pageLink").removeClass("active");
-        $(".page" + page).addClass("active");
+        $("[data-page='" + page + "']").addClass("active");
 
         var year = payload ? String(payload.year) : "all-time";
         var order = payload ? String(payload.order) : "1";

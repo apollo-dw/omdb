@@ -147,13 +147,23 @@
 
 <div style="float:right;">
     <div class="pagination">
-        <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
-        <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
-            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
-                echo 'active';
-            } ?>"><?php echo $i ?></span></a>
-        <?php } ?>
-        <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
+        <a href="<?php echo "?id={$threadId}&p=1"; ?>"><span>&laquo;</span></a>
+        <?php
+            $window = 2;
+            for ($i = 1; $i <= $pageCount; $i++) {
+                if ($i == 1 || $i == $pageCount || ($i >= $page - $window && $i <= $page + $window)) {
+                    $activeClass = ($page == $i) ? 'active' : '';
+                    echo "<a href=\"?id={$threadId}&p={$i}\"><span class=\"pageLink {$activeClass}\">{$i}</span></a>";
+                }
+                elseif ($i == 2 && $page - $window > 2) {
+                    echo "<span class=\"pageLink ellipsis\">...</span>";
+                }
+                elseif ($i == $pageCount - 1 && $page + $window < $pageCount - 1) {
+                    echo "<span class=\"pageLink ellipsis\">...</span>";
+                }
+            }
+        ?>
+        <a href="<?php echo "?id={$threadId}&p={$pageCount}"; ?>"><span>&raquo;</span></a>
     </div>
 </div>
 <hr>
@@ -235,13 +245,23 @@
 
 <div style="float:right;">
     <div class="pagination">
-        <a href="<?php echo "?id={$threadId}&p={$prevPage}"; ?>"><span>&laquo;</span></a>
-        <?php for ($i = 1; $i <= $pageCount; $i++) { ?>
-            <a href="<?php echo "?id={$threadId}&p={$i}"; ?>"><span class="pageLink <?php if ($page == $i) {
-                echo 'active';
-            } ?>"><?php echo $i ?></span></a>
-        <?php } ?>
-        <a href="<?php echo "?id={$threadId}&p={$nextPage}"; ?>"><span>&raquo;</span></a>
+        <a href="<?php echo "?id={$threadId}&p=1"; ?>"><span>&laquo;</span></a>
+        <?php
+            $window = 2;
+            for ($i = 1; $i <= $pageCount; $i++) {
+                if ($i == 1 || $i == $pageCount || ($i >= $page - $window && $i <= $page + $window)) {
+                    $activeClass = ($page == $i) ? 'active' : '';
+                    echo "<a href=\"?id={$threadId}&p={$i}\"><span class=\"pageLink {$activeClass}\">{$i}</span></a>";
+                }
+                elseif ($i == 2 && $page - $window > 2) {
+                    echo "<span class=\"pageLink ellipsis\">...</span>";
+                }
+                elseif ($i == $pageCount - 1 && $page + $window < $pageCount - 1) {
+                    echo "<span class=\"pageLink ellipsis\">...</span>";
+                }
+            }
+        ?>
+        <a href="<?php echo "?id={$threadId}&p={$pageCount}"; ?>"><span>&raquo;</span></a>
     </div>
 </div>
 
