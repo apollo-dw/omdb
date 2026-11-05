@@ -365,6 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const link = event.target.closest("a.external-link");
         if (!link) return;
 
+        if (link.hostname === window.location.hostname) {
+            return;
+        }
+
         event.preventDefault();
         const url = link.href;
 
